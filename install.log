@@ -1,0 +1,916 @@
+------------------------------------------------------------
+POPFile v1.1.3 Installer Log
+------------------------------------------------------------
+Command-line: "Z:\home\jl\Downloads\popfile-1.1.3-windows\setup.exe"
+Installed by: jl (Admin)
+UAC Username: jl (Admin)
+PFI Language: German (1031)
+------------------------------------------------------------
+Installation started 19-Aug-2022 @ 12:00:13
+------------------------------------------------------------
+
+----------------------------------------
+"POPFile" Section (entry)
+----------------------------------------
+
+Erstelle Verzeichnis: C:\Program Files (x86)\POPFile
+Use UAC plugin to call 'MakeRootDirSafe' function
+
+Remove 'intermingled' minimal Perl files used by 0.17.3 to 0.20.1a releases
+('intermingled' minimal Perl removal completed)
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile
+Dekomprimiere: license
+Dekomprimiere: v1.1.3.change
+Kopiere nach C:\Program Files (x86)\POPFile\v1.1.3.change.txt
+Dekomprimiere: popfile.exe
+Dekomprimiere: popfilef.exe
+Dekomprimiere: popfileb.exe
+Dekomprimiere: popfileif.exe
+Dekomprimiere: popfileib.exe
+Dekomprimiere: popfile-service.exe
+Dekomprimiere: pfi-stopwords.default
+Dekomprimiere: runpopfile.exe
+Dekomprimiere: stop_pf.exe
+Dekomprimiere: sqlite.exe
+Dekomprimiere: sqlite3.exe
+Dekomprimiere: runsqlite.exe
+Dekomprimiere: adduser.exe
+Dekomprimiere: pfidbstatus.exe
+Dekomprimiere: pfidiag.exe
+Dekomprimiere: msgcapture.exe
+Zielverzeichnis: C:\Program Files (x86)\POPFile
+Dekomprimiere: popfile.pl
+Dekomprimiere: popfile.pck
+Dekomprimiere: insert.pl
+Dekomprimiere: bayes.pl
+Dekomprimiere: pipe.pl
+Dekomprimiere: favicon.ico
+Dekomprimiere: trayicon.ico
+Dekomprimiere: trayicon_up.ico
+Dekomprimiere: pix.gif
+Dekomprimiere: otto.png
+Zielverzeichnis: C:\Program Files (x86)\POPFile\Classifier
+Dekomprimiere: Bayes.pm
+Dekomprimiere: WordMangle.pm
+Dekomprimiere: MailParse.pm
+Dekomprimiere: popfile.sql
+Zielverzeichnis: C:\Program Files (x86)\POPFile\Platform
+Dekomprimiere: MSWin32.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\POPFile
+Dekomprimiere: MQ.pm
+Dekomprimiere: History.pm
+Dekomprimiere: Loader.pm
+Dekomprimiere: Logger.pm
+Dekomprimiere: Module.pm
+Dekomprimiere: Mutex.pm
+Dekomprimiere: Configuration.pm
+Dekomprimiere: popfile_version
+Zielverzeichnis: C:\Program Files (x86)\POPFile\Proxy
+Dekomprimiere: Proxy.pm
+Dekomprimiere: POP3.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\UI
+Dekomprimiere: HTML.pm
+Dekomprimiere: HTTP.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\languages
+Dekomprimiere: English.msg
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\default
+Dekomprimiere: advanced-page.thtml
+Dekomprimiere: bar-chart-widget.thtml
+Dekomprimiere: bucket-page.thtml
+Dekomprimiere: common-bottom.thtml
+Dekomprimiere: common-javascript.thtml
+Dekomprimiere: common-middle.thtml
+Dekomprimiere: common-top.thtml
+Dekomprimiere: configuration-page.thtml
+Dekomprimiere: corpus-page.thtml
+Dekomprimiere: history-javascript.thtml
+Dekomprimiere: history-navigator-widget.thtml
+Dekomprimiere: history-page.thtml
+Dekomprimiere: history-search-filter-widget.thtml
+Dekomprimiere: imap-bucket-folders.thtml
+Dekomprimiere: imap-connection-details.thtml
+Dekomprimiere: imap-options.thtml
+Dekomprimiere: imap-update-mailbox-list.thtml
+Dekomprimiere: imap-watch-folders.thtml
+Dekomprimiere: imap-watch-more-folders.thtml
+Dekomprimiere: magnet-navigator.thtml
+Dekomprimiere: magnet-page.thtml
+Dekomprimiere: magnet.png
+Dekomprimiere: nntp-force-fork.thtml
+Dekomprimiere: nntp-port.thtml
+Dekomprimiere: nntp-security-local.thtml
+Dekomprimiere: nntp-separator.thtml
+Dekomprimiere: password-page.thtml
+Dekomprimiere: pop3-chain-panel.thtml
+Dekomprimiere: pop3-configuration-panel.thtml
+Dekomprimiere: pop3-security-panel.thtml
+Dekomprimiere: security-page.thtml
+Dekomprimiere: session-page.thtml
+Dekomprimiere: shutdown-page.thtml
+Dekomprimiere: smtp-chain-server-port.thtml
+Dekomprimiere: smtp-chain-server.thtml
+Dekomprimiere: smtp-configuration.thtml
+Dekomprimiere: smtp-security-local.thtml
+Dekomprimiere: socks-widget.thtml
+Dekomprimiere: style.css
+Dekomprimiere: view-page.thtml
+Dekomprimiere: view-quickmagnets-widget.thtml
+Dekomprimiere: view-scores-widget.thtml
+Dekomprimiere: windows-configuration.thtml
+Dekomprimiere: xmlrpc-local.thtml
+Dekomprimiere: xmlrpc-port.thtml
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\simplyblue
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile
+Erstelle Deinstallations-Programm: C:\Program Files (x86)\POPFile\uninstall.exe
+Zielverzeichnis: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\POPFile
+Zielverzeichnis: C:\Program Files (x86)\POPFile
+Erstelle Verknüpfung: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\POPFile\Run POPFile.lnk
+Erstelle Verknüpfung: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\POPFile\Modify POPFile.lnk
+Zielverzeichnis: C:\Program Files (x86)\POPFile
+Erstelle Verknüpfung: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\POPFile\Release Notes.lnk
+Zielverzeichnis: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\POPFile
+Zielverzeichnis: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\POPFile\Support
+Erstelle Verknüpfung: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\POPFile\Support\PFI Diagnostic utility (simple).lnk
+Erstelle Verknüpfung: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\POPFile\Support\PFI Diagnostic utility (full).lnk
+Zielverzeichnis: C:\Program Files (x86)\POPFile
+
+----------------------------------------
+"POPFile" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"Minimal Perl" Section (entry)
+----------------------------------------
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile
+Dekomprimiere: perl.exe
+Dekomprimiere: wperl.exe
+Dekomprimiere: perl58.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: AutoLoader.pm
+Dekomprimiere: Carp.pm
+Dekomprimiere: Config.pm
+Dekomprimiere: Config_heavy.pl
+Dekomprimiere: constant.pm
+Dekomprimiere: Cwd.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Cwd
+Dekomprimiere: Cwd.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: DynaLoader.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\DynaLoader
+Dekomprimiere: autosplit.ix
+Dekomprimiere: dl_expandspec.al
+Dekomprimiere: dl_findfile.al
+Dekomprimiere: dl_find_symbol_anywhere.al
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: Errno.pm
+Dekomprimiere: Exporter.pm
+Dekomprimiere: Fcntl.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Fcntl
+Dekomprimiere: Fcntl.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: integer.pm
+Dekomprimiere: IO.pm
+Dekomprimiere: lib.pm
+Dekomprimiere: locale.pm
+Dekomprimiere: LWP.pm
+Dekomprimiere: POSIX.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\POSIX
+Dekomprimiere: POSIX.dll
+Dekomprimiere: autosplit.ix
+Dekomprimiere: load_imports.al
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: re.pm
+Dekomprimiere: SelectSaver.pm
+Dekomprimiere: Socket.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Socket
+Dekomprimiere: Socket.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: strict.pm
+Dekomprimiere: Symbol.pm
+Dekomprimiere: URI.pm
+Dekomprimiere: utf8.pm
+Dekomprimiere: utf8_heavy.pl
+Dekomprimiere: vars.pm
+Dekomprimiere: warnings.pm
+Dekomprimiere: Win32.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Win32
+Dekomprimiere: Win32.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: XSLoader.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Carp
+Dekomprimiere: Clan.pm
+Dekomprimiere: Heavy.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Date
+Dekomprimiere: Format.pm
+Dekomprimiere: Parse.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Digest
+Dekomprimiere: MD5.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Digest\MD5
+Dekomprimiere: MD5.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Exporter
+Dekomprimiere: Heavy.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\File
+Dekomprimiere: Basename.pm
+Dekomprimiere: Copy.pm
+Dekomprimiere: Glob.pm
+Dekomprimiere: Spec.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\File\Glob
+Dekomprimiere: Glob.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\File\Spec
+Dekomprimiere: Unix.pm
+Dekomprimiere: Win32.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Getopt
+Dekomprimiere: Long.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\HTML
+Dekomprimiere: Tagset.pm
+Dekomprimiere: Template.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\HTTP
+Dekomprimiere: Config.pm
+Dekomprimiere: Date.pm
+Dekomprimiere: Headers.pm
+Dekomprimiere: Message.pm
+Dekomprimiere: Request.pm
+Dekomprimiere: Response.pm
+Dekomprimiere: Status.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\HTTP\Request
+Dekomprimiere: Common.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\IO
+Dekomprimiere: Dir.pm
+Dekomprimiere: File.pm
+Dekomprimiere: Handle.pm
+Dekomprimiere: Pipe.pm
+Dekomprimiere: Poll.pm
+Dekomprimiere: Seekable.pm
+Dekomprimiere: Select.pm
+Dekomprimiere: SessionData.pm
+Dekomprimiere: SessionSet.pm
+Dekomprimiere: Socket.pm
+Dekomprimiere: String.pm
+Dekomprimiere: Zlib.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\IO
+Dekomprimiere: IO.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\IO\Socket
+Dekomprimiere: INET.pm
+Dekomprimiere: UNIX.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\List
+Dekomprimiere: Util.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\List\Util
+Dekomprimiere: Util.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\LWP
+Dekomprimiere: MemberMixin.pm
+Dekomprimiere: Protocol.pm
+Dekomprimiere: Simple.pm
+Dekomprimiere: UserAgent.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\LWP\Protocol
+Dekomprimiere: http.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\MIME
+Dekomprimiere: Base64.pm
+Dekomprimiere: QuotedPrint.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\MIME\Base64
+Dekomprimiere: Base64.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Net
+Dekomprimiere: HTTP.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Net\HTTP
+Dekomprimiere: Methods.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Scalar
+Dekomprimiere: Util.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Sys
+Dekomprimiere: Hostname.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Sys\Hostname
+Dekomprimiere: Hostname.dll
+Dekomprimiere: autosplit.ix
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Text
+Dekomprimiere: ParseWords.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Tie
+Dekomprimiere: Hash.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Time
+Dekomprimiere: Local.pm
+Dekomprimiere: Zone.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\unicore
+Dekomprimiere: Exact.pl
+Dekomprimiere: PVA.pl
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\unicore\lib\gc_sc
+Dekomprimiere: Digit.pl
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\URI
+Dekomprimiere: _foreign.pm
+Dekomprimiere: _generic.pm
+Dekomprimiere: _query.pm
+Dekomprimiere: _server.pm
+Dekomprimiere: Escape.pm
+Dekomprimiere: http.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\warnings
+Dekomprimiere: register.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Win32
+Dekomprimiere: GUI.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Win32\GUI
+Dekomprimiere: AxWindow.pm
+Dekomprimiere: BitmapInline.pm
+Dekomprimiere: Constants.pm
+Dekomprimiere: DIBitmap.pm
+Dekomprimiere: DropFiles.pm
+Dekomprimiere: Grid.pm
+Dekomprimiere: GridLayout.pm
+Dekomprimiere: Scintilla.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Win32\GUI
+Dekomprimiere: GUI.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Win32\GUI\Constants
+Dekomprimiere: Tags.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Win32\GUI\Constants
+Dekomprimiere: Constants.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Win32\GUI\Constants\Tags
+Dekomprimiere: autosplit.ix
+Dekomprimiere: tag_compatibility_win32_gui.al
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: BerkeleyDB.pm
+Dekomprimiere: UNIVERSAL.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\BerkeleyDB
+Dekomprimiere: autosplit.ix
+Dekomprimiere: BerkeleyDB.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: base.pm
+Dekomprimiere: overload.pm
+Dekomprimiere: DBI.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\DBI
+Dekomprimiere: DBI.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\DBD
+Dekomprimiere: SQLite.pm
+Dekomprimiere: SQLite2.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\DBD\SQLite
+Dekomprimiere: SQLite.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\DBD\SQLite2
+Dekomprimiere: SQLite2.dll
+
+----------------------------------------
+"Minimal Perl" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"SSL Support" Section (entry)
+----------------------------------------
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: bytes.pm
+Dekomprimiere: bytes_heavy.pl
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\IO\Socket
+Dekomprimiere: SSL.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Net
+Dekomprimiere: SSLeay.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Net\SSLeay
+Dekomprimiere: Handle.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Net\SSLeay
+Dekomprimiere: SSLeay.dll
+Dekomprimiere: autosplit.ix
+Dekomprimiere: debug_read.al
+Dekomprimiere: do_https.al
+Dekomprimiere: do_https2.al
+Dekomprimiere: do_https3.al
+Dekomprimiere: do_https4.al
+Dekomprimiere: do_httpx2.al
+Dekomprimiere: do_httpx3.al
+Dekomprimiere: do_httpx4.al
+Dekomprimiere: dump_peer_certificate.al
+Dekomprimiere: get_http.al
+Dekomprimiere: get_http3.al
+Dekomprimiere: get_http4.al
+Dekomprimiere: get_https.al
+Dekomprimiere: get_https3.al
+Dekomprimiere: get_https4.al
+Dekomprimiere: get_httpx.al
+Dekomprimiere: get_httpx3.al
+Dekomprimiere: get_httpx4.al
+Dekomprimiere: head_http.al
+Dekomprimiere: head_http3.al
+Dekomprimiere: head_http4.al
+Dekomprimiere: head_https.al
+Dekomprimiere: head_https3.al
+Dekomprimiere: head_https4.al
+Dekomprimiere: head_httpx.al
+Dekomprimiere: head_httpx3.al
+Dekomprimiere: head_httpx4.al
+Dekomprimiere: https_cat.al
+Dekomprimiere: httpx_cat.al
+Dekomprimiere: http_cat.al
+Dekomprimiere: make_form.al
+Dekomprimiere: make_headers.al
+Dekomprimiere: new_x_ctx.al
+Dekomprimiere: open_proxy_tcp_connection.al
+Dekomprimiere: open_tcp_connection.al
+Dekomprimiere: post_http.al
+Dekomprimiere: post_http3.al
+Dekomprimiere: post_http4.al
+Dekomprimiere: post_https.al
+Dekomprimiere: post_https3.al
+Dekomprimiere: post_https4.al
+Dekomprimiere: post_httpx.al
+Dekomprimiere: post_httpx3.al
+Dekomprimiere: post_httpx4.al
+Dekomprimiere: put_http.al
+Dekomprimiere: put_http3.al
+Dekomprimiere: put_http4.al
+Dekomprimiere: put_https.al
+Dekomprimiere: put_https3.al
+Dekomprimiere: put_https4.al
+Dekomprimiere: put_httpx.al
+Dekomprimiere: put_httpx3.al
+Dekomprimiere: put_httpx4.al
+Dekomprimiere: randomize.al
+Dekomprimiere: set_cert_and_key.al
+Dekomprimiere: set_proxy.al
+Dekomprimiere: set_server_cert_and_key.al
+Dekomprimiere: sslcat.al
+Dekomprimiere: ssl_read_all.al
+Dekomprimiere: ssl_read_CRLF.al
+Dekomprimiere: ssl_read_until.al
+Dekomprimiere: ssl_write_all.al
+Dekomprimiere: ssl_write_CRLF.al
+Dekomprimiere: tcpcat.al
+Dekomprimiere: tcpxcat.al
+Dekomprimiere: tcp_read_all.al
+Dekomprimiere: tcp_read_CRLF.al
+Dekomprimiere: tcp_read_until.al
+Dekomprimiere: tcp_write_all.al
+Dekomprimiere: tcp_write_CRLF.al
+Dekomprimiere: want_nothing.al
+Dekomprimiere: want_read.al
+Dekomprimiere: want_write.al
+Dekomprimiere: want_X509_lookup.al
+
+----------------------------------------
+"SSL Support" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"Skins" Section (entry)
+----------------------------------------
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\blue
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\coolblue
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\coolbrown
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\coolgreen
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\coolmint
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\coolorange
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\coolyellow
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\default
+Dekomprimiere: advanced-page.thtml
+Dekomprimiere: bar-chart-widget.thtml
+Dekomprimiere: bucket-page.thtml
+Dekomprimiere: common-bottom.thtml
+Dekomprimiere: common-javascript.thtml
+Dekomprimiere: common-middle.thtml
+Dekomprimiere: common-top.thtml
+Dekomprimiere: configuration-page.thtml
+Dekomprimiere: corpus-page.thtml
+Dekomprimiere: history-javascript.thtml
+Dekomprimiere: history-navigator-widget.thtml
+Dekomprimiere: history-page.thtml
+Dekomprimiere: history-search-filter-widget.thtml
+Dekomprimiere: imap-bucket-folders.thtml
+Dekomprimiere: imap-connection-details.thtml
+Dekomprimiere: imap-options.thtml
+Dekomprimiere: imap-update-mailbox-list.thtml
+Dekomprimiere: imap-watch-folders.thtml
+Dekomprimiere: imap-watch-more-folders.thtml
+Dekomprimiere: magnet-navigator.thtml
+Dekomprimiere: magnet-page.thtml
+Dekomprimiere: magnet.png
+Dekomprimiere: nntp-force-fork.thtml
+Dekomprimiere: nntp-port.thtml
+Dekomprimiere: nntp-security-local.thtml
+Dekomprimiere: nntp-separator.thtml
+Dekomprimiere: password-page.thtml
+Dekomprimiere: pop3-chain-panel.thtml
+Dekomprimiere: pop3-configuration-panel.thtml
+Dekomprimiere: pop3-security-panel.thtml
+Dekomprimiere: security-page.thtml
+Dekomprimiere: session-page.thtml
+Dekomprimiere: shutdown-page.thtml
+Dekomprimiere: smtp-chain-server-port.thtml
+Dekomprimiere: smtp-chain-server.thtml
+Dekomprimiere: smtp-configuration.thtml
+Dekomprimiere: smtp-security-local.thtml
+Dekomprimiere: socks-widget.thtml
+Dekomprimiere: style.css
+Dekomprimiere: view-page.thtml
+Dekomprimiere: view-quickmagnets-widget.thtml
+Dekomprimiere: view-scores-widget.thtml
+Dekomprimiere: windows-configuration.thtml
+Dekomprimiere: xmlrpc-local.thtml
+Dekomprimiere: xmlrpc-port.thtml
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\glassblue
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\green
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\lavish
+Dekomprimiere: bottom.gif
+Dekomprimiere: bottomLeft.gif
+Dekomprimiere: bottomRight.gif
+Dekomprimiere: buttonSelected.gif
+Dekomprimiere: buttonUnselected.gif
+Dekomprimiere: left.gif
+Dekomprimiere: right.gif
+Dekomprimiere: style.css
+Dekomprimiere: top.gif
+Dekomprimiere: topLeft.gif
+Dekomprimiere: topRight.gif
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\ocean
+Dekomprimiere: common-bottom.thtml
+Dekomprimiere: common-middle.thtml
+Dekomprimiere: history-page.thtml
+Dekomprimiere: style.css
+Dekomprimiere: view-page.thtml
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\oceanblue
+Dekomprimiere: common-bottom.thtml
+Dekomprimiere: common-middle.thtml
+Dekomprimiere: common-top.thtml
+Dekomprimiere: ie6.css
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\orange
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\orangecream
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\osx
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\outlook
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\simplyblue
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\sleet
+Dekomprimiere: bottom.gif
+Dekomprimiere: bottomLeft.gif
+Dekomprimiere: bottomRight.gif
+Dekomprimiere: button.gif
+Dekomprimiere: button2.gif
+Dekomprimiere: left.gif
+Dekomprimiere: menu.gif
+Dekomprimiere: menuButton.gif
+Dekomprimiere: right.gif
+Dekomprimiere: style.css
+Dekomprimiere: top.gif
+Dekomprimiere: topLeft.gif
+Dekomprimiere: topRight.gif
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\sleet-rtl
+Dekomprimiere: bottom.gif
+Dekomprimiere: bottomLeft.gif
+Dekomprimiere: bottomRight.gif
+Dekomprimiere: button.gif
+Dekomprimiere: button2.gif
+Dekomprimiere: left.gif
+Dekomprimiere: menu.gif
+Dekomprimiere: menuButton.gif
+Dekomprimiere: right.gif
+Dekomprimiere: style.css
+Dekomprimiere: top.gif
+Dekomprimiere: topLeft.gif
+Dekomprimiere: topRight.gif
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\smalldefault
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\smallgrey
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\strawberryrose
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\tinygrey
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\white
+Dekomprimiere: style.css
+Zielverzeichnis: C:\Program Files (x86)\POPFile\skins\windows
+Dekomprimiere: style.css
+
+----------------------------------------
+"Skins" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"Languages" Section (entry)
+----------------------------------------
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile\languages
+Dekomprimiere: Arabic.msg
+Dekomprimiere: Bulgarian.msg
+Dekomprimiere: Catala.msg
+Dekomprimiere: Chinese-Simplified-GB2312.msg
+Dekomprimiere: Chinese-Simplified.msg
+Dekomprimiere: Chinese-Traditional-BIG5.msg
+Dekomprimiere: Chinese-Traditional.msg
+Dekomprimiere: Czech.msg
+Dekomprimiere: Dansk.msg
+Dekomprimiere: Deutsch.msg
+Dekomprimiere: English-UK.msg
+Dekomprimiere: English.msg
+Dekomprimiere: Espanol.msg
+Dekomprimiere: Francais.msg
+Dekomprimiere: Hebrew.msg
+Dekomprimiere: Hellenic.msg
+Dekomprimiere: Hungarian.msg
+Dekomprimiere: Italiano.msg
+Dekomprimiere: Korean.msg
+Dekomprimiere: Nederlands.msg
+Dekomprimiere: Nihongo.msg
+Dekomprimiere: Norsk.msg
+Dekomprimiere: Polish.msg
+Dekomprimiere: Portugues-do-Brasil.msg
+Dekomprimiere: Portugues.msg
+Dekomprimiere: Russian.msg
+Dekomprimiere: Slovak.msg
+Dekomprimiere: Suomi.msg
+Dekomprimiere: Svenska.msg
+Dekomprimiere: Turkce.msg
+Dekomprimiere: Ukrainian.msg
+
+----------------------------------------
+"Languages" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"Nihongo Parser" Section (entry)
+----------------------------------------
+
+Removed the 'NihongoParser' setting from the registry (HKLM)
+
+----------------------------------------
+"Nihongo Parser" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"NNTP Proxy" Section (entry)
+----------------------------------------
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile\Proxy
+Dekomprimiere: NNTP.pm
+
+----------------------------------------
+"NNTP Proxy" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"SMTP Proxy" Section (entry)
+----------------------------------------
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile\Proxy
+Dekomprimiere: SMTP.pm
+
+----------------------------------------
+"SMTP Proxy" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"XMLRPC" Section (entry)
+----------------------------------------
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile\UI
+Dekomprimiere: XMLRPC.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\POPFile
+Dekomprimiere: API.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib
+Dekomprimiere: bytes.pm
+Dekomprimiere: bytes_heavy.pl
+Dekomprimiere: Encode.pm
+Dekomprimiere: LWP.pm
+Dekomprimiere: re.pm
+Dekomprimiere: URI.pm
+Dekomprimiere: utf8.pm
+Dekomprimiere: utf8_heavy.pl
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Class
+Dekomprimiere: Inspector.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Encode
+Dekomprimiere: Alias.pm
+Dekomprimiere: Config.pm
+Dekomprimiere: Encoding.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\Encode
+Dekomprimiere: Encode.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\HTTP
+Dekomprimiere: Config.pm
+Dekomprimiere: Cookies.pm
+Dekomprimiere: Daemon.pm
+Dekomprimiere: Date.pm
+Dekomprimiere: Headers.pm
+Dekomprimiere: Message.pm
+Dekomprimiere: Negotiate.pm
+Dekomprimiere: Request.pm
+Dekomprimiere: Response.pm
+Dekomprimiere: Status.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\HTTP\Cookies
+Dekomprimiere: Microsoft.pm
+Dekomprimiere: Netscape.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\HTTP\Headers
+Dekomprimiere: Auth.pm
+Dekomprimiere: ETag.pm
+Dekomprimiere: Util.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\HTTP\Request
+Dekomprimiere: Common.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\LWP
+Dekomprimiere: ConnCache.pm
+Dekomprimiere: Debug.pm
+Dekomprimiere: DebugFile.pm
+Dekomprimiere: media.types
+Dekomprimiere: MediaTypes.pm
+Dekomprimiere: MemberMixin.pm
+Dekomprimiere: Protocol.pm
+Dekomprimiere: RobotUA.pm
+Dekomprimiere: Simple.pm
+Dekomprimiere: UserAgent.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\LWP\Authen
+Dekomprimiere: Basic.pm
+Dekomprimiere: Digest.pm
+Dekomprimiere: Ntlm.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\LWP\Protocol
+Dekomprimiere: cpan.pm
+Dekomprimiere: data.pm
+Dekomprimiere: file.pm
+Dekomprimiere: ftp.pm
+Dekomprimiere: GHTTP.pm
+Dekomprimiere: gopher.pm
+Dekomprimiere: http.pm
+Dekomprimiere: http10.pm
+Dekomprimiere: https.pm
+Dekomprimiere: https10.pm
+Dekomprimiere: loopback.pm
+Dekomprimiere: mailto.pm
+Dekomprimiere: nntp.pm
+Dekomprimiere: nogo.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Net
+Dekomprimiere: HTTP.pm
+Dekomprimiere: HTTPS.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Net\HTTP
+Dekomprimiere: Methods.pm
+Dekomprimiere: NB.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\SOAP
+Dekomprimiere: Constants.pm
+Dekomprimiere: Lite.pm
+Dekomprimiere: Packager.pm
+Dekomprimiere: Test.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\SOAP\Lite
+Dekomprimiere: Packager.pm
+Dekomprimiere: Utils.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\SOAP\Lite\Deserializer
+Dekomprimiere: XMLSchema1999.pm
+Dekomprimiere: XMLSchema2001.pm
+Dekomprimiere: XMLSchemaSOAP1_1.pm
+Dekomprimiere: XMLSchemaSOAP1_2.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\SOAP\Transport
+Dekomprimiere: HTTP.pm
+Dekomprimiere: IO.pm
+Dekomprimiere: LOCAL.pm
+Dekomprimiere: LOOPBACK.pm
+Dekomprimiere: MAILTO.pm
+Dekomprimiere: POP3.pm
+Dekomprimiere: TCP.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\Time
+Dekomprimiere: gmtime.pm
+Dekomprimiere: HiRes.pm
+Dekomprimiere: Local.pm
+Dekomprimiere: localtime.pm
+Dekomprimiere: Piece.pm
+Dekomprimiere: Seconds.pm
+Dekomprimiere: tm.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\unicore
+Dekomprimiere: Canonical.pl
+Dekomprimiere: Exact.pl
+Dekomprimiere: PVA.pl
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\unicore\lib\gc_sc
+Dekomprimiere: Digit.pl
+Dekomprimiere: SpacePer.pl
+Dekomprimiere: Word.pl
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\unicore\To
+Dekomprimiere: Fold.pl
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\URI
+Dekomprimiere: data.pm
+Dekomprimiere: Escape.pm
+Dekomprimiere: file.pm
+Dekomprimiere: ftp.pm
+Dekomprimiere: gopher.pm
+Dekomprimiere: Heuristic.pm
+Dekomprimiere: http.pm
+Dekomprimiere: https.pm
+Dekomprimiere: IRI.pm
+Dekomprimiere: ldap.pm
+Dekomprimiere: ldapi.pm
+Dekomprimiere: ldaps.pm
+Dekomprimiere: mailto.pm
+Dekomprimiere: mms.pm
+Dekomprimiere: news.pm
+Dekomprimiere: nntp.pm
+Dekomprimiere: pop.pm
+Dekomprimiere: QueryParam.pm
+Dekomprimiere: rlogin.pm
+Dekomprimiere: rsync.pm
+Dekomprimiere: rtsp.pm
+Dekomprimiere: rtspu.pm
+Dekomprimiere: sip.pm
+Dekomprimiere: sips.pm
+Dekomprimiere: snews.pm
+Dekomprimiere: Split.pm
+Dekomprimiere: ssh.pm
+Dekomprimiere: telnet.pm
+Dekomprimiere: tn3270.pm
+Dekomprimiere: URL.pm
+Dekomprimiere: urn.pm
+Dekomprimiere: WithBase.pm
+Dekomprimiere: _foreign.pm
+Dekomprimiere: _generic.pm
+Dekomprimiere: _idna.pm
+Dekomprimiere: _ldap.pm
+Dekomprimiere: _login.pm
+Dekomprimiere: _punycode.pm
+Dekomprimiere: _query.pm
+Dekomprimiere: _segment.pm
+Dekomprimiere: _server.pm
+Dekomprimiere: _userpass.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\URI\file
+Dekomprimiere: Base.pm
+Dekomprimiere: FAT.pm
+Dekomprimiere: Mac.pm
+Dekomprimiere: OS2.pm
+Dekomprimiere: QNX.pm
+Dekomprimiere: Unix.pm
+Dekomprimiere: Win32.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\URI\urn
+Dekomprimiere: isbn.pm
+Dekomprimiere: oid.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\XML
+Dekomprimiere: Parser.pm
+Dekomprimiere: Simple.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\XML\Parser
+Dekomprimiere: Expat.pm
+Dekomprimiere: Lite.pm
+Dekomprimiere: LWPExternEnt.pl
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\auto\XML\Parser\Expat
+Dekomprimiere: Expat.dll
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\XML\Parser\Encodings
+Dekomprimiere: big5.enc
+Dekomprimiere: euc-kr.enc
+Dekomprimiere: ibm866.enc
+Dekomprimiere: iso-8859-2.enc
+Dekomprimiere: iso-8859-3.enc
+Dekomprimiere: iso-8859-4.enc
+Dekomprimiere: iso-8859-5.enc
+Dekomprimiere: iso-8859-7.enc
+Dekomprimiere: iso-8859-8.enc
+Dekomprimiere: iso-8859-9.enc
+Dekomprimiere: koi8-r.enc
+Dekomprimiere: windows-1250.enc
+Dekomprimiere: windows-1251.enc
+Dekomprimiere: windows-1252.enc
+Dekomprimiere: windows-1255.enc
+Dekomprimiere: x-euc-jp-jisx0221.enc
+Dekomprimiere: x-euc-jp-unicode.enc
+Dekomprimiere: x-sjis-cp932.enc
+Dekomprimiere: x-sjis-jdk117.enc
+Dekomprimiere: x-sjis-jisx0221.enc
+Dekomprimiere: x-sjis-unicode.enc
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\XML\Parser\Style
+Dekomprimiere: Debug.pm
+Dekomprimiere: Objects.pm
+Dekomprimiere: Stream.pm
+Dekomprimiere: Subs.pm
+Dekomprimiere: Tree.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\XMLRPC
+Dekomprimiere: Lite.pm
+Dekomprimiere: Test.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\XMLRPC\Transport
+Dekomprimiere: HTTP.pm
+Dekomprimiere: POP3.pm
+Dekomprimiere: TCP.pm
+
+----------------------------------------
+"XMLRPC" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"IMAP" Section (entry)
+----------------------------------------
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile\Services
+Dekomprimiere: IMAP.pm
+Zielverzeichnis: C:\Program Files (x86)\POPFile\Services\IMAP
+Dekomprimiere: Client.pm
+
+----------------------------------------
+"IMAP" Section (exit)
+----------------------------------------
+
+----------------------------------------
+"SOCKS" Section (entry)
+----------------------------------------
+
+Zielverzeichnis: C:\Program Files (x86)\POPFile\lib\IO\Socket
+Dekomprimiere: Socks.pm
+
+----------------------------------------
+"SOCKS" Section (exit)
+----------------------------------------
+
+------------------------------------------------------------
+'Add POPFile User' will be called to configure POPFile
+------------------------------------------------------------
+Main program installation finished 19-Aug-2022 @ 12:00:15
+------------------------------------------------------------
