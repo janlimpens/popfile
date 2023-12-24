@@ -23,9 +23,11 @@
 
 package POPFile::Module;
 
-use strict;
+use strict; use warnings;
+use feature qw(signatures);
+no warnings qw(experimental::signatures);
+##no critic prototypes
 use IO::Select;
-
 # ----------------------------------------------------------------------------
 #
 # This module implements the base class for all POPFile Loadable
@@ -120,11 +122,8 @@ my %slurp_data__;
 #   anything so that you know that they exists
 #
 #----------------------------------------------------------------------------
-sub new
+sub new($self)
 {
-    my $type = shift;
-    my $self;
-
     # A reference to the POPFile::Configuration module, every module is
     # able to get configuration information through this, note that it
     # is valid when initialize is called, however, the configuration is not
@@ -180,10 +179,8 @@ sub new
 # immediately
 #
 # ----------------------------------------------------------------------------
-sub initialize
+sub initialize($self)
 {
-    my ( $self ) = @_;
-
     return 1;
 }
 
@@ -199,10 +196,8 @@ sub initialize
 # used.
 #
 # ----------------------------------------------------------------------------
-sub start
+sub start($self)
 {
-    my ( $self ) = @_;
-
     return 1;
 }
 
@@ -215,10 +210,7 @@ sub start
 # value from stop().
 #
 # ----------------------------------------------------------------------------
-sub stop
-{
-    my ( $self ) = @_;
-}
+sub stop($self) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -232,10 +224,7 @@ sub stop
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub reaper
-{
-    my ( $self ) = @_;
-}
+sub reaper($self) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -250,11 +239,9 @@ sub reaper
 # return 1.
 #
 # ----------------------------------------------------------------------------
-sub service
+sub service($self)
 {
-    my ( $self ) = @_;
-
-    return 1;
+    return 1
 }
 
 # ----------------------------------------------------------------------------
@@ -266,10 +253,7 @@ sub service
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub prefork
-{
-    my ( $self ) = @_;
-}
+sub prefork($self) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -285,10 +269,7 @@ sub prefork
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub forked
-{
-    my ( $self, $writer ) = @_;
-}
+sub forked ( $self, $writer ) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -303,10 +284,7 @@ sub forked
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub postfork
-{
-    my ( $self, $pid, $reader ) = @_;
-}
+sub postfork ( $self, $pid, $reader ) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -317,10 +295,7 @@ sub postfork
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub childexit
-{
-    my ( $self ) = @_;
-}
+sub childexit($self) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -331,10 +306,7 @@ sub childexit
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub deliver
-{
-    my ( $self, $type, @message ) = @_;
-}
+sub deliver ( $self, $type, @message ) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -349,10 +321,8 @@ sub deliver
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub log_
+sub log_ ( $self, $level, $message )
 {
-    my ( $self, $level, $message ) = @_;
-
     my ( $package, $file, $line ) = caller;
     $self->{logger__}->debug( $level, "$self->{name__}: $line: $message" );
 }
@@ -370,11 +340,9 @@ sub log_
 # of the configuration parameter.
 #
 # ----------------------------------------------------------------------------
-sub config_
+sub config_ ( $self, $name, $value )
 {
-    my ( $self, $name, $value ) = @_;
-
-    return $self->module_config_( $self->{name__}, $name, $value );
+    return $self->module_config_( $self->{name__}, $name, $value )
 }
 
 # ----------------------------------------------------------------------------
@@ -387,11 +355,9 @@ sub config_
 # @message           Message to send
 #
 # ----------------------------------------------------------------------------
-sub mq_post_
+sub mq_post_ ( $self, $type, @message )
 {
-    my ( $self, $type, @message ) = @_;
-
-    return $self->{mq__}->post( $type, @message );
+    return $self->{mq__}->post( $type, @message )
 }
 
 # ----------------------------------------------------------------------------
@@ -404,10 +370,8 @@ sub mq_post_
 # $object            Callback object
 #
 # ----------------------------------------------------------------------------
-sub mq_register_
+sub mq_register_ ( $self, $type, $object )
 {
-    my ( $self, $type, $object ) = @_;
-
     return $self->{mq__}->register( $type, $object );
 }
 
@@ -425,11 +389,9 @@ sub mq_register_
 # current value of the configuration parameter.
 #
 # ----------------------------------------------------------------------------
-sub global_config_
+sub global_config_ ( $self, $name, $value )
 {
-    my ( $self, $name, $value ) = @_;
-
-    return $self->module_config_( 'GLOBAL', $name, $value );
+    return $self->module_config_( 'GLOBAL', $name, $value )
 }
 
 # ----------------------------------------------------------------------------
@@ -446,11 +408,10 @@ sub global_config_
 # return the current value of the configuration parameter.
 #
 # ----------------------------------------------------------------------------
-sub module_config_
+sub module_config_ ( $self, $module, $name, $value )
 {
-    my ( $self, $module, $name, $value ) = @_;
-
-    return $self->{configuration__}->parameter( $module . "_" . $name, $value );
+    return $self->{configuration__}->parameter( $module . "_" . $name, $value )
+        unless $self->{configuration__} == 0;
 }
 
 # ----------------------------------------------------------------------------
@@ -463,11 +424,9 @@ sub module_config_
 #     See register_configuration_item__ in UI::HTML
 #
 # ----------------------------------------------------------------------------
-sub register_configuration_item_
+sub register_configuration_item_ ( $self, $type, $name, $templ, $object )
 {
-    my ( $self, $type, $name, $templ, $object ) = @_;
-
-    return $self->mq_post_( 'UIREG', $type, $name, $templ, $object );
+    return $self->mq_post_( 'UIREG', $type, $name, $templ, $object )
 }
 
 # ----------------------------------------------------------------------------
@@ -481,17 +440,13 @@ sub register_configuration_item_
 #                    paths and paths containing .. are not accepted).
 #
 # ----------------------------------------------------------------------------
-sub get_user_path_
+sub get_user_path_ ( $self, $path, $sandbox )
 {
-    my ( $self, $path, $sandbox ) = @_;
-
-    return $self->{configuration__}->get_user_path( $path, $sandbox );
+    return $self->{configuration__}->get_user_path( $path, $sandbox )
 }
 
-sub get_root_path_
+sub get_root_path_ ( $self, $path, $sandbox )
 {
-    my ( $self, $path, $sandbox ) = @_;
-
     return $self->{configuration__}->get_root_path( $path, $sandbox );
 }
 
@@ -505,11 +460,9 @@ sub get_root_path_
 # $handle            Handle to read from, which should be in binmode
 #
 # ----------------------------------------------------------------------------
-sub flush_slurp_data__
+sub flush_slurp_data__ ( $self, $handle )
 {
-    my ( $self, $handle ) = @_;
-
-    # The acceptable line endings are CR, CRLF or LF.  So we look for
+    # The acceptable line endings are CR, CRLF or LF. So we look for
     # them using these regexps.
 
     # Look for LF
@@ -555,7 +508,7 @@ sub flush_slurp_data__
         return $cr;
     }
 
-    return '';
+    return ''
 }
 
 # ----------------------------------------------------------------------------
@@ -568,11 +521,11 @@ sub flush_slurp_data__
 #
 # ----------------------------------------------------------------------------
 
-sub slurp_data_size__
+sub slurp_data_size__ ( $self, $handle )
 {
-    my ( $self, $handle ) = @_;
-
-    return defined($slurp_data__{"$handle"}{data})?length($slurp_data__{"$handle"}{data}):0;
+    return defined($slurp_data__{"$handle"}{data})
+        ? length($slurp_data__{"$handle"}{data})
+        : 0
 }
 
 # ----------------------------------------------------------------------------
@@ -588,10 +541,8 @@ sub slurp_data_size__
 #
 # ----------------------------------------------------------------------------
 
-sub slurp_buffer_
+sub slurp_buffer_ ( $self, $handle, $length ) 
 {
-    my ( $self, $handle, $length ) = @_;
-
     while ( $self->slurp_data_size__( $handle ) < $length ) {
         my $c;
         if ( $self->can_read__( $handle, 0.01 ) && ( sysread( $handle, $c, $length ) > 0 ) ) {
@@ -612,7 +563,9 @@ sub slurp_buffer_
             substr( $slurp_data__{"$handle"}{data}, $length ); # PROFILE BLOCK STOP
     }
 
-    return ($result ne '')?$result:undef;
+    return ($result ne '')
+        ? $result
+        : undef
 }
 
 # ----------------------------------------------------------------------------
@@ -633,11 +586,10 @@ sub slurp_buffer_
 # $handle            Handle to read from, which should be in binmode
 #
 # ----------------------------------------------------------------------------
-sub slurp_
+sub slurp_ ( $self, $handle, $timeout )
 {
-    my ( $self, $handle, $timeout ) = @_;
-
-    $timeout = $self->global_config_( 'timeout' ) if ( !defined( $timeout ) );
+    $timeout = $self->global_config_( 'timeout' ) 
+        if ( !defined( $timeout ) );
 
     if ( !defined( $slurp_data__{"$handle"}{data} ) ) {
         $slurp_data__{"$handle"}{select} = new IO::Select( $handle );
@@ -666,7 +618,7 @@ sub slurp_
         }
     } else {
 
-        # Server has not respond. Close the connection and return
+        # Server has not responded. Close the connection and return
 
         $self->done_slurp_( $handle );
         close $handle;
@@ -696,13 +648,13 @@ sub slurp_
 #
 # ----------------------------------------------------------------------------
 
-sub done_slurp_
+sub done_slurp_ ( $self, $handle )
 {
-    my ( $self, $handle ) = @_;
-
     delete $slurp_data__{"$handle"}{select};
     delete $slurp_data__{"$handle"}{data};
     delete $slurp_data__{"$handle"};
+
+    return
 }
 
 # ----------------------------------------------------------------------------
@@ -718,10 +670,8 @@ sub done_slurp_
 # $discard     If 1 then the extra output is discarded
 #
 # ----------------------------------------------------------------------------
-sub flush_extra_
+sub flush_extra_ ( $self, $mail, $client, $discard )
 {
-    my ( $self, $mail, $client, $discard ) = @_;
-
     $discard = 0 if ( !defined( $discard ) );
 
     # If slurp has any data, we want it
@@ -785,10 +735,10 @@ sub flush_extra_
 # $timeout     A timeout period (in seconds)
 #
 # ----------------------------------------------------------------------------
-sub can_read__
+sub can_read__ ( $self, $handle, $timeout )
 {
-    my ( $self, $handle, $timeout ) = @_;
-    $timeout = $self->global_config_( 'timeout' ) if ( !defined($timeout) );
+    $timeout = $self->global_config_( 'timeout' ) 
+        if ( !defined($timeout) );
 
     # This unpleasant boolean is to handle the case where we
     # are slurping a non-socket stream under Win32
@@ -836,10 +786,8 @@ sub can_read__
 # This method access the foo_ variable for reading or writing,
 # $c->foo() read foo_ and $c->foo( 'foo' ) writes foo_
 
-sub mq
+sub mq ( $self, $value=undef )
 {
-    my ( $self, $value ) = @_;
-
     if ( defined( $value ) ) {
         $self->{mq__} = $value;
     }
@@ -847,10 +795,8 @@ sub mq
     return $self->{mq__};
 }
 
-sub configuration
+sub configuration ( $self, $value=undef )
 {
-    my ( $self, $value ) = @_;
-
     if ( defined( $value ) ) {
         $self->{configuration__} = $value;
     }
@@ -858,10 +804,8 @@ sub configuration
     return $self->{configuration__};
 }
 
-sub forker
+sub forker ( $self, $value )
 {
-    my ( $self, $value ) = @_;
-
     if ( defined( $value ) ) {
         $self->{forker_} = $value;
     }
@@ -869,10 +813,8 @@ sub forker
     return $self->{forker_};
 }
 
-sub logger
+sub logger ( $self, $value )
 {
-    my ( $self, $value ) = @_;
-
     if ( defined( $value ) ) {
         $self->{logger__} = $value;
     }
@@ -880,10 +822,8 @@ sub logger
     return $self->{logger__};
 }
 
-sub setchildexit
+sub setchildexit ( $self, $value )
 {
-    my ( $self, $value ) = @_;
-
     if ( defined( $value ) ) {
         $self->{childexit_} = $value;
     }
@@ -891,10 +831,8 @@ sub setchildexit
     return $self->{childexit_};
 }
 
-sub pipeready
+sub pipeready ( $self, $value )
 {
-    my ( $self, $value ) = @_;
-
     if ( defined( $value ) ) {
         $self->{pipeready_} = $value;
     }
@@ -902,10 +840,8 @@ sub pipeready
     return $self->{pipeready_};
 }
 
-sub alive
+sub alive ( $self, $value )
 {
-    my ( $self, $value ) = @_;
-
     if ( defined( $value ) ) {
         $self->{alive_} = $value;
     }
@@ -913,10 +849,8 @@ sub alive
     return $self->{alive_};
 }
 
-sub name
+sub name ( $self, $value )
 {
-    my ( $self, $value ) = @_;
-
     if ( defined( $value ) ) {
         $self->{name__} = $value;
     }
@@ -924,10 +858,8 @@ sub name
     return $self->{name__};
 }
 
-sub version
+sub version ( $self, $value )
 {
-    my ( $self, $value ) = @_;
-
     if ( defined( $value ) ) {
         $self->{version_} = $value;
     }
@@ -935,12 +867,11 @@ sub version
     return $self->{version_};
 }
 
-sub last_ten_log_entries
+sub last_ten_log_entries ($self)
 {
-    my ( $self ) = @_;
-
     return $self->{logger__}->last_ten();
 }
 
 1;
+
 
