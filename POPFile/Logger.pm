@@ -1,8 +1,7 @@
 # POPFILE LOADABLE MODULE
 package POPFile::Logger;
-
 use POPFile::Module;
-@ISA = ("POPFile::Module");
+use parent("POPFile::Module");
 
 #----------------------------------------------------------------------------
 #

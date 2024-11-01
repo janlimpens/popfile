@@ -148,7 +148,7 @@ sub CORE_loader_init
         $self->CORE_version( $major, $minor, $rev );
     }
 
-    # Parse the command-line options (only --shutdown is supported at present) 
+    # Parse the command-line options (only --shutdown is supported at present)
 
     GetOptions( "shutdown" => \$self->{shutdown__} );
 
@@ -810,7 +810,7 @@ sub CORE_service
         }
 
         last if $nowait;
-        
+
         # If we are asked to shutdown then we allow a single run
         # through the service routines and then exit
 
@@ -1002,4 +1002,3 @@ sub module_config
 }
 
 1;
-

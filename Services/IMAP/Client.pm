@@ -171,7 +171,7 @@ sub connect {
                 $self->log_( 0, "Connected to $hostname:$port timeout $timeout" );
 
                 # Read the response from the real server
-                my $buf = $self->slurp_( $imap );
+                my $buf = $self->slurp_( $imap ) // '-';
                 $self->log_( 1, ">> $buf" );
                 $self->{socket} = $imap;
                 return 1;
