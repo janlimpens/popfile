@@ -270,7 +270,7 @@ sub prefork($self) {}
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub forked ( $self, $writer ) {}
+sub forked($self, $writer ) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -285,7 +285,7 @@ sub forked ( $self, $writer ) {}
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub postfork ( $self, $pid, $reader ) {}
+sub postfork($self, $pid, $reader ) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -307,7 +307,7 @@ sub childexit($self) {}
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub deliver ( $self, $type, @message ) {}
+sub deliver($self, $type, @message ) {}
 
 # ----------------------------------------------------------------------------
 #
@@ -322,7 +322,7 @@ sub deliver ( $self, $type, @message ) {}
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub log_ ( $self, $level, $message )
+sub log_($self, $level, $message )
 {
     my ( $package, $file, $line ) = caller;
     $self->{logger__}->debug( $level, "$self->{name__}: $line: $message" );
@@ -341,9 +341,9 @@ sub log_ ( $self, $level, $message )
 # of the configuration parameter.
 #
 # ----------------------------------------------------------------------------
-sub config_ ( $self, $name, $value )
+sub config_($self, $name, $value=undef)
 {
-    return $self->module_config_( $self->{name__}, $name, $value )
+    return $self->module_config_( $self->{name__}, $name, $value=undef)
 }
 
 # ----------------------------------------------------------------------------
@@ -356,7 +356,7 @@ sub config_ ( $self, $name, $value )
 # @message           Message to send
 #
 # ----------------------------------------------------------------------------
-sub mq_post_ ( $self, $type, @message )
+sub mq_post_($self, $type, @message )
 {
     return $self->{mq__}->post( $type, @message )
 }
@@ -371,7 +371,7 @@ sub mq_post_ ( $self, $type, @message )
 # $object            Callback object
 #
 # ----------------------------------------------------------------------------
-sub mq_register_ ( $self, $type, $object )
+sub mq_register_($self, $type, $object )
 {
     return $self->{mq__}->register( $type, $object );
 }
@@ -390,9 +390,9 @@ sub mq_register_ ( $self, $type, $object )
 # current value of the configuration parameter.
 #
 # ----------------------------------------------------------------------------
-sub global_config_ ( $self, $name, $value )
+sub global_config_($self, $name, $value=undef)
 {
-    return $self->module_config_( 'GLOBAL', $name, $value )
+    return $self->module_config_( 'GLOBAL', $name, $value=undef)
 }
 
 # ----------------------------------------------------------------------------
@@ -409,9 +409,9 @@ sub global_config_ ( $self, $name, $value )
 # return the current value of the configuration parameter.
 #
 # ----------------------------------------------------------------------------
-sub module_config_ ( $self, $module, $name, $value )
+sub module_config_($self, $module, $name, $value=undef)
 {
-    return $self->{configuration__}->parameter( $module . "_" . $name, $value )
+    return $self->{configuration__}->parameter( $module . "_" . $name, $value=undef)
         unless $self->{configuration__} == 0;
 }
 
@@ -425,7 +425,7 @@ sub module_config_ ( $self, $module, $name, $value )
 #     See register_configuration_item__ in UI::HTML
 #
 # ----------------------------------------------------------------------------
-sub register_configuration_item_ ( $self, $type, $name, $templ, $object )
+sub register_configuration_item_($self, $type, $name, $templ, $object )
 {
     return $self->mq_post_( 'UIREG', $type, $name, $templ, $object )
 }
@@ -441,12 +441,12 @@ sub register_configuration_item_ ( $self, $type, $name, $templ, $object )
 #                    paths and paths containing .. are not accepted).
 #
 # ----------------------------------------------------------------------------
-sub get_user_path_ ( $self, $path, $sandbox )
+sub get_user_path_($self, $path, $sandbox )
 {
     return $self->{configuration__}->get_user_path( $path, $sandbox )
 }
 
-sub get_root_path_ ( $self, $path, $sandbox )
+sub get_root_path_($self, $path, $sandbox )
 {
     return $self->{configuration__}->get_root_path( $path, $sandbox );
 }
@@ -461,7 +461,7 @@ sub get_root_path_ ( $self, $path, $sandbox )
 # $handle            Handle to read from, which should be in binmode
 #
 # ----------------------------------------------------------------------------
-sub flush_slurp_data__ ( $self, $handle )
+sub flush_slurp_data__($self, $handle )
 {
     # The acceptable line endings are CR, CRLF or LF. So we look for
     # them using these regexps.
@@ -493,7 +493,7 @@ sub flush_slurp_data__ ( $self, $handle )
 
         if ( $slurp_data__{"$handle"}{data} eq '' ) {
 
-            if ( $self->can_read__( $handle )) {
+            if($self->can_read__( $handle )) {
                 my $c;
                 my $retcode = sysread( $handle, $c, 1 );
                 if ( $retcode == 1 ) {
@@ -522,7 +522,7 @@ sub flush_slurp_data__ ( $self, $handle )
 #
 # ----------------------------------------------------------------------------
 
-sub slurp_data_size__ ( $self, $handle )
+sub slurp_data_size__($self, $handle )
 {
     return defined($slurp_data__{"$handle"}{data})
         ? length($slurp_data__{"$handle"}{data})
@@ -542,11 +542,11 @@ sub slurp_data_size__ ( $self, $handle )
 #
 # ----------------------------------------------------------------------------
 
-sub slurp_buffer_ ( $self, $handle, $length )
+sub slurp_buffer_($self, $handle, $length )
 {
-    while ( $self->slurp_data_size__( $handle ) < $length ) {
+    while($self->slurp_data_size__( $handle ) < $length ) {
         my $c;
-        if ( $self->can_read__( $handle, 0.01 ) && ( sysread( $handle, $c, $length ) > 0 ) ) {
+        if($self->can_read__( $handle, 0.01 ) && ( sysread( $handle, $c, $length ) > 0 ) ) {
             $slurp_data__{"$handle"}{data} .= $c;
         } else {
             last;
@@ -555,7 +555,7 @@ sub slurp_buffer_ ( $self, $handle, $length )
 
     my $result = '';
 
-    if ( $self->slurp_data_size__( $handle ) < $length ) {
+    if($self->slurp_data_size__( $handle ) < $length ) {
         $result = $slurp_data__{"$handle"}{data};
         $slurp_data__{"$handle"}{data} = '';
     } else {
@@ -587,7 +587,7 @@ sub slurp_buffer_ ( $self, $handle, $length )
 # $handle            Handle to read from, which should be in binmode
 #
 # ----------------------------------------------------------------------------
-sub slurp_ ( $self, $handle, $timeout )
+sub slurp_($self, $handle, $timeout )
 {
     $timeout = $self->global_config_( 'timeout' )
         if ( !defined( $timeout ) );
@@ -605,7 +605,7 @@ sub slurp_ ( $self, $handle, $timeout )
 
     my $c;
 
-    if ( $self->can_read__( $handle, $timeout ) ) {
+    if($self->can_read__( $handle, $timeout ) ) {
         while ( sysread( $handle, $c, 160 ) > 0 ) {
             $slurp_data__{"$handle"}{data} .= $c;
 
@@ -649,7 +649,7 @@ sub slurp_ ( $self, $handle, $timeout )
 #
 # ----------------------------------------------------------------------------
 
-sub done_slurp_ ( $self, $handle )
+sub done_slurp_($self, $handle )
 {
     delete $slurp_data__{"$handle"}{select};
     delete $slurp_data__{"$handle"}{data};
@@ -671,13 +671,13 @@ sub done_slurp_ ( $self, $handle )
 # $discard     If 1 then the extra output is discarded
 #
 # ----------------------------------------------------------------------------
-sub flush_extra_ ( $self, $mail, $client, $discard )
+sub flush_extra_($self, $mail, $client, $discard )
 {
     $discard = 0 if ( !defined( $discard ) );
 
     # If slurp has any data, we want it
 
-    if ( $self->slurp_data_size__($mail) ) {
+    if($self->slurp_data_size__($mail) ) {
 
         print $client $slurp_data__{"$mail"}{data} if ( $discard != 1 );
         $slurp_data__{"$mail"}{data} = '';
@@ -736,7 +736,7 @@ sub flush_extra_ ( $self, $mail, $client, $discard )
 # $timeout     A timeout period (in seconds)
 #
 # ----------------------------------------------------------------------------
-sub can_read__ ( $self, $handle, $timeout )
+sub can_read__($self, $handle, $timeout )
 {
     $timeout = $self->global_config_( 'timeout' )
         if ( !defined($timeout) );
@@ -775,9 +775,9 @@ sub can_read__ ( $self, $handle, $timeout )
 #
 #   sub foo
 #   {
-#       my ( $self, $value ) = @_;
+#       my($self, $value=undef) = @_;
 #
-#       if ( defined( $value ) ) {
+#       if (defined $value) {
 #           $self->{foo_} = $value;
 #       }
 #
@@ -787,89 +787,70 @@ sub can_read__ ( $self, $handle, $timeout )
 # This method access the foo_ variable for reading or writing,
 # $c->foo() read foo_ and $c->foo( 'foo' ) writes foo_
 
-sub mq ( $self, $value=undef )
-{
-    if ( defined( $value ) ) {
+sub mq($self, $value=undef) {
+    if (defined $value) {
         $self->{mq__} = $value;
     }
-
     return $self->{mq__};
 }
 
-sub configuration ( $self, $value=undef )
-{
-    if ( defined( $value ) ) {
+sub configuration($self, $value=undef) {
+    if (defined $value) {
         $self->{configuration__} = $value;
     }
-
     return $self->{configuration__};
 }
 
-sub forker ( $self, $value )
-{
-    if ( defined( $value ) ) {
+sub forker($self, $value=undef) {
+    if (defined $value) {
         $self->{forker_} = $value;
     }
-
     return $self->{forker_};
 }
 
-sub logger ( $self, $value )
-{
-    if ( defined( $value ) ) {
+sub logger($self, $value=undef) {
+    if (defined $value) {
         $self->{logger__} = $value;
     }
-
     return $self->{logger__};
 }
 
-sub setchildexit ( $self, $value )
-{
-    if ( defined( $value ) ) {
+sub setchildexit($self, $value=undef) {
+    if (defined $value) {
         $self->{childexit_} = $value;
     }
-
     return $self->{childexit_};
 }
 
-sub pipeready ( $self, $value )
-{
-    if ( defined( $value ) ) {
+sub pipeready($self, $value=undef) {
+    if (defined $value) {
         $self->{pipeready_} = $value;
     }
-
     return $self->{pipeready_};
 }
 
-sub alive ( $self, $value )
-{
-    if ( defined( $value ) ) {
+sub alive($self, $value=undef) {
+    if (defined $value) {
         $self->{alive_} = $value;
     }
-
     return $self->{alive_};
 }
 
-sub name ( $self, $value )
-{
-    if ( defined( $value ) ) {
+sub name($self, $value=undef) {
+    if (defined $value) {
         $self->{name__} = $value;
     }
-
     return $self->{name__};
 }
 
-sub version ( $self, $value )
-{
-    if ( defined( $value ) ) {
+sub version($self, $value=undef) {
+    if (defined $value) {
         $self->{version_} = $value;
     }
-
     return $self->{version_};
 }
 
-sub last_ten_log_entries ($self)
-{
+sub last_ten_log_entries($self) {
     return $self->{logger__}->last_ten();
 }
 
