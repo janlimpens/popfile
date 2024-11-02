@@ -122,8 +122,9 @@ my %slurp_data__;
 #   anything so that you know that they exists
 #
 #----------------------------------------------------------------------------
-sub new($self)
+sub new($class)
 {
+    my $self;
     # A reference to the POPFile::Configuration module, every module is
     # able to get configuration information through this, note that it
     # is valid when initialize is called, however, the configuration is not
@@ -158,7 +159,7 @@ sub new($self)
 
     $self->{forker_}         = 0;
 
-    return bless $self, $type;
+    return bless $self, $class
 }
 
 # ----------------------------------------------------------------------------
@@ -541,7 +542,7 @@ sub slurp_data_size__ ( $self, $handle )
 #
 # ----------------------------------------------------------------------------
 
-sub slurp_buffer_ ( $self, $handle, $length ) 
+sub slurp_buffer_ ( $self, $handle, $length )
 {
     while ( $self->slurp_data_size__( $handle ) < $length ) {
         my $c;
@@ -588,7 +589,7 @@ sub slurp_buffer_ ( $self, $handle, $length )
 # ----------------------------------------------------------------------------
 sub slurp_ ( $self, $handle, $timeout )
 {
-    $timeout = $self->global_config_( 'timeout' ) 
+    $timeout = $self->global_config_( 'timeout' )
         if ( !defined( $timeout ) );
 
     if ( !defined( $slurp_data__{"$handle"}{data} ) ) {
@@ -737,7 +738,7 @@ sub flush_extra_ ( $self, $mail, $client, $discard )
 # ----------------------------------------------------------------------------
 sub can_read__ ( $self, $handle, $timeout )
 {
-    $timeout = $self->global_config_( 'timeout' ) 
+    $timeout = $self->global_config_( 'timeout' )
         if ( !defined($timeout) );
 
     # This unpleasant boolean is to handle the case where we
@@ -873,5 +874,3 @@ sub last_ten_log_entries ($self)
 }
 
 1;
-
-
