@@ -180,8 +180,7 @@ sub new($class)
 # immediately
 #
 # ----------------------------------------------------------------------------
-sub initialize($self)
-{
+sub initialize($self) {
     return 1;
 }
 
@@ -197,8 +196,7 @@ sub initialize($self)
 # used.
 #
 # ----------------------------------------------------------------------------
-sub start($self)
-{
+sub start($self) {
     return 1;
 }
 
@@ -240,8 +238,7 @@ sub reaper($self) {}
 # return 1.
 #
 # ----------------------------------------------------------------------------
-sub service($self)
-{
+sub service($self) {
     return 1
 }
 
@@ -322,8 +319,7 @@ sub deliver($self, $type, @message ) {}
 # There is no return value from this method
 #
 # ----------------------------------------------------------------------------
-sub log_($self, $level, $message )
-{
+sub log_($self, $level, $message ) {
     my ( $package, $file, $line ) = caller;
     $self->{logger__}->debug( $level, "$self->{name__}: $line: $message" );
 }
@@ -341,8 +337,7 @@ sub log_($self, $level, $message )
 # of the configuration parameter.
 #
 # ----------------------------------------------------------------------------
-sub config_($self, $name, $value=undef)
-{
+sub config_($self, $name, $value=undef) {
     return $self->module_config_( $self->{name__}, $name, $value=undef)
 }
 
@@ -356,8 +351,7 @@ sub config_($self, $name, $value=undef)
 # @message           Message to send
 #
 # ----------------------------------------------------------------------------
-sub mq_post_($self, $type, @message )
-{
+sub mq_post_($self, $type, @message ) {
     return $self->{mq__}->post( $type, @message )
 }
 
@@ -371,8 +365,7 @@ sub mq_post_($self, $type, @message )
 # $object            Callback object
 #
 # ----------------------------------------------------------------------------
-sub mq_register_($self, $type, $object )
-{
+sub mq_register_($self, $type, $object ) {
     return $self->{mq__}->register( $type, $object );
 }
 
@@ -409,8 +402,7 @@ sub global_config_($self, $name, $value=undef)
 # return the current value of the configuration parameter.
 #
 # ----------------------------------------------------------------------------
-sub module_config_($self, $module, $name, $value=undef)
-{
+sub module_config_($self, $module, $name, $value=undef){
     return $self->{configuration__}->parameter( $module . "_" . $name, $value=undef)
         unless $self->{configuration__} == 0;
 }
@@ -425,7 +417,7 @@ sub module_config_($self, $module, $name, $value=undef)
 #     See register_configuration_item__ in UI::HTML
 #
 # ----------------------------------------------------------------------------
-sub register_configuration_item_($self, $type, $name, $templ, $object )
+sub register_configuration_item_($self, $type, $name, $templ, $object)
 {
     return $self->mq_post_( 'UIREG', $type, $name, $templ, $object )
 }
@@ -441,12 +433,12 @@ sub register_configuration_item_($self, $type, $name, $templ, $object )
 #                    paths and paths containing .. are not accepted).
 #
 # ----------------------------------------------------------------------------
-sub get_user_path_($self, $path, $sandbox )
+sub get_user_path_($self, $path, $sandbox)
 {
     return $self->{configuration__}->get_user_path( $path, $sandbox )
 }
 
-sub get_root_path_($self, $path, $sandbox )
+sub get_root_path_($self, $path, $sandbox)
 {
     return $self->{configuration__}->get_root_path( $path, $sandbox );
 }
@@ -461,7 +453,7 @@ sub get_root_path_($self, $path, $sandbox )
 # $handle            Handle to read from, which should be in binmode
 #
 # ----------------------------------------------------------------------------
-sub flush_slurp_data__($self, $handle )
+sub flush_slurp_data__($self, $handle)
 {
     # The acceptable line endings are CR, CRLF or LF. So we look for
     # them using these regexps.
@@ -522,7 +514,7 @@ sub flush_slurp_data__($self, $handle )
 #
 # ----------------------------------------------------------------------------
 
-sub slurp_data_size__($self, $handle )
+sub slurp_data_size__($self, $handle)
 {
     return defined($slurp_data__{"$handle"}{data})
         ? length($slurp_data__{"$handle"}{data})

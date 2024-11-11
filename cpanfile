@@ -39,3 +39,4 @@ requires 'IO::Socket::Socks';
 # requires 'Text::Kakasi';
 # XML-RPC Server Support	0.0.0
 requires 'XMLRPC::Transport::HTTP';
+requires 'Data::Printer';
