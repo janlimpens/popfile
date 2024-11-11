@@ -962,7 +962,7 @@ sub get_hash {
 
         my $hash = $self->history()->get_message_hash( $mid, $date, $subject, $received );
 
-        $self->log_( 1, "Hashed message: $subject." );
+        $self->log_( 1, sprintf('Hashed message: %s.', $subject // 'undef') );
         $self->log_( 1, "Message $msg has hash value $hash" );
 
         return $hash;
