@@ -1,4 +1,7 @@
-local/**
-lib/**
-popfile.pid
+local
+*.pid
 *.log
+popfile.cfg
+popfile.db
+*.tmp
+messages/*
