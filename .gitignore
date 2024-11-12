@@ -4,3 +4,4 @@ local
 popfile.cfg
 popfile.db
 *.tmp
+messages/*
