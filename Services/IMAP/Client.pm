@@ -805,7 +805,7 @@ sub fetch_message_part {
 
             # The first line should contain the number of octets the server send us
 
-            if ( $last_response =~ m/(?!$eol){(\d+)}$eol/ ) {
+            if ( $last_response =~ m/(?!$eol)\{(\d+)\}$eol/ ) {
                 my $num_octets = $1;
 
                 # Grab the number of octets reported:

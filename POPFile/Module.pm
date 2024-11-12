@@ -25,7 +25,8 @@ package POPFile::Module;
 
 use strict;
 use IO::Select;
-
+use DDP;
+use feature qw(signatures);
 # ----------------------------------------------------------------------------
 #
 # This module implements the base class for all POPFile Loadable
@@ -199,11 +200,12 @@ sub initialize
 # used.
 #
 # ----------------------------------------------------------------------------
-sub start
-{
+sub start {
     my ( $self ) = @_;
-
-    return 1;
+    $self->debug($self, as => __PACKAGE__);
+    print STDERR "start\n";
+    print STDOUT "start\n";
+    return 1
 }
 
 # ----------------------------------------------------------------------------
@@ -942,5 +944,11 @@ sub last_ten_log_entries
     return $self->{logger__}->last_ten();
 }
 
-1;
+sub debug($self, $what, %args) {
+    my $as = $args{as};
+    my $level = delete($args{level}) || 2;
+    $self->log_($level, np($what, %args));
+    return
+}
 
+1;

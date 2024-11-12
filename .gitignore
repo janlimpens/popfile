@@ -1,3 +1,6 @@
 local
 *.pid
 *.log
+popfile.cfg
+popfile.db
+*.tmp
