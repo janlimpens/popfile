@@ -171,7 +171,7 @@ sub connect {
                 $self->log_( 0, "Connected to $hostname:$port timeout $timeout" );
 
                 # Read the response from the real server
-                my $buf = $self->slurp_( $imap ) // '-';
+                my $buf = $self->slurp_( $imap );
                 $self->log_( 1, ">> $buf" );
                 $self->{socket} = $imap;
                 return 1;
@@ -805,7 +805,7 @@ sub fetch_message_part {
 
             # The first line should contain the number of octets the server send us
 
-            if ( $last_response =~ m/(?!$eol){(\d+)}$eol/ ) {
+            if ( $last_response =~ m/(?!$eol)\{(\d+)\}$eol/ ) {
                 my $num_octets = $1;
 
                 # Grab the number of octets reported:

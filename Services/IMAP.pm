@@ -5,7 +5,7 @@ use Services::IMAP::Client;
 @ISA = ("POPFile::Module");
 use Carp;
 use Fcntl;
-
+use v5.40;
 # ----------------------------------------------------------------------------
 #
 # IMAP.pm --- a module to use POPFile for an IMAP connection.
@@ -806,6 +806,7 @@ sub folder_for_bucket__ {
         while ( my ( $k, $v ) = each %mapping ) {
             $all .= "$k$cfg_separator$v$cfg_separator";
         }
+        $self->debug($all, as => 'all');
         $self->config_( 'bucket_folder_mappings', $all );
     }
     # get
@@ -962,7 +963,7 @@ sub get_hash {
 
         my $hash = $self->history()->get_message_hash( $mid, $date, $subject, $received );
 
-        $self->log_( 1, "Hashed message: $subject." );
+        $self->log_( 1, sprintf('Hashed message: %s.', $subject // 'undef') );
         $self->log_( 1, "Message $msg has hash value $hash" );
 
         return $hash;

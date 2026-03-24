@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 # ----------------------------------------------------------------------------
 #
 # popfile.pl --- Message analyzer and sorter
