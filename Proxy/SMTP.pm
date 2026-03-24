@@ -34,10 +34,10 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
 
     BUILD {
         $self->name( 'smtp' );
-        $self->{child_}                    = \&child__;
-        $self->{connection_timeout_error_} = '554 Transaction failed';
-        $self->{connection_failed_error_}  = '554 Transaction failed, can\'t connect to';
-        $self->{good_response_}            = '^[23]';
+        $self->child( \&child__ );
+        $self->connection_timeout_error( '554 Transaction failed' );
+        $self->connection_failed_error(  '554 Transaction failed, can\'t connect to' );
+        $self->good_response( '^[23]' );
     }
 
     # ----------------------------------------------------------------------------
@@ -47,7 +47,7 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
         $self->config_( 'chain_server', '' );
         $self->config_( 'chain_port', 25 );
         $self->config_( 'local', 1 );
-        $self->config_( 'welcome_string', "SMTP POPFile ($self->{version_}) welcome" );
+        $self->config_( 'welcome_string', "SMTP POPFile ($self->version()) welcome" );
 
         if ( !$self->SUPER::initialize() ) {
             return 0;
@@ -73,7 +73,7 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
                                              'smtp-chain-server-port.thtml', $self );
 
         if ( $self->config_( 'welcome_string' ) =~ /^SMTP POPFile \(v\d+\.\d+\.\d+\) welcome$/ ) {
-            $self->config_( 'welcome_string', "SMTP POPFile ($self->{version_}) welcome" );
+            $self->config_( 'welcome_string', "SMTP POPFile ($self->version()) welcome" );
         }
 
         return $self->SUPER::start();
@@ -143,7 +143,7 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
             if ( $command =~ /DATA/i ) {
                 if ( $self->smtp_echo_response_( $mail, $client, $command ) ) {
                     $count += 1;
-                    my ( $class, $history_file ) = $self->{service__}->classify_message(
+                    my ( $class, $history_file ) = $self->set_service()->classify_message(
                         $client, $mail, 0, '', 0, undef, $eol );
                     my $response = $self->slurp_( $mail );
                     $self->tee_( $client, $response );
@@ -186,7 +186,7 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
         if ( $response =~ /^\d\d\d-/ ) {
             $self->echo_to_regexp_( $mail, $client, qr/^\d\d\d /, 1, $suppress );
         }
-        return ( $response =~ /$self->{good_response_}/ );
+        return ( $response =~ /$self->good_response()/ );
     }
 
     # ----------------------------------------------------------------------------

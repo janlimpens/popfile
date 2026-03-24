@@ -34,37 +34,33 @@ use Getopt::Long;
 
 class POPFile::Configuration :isa(POPFile::Module) {
 
+    # This hash is indexed by parameter name and has two sub-keys:
+    #   value    — the current value
+    #   default  — the default value
+    field %configuration_parameters;
+
+    # Name of the PID file that we created
+    field $pid_file = '';
+
+    # The last time the PID was checked
+    field $pid_check = 0;
+
+    # Used to tell whether we need to save the configuration
+    field $save_needed = 0;
+
+    # We track when start() is called so that we know when the modules
+    # are done setting the default values
+    field $started = 0;
+
+    # Local copies of POPFILE_ROOT and POPFILE_USER
+    field $popfile_root = $ENV{POPFILE_ROOT} || './';
+    field $popfile_user = $ENV{POPFILE_USER} || './';
+
+    # Parameters from config file that no longer have a registered owner
+    field %deprecated_parameters;
+
     BUILD {
-        # This hash has indexed by parameter name and has two fields:
-        #
-        # value         The current value
-        # default       The default value
-
-        $self->{configuration_parameters__} = {};
-
-        # Name of the PID file that we created
-
-        $self->{pid_file__} = '';
-
-        # The last time the PID was checked
-
-        $self->{pid_check__} = time;
-
-        # Used to tell whether we need to save the configuration
-
-        $self->{save_needed__} = 0;
-
-        # We track when out start() is called so that we know when the modules
-        # are done setting the default values so that we know which have default
-        # and which do not
-
-        $self->{started__} = 0;
-
-        # Local copies of POPFILE_ROOT and POPFILE_USER
-
-        $self->{popfile_root__} = $ENV{POPFILE_ROOT} || './';
-        $self->{popfile_user__} = $ENV{POPFILE_USER} || './';
-
+        $pid_check = time;
         $self->name('config');
     }
 
@@ -130,14 +126,14 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method start {
-        $self->{started__} = 1;
+        $started = 1;
 
         # Check to see if the PID file is present, if it is then another
         # POPFile may be running, warn the user and terminate, note the 0
         # at the end means that we allow the piddir to be absolute and
         # outside the user sandbox
 
-        $self->{pid_file__} = $self->get_user_path( $self->config_( 'piddir' ) . 'popfile.pid', 0 );
+        $pid_file = $self->get_user_path( $self->config_( 'piddir' ) . 'popfile.pid', 0 );
 
         if (defined($self->live_check_())) {
             return 0;
@@ -165,9 +161,9 @@ class POPFile::Configuration :isa(POPFile::Module) {
         my $time = time;
 
         if ( $self->config_( 'pidcheck_interval' ) > 0 ) {
-            if ( $self->{pid_check__} <= ( $time - $self->config_( 'pidcheck_interval' ))) {
+            if ( $pid_check <= ( $time - $self->config_( 'pidcheck_interval' ))) {
 
-                $self->{pid_check__} = $time;
+                $pid_check = $time;
 
                 if ( !$self->check_pid_() ) {
                     $self->write_pid_();
@@ -248,7 +244,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method check_pid_ {
-        return (-e $self->{pid_file__});
+        return (-e $pid_file);
     }
 
     # ----------------------------------------------------------------------------
@@ -260,7 +256,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method get_pid_ {
-        if (open my $pid_fh, '<', $self->{pid_file__}) {
+        if (open my $pid_fh, '<', $pid_file) {
             my $pid = <$pid_fh>;
             $pid =~ s/[\r\n]//g;
             close $pid_fh;
@@ -278,7 +274,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method write_pid_ {
-        if ( open my $pid_fh, '>', $self->{pid_file__} ) {
+        if ( open my $pid_fh, '>', $pid_file ) {
             print $pid_fh "$$\n";
             close $pid_fh;
         }
@@ -292,7 +288,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method delete_pid_ {
-        unlink( $self->{pid_file__} );
+        unlink( $pid_file );
     }
 
     # ----------------------------------------------------------------------------
@@ -355,7 +351,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
                 if ( $options[$i] =~ /^-(.+)$/ ) {
                     my $parameter = $self->upgrade_parameter__($1);
 
-                    if (defined($self->{configuration_parameters__}{$parameter})) {
+                    if (defined($configuration_parameters{$parameter})) {
                         if ( $i < $#options ) {
                             $self->parameter( $parameter, $options[$i+1] );
                             $i += 2;
@@ -477,7 +473,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method load_configuration {
-        $self->{started__} = 1;
+        $started = 1;
 
         my $config_file = $self->get_user_path( 'popfile.cfg' );
 
@@ -497,12 +493,12 @@ class POPFile::Configuration :isa(POPFile::Module) {
                     # so that the Japanese users can use insert.pl
                     # etc. which rely on knowing the language
 
-                    if (defined($self->{configuration_parameters__}{$parameter}) ||  # PROFILE BLOCK START
-                        ( $parameter eq 'html_language' ) ) {                        # PROFILE BLOCK STOP
-                        $self->{configuration_parameters__}{$parameter}{value} =   # PROFILE BLOCK START
-                            $value;                                                # PROFILE BLOCK STOP
+                    if (defined($configuration_parameters{$parameter}) ||  # PROFILE BLOCK START
+                        ( $parameter eq 'html_language' ) ) {             # PROFILE BLOCK STOP
+                        $configuration_parameters{$parameter}{value} =   # PROFILE BLOCK START
+                            $value;                                       # PROFILE BLOCK STOP
                     } else {
-                        $self->{deprecated_parameters__}{$parameter} = $value;
+                        $deprecated_parameters{$parameter} = $value;
                     }
                 }
             }
@@ -514,7 +510,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
             }
         }
 
-        $self->{save_needed__} = 0;
+        $save_needed = 0;
     }
 
     # ----------------------------------------------------------------------------
@@ -526,7 +522,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method save_configuration {
-        if ( $self->{save_needed__} == 0 ) {
+        if ( $save_needed == 0 ) {
             return;
         }
 
@@ -538,10 +534,10 @@ class POPFile::Configuration :isa(POPFile::Module) {
         }
 
         if ( open my $config, '>', $config_temp ) {
-            $self->{save_needed__} = 0;
+            $save_needed = 0;
 
-            foreach my $key (sort keys %{$self->{configuration_parameters__}}) {
-                print $config "$key $self->{configuration_parameters__}{$key}{value}\n";
+            foreach my $key (sort keys %configuration_parameters) {
+                print $config "$key $configuration_parameters{$key}{value}\n";
             }
 
             close $config;
@@ -564,11 +560,11 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method get_user_path ($path, $sandbox = undef) {
-        return $self->path_join__( $self->{popfile_user__}, $path, $sandbox );
+        return $self->path_join__( $popfile_user, $path, $sandbox );
     }
 
     method get_root_path ($path, $sandbox = undef) {
-        return $self->path_join__( $self->{popfile_root__}, $path, $sandbox );
+        return $self->path_join__( $popfile_root, $path, $sandbox );
     }
 
     # ----------------------------------------------------------------------------
@@ -622,17 +618,17 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # ----------------------------------------------------------------------------
     method parameter ($name, $value = undef) {
         if ( defined( $value ) ) {
-            $self->{save_needed__} = 1;
-            $self->{configuration_parameters__}{$name}{value} = $value;
-            if ( $self->{started__} == 0 ) {
-                $self->{configuration_parameters__}{$name}{default} = $value;
+            $save_needed = 1;
+            $configuration_parameters{$name}{value} = $value;
+            if ( $started == 0 ) {
+                $configuration_parameters{$name}{default} = $value;
             }
         }
 
-        # If $self->{configuration_parameters__}{$name} is undefined, simply
-        # return undef to avoid defining $self->{configuration_parameters__}{$name}.
-        if ( defined($self->{configuration_parameters__}{$name}) ) {
-            return $self->{configuration_parameters__}{$name}{value};
+        # If $configuration_parameters{$name} is undefined, simply
+        # return undef to avoid auto-vivifying it.
+        if ( defined($configuration_parameters{$name}) ) {
+            return $configuration_parameters{$name}{value};
         } else {
             return undef;
         }
@@ -650,18 +646,38 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method is_default ($name) {
-        return ( $self->{configuration_parameters__}{$name}{value} eq   # PROFILE BLOCK START
-                 $self->{configuration_parameters__}{$name}{default} ); # PROFILE BLOCK STOP
+        return ( $configuration_parameters{$name}{value} eq   # PROFILE BLOCK START
+                 $configuration_parameters{$name}{default} ); # PROFILE BLOCK STOP
     }
 
-    # GETTERS
+    # GETTERS / SETTERS
 
     method configuration_parameters {
-        return sort keys %{$self->{configuration_parameters__}};
+        return sort keys %configuration_parameters;
     }
 
     method deprecated_parameter ($name) {
-        return $self->{deprecated_parameters__}{$name};
+        return $deprecated_parameters{$name};
+    }
+
+    method popfile_root ($val = undef) {
+        $popfile_root = $val if defined $val;
+        return $popfile_root;
+    }
+
+    method popfile_user ($val = undef) {
+        $popfile_user = $val if defined $val;
+        return $popfile_user;
+    }
+
+    method started ($val = undef) {
+        $started = $val if defined $val;
+        return $started;
+    }
+
+    method save_needed ($val = undef) {
+        $save_needed = $val if defined $val;
+        return $save_needed;
     }
 }
 

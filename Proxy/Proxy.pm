@@ -37,23 +37,24 @@ my $eol = "\015\012";
 
 class Proxy::Proxy :isa(POPFile::Module) {
 
-    BUILD {
-        # Reference to the classifier service facade
-        $self->{service__}   = undef;
+    # Reference to the classifier service facade
+    field $service = undef;
 
-        # Reference to a child() method called to handle a proxy connection
-        $self->{child_}      = 0;
+    # Code reference called to handle each proxy connection
+    field $child = 0;
 
-        # Error messages for subclasses to set
-        $self->{connection_timeout_error_} = '';
-        $self->{connection_failed_error_}  = '';
-        $self->{good_response_}            = '';
+    # Error messages for subclasses to set
+    field $connection_timeout_error = '';
+    field $connection_failed_error  = '';
+    field $good_response            = '';
+    field $ssl_not_supported_error  = '-ERR SSL connection is not supported since required modules are not installed';
 
-        $self->{ssl_not_supported_error_}  = '-ERR SSL connection is not supported since required modules are not installed';
+    # Connect banner returned by the real server
+    field $connect_banner = '';
 
-        # Connect banner returned by the real server
-        $self->{connect_banner__} = '';
-    }
+    # Listening socket and its selector
+    field $server   = undef;
+    field $selector = undef;
 
     # ----------------------------------------------------------------------------
     #
@@ -76,7 +77,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
     # ----------------------------------------------------------------------------
     method start {
         $self->log_( 1, "Opening listening socket on port " . $self->config_('port') . '.' );
-        $self->{server__} = IO::Socket::INET->new(
+        $server = IO::Socket::INET->new(
             Proto     => 'tcp',
             ( $self->config_( 'local' ) || 0 ) == 1 ? ( LocalAddr => 'localhost' ) : (),
             LocalPort => $self->config_( 'port' ),
@@ -85,14 +86,14 @@ class Proxy::Proxy :isa(POPFile::Module) {
 
         my $name = $self->name();
 
-        if ( !defined( $self->{server__} ) ) {
+        if ( !defined( $server ) ) {
             my $port = $self->config_( 'port' );
             $self->log_( 0, "Couldn't start the $name proxy because POPFile could not bind to the listen port $port" );
             print STDERR "\nCouldn't start the $name proxy because POPFile could not bind to the\nlisten port $port. This could be because there is another service\nusing that port or because you do not have the right privileges on\nyour system (On Unix systems this can happen if you are not root\nand the port you specified is less than 1024).\n\n";
             return 0;
         }
 
-        $self->{selector__} = IO::Select->new( $self->{server__} );
+        $selector = IO::Select->new( $server );
 
         $self->register_configuration_item_( 'configuration',
                                              $name . '_socks_configuration',
@@ -108,7 +109,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method stop {
-        close $self->{server__} if ( defined( $self->{server__} ) );
+        close $server if ( defined( $server ) );
     }
 
     # ----------------------------------------------------------------------------
@@ -117,9 +118,9 @@ class Proxy::Proxy :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method service {
-        if ( ( defined( $self->{selector__}->can_read(0) ) ) &&
-             ( $self->{alive_} ) ) {
-            if ( my $client = $self->{server__}->accept() ) {
+        if ( ( defined( $selector->can_read(0) ) ) &&
+             ( $self->alive() ) ) {
+            if ( my $client = $server->accept() ) {
 
                 my ( $remote_port, $remote_host ) = sockaddr_in( $client->peername() );
 
@@ -129,17 +130,17 @@ class Proxy::Proxy :isa(POPFile::Module) {
                     binmode( $client );
 
                     if ( $self->config_( 'force_fork' ) ) {
-                        my ( $pid, $pipe ) = &{ $self->{forker_} };
+                        my ( $pid, $pipe ) = &{ $self->forker() };
 
                         if ( !defined( $pid ) || ( $pid == 0 ) ) {
-                            $self->{child_}( $self, $client );
+                            $child->( $self, $client );
                             if ( defined( $pid ) ) {
-                                &{ $self->{childexit_} }( 0 );
+                                &{ $self->setchildexit() }( 0 );
                             }
                         }
                     } else {
                         pipe my $reader, my $writer;
-                        $self->{child_}( $self, $client );
+                        $child->( $self, $client );
                         close $reader;
                     }
                 }
@@ -157,7 +158,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method forked ($writer = undef) {
-        close $self->{server__};
+        close $server;
     }
 
     # ----------------------------------------------------------------------------
@@ -209,8 +210,8 @@ class Proxy::Proxy :isa(POPFile::Module) {
     # ----------------------------------------------------------------------------
     method get_response_ ($mail, $client, $command, $null_resp = 0, $suppress = 0) {
         unless ( defined($mail) && $mail->connected ) {
-            $self->tee_( $client, "$self->{connection_timeout_error_}$eol" );
-            return ( $self->{connection_timeout_error_}, 0 );
+            $self->tee_( $client, "$connection_timeout_error$eol" );
+            return ( $connection_timeout_error, 0 );
         }
 
         $self->tee_( $mail, $command . $eol );
@@ -238,8 +239,8 @@ class Proxy::Proxy :isa(POPFile::Module) {
         }
 
         if ( !$null_resp ) {
-            $self->tee_( $client, "$self->{connection_timeout_error_}$eol" );
-            return ( $self->{connection_timeout_error_}, 0 );
+            $self->tee_( $client, "$connection_timeout_error$eol" );
+            return ( $connection_timeout_error, 0 );
         } else {
             $self->tee_( $client, "" );
             return ( "", 1 );
@@ -255,7 +256,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
         my ( $response, $ok ) = $self->get_response_( $mail, $client, $command, 0, $suppress );
 
         if ( $ok == 1 ) {
-            if ( $response =~ /$self->{good_response_}/ ) {
+            if ( $response =~ /$good_response/ ) {
                 return 0;
             } else {
                 return 1;
@@ -288,7 +289,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
             if ( $ssl ) {
                 eval { require IO::Socket::SSL; };
                 if ( $@ ) {
-                    $self->tee_( $client, "$self->{ssl_not_supported_error_}$eol" );
+                    $self->tee_( $client, "$ssl_not_supported_error$eol" );
                     return undef;
                 }
 
@@ -354,7 +355,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
                     last;
                 }
 
-                $self->{connect_banner__} = $buf;
+                $connect_banner = $buf;
 
                 for my $i ( 0..4 ) {
                     $self->flush_extra_( $mail, $client, 1 );
@@ -365,7 +366,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
         }
 
         $self->log_( 0, "IO::Socket::INET or IO::Socket::SSL gets an error: $@" );
-        $self->tee_( $client, "$self->{connection_failed_error_} $hostname:$port$eol" );
+        $self->tee_( $client, "$connection_failed_error $hostname:$port$eol" );
         return undef;
     }
 
@@ -411,8 +412,8 @@ class Proxy::Proxy :isa(POPFile::Module) {
     # SETTERS
 
     method set_service ($svc = undef) {
-        $self->{service__} = $svc if defined $svc;
-        return $self->{service__};
+        $service = $svc if defined $svc;
+        return $service;
     }
 
     # Legacy setter kept for compatibility during transition
@@ -422,6 +423,33 @@ class Proxy::Proxy :isa(POPFile::Module) {
 
     method history ($h = undef) {
         # no-op: accessed via service->history_obj()
+    }
+
+    # Protected accessors for subclass initialization
+
+    method child ($val = undef) {
+        $child = $val if defined $val;
+        return $child;
+    }
+
+    method connection_timeout_error ($val = undef) {
+        $connection_timeout_error = $val if defined $val;
+        return $connection_timeout_error;
+    }
+
+    method connection_failed_error ($val = undef) {
+        $connection_failed_error = $val if defined $val;
+        return $connection_failed_error;
+    }
+
+    method good_response ($val = undef) {
+        $good_response = $val if defined $val;
+        return $good_response;
+    }
+
+    method connect_banner ($val = undef) {
+        $connect_banner = $val if defined $val;
+        return $connect_banner;
     }
 
 } # end class Proxy::Proxy

@@ -30,24 +30,31 @@ use Scalar::Util qw(looks_like_number);
 
 class UI::Mojo :isa(POPFile::Module) {
 
+    field $service   = undef;
+    field $child_pid = undef;
+
     BUILD {
-        $self->{service__}   = undef;
-        $self->{child_pid__} = undef;
         $self->name('mojo_ui');
     }
 
-    #------------------------------------------------------------------------
-    # initialize
-    #------------------------------------------------------------------------
+=head2 initialize
+
+Registers configuration defaults: C<port> (8080) and C<static_dir> (public).
+
+=cut
+
     method initialize {
         $self->config_( 'port',       8080 );
         $self->config_( 'static_dir', 'public' );
         return 1;
     }
 
-    #------------------------------------------------------------------------
-    # start — fork the Mojolicious server child
-    #------------------------------------------------------------------------
+=head2 start
+
+Forks a child process running the Mojolicious daemon. Returns 1 on success.
+
+=cut
+
     method start {
         my $pid = fork();
         if ( !defined $pid ) {
@@ -56,46 +63,56 @@ class UI::Mojo :isa(POPFile::Module) {
         }
         if ( $pid == 0 ) {
             # --- child ---
-            eval { $self->run_server__() };
+            eval { $self->run_server() };
             $self->log_( 0, "UI::Mojo child error: $@" ) if $@;
             exit 0;
         }
         # --- parent ---
-        $self->{child_pid__} = $pid;
+        $child_pid = $pid;
         $self->log_( 0, "UI::Mojo: started on port " . $self->config_('port') . " (pid $pid)" );
         return 1;
     }
 
-    #------------------------------------------------------------------------
-    # stop — terminate the child
-    #------------------------------------------------------------------------
+=head2 stop
+
+Sends SIGTERM to the child process and waits for it to exit.
+
+=cut
+
     method stop {
-        if ( defined $self->{child_pid__} ) {
-            kill 'TERM', $self->{child_pid__};
-            waitpid( $self->{child_pid__}, 0 );
-            $self->{child_pid__} = undef;
+        if ( defined $child_pid ) {
+            kill 'TERM', $child_pid;
+            waitpid( $child_pid, 0 );
+            $child_pid = undef;
         }
     }
 
-    #------------------------------------------------------------------------
-    # service — keep an eye on the child
-    #------------------------------------------------------------------------
+=head2 service
+
+Checks whether the child process is still alive; logs a warning if it exited
+unexpectedly. Returns 1.
+
+=cut
+
     method service {
-        if ( defined $self->{child_pid__} ) {
-            my $gone = waitpid( $self->{child_pid__}, WNOHANG );
-            if ( $gone == $self->{child_pid__} ) {
+        if ( defined $child_pid ) {
+            my $gone = waitpid( $child_pid, WNOHANG );
+            if ( $gone == $child_pid ) {
                 $self->log_( 0, "UI::Mojo child exited unexpectedly" );
-                $self->{child_pid__} = undef;
+                $child_pid = undef;
             }
         }
         return 1;
     }
 
-    #------------------------------------------------------------------------
-    # set_service — called by POPFile::Loader after wiring
-    #------------------------------------------------------------------------
+=head2 set_service
+
+Injects the C<Services::Classifier> facade used by the child for REST calls.
+
+=cut
+
     method set_service ( $svc = undef ) {
-        $self->{service__} = $svc;
+        $service = $svc;
     }
 
     # Legacy no-ops; Loader still calls these on all interface modules
@@ -105,11 +122,11 @@ class UI::Mojo :isa(POPFile::Module) {
     #========================================================================
     # PRIVATE: child process — build Mojolicious app and run daemon
     #========================================================================
-    method run_server__ {
+    method run_server {
         require Mojolicious;
         require Mojo::Server::Daemon;
 
-        my $svc    = $self->{service__};
+        my $svc    = $service;
         my $port   = $self->config_( 'port' );
         my $static = $self->get_root_path_() . $self->config_( 'static_dir' );
 

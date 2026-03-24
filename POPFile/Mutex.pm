@@ -2,8 +2,8 @@ package POPFile::Mutex;
 
 #----------------------------------------------------------------------------
 #
-# This is a mutex object that uses mkdir() to provide exclusive access
-# to a region on a per thread or per process basis.
+# Mutex object that uses mkdir() to provide exclusive access on a per-thread
+# or per-process basis.
 #
 # Copyright (c) 2001-2011 John Graham-Cumming
 #
@@ -13,48 +13,44 @@ package POPFile::Mutex;
 #   under the terms of version 2 of the GNU General Public License as
 #   published by the Free Software Foundation.
 #
-#   POPFile is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with POPFile; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-#
 #----------------------------------------------------------------------------
 
 use Object::Pad;
 
 class POPFile::Mutex {
 
-    field $name__;
-    field $locked__ = undef;
+    # Full filesystem path used as the lock directory
+    field $lock_path;
 
-    BUILD ($name) {
-        $name__ = "popfile_mutex_${name}.mtx";
+    # Truthy while this object holds the lock
+    field $locked = undef;
+
+    BUILD ($mutex_name) {
+        $lock_path = "popfile_mutex_${mutex_name}.mtx";
         $self->release();
     }
 
-    #------------------------------------------------------------------------
-    #
-    # acquire
-    #
-    #   Returns 1 if it manages to grab the mutex (and will block if
-    #   necessary) and 0 if it fails.
-    #
-    #   $timeout    Timeout in seconds to wait (undef = infinite)
-    #
-    #------------------------------------------------------------------------
+=head1 METHODS
+
+=head2 acquire
+
+Attempts to grab the mutex. Blocks until the lock is obtained or the optional
+timeout (in seconds) expires. Returns 1 on success, 0 on failure.
+
+    $mutex->acquire();           # block indefinitely
+    $mutex->acquire( $timeout ); # timeout in seconds
+
+=cut
+
     method acquire ($timeout = undef) {
-        return 0 if defined $locked__;
+        return 0 if defined $locked;
 
         $timeout = 0xFFFFFFFF if !defined $timeout;
         my $now = time;
 
         do {
-            if ( mkdir( $name__, 0755 ) ) {
-                $locked__ = 1;
+            if ( mkdir( $lock_path, 0755 ) ) {
+                $locked = 1;
                 return 1;
             }
             select( undef, undef, undef, 0.01 );
@@ -63,16 +59,15 @@ class POPFile::Mutex {
         return 0;
     }
 
-    #------------------------------------------------------------------------
-    #
-    # release
-    #
-    #   Release the lock if we acquired it with a call to acquire()
-    #
-    #------------------------------------------------------------------------
+=head2 release
+
+Releases the lock if it was previously acquired with L</acquire>.
+
+=cut
+
     method release {
-        rmdir $name__;
-        $locked__ = undef;
+        rmdir $lock_path;
+        $locked = undef;
     }
 }
 

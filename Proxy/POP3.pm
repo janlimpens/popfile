@@ -36,16 +36,16 @@ my $eol = "\015\012";
 
 class Proxy::POP3 :isa(Proxy::Proxy) {
 
+    field $use_apop    = 0;
+    field $apop_user   = '';
+    field $apop_banner = undef;
+
     BUILD {
         $self->name( 'pop3' );
-        $self->{child_}                    = \&child__;
-        $self->{connection_timeout_error_} = '-ERR no response from mail server';
-        $self->{connection_failed_error_}  = '-ERR can\'t connect to';
-        $self->{good_response_}            = '^\+OK';
-
-        $self->{use_apop__}    = 0;
-        $self->{apop_user__}   = '';
-        $self->{apop_banner__} = undef;
+        $self->child( \&child__ );
+        $self->connection_timeout_error( '-ERR no response from mail server' );
+        $self->connection_failed_error(  '-ERR can\'t connect to' );
+        $self->good_response( '^\+OK' );
     }
 
     # ----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
         $self->config_( 'toptoo', 0 );
         $self->config_( 'separator', ':' );
         $self->config_( 'welcome_string',
-            "POP3 POPFile ($self->{version_}) server ready" );
+            "POP3 POPFile ($self->version()) server ready" );
 
         return $self->SUPER::initialize();
     }
@@ -96,7 +96,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
         if ( $self->config_( 'welcome_string' ) =~
              /^POP3 POPFile \(v\d+\.\d+\.\d+\) server ready$/ ) {
             $self->config_( 'welcome_string',
-                            "POP3 POPFile ($self->{version_}) server ready" );
+                            "POP3 POPFile ($self->version()) server ready" );
         }
 
         return $self->SUPER::start();
@@ -117,9 +117,9 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
         my %downloaded;
         my $mail;
 
-        $self->{apop_banner__} = undef;
-        $self->{use_apop__}    = 0;
-        $self->{apop_user__}   = '';
+        $apop_banner = undef;
+        $use_apop    = 0;
+        $apop_user   = '';
 
         $self->tee_( $client, "+OK " . $self->config_( 'welcome_string' ) . "$eol" );
 
@@ -164,24 +164,24 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
 
                     if ( $mail = $self->verify_connected_( $mail, $client, $host, $port, $ssl ) ) {
                         if ( defined($options) && ( $options =~ /apop/i ) ) {
-                            $self->{apop_banner__} = $1
-                                if $self->{connect_banner__} =~ /(<[^>]+>)/;
-                            $self->log_( 2, "banner=" . $self->{apop_banner__} )
-                                if defined( $self->{apop_banner__} );
+                            $apop_banner = $1
+                                if $self->connect_banner() =~ /(<[^>]+>)/;
+                            $self->log_( 2, "banner=" . $apop_banner )
+                                if defined( $apop_banner );
 
-                            if ( defined( $self->{apop_banner__} ) ) {
-                                $self->{use_apop__}  = 1;
-                                $self->{apop_user__} = $user;
+                            if ( defined( $apop_banner ) ) {
+                                $use_apop  = 1;
+                                $apop_user = $user;
                                 $self->tee_( $client, "+OK hello $user$eol" );
                                 next;
                             } else {
-                                $self->{use_apop__} = 0;
+                                $use_apop = 0;
                                 $self->tee_( $client,
                                     "-ERR $host doesn't support APOP, aborting authentication$eol" );
                                 next;
                             }
                         } else {
-                            $self->{use_apop__} = 0;
+                            $use_apop = 0;
                             last if ( $self->echo_response_( $mail, $client, 'USER ' . $user ) == 2 );
                         }
                     } else {
@@ -192,15 +192,15 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
             }
 
             if ( $command =~ /PASS (.*)/i ) {
-                if ( $self->{use_apop__} ) {
+                if ( $use_apop ) {
                     my $md5 = Digest::MD5->new;
-                    $md5->add( $self->{apop_banner__}, $1 );
+                    $md5->add( $apop_banner, $1 );
                     my $md5hex = $md5->hexdigest;
                     $self->log_( 2, "digest='$md5hex'" );
 
                     my ( $response, $ok ) = $self->get_response_( $mail, $client,
-                        "APOP $self->{apop_user__} $md5hex", 0, 1 );
-                    if ( ( $ok == 1 ) && ( $response =~ /$self->{good_response_}/ ) ) {
+                        "APOP $apop_user $md5hex", 0, 1 );
+                    if ( ( $ok == 1 ) && ( $response =~ /$self->good_response()/ ) ) {
                         $self->tee_( $client, "+OK password ok$eol" );
                     } else {
                         $self->tee_( $client, $response );
@@ -273,7 +273,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                         my $response = $self->echo_response_( $mail, $client, "RETR $count" );
                         last if ( $response == 2 );
                         if ( $response == 0 ) {
-                            my ( $class, $slot ) = $self->{service__}->classify_message(
+                            my ( $class, $slot ) = $self->set_service()->classify_message(
                                 $mail, $client, 0, '', 0, 0, $eol );
                             $downloaded{$count}{slot}  = $slot;
                             $downloaded{$count}{class} = $class;
@@ -281,7 +281,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                             $response = $self->echo_response_( $mail, $client, $command, 1 );
                             last if ( $response == 2 );
                             if ( $response == 0 ) {
-                                $self->{service__}->classify_message(
+                                $self->set_service()->classify_message(
                                     $mail, $client, 1, $class, $slot, 1, $eol );
                             }
                         }
@@ -334,7 +334,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                 my $count = $1;
                 my $class;
 
-                my $history = $self->{service__}->history_obj();
+                my $history = $self->set_service()->history_obj();
                 my $file;
 
                 if ( defined( $downloaded{$count} ) &&
@@ -346,7 +346,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                     $self->tee_( $client,
                         "+OK " . ( -s $file ) . " bytes from POPFile cache$eol" );
 
-                    ( $class, undef ) = $self->{service__}->classify_message(
+                    ( $class, undef ) = $self->set_service()->classify_message(
                         $retrfile, $client, 1,
                         $downloaded{$count}{class},
                         $downloaded{$count}{slot}, undef, $eol );
@@ -357,7 +357,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                     last if ( $response == 2 );
                     if ( $response == 0 ) {
                         my $slot;
-                        ( $class, $slot ) = $self->{service__}->classify_message(
+                        ( $class, $slot ) = $self->set_service()->classify_message(
                             $mail, $client, 0, '', 0, undef, $eol );
                         $downloaded{$count}{slot}  = $slot;
                         $downloaded{$count}{class} = $class;

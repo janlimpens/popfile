@@ -40,48 +40,36 @@ use IO::Handle;
 
 class POPFile::Loader {
 
-    BUILD {
-        # The POPFile classes are stored by reference in the components
-        # hash, the top level key is the type of the component (see
-        # CORE_load_directory_modules) and then the name of the component
-        # derived from calls to each loadable modules name() method.
+    # The POPFile classes are stored by reference in the components hash;
+    # the top level key is the component type, the second key is its name.
+    field %components;
 
-        $self->{components__} = {};
+    # When set to 1 the proxy works normally; 0 means graceful shutdown.
+    field $alive = 1;
 
-        # When set to 1 the proxy works normally; 0 means graceful shutdown.
+    # Must be 1 for POPFile::Loader to create any output on STDOUT.
+    field $debug = 1;
 
-        $self->{alive__} = 1;
+    # If 1, POPFile shuts down immediately after starting.
+    field $shutdown = 0;
 
-        # Must be 1 for POPFile::Loader to create any output on STDOUT.
+    # Callback refs populated in CORE_loader_init.
+    field $aborting  = '';
+    field $pipeready = '';
+    field $forker    = '';
+    field $reaper    = '';
+    field $childexit = '';
+    field $warning   = '';
+    field $die_cb    = '';
 
-        $self->{debug__} = 1;
+    # POPFile version
+    field $major_version  = '?';
+    field $minor_version  = '?';
+    field $build_version  = '?';
+    field $version_string = '';
 
-        # If 1, POPFile shuts down immediately after starting (used by
-        # installer, set by --shutdown command-line option).
-
-        $self->{shutdown__} = 0;
-
-        # Callback refs populated in CORE_loader_init.
-
-        $self->{aborting__}  = '';
-        $self->{pipeready__} = '';
-        $self->{forker__}    = '';
-        $self->{reaper__}    = '';
-        $self->{childexit__} = '';
-        $self->{warning__}   = '';
-        $self->{die__}       = '';
-
-        # POPFile version
-
-        $self->{major_version__}  = '?';
-        $self->{minor_version__}  = '?';
-        $self->{build_version__}  = '?';
-        $self->{version_string__} = '';
-
-        # Where POPFile is installed
-
-        $self->{popfile_root__} = './';
-    }
+    # Where POPFile is installed
+    field $popfile_root = './';
 
     #------------------------------------------------------------------------
     # CORE_loader_init
@@ -91,20 +79,20 @@ class POPFile::Loader {
     method CORE_loader_init {
 
         if ( defined $ENV{POPFILE_ROOT} ) {
-            $self->{popfile_root__} = $ENV{POPFILE_ROOT};
+            $popfile_root = $ENV{POPFILE_ROOT};
         }
 
         # These anonymous subroutine references allow us to call these
         # important functions from anywhere using the reference, granting
         # internal access to $self without exposing $self to the caller.
 
-        $self->{aborting__}  = sub { $self->CORE_aborting(@_) };
-        $self->{pipeready__} = sub { $self->pipeready(@_) };
-        $self->{forker__}    = sub { $self->CORE_forker(@_) };
-        $self->{reaper__}    = sub { $self->CORE_reaper(@_) };
-        $self->{childexit__} = sub { $self->CORE_childexit(@_) };
-        $self->{warning__}   = sub { $self->CORE_warning(@_) };
-        $self->{die__}       = sub { $self->CORE_die(@_) };
+        $aborting  = sub { $self->CORE_aborting(@_) };
+        $pipeready = sub { $self->pipeready(@_) };
+        $forker    = sub { $self->CORE_forker(@_) };
+        $reaper    = sub { $self->CORE_reaper(@_) };
+        $childexit = sub { $self->CORE_childexit(@_) };
+        $warning   = sub { $self->CORE_warning(@_) };
+        $die_cb       = sub { $self->CORE_die(@_) };
 
         my $version_file = $self->root_path__( 'POPFile/popfile_version' );
 
@@ -117,9 +105,9 @@ class POPFile::Loader {
             $self->CORE_version( $major, $minor, $rev );
         }
 
-        GetOptions( 'shutdown' => \$self->{shutdown__} );
+        GetOptions( 'shutdown' => \$shutdown );
 
-        print "\nPOPFile Engine loading\n" if $self->{debug__};
+        print "\nPOPFile Engine loading\n" if $debug;
     }
 
     #------------------------------------------------------------------------
@@ -130,10 +118,10 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_aborting {
 
-        $self->{alive__} = 0;
-        foreach my $type (sort keys %{$self->{components__}}) {
-            foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                $self->{components__}{$type}{$name}->alive(0);
+        $alive = 0;
+        foreach my $type (sort keys %components) {
+            foreach my $name (sort keys %{$components{$type}}) {
+                $components{$type}{$name}->alive(0);
             }
         }
     }
@@ -160,13 +148,13 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_reaper {
 
-        foreach my $type (sort keys %{$self->{components__}}) {
-            foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                $self->{components__}{$type}{$name}->reaper();
+        foreach my $type (sort keys %components) {
+            foreach my $name (sort keys %{$components{$type}}) {
+                $components{$type}{$name}->reaper();
             }
         }
 
-        $SIG{CHLD} = $self->{reaper__};
+        $SIG{CHLD} = $reaper;
     }
 
     #------------------------------------------------------------------------
@@ -177,9 +165,9 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_childexit ($code) {
 
-        foreach my $type (sort keys %{$self->{components__}}) {
-            foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                $self->{components__}{$type}{$name}->childexit();
+        foreach my $type (sort keys %components) {
+            foreach my $name (sort keys %{$components{$type}}) {
+                $components{$type}{$name}->childexit();
             }
         }
 
@@ -195,11 +183,11 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_forker {
 
-        my @types = sort keys %{$self->{components__}};
+        my @types = sort keys %components;
 
         foreach my $type (@types) {
-            foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                $self->{components__}{$type}{$name}->prefork();
+            foreach my $name (sort keys %{$components{$type}}) {
+                $components{$type}{$name}->prefork();
             }
         }
 
@@ -214,8 +202,8 @@ class POPFile::Loader {
 
         if ( $pid == 0 ) {
             foreach my $type (@types) {
-                foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                    $self->{components__}{$type}{$name}->forked($writer);
+                foreach my $name (sort keys %{$components{$type}}) {
+                    $components{$type}{$name}->forked($writer);
                 }
             }
             close $reader;
@@ -224,8 +212,8 @@ class POPFile::Loader {
         }
 
         foreach my $type (@types) {
-            foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                $self->{components__}{$type}{$name}->postfork($pid, $reader);
+            foreach my $name (sort keys %{$components{$type}}) {
+                $components{$type}{$name}->postfork($pid, $reader);
             }
         }
 
@@ -241,7 +229,7 @@ class POPFile::Loader {
     method CORE_warning (@message) {
 
         if ( $self->module_config( 'GLOBAL', 'debug' ) > 0 ) {
-            $self->{components__}{core}{logger}->debug( 0, "Perl warning: @message" );
+            $components{core}{logger}->debug( 0, "Perl warning: @message" );
             warn @message;
         }
     }
@@ -258,7 +246,7 @@ class POPFile::Loader {
         print STDERR @message;
 
         if ( $self->module_config( 'GLOBAL', 'debug' ) > 0 ) {
-            $self->{components__}{core}{logger}->debug( 0, "Perl fatal error : @message" );
+            $components{core}{logger}->debug( 0, "Perl fatal error : @message" );
         }
 
         $self->CORE_stop();
@@ -272,7 +260,7 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_load_directory_modules ($directory, $type) {
 
-        print "\n         {$type:" if $self->{debug__};
+        print "\n         {$type:" if $debug;
 
         opendir my $dh, $self->root_path__($directory);
 
@@ -284,7 +272,7 @@ class POPFile::Loader {
 
         closedir $dh;
 
-        print '} ' if $self->{debug__};
+        print '} ' if $debug;
     }
 
     #------------------------------------------------------------------------
@@ -299,8 +287,8 @@ class POPFile::Loader {
 
         if ( defined $mod ) {
             my $name = $mod->name();
-            print " $name" if $self->{debug__};
-            $self->{components__}{$type}{$name} = $mod;
+            print " $name" if $debug;
+            $components{$type}{$name} = $mod;
         }
         return $mod;
     }
@@ -338,17 +326,17 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_signals {
 
-        $SIG{QUIT}     = $self->{aborting__};
-        $SIG{ABRT}     = $self->{aborting__};
-        $SIG{KILL}     = $self->{aborting__};
-        $SIG{STOP}     = $self->{aborting__};
-        $SIG{TERM}     = $self->{aborting__};
-        $SIG{INT}      = $self->{aborting__};
-        $SIG{CHLD}     = $self->{reaper__};
+        $SIG{QUIT}     = $aborting;
+        $SIG{ABRT}     = $aborting;
+        $SIG{KILL}     = $aborting;
+        $SIG{STOP}     = $aborting;
+        $SIG{TERM}     = $aborting;
+        $SIG{INT}      = $aborting;
+        $SIG{CHLD}     = $reaper;
         $SIG{ALRM}     = 'IGNORE';
         $SIG{PIPE}     = 'IGNORE';
-        $SIG{__WARN__} = $self->{warning__};
-        $SIG{__DIE__}  = $self->{die__};
+        $SIG{__WARN__} = $warning;
+        $SIG{__DIE__}  = $die_cb;
 
         return $SIG;
     }
@@ -361,7 +349,7 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_load ($noserver = 0) {
 
-        print "\n    Loading... " if $self->{debug__};
+        print "\n    Loading... " if $debug;
 
         $self->CORE_load_directory_modules( 'POPFile',    'core'       );
         $self->CORE_load_directory_modules( 'Classifier', 'classifier' );
@@ -380,72 +368,72 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_link_components {
 
-        print "\n\nPOPFile Engine $self->{version_string__} starting" if $self->{debug__};
+        print "\n\nPOPFile Engine $version_string starting" if $debug;
 
         # Give every module access to configuration, logger, version, and MQ.
 
-        foreach my $type (sort keys %{$self->{components__}}) {
-            foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                $self->{components__}{$type}{$name}->version(
+        foreach my $type (sort keys %components) {
+            foreach my $name (sort keys %{$components{$type}}) {
+                $components{$type}{$name}->version(
                     scalar($self->CORE_version()) );
-                $self->{components__}{$type}{$name}->configuration(
-                    $self->{components__}{core}{config} );
-                $self->{components__}{$type}{$name}->logger(
-                    $self->{components__}{core}{logger} )
+                $components{$type}{$name}->configuration(
+                    $components{core}{config} );
+                $components{$type}{$name}->logger(
+                    $components{core}{logger} )
                     if $name ne 'logger';
-                $self->{components__}{$type}{$name}->mq(
-                    $self->{components__}{core}{mq} );
+                $components{$type}{$name}->mq(
+                    $components{core}{mq} );
             }
         }
 
         # All interface components need access to the classifier and history.
 
-        foreach my $name (sort keys %{$self->{components__}{interface}}) {
-            $self->{components__}{interface}{$name}->classifier(
-                $self->{components__}{classifier}{bayes} );
-            $self->{components__}{interface}{$name}->history(
-                $self->{components__}{core}{history} );
+        foreach my $name (sort keys %{$components{interface}}) {
+            $components{interface}{$name}->classifier(
+                $components{classifier}{bayes} );
+            $components{interface}{$name}->history(
+                $components{core}{history} );
         }
 
-        foreach my $name (sort keys %{$self->{components__}{proxy}}) {
-            $self->{components__}{proxy}{$name}->classifier(
-                $self->{components__}{classifier}{bayes} );
-            $self->{components__}{proxy}{$name}->history(
-                $self->{components__}{core}{history} );
+        foreach my $name (sort keys %{$components{proxy}}) {
+            $components{proxy}{$name}->classifier(
+                $components{classifier}{bayes} );
+            $components{proxy}{$name}->history(
+                $components{core}{history} );
         }
 
-        foreach my $name (sort keys %{$self->{components__}{services}}) {
-            $self->{components__}{services}{$name}->classifier(
-                $self->{components__}{classifier}{bayes} );
-            $self->{components__}{services}{$name}->history(
-                $self->{components__}{core}{history} );
+        foreach my $name (sort keys %{$components{services}}) {
+            $components{services}{$name}->classifier(
+                $components{classifier}{bayes} );
+            $components{services}{$name}->history(
+                $components{core}{history} );
         }
 
         # Wire the classifier service to proxy and interface modules so they
         # can call it instead of reaching into Bayes directly.
 
-        if ( defined $self->{components__}{services}{classifier_service} ) {
-            my $svc = $self->{components__}{services}{classifier_service};
+        if ( defined $components{services}{classifier_service} ) {
+            my $svc = $components{services}{classifier_service};
 
-            foreach my $name (sort keys %{$self->{components__}{proxy}}) {
-                my $mod = $self->{components__}{proxy}{$name};
+            foreach my $name (sort keys %{$components{proxy}}) {
+                my $mod = $components{proxy}{$name};
                 $mod->set_service($svc) if $mod->can('set_service');
             }
-            foreach my $name (sort keys %{$self->{components__}{interface}}) {
-                my $mod = $self->{components__}{interface}{$name};
+            foreach my $name (sort keys %{$components{interface}}) {
+                my $mod = $components{interface}{$name};
                 $mod->set_service($svc) if $mod->can('set_service');
             }
         }
 
         # Classifier::Bayes and POPFile::History are friends.
 
-        $self->{components__}{core}{history}->classifier(
-            $self->{components__}{classifier}{bayes} );
-        $self->{components__}{classifier}{bayes}->history(
-            $self->{components__}{core}{history} );
+        $components{core}{history}->classifier(
+            $components{classifier}{bayes} );
+        $components{classifier}{bayes}->history(
+            $components{core}{history} );
 
-        $self->{components__}{classifier}{bayes}->{parser__}->mangle(
-            $self->{components__}{classifier}{wordmangle} );
+        $components{classifier}{bayes}->{parser__}->mangle(
+            $components{classifier}{wordmangle} );
     }
 
     #------------------------------------------------------------------------
@@ -455,18 +443,18 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_initialize {
 
-        print "\n\n    Initializing... " if $self->{debug__};
+        print "\n\n    Initializing... " if $debug;
 
         # Core must be initialized first.
-        my @c = ( 'core', grep { !/^core$/ } sort keys %{$self->{components__}} );
+        my @c = ( 'core', grep { !/^core$/ } sort keys %components );
 
         foreach my $type (@c) {
-            print "\n         {$type:" if $self->{debug__};
-            foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                print " $name" if $self->{debug__};
+            print "\n         {$type:" if $debug;
+            foreach my $name (sort keys %{$components{$type}}) {
+                print " $name" if $debug;
                 STDOUT->flush();
 
-                my $mod  = $self->{components__}{$type}{$name};
+                my $mod  = $components{$type}{$name};
                 my $code = $mod->initialize();
 
                 if ( $code == 0 ) {
@@ -475,14 +463,14 @@ class POPFile::Loader {
 
                 if ( $code == 1 ) {
                     $mod->alive(1);
-                    $mod->forker(       $self->{forker__}    );
-                    $mod->setchildexit( $self->{childexit__} );
-                    $mod->pipeready(    $self->{pipeready__} );
+                    $mod->forker(       $forker    );
+                    $mod->setchildexit( $childexit );
+                    $mod->pipeready(    $pipeready );
                 }
             }
-            print '} ' if $self->{debug__};
+            print '} ' if $debug;
         }
-        print "\n" if $self->{debug__};
+        print "\n" if $debug;
     }
 
     #------------------------------------------------------------------------
@@ -492,8 +480,8 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_config {
 
-        $self->{components__}{core}{config}->load_configuration();
-        return $self->{components__}{core}{config}->parse_command_line();
+        $components{core}{config}->load_configuration();
+        return $components{core}{config}->parse_command_line();
     }
 
     #------------------------------------------------------------------------
@@ -503,31 +491,31 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_start {
 
-        print "\n    Starting...     " if $self->{debug__};
+        print "\n    Starting...     " if $debug;
 
-        my @c = ( 'core', grep { !/^core$/ } sort keys %{$self->{components__}} );
+        my @c = ( 'core', grep { !/^core$/ } sort keys %components );
 
         foreach my $type (@c) {
-            print "\n         {$type:" if $self->{debug__};
-            foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                my $code = $self->{components__}{$type}{$name}->start();
+            print "\n         {$type:" if $debug;
+            foreach my $name (sort keys %{$components{$type}}) {
+                my $code = $components{$type}{$name}->start();
 
                 if ( $code == 0 ) {
                     die "Failed to start while starting the $name module";
                 }
 
                 if ( $code == 2 ) {
-                    delete $self->{components__}{$type}{$name};
+                    delete $components{$type}{$name};
                 } else {
-                    print " $name" if $self->{debug__};
+                    print " $name" if $debug;
                     STDOUT->flush();
                 }
             }
-            print '} ' if $self->{debug__};
+            print '} ' if $debug;
         }
 
         print "\n\nPOPFile Engine ", scalar($self->CORE_version()), " running\n"
-            if $self->{debug__};
+            if $debug;
         STDOUT->flush();
     }
 
@@ -539,11 +527,11 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_service ($nowait = 0) {
 
-        while ( $self->{alive__} == 1 ) {
-            foreach my $type (sort keys %{$self->{components__}}) {
-                foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                    if ( $self->{components__}{$type}{$name}->service() == 0 ) {
-                        $self->{alive__} = 0;
+        while ( $alive == 1 ) {
+            foreach my $type (sort keys %components) {
+                foreach my $name (sort keys %{$components{$type}}) {
+                    if ( $components{$type}{$name}->service() == 0 ) {
+                        $alive = 0;
                         last;
                     }
                 }
@@ -553,12 +541,12 @@ class POPFile::Loader {
 
             last if $nowait;
 
-            if ( $self->{shutdown__} == 1 ) {
-                $self->{alive__} = 0;
+            if ( $shutdown == 1 ) {
+                $alive = 0;
             }
         }
 
-        return $self->{alive__};
+        return $alive;
     }
 
     #------------------------------------------------------------------------
@@ -568,8 +556,8 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_stop {
 
-        if ( $self->{debug__} ) {
-            print "\n\nPOPFile Engine $self->{version_string__} stopping\n";
+        if ( $debug ) {
+            print "\n\nPOPFile Engine $version_string stopping\n";
             STDOUT->flush();
             print "\n    Stopping... ";
         }
@@ -577,27 +565,27 @@ class POPFile::Loader {
         # Shut down MQ first so it can flush remaining messages to other
         # modules before they stop.
 
-        $self->{components__}{core}{mq}->alive(0);
-        $self->{components__}{core}{mq}->stop();
-        $self->{components__}{core}{history}->alive(0);
-        $self->{components__}{core}{history}->stop();
+        $components{core}{mq}->alive(0);
+        $components{core}{mq}->stop();
+        $components{core}{history}->alive(0);
+        $components{core}{history}->stop();
 
-        foreach my $type (sort keys %{$self->{components__}}) {
-            print "\n         {$type:" if $self->{debug__};
-            foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                print " $name" if $self->{debug__};
+        foreach my $type (sort keys %components) {
+            print "\n         {$type:" if $debug;
+            foreach my $name (sort keys %{$components{$type}}) {
+                print " $name" if $debug;
                 STDOUT->flush();
 
                 next if $name eq 'mq';
                 next if $name eq 'history';
-                $self->{components__}{$type}{$name}->alive(0);
-                $self->{components__}{$type}{$name}->stop();
+                $components{$type}{$name}->alive(0);
+                $components{$type}{$name}->stop();
             }
-            print '} ' if $self->{debug__};
+            print '} ' if $debug;
         }
 
-        print "\n\nPOPFile Engine $self->{version_string__} terminated\n"
-            if $self->{debug__};
+        print "\n\nPOPFile Engine $version_string terminated\n"
+            if $debug;
     }
 
     #------------------------------------------------------------------------
@@ -610,14 +598,14 @@ class POPFile::Loader {
 
         if ( !defined $major_version ) {
             return wantarray
-                ? ($self->{major_version__}, $self->{minor_version__}, $self->{build_version__})
-                : $self->{version_string__};
+                ? ($major_version, $minor_version, $build_version)
+                : $version_string;
         }
 
-        ($self->{major_version__},
-         $self->{minor_version__},
-         $self->{build_version__}) = ($major_version, $minor_version, $build_version);
-        $self->{version_string__} = "v$major_version.$minor_version.$build_version";
+        ($major_version,
+         $minor_version,
+         $build_version) = ($major_version, $minor_version, $build_version);
+        $version_string = "v$major_version.$minor_version.$build_version";
     }
 
     #------------------------------------------------------------------------
@@ -636,7 +624,7 @@ class POPFile::Loader {
             $type =~ s/^ui$/interface/i;
         }
 
-        return $self->{components__}{$type}{$name};
+        return $components{$type}{$name};
     }
 
     #------------------------------------------------------------------------
@@ -646,7 +634,7 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method set_module ($type, $name, $module) {
 
-        $self->{components__}{$type}{$name} = $module;
+        $components{$type}{$name} = $module;
     }
 
     #------------------------------------------------------------------------
@@ -656,8 +644,8 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method remove_module ($type, $name) {
 
-        $self->{components__}{$type}{$name}->stop();
-        delete $self->{components__}{$type}{$name};
+        $components{$type}{$name}->stop();
+        delete $components{$type}{$name};
     }
 
     #------------------------------------------------------------------------
@@ -667,21 +655,21 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method root_path__ ($path) {
 
-        $self->{popfile_root__} =~ s/[\/\\]$//;
+        $popfile_root =~ s/[\/\\]$//;
         $path                   =~ s/^[\/\\]//;
 
-        return "$self->{popfile_root__}/$path";
+        return "$popfile_root/$path";
     }
 
     # --- Getters / Setters ---
 
-    method debug ($debug = undef) {
-        $self->{debug__} = $debug if defined $debug;
-        return $self->{debug__};
+    method debug ($val = undef) {
+        $debug = $val if defined $val;
+        return $debug;
     }
 
     method module_config ($module, $item, $value = undef) {
-        return $self->{components__}{core}{config}->module_config_( $module, $item, $value );
+        return $components{core}{config}->module_config_( $module, $item, $value );
     }
 
 } # end class POPFile::Loader

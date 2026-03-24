@@ -36,10 +36,10 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
 
     BUILD {
         $self->name( 'nntp' );
-        $self->{child_}                    = \&child__;
-        $self->{connection_timeout_error_} = '500 no response from mail server';
-        $self->{connection_failed_error_}  = '500 can\'t connect to';
-        $self->{good_response_}            = '^(1|2|3)\d\d';
+        $self->child( \&child__ );
+        $self->connection_timeout_error( '500 no response from mail server' );
+        $self->connection_failed_error(  '500 can\'t connect to' );
+        $self->good_response( '^(1|2|3)\d\d' );
     }
 
     # ----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
         $self->config_( 'headtoo',        0 );
         $self->config_( 'separator',      ':' );
         $self->config_( 'welcome_string',
-            "NNTP POPFile ($self->{version_}) server ready" );
+            "NNTP POPFile ($self->version()) server ready" );
 
         if ( !$self->SUPER::initialize() ) {
             return 0;
@@ -79,7 +79,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
         if ( $self->config_( 'welcome_string' ) =~
              /^NNTP POPFile \(v\d+\.\d+\.\d+\) server ready$/ ) {
             $self->config_( 'welcome_string',
-                            "NNTP POPFile ($self->{version_}) server ready" );
+                            "NNTP POPFile ($self->version()) server ready" );
         }
 
         return $self->SUPER::start();
@@ -177,7 +177,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
 
             if ( $connection_state eq "connected" ) {
                 my $message_id;
-                my $history = $self->{service__}->history_obj();
+                my $history = $self->set_service()->history_obj();
 
                 if ( $command =~ /^ *ARTICLE ?(.*)?/i ) {
                     my $file;
@@ -202,7 +202,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                         $self->log_( 1, "Printing message from cache" );
                         $self->tee_( $client, "220 0 $message_id$eol" );
 
-                        ( my $class, undef ) = $self->{service__}->classify_message(
+                        ( my $class, undef ) = $self->set_service()->classify_message(
                             $retrfile, $client, 1,
                             $downloaded{$message_id}{class},
                             $downloaded{$message_id}{slot}, undef, $eol );
@@ -212,7 +212,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                         ( $response, $ok ) = $self->get_response_( $news, $client, $command );
                         if ( $response =~ /^220 +(\d+) +([^ \015]+)/i ) {
                             $message_id = $2;
-                            my ( $class, $history_file ) = $self->{service__}->classify_message(
+                            my ( $class, $history_file ) = $self->set_service()->classify_message(
                                 $news, $client, 0, '', 0, undef, $eol );
                             $downloaded{$message_id}{slot}  = $history_file;
                             $downloaded{$message_id}{class} = $class;
@@ -251,7 +251,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                                 $response =~ s/^220/221/;
                                 $self->tee_( $client, "$response" );
 
-                                ( $class, $history_file ) = $self->{service__}->classify_message(
+                                ( $class, $history_file ) = $self->set_service()->classify_message(
                                     $news, undef, 0, '', 0, 0, $eol );
                                 $downloaded{$message_id}{slot}  = $history_file;
                                 $downloaded{$message_id}{class} = $class;
@@ -265,7 +265,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                                                                     $command, 0,
                                                                     ( $cached ? 0 : 1 ) );
                         if ( $response =~ /^221 +(\d+) +([^ ]+)/i ) {
-                            $self->{service__}->classify_message(
+                            $self->set_service()->classify_message(
                                 $news, $client, 1, $class, $history_file, 1, $eol );
                         }
                         next;
@@ -311,7 +311,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                             $response =~ s/^220/222/;
                             $self->tee_( $client, "$response" );
 
-                            my ( $class, $history_file ) = $self->{service__}->classify_message(
+                            my ( $class, $history_file ) = $self->set_service()->classify_message(
                                 $news, undef, 0, '', 0, 0, $eol );
                             $downloaded{$message_id}{slot}  = $history_file;
                             $downloaded{$message_id}{class} = $class;

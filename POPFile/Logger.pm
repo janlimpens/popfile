@@ -33,22 +33,24 @@ my $seconds_per_day = 60 * 60 * 24;
 
 class POPFile::Logger :isa(POPFile::Module) {
 
-    BUILD {
-        $self->{debug_filename__}    = '';
-        $self->{last_ten__}          = undef;
-        $self->{initialize_called__} = 0;
-        $self->name('logger');
-    }
+    field $debug_filename    = '';
+    field $last_ten          = undef;
+    field $initialize_called = 0;
+    field $last_tickd        = 0;
+    field $today             = 0;
 
-    # ---------------------------------------------------------------------------
-    #
-    # initialize
-    #
-    # Called to initialize the interface
-    #
-    # ---------------------------------------------------------------------------
+=head2 initialize
+
+Called to initialize the logger. Sets default configuration values for
+C<debug>, C<logdir>, C<format>, and C<level>, and registers for the
+C<TICKD> message queue event.
+
+Returns 1 on success.
+
+=cut
+
     method initialize {
-        $self->{initialize_called__} = 1;
+        $initialize_called = 1;
 
         # Start with debugging to file
         $self->global_config_( 'debug', 1 );
@@ -67,7 +69,7 @@ class POPFile::Logger :isa(POPFile::Module) {
 
         $self->config_( 'level', 0 );
 
-        $self->{last_tickd__} = time;
+        $last_tickd = time;
 
         $self->mq_register_( 'TICKD', $self );
 
@@ -92,15 +94,17 @@ class POPFile::Logger :isa(POPFile::Module) {
         }
     }
 
-    # ---------------------------------------------------------------------------
-    #
-    # start
-    #
-    # Called to start the logger running
-    #
-    # ---------------------------------------------------------------------------
+=head2 start
+
+Called to start the logger running. Calculates the current log filename
+and emits startup banner messages.
+
+Returns 1 on success.
+
+=cut
+
     method start {
-        $self->calculate_today__();
+        $self->calculate_today();
 
         $self->debug( 0, '-----------------------' );
         $self->debug( 0, 'POPFile ' . $self->version() . ' starting' );
@@ -108,74 +112,76 @@ class POPFile::Logger :isa(POPFile::Module) {
         return 1;
     }
 
-    # ---------------------------------------------------------------------------
-    #
-    # stop
-    #
-    # Called to stop the logger module
-    #
-    # ---------------------------------------------------------------------------
+=head2 stop
+
+Called to stop the logger module. Emits a shutdown banner to the log.
+
+=cut
+
     method stop {
         $self->debug( 0, 'POPFile stopped' );
         $self->debug( 0, '---------------' );
     }
 
-    # ---------------------------------------------------------------------------
-    #
-    # service
-    #
-    # ---------------------------------------------------------------------------
+=head2 service
+
+Called repeatedly by the main loop. Recalculates the current log filename
+and posts a C<TICKD> message to the queue if more than an hour has elapsed
+since the last tick.
+
+Returns 1 on success.
+
+=cut
+
     method service {
-        $self->calculate_today__();
+        $self->calculate_today();
 
         # We send out a TICKD message every hour so that other modules
         # can do clean up tasks that need to be done regularly but not
         # often
 
-        if ( $self->time > ( $self->{last_tickd__} + 3600 ) ) {
+        if ( $self->time > ( $last_tickd + 3600 ) ) {
             $self->mq_post_( 'TICKD' );
-            $self->{last_tickd__} = $self->time;
+            $last_tickd = $self->time;
         }
 
         return 1;
     }
 
-    # ---------------------------------------------------------------------------
-    #
-    # time
-    #
-    # Does the same as the built-in time function but can be overriden
-    # by the test suite to trick the module into thinking that a lot
-    # of time has passed.
-    #
-    # ---------------------------------------------------------------------------
+=head2 time
+
+Returns the current epoch time. Wraps the built-in C<time> function so
+the test suite can override it to simulate time passing.
+
+=cut
+
     method time { return time; }
 
-    # ---------------------------------------------------------------------------
-    #
-    # calculate_today__
-    #
-    # Set the global $self->{today} variable to the current day in seconds
-    #
-    # ---------------------------------------------------------------------------
-    method calculate_today__ {
+=head2 calculate_today
+
+Sets C<$today> to the start of the current day (in epoch seconds) and
+updates C<$debug_filename> to the corresponding log file path.
+
+=cut
+
+    method calculate_today {
         # Create the name of the debug file for the debug() function
-        $self->{today__} = int( $self->time / $seconds_per_day ) * $seconds_per_day;  # just to make this work in Eclipse: /
+        $today = int( $self->time / $seconds_per_day ) * $seconds_per_day;  # just to make this work in Eclipse: /
 
         # Note that 0 parameter than allows the logdir to be outside the user
         # sandbox
 
-        $self->{debug_filename__} = $self->get_user_path_(                   # PROFILE BLOCK START
-            $self->config_( 'logdir' ) . "popfile$self->{today__}.log", 0 ); # PROFILE BLOCK STOP
+        $debug_filename = $self->get_user_path_(                   # PROFILE BLOCK START
+            $self->config_( 'logdir' ) . "popfile$today.log", 0 ); # PROFILE BLOCK STOP
     }
 
-    # ---------------------------------------------------------------------------
-    #
-    # remove_debug_files
-    #
-    # Removes popfile log files that are older than 3 days
-    #
-    # ---------------------------------------------------------------------------
+=head2 remove_debug_files
+
+Removes POPFile log files in the configured log directory that are older
+than three days.
+
+=cut
+
     method remove_debug_files {
         my @debug_files = glob( $self->get_user_path_(                            # PROFILE BLOCK START
                               $self->config_( 'logdir' ) . 'popfile*.log', 0 ) ); # PROFILE BLOCK STOP
@@ -189,19 +195,22 @@ class POPFile::Logger :isa(POPFile::Module) {
         }
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # debug
-    #
-    # $level      The level of this message
-    # $message    A string containing a debug message that may or may not be
-    #             printed
-    #
-    # Prints the passed string if the global $debug is true
-    #
-    # ----------------------------------------------------------------------------
+=head2 debug
+
+    $self->debug( $level, $message );
+
+Writes C<$message> to the log file and/or STDOUT if the configured log
+level allows it. C<$level> must be less than or equal to the C<level>
+config value for the message to be written. USER/PASS command arguments
+are automatically obscured. Control characters are hex-escaped.
+
+Also maintains an in-memory ring buffer of the last ten log lines,
+accessible via C<last_ten>.
+
+=cut
+
     method debug ($level, $message) {
-        if ( $self->{initialize_called__} == 0 ) {
+        if ( $initialize_called == 0 ) {
             return;
         }
 
@@ -210,7 +219,7 @@ class POPFile::Logger :isa(POPFile::Module) {
             return;
         }
 
-        if ( $self->{debug_filename__} eq '' ) {
+        if ( $debug_filename eq '' ) {
             return;
         }
 
@@ -242,7 +251,7 @@ class POPFile::Logger :isa(POPFile::Module) {
                 "$year/$mon/$mday$delim$hour:$min:$sec$delim$$:$delim$message\n"; # PROFILE BLOCK STOP
 
             if ( $self->global_config_( 'debug' ) & 1 )  {
-                if ( open my $debug, '>>', $self->{debug_filename__} ) {
+                if ( open my $debug, '>>', $debug_filename ) {
                     print $debug $msg;
                     close $debug;
                 }
@@ -254,23 +263,34 @@ class POPFile::Logger :isa(POPFile::Module) {
             # logger entries and then remove the first one if we now have
             # more than 10
 
-            push @{$self->{last_ten__}}, ($msg);
+            push @{$last_ten}, ($msg);
 
-            if ( $#{$self->{last_ten__}} > 9 ) {
-                shift @{$self->{last_ten__}};
+            if ( $#{$last_ten} > 9 ) {
+                shift @{$last_ten};
             }
         }
     }
 
-    # GETTERS/SETTERS
+=head2 debug_filename
+
+Returns the path to the current log file.
+
+=cut
 
     method debug_filename {
-        return $self->{debug_filename__};
+        return $debug_filename;
     }
 
+=head2 last_ten
+
+Returns the last (up to) ten log lines as a list. If no lines have been
+logged yet, returns a single-element list containing C<'log empty'>.
+
+=cut
+
     method last_ten {
-        if ( $#{$self->{last_ten__}} >= 0 ) {
-            return @{$self->{last_ten__}};
+        if ( $#{$last_ten} >= 0 ) {
+            return @{$last_ten};
         } else {
             my @temp = ( 'log empty' );
             return @temp;
