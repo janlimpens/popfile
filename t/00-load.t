@@ -25,6 +25,9 @@ my @modules = qw(
     Proxy::SMTP
     Proxy::NNTP
     UI::HTTP
+    UI::Mojo
+    Services::Classifier
+    POPFile::Loader
 );
 
 for my $module (@modules) {

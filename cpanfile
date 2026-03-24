@@ -15,6 +15,8 @@ requires 'MIME::Base64',      '0';
 requires 'MIME::QuotedPrint', '0';
 requires 'Object::Pad',       '0.800';
 requires 'Sort::Key::Natural','0';
+requires 'Mojolicious',       '9.0';
+requires 'JSON::MaybeXS',     '0';
 
 # Optional: alternative database backends
 recommends 'DBD::mysql', '0';

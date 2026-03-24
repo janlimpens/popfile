@@ -23,8 +23,7 @@ package Classifier::MailParse;
 #
 # ----------------------------------------------------------------------------
 
-use strict;
-use warnings;
+use Object::Pad;
 use locale;
 
 use MIME::Base64;
@@ -141,53 +140,43 @@ my $non_spacing_tags = "a|abbr|acronym|b|big|blink" .    # PROFILE BLOCK START
 
 my $eol = "\015\012";
 
-#----------------------------------------------------------------------------
-# new
-#
-# Class new() function
-#----------------------------------------------------------------------------
-sub new
-{
-    my $type = shift;
-    my $self;
+class Classifier::MailParse :repr(HASH) {
 
-    # Hash of word frequences
+    BUILD {
+        # Hash of word frequences
 
-    $self->{words__} = {};
+        $self->{words__} = {};
 
-    # Total word cout
+        # Total word cout
 
-    $self->{msg_total__} = 0;
+        $self->{msg_total__} = 0;
 
-    # Internal use for keeping track of a line without touching it
+        # Internal use for keeping track of a line without touching it
 
-    $self->{ut__} = '';
+        $self->{ut__} = '';
 
-    # Specifies the parse mode, '' means no color output, if non-zero
-    # then color output using a specific session key stored here
+        # Specifies the parse mode; color_resolver is a sub($word)->$color
+        # set by the caller (Bayes) when colorized output is needed
 
-    $self->{color_resolver} = undef;
-    $self->{color_matrix__} = undef;
-    $self->{color_idmap__}  = undef;
-    $self->{color_userid__} = undef;
+        $self->{color_resolver} = undef;
 
-    # This will store the from, to, cc and subject from the last parse
-    $self->{from__}    = '';
-    $self->{to__}      = '';
-    $self->{cc__}      = '';
-    $self->{subject__} = '';
+        # This will store the from, to, cc and subject from the last parse
+        $self->{from__}    = '';
+        $self->{to__}      = '';
+        $self->{cc__}      = '';
+        $self->{subject__} = '';
 
-    # This is used to store the words found in the from, to, and subject
-    # lines for use in creating new magnets, it is a list of pairs mapping
-    # a magnet type to a magnet string, e.g. from => popfile@jgc.org
+        # This is used to store the words found in the from, to, and subject
+        # lines for use in creating new magnets, it is a list of pairs mapping
+        # a magnet type to a magnet string, e.g. from => popfile@jgc.org
 
-    $self->{quickmagnets__} = {};
+        $self->{quickmagnets__} = {};
 
-    # store the tag that set the foreground/background color so the
-    # color can be unset when the tag closes
+        # store the tag that set the foreground/background color so the
+        # color can be unset when the tag closes
 
-    $self->{cssfontcolortag__} = '';
-    $self->{cssbackcolortag__} = '';
+        $self->{cssfontcolortag__} = '';
+        $self->{cssbackcolortag__} = '';
 
     # This is the distance betwee the back color and the font color
     # as computed using compute_rgb_distance
@@ -274,33 +263,29 @@ sub new
     # These store the current HTML background color and font color to
     # detect "invisible ink" used by spammers
 
-    my $result = bless $self, $type;
+        $self->{htmlbackcolor__} = $self->map_color( 'white' );
+        $self->{htmlbodycolor__} = $self->map_color( 'white' );
+        $self->{htmlfontcolor__} = $self->map_color( 'black' );
 
-    $self->{htmlbackcolor__} = $self->map_color( 'white' );
-    $self->{htmlbodycolor__} = $self->map_color( 'white' );
-    $self->{htmlfontcolor__} = $self->map_color( 'black' );
+        $self->{content_type__} = '';
+        $self->{base64__}       = '';
+        $self->{in_html_tag__}  = 0;
+        $self->{html_tag__}     = '';
+        $self->{html_arg__}     = '';
+        $self->{in_headers__}   = 0;
 
-    $self->{content_type__} = '';
-    $self->{base64__}       = '';
-    $self->{in_html_tag__}  = 0;
-    $self->{html_tag__}     = '';
-    $self->{html_arg__}     = '';
-    $self->{in_headers__}   = 0;
+        # This is used for switching on/off language specific functionality
 
-    # This is used for switching on/off language specific functionality
+        $self->{lang__}    = '';
+        $self->{first20__} = '';
 
-    $self->{lang__}    = '';
-    $self->{first20__} = '';
+        # For support Quoted Printable, save encoded text in multiple lines
 
-    # For support Quoted Printable, save encoded text in multiple lines
+        $self->{prev__} = '';
 
-    $self->{prev__} = '';
-
-    # Object for the Nihongo (Japanese) parser.
-    $self->{nihongo_parser__} = undef;
-
-    return $result;
-}
+        # Object for the Nihongo (Japanese) parser.
+        $self->{nihongo_parser__} = undef;
+    }
 
 # ----------------------------------------------------------------------------
 #
@@ -311,9 +296,7 @@ sub new
 # $word          The word to check
 #
 # ----------------------------------------------------------------------------
-sub get_color__
-{
-    my ( $self, $word ) = @_;
+method get_color__ ($word) {
 
     return '' unless defined $self->{color_resolver};
     return $self->{color_resolver}->($word);
@@ -332,9 +315,7 @@ sub get_color__
 # $right         The other color
 #
 # ----------------------------------------------------------------------------
-sub compute_rgb_distance
-{
-    my ( $self, $left, $right ) = @_;
+method compute_rgb_distance ($left, $right) {
 
     # TODO: store front/back colors in a RGB hash/array
     #       converting to a hh hh hh format and back
@@ -368,9 +349,7 @@ sub compute_rgb_distance
 # current HTML back and font colors
 #
 # ----------------------------------------------------------------------------
-sub compute_html_color_distance
-{
-    my ( $self ) = @_;
+method compute_html_color_distance {
 
     # TODO: store front/back colors in a RGB hash/array
     #       converting to a hh hh hh format and back
@@ -393,9 +372,7 @@ sub compute_html_color_distance
 # $color        A color value found in a tag
 #
 # ----------------------------------------------------------------------------
-sub map_color
-{
-    my ( $self, $color ) = @_;
+method map_color ($color) {
 
     # The canonical form is lowercase hexadecimal, so start by
     # lowercasing and stripping any initial #
@@ -485,9 +462,7 @@ sub map_color
 # $word     The word
 #
 # ----------------------------------------------------------------------------
-sub increment_word
-{
-    my ( $self, $word ) = @_;
+method increment_word ($word) {
 
     $self->{words__}{$word} += 1;
     $self->{msg_total__}    += 1;
@@ -510,9 +485,7 @@ sub increment_word
 # Returns 0 if the pseudoword was filtered out by a stopword
 #
 # ----------------------------------------------------------------------------
-sub update_pseudoword
-{
-    my ( $self, $prefix, $word, $encoded, $literal ) = @_;
+method update_pseudoword ($prefix, $word, $encoded, $literal) {
 
     my $mword = $self->{mangle__}->mangle( "$prefix:$word", 1 );
 
@@ -550,9 +523,7 @@ sub update_pseudoword
 #               identification of values found in for example the subject line
 #
 # ----------------------------------------------------------------------------
-sub update_word
-{
-    my ( $self, $word, $encoded, $before, $after, $prefix ) = @_;
+method update_word ($word, $encoded, $before, $after, $prefix) {
 
     my $mword = $self->{mangle__}->mangle( $word );
 
@@ -594,9 +565,7 @@ sub update_word
 #               subject line
 #
 # ----------------------------------------------------------------------------
-sub add_line
-{
-    my ( $self, $bigline, $encoded, $prefix ) = @_;
+method add_line ($bigline, $encoded, $prefix) {
     my $p = 0;
 
     return if ( !defined( $bigline ) );
@@ -864,9 +833,7 @@ sub add_line
 # $encoded  1 if this HTML was found inside encoded (base64) text
 #
 # ----------------------------------------------------------------------------
-sub update_tag
-{
-    my ( $self, $tag, $arg, $end_tag, $encoded ) = @_;
+method update_tag ($tag, $arg, $end_tag, $encoded) {
 
     # TODO: Make sure $tag only ever gets alphanumeric input (in some
     #       cases it has been demonstrated that things like ()| etc can
@@ -1327,9 +1294,7 @@ sub update_tag
 # Returns the hostname
 #
 # ----------------------------------------------------------------------------
-sub add_url
-{
-    my ( $self, $url, $encoded, $before, $after, $prefix, $noadd ) = @_;
+method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
 
     my $temp_url = $url;
     my $temp_before;
@@ -1544,9 +1509,7 @@ sub add_url
 # $encoded  1 if this HTML was found inside encoded (base64) text
 #
 # ----------------------------------------------------------------------------
-sub parse_html
-{
-    my ( $self, $line, $encoded ) = @_;
+method parse_html ($line, $encoded) {
 
     my $found = 1;
 
@@ -1663,9 +1626,7 @@ sub parse_html
 #           word list.  By default this is set to 1 and the word list is reset
 #
 # ----------------------------------------------------------------------------
-sub parse_file
-{
-    my ( $self, $file, $max_size, $reset ) = @_;
+method parse_file ($file, $max_size = undef, $reset = undef) {
 
     $reset    = 1 if ( !defined( $reset    ) );
     $max_size = 0 if ( !defined( $max_size ) || ( $max_size =~ /\D/ ) );
@@ -1720,9 +1681,7 @@ sub parse_file
 #           word list.  By default this is set to 1 and the word list is reset
 #
 # ----------------------------------------------------------------------------
-sub start_parse
-{
-    my ( $self, $reset ) = @_;
+method start_parse ($reset = undef) {
 
     $reset = 1 if ( !defined( $reset ) );
 
@@ -1810,9 +1769,7 @@ sub start_parse
 # parse_line.
 #
 # ----------------------------------------------------------------------------
-sub stop_parse
-{
-    my ( $self ) = @_;
+method stop_parse {
 
     $self->{colorized__} .= $self->clear_out_base64();
 
@@ -1864,9 +1821,7 @@ sub stop_parse
 # $line               Line of file to parse
 #
 # ----------------------------------------------------------------------------
-sub parse_line
-{
-    my ( $self, $read ) = @_;
+method parse_line ($read) {
 
     if ( $read ne '' ) {
 
@@ -2074,9 +2029,7 @@ sub parse_line
 # returns colorization information to be added to the colorized output
 #
 # ----------------------------------------------------------------------------
-sub clear_out_base64
-{
-    my ( $self ) = @_;
+method clear_out_base64 {
 
     my $colorized = '';
 
@@ -2125,9 +2078,7 @@ sub clear_out_base64
 # If there's anything in the {prev__} then decode it and parse it
 #
 # ----------------------------------------------------------------------------
-sub clear_out_qp
-{
-    my ( $self ) = @_;
+method clear_out_qp {
 
     if ( ( $self->{encoding__} =~ /quoted\-printable/i ) &&
          ( $self->{prev__} ne '' ) ) {
@@ -2163,15 +2114,13 @@ sub clear_out_qp
 # encoding conversion A B indicates base64 encoding, a Q indicates
 # quoted printable encoding
 # ----------------------------------------------------------------------------
-sub decode_string
-{
+method decode_string ($mystring, $lang = undef) {
     # I choose not to use "$mystring = MIME::Base64::decode( $1 );"
     # because some spam mails have subjects like: "Subject: adjpwpekm
     # =?ISO-8859-1?Q?=B2=E1=A4=D1=AB=C7?= dopdalnfjpw".  Therefore we
     # proceed along the string, from left to right, building a new
     # string from the decoded and non-decoded parts
 
-    my ( $self, $mystring, $lang ) = @_;
 
     my $charset = '';
 
@@ -2235,9 +2184,7 @@ sub decode_string
 # $header      Name of header to return (note must be lowercase)
 #
 # ----------------------------------------------------------------------------
-sub get_header
-{
-    my ( $self, $header ) = @_;
+method get_header ($header) {
 
     return $self->{ $header . '__' } || '';
 }
@@ -2252,9 +2199,7 @@ sub get_header
 # $encoding     Current message encoding
 #
 # ----------------------------------------------------------------------------
-sub parse_header
-{
-    my ( $self, $header, $argument, $mime, $encoding ) = @_;
+method parse_header ($header, $argument, $mime, $encoding) {
 
     print "Header ($header) ($argument)\n" if $self->{debug__};
 
@@ -2506,9 +2451,7 @@ sub parse_header
 #
 # ----------------------------------------------------------------------------
 
-sub parse_css_style
-{
-    my ( $self, $line, $braces ) = @_;
+method parse_css_style ($line, $braces) {
 
     # http://www.w3.org/TR/CSS2/grammar.html
 
@@ -2542,9 +2485,7 @@ sub parse_css_style
 #
 # ----------------------------------------------------------------------------
 
-sub parse_css_color
-{
-    my ( $self, $color ) = @_;
+method parse_css_color ($color) {
 
     # CSS colors can be in a rgb(r,g,b), #hhh, #hhhhhh or a named color form
 
@@ -2687,9 +2628,7 @@ sub parse_css_color
 #               The second match (= name of the file if found)
 #
 # ----------------------------------------------------------------------------
-sub match_attachment_filename
-{
-    my ( $self, $line ) = @_;
+method match_attachment_filename ($line) {
 
     $line =~ /\s*(.*);\s*filename=\"(.*)\"/;
 
@@ -2705,9 +2644,7 @@ sub match_attachment_filename
 #               The extension of the file
 #
 # ----------------------------------------------------------------------------
-sub file_extension
-{
-    my ( $self, $filename ) = @_;
+method file_extension ($filename) {
 
     if ( $filename =~ m/(.*)\.(.*)$/ ) {
         return ( $1, $2 );
@@ -2724,9 +2661,7 @@ sub file_extension
 # $filename     The filename to add to the list of words
 #
 # ----------------------------------------------------------------------------
-sub add_attachment_filename
-{
-    my ( $self, $filename ) = @_;
+method add_attachment_filename ($filename) {
 
     if ( defined( $filename ) && ( $filename ne '' ) ) {
         print "Add filename $filename\n" if $self->{debug__};
@@ -2755,9 +2690,7 @@ sub add_attachment_filename
 # $params     The parameters of the Content-Disposition header
 #
 # ----------------------------------------------------------------------------
-sub handle_disposition
-{
-    my ( $self, $params ) = @_;
+method handle_disposition ($params) {
 
     my ( $attachment, $filename ) = $self->match_attachment_filename( $params );
 
@@ -2775,9 +2708,7 @@ sub handle_disposition
 # $encoding     The value of any current encoding scheme
 #
 # ----------------------------------------------------------------------------
-sub splitline
-{
-    my ( $self, $line, $encoding ) = @_;
+method splitline ($line, $encoding) {
 
     $line =~ s/([^\r\n]{100,120} )/$1\r\n/g;
     $line =~ s/([^ \r\n]{120})/$1\r\n/g;
@@ -2797,23 +2728,17 @@ sub splitline
 
 # GETTERS/SETTERS
 
-sub first20
-{
-    my ( $self ) = @_;
+method first20 {
 
     return $self->{first20__};
 }
 
-sub quickmagnets
-{
-    my ( $self ) = @_;
+method quickmagnets {
 
     return $self->{quickmagnets__};
 }
 
-sub mangle
-{
-    my ( $self, $value ) = @_;
+method mangle ($value = undef) {
 
     $self->{mangle__} = $value;
 }
@@ -2889,9 +2814,7 @@ sub convert_encoding
 # $line          The line to be parsed
 #
 # ----------------------------------------------------------------------------
-sub parse_line_with_kakasi
-{
-    my ( $self, $line ) = @_;
+method parse_line_with_kakasi ($line) {
 
     # If the line does not contain Japanese characters, do nothing
     return $line if ( $line =~ /^[\x00-\x7F]*$/ );
@@ -2914,9 +2837,7 @@ sub parse_line_with_kakasi
 # $line          The line to be parsed
 #
 # ----------------------------------------------------------------------------
-sub parse_line_with_mecab
-{
-    my ( $self, $line ) = @_;
+method parse_line_with_mecab ($line) {
 
     # If the line does not contain Japanese characters, do nothing
     return $line if ( $line =~ /^[\x00-\x7F]*$/ );
@@ -2941,9 +2862,7 @@ sub parse_line_with_mecab
 # $line          The line to be parsed
 #
 # ----------------------------------------------------------------------------
-sub parse_line_with_internal_parser
-{
-    my ( $self, $line ) = @_;
+method parse_line_with_internal_parser ($line) {
 
     # If the line does not contain Japanese characters, do nothing
     return $line if ( $line =~ /^[\x00-\x7F]*$/ );
@@ -2977,9 +2896,7 @@ sub init_kakasi
 # Create a new parser object of MeCab.
 #
 # ----------------------------------------------------------------------------
-sub init_mecab
-{
-    my ( $self ) = @_;
+method init_mecab {
 
     # Initialize MeCab (-F %M\s -U %M\s -E \n is passed to MeCab as argument).
     # Insert white spaces after words.
@@ -3007,9 +2924,7 @@ sub close_kakasi
 # Free the parser object of MeCab.
 #
 # ----------------------------------------------------------------------------
-sub close_mecab
-{
-    my ( $self ) = @_;
+method close_mecab {
 
     $self->{nihongo_parser__}{obj_mecab} = undef;
 }
@@ -3024,9 +2939,7 @@ sub close_mecab
 #                  ( kakasi / mecab / internal )
 #
 # ----------------------------------------------------------------------------
-sub setup_nihongo_parser
-{
-    my ( $self, $nihongo_parser ) = @_;
+method setup_nihongo_parser ($nihongo_parser) {
 
     # If MeCab is installed, use MeCab.
     if ( $nihongo_parser eq 'mecab' ) {
@@ -3065,7 +2978,7 @@ sub setup_nihongo_parser
 
         # Import MeCab module
         require MeCab;
-        import MeCab;
+        MeCab->import();
 
         $self->{nihongo_parser__}{init}  = \&init_mecab;
         $self->{nihongo_parser__}{parse} = \&parse_line_with_mecab;
@@ -3074,7 +2987,7 @@ sub setup_nihongo_parser
 
         # Import Text::Kakasi module
         require Text::Kakasi;
-        import Text::Kakasi;
+        Text::Kakasi->import();
 
         $self->{nihongo_parser__}{init}  = \&init_kakasi;
         $self->{nihongo_parser__}{parse} = \&parse_line_with_kakasi;
@@ -3090,5 +3003,6 @@ sub setup_nihongo_parser
     return $nihongo_parser;
 }
 
+} # end class Classifier::MailParse
 
 1;
