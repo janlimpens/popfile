@@ -166,7 +166,7 @@ sub new
     # Specifies the parse mode, '' means no color output, if non-zero
     # then color output using a specific session key stored here
 
-    $self->{color__}        = '';
+    $self->{color_resolver} = undef;
     $self->{color_matrix__} = undef;
     $self->{color_idmap__}  = undef;
     $self->{color_userid__} = undef;
@@ -315,32 +315,8 @@ sub get_color__
 {
     my ( $self, $word ) = @_;
 
-    if ( !defined( $self->{color_matrix__} ) ) {
-        return $self->{bayes__}->get_color( $self->{color__}, $word );
-    } else {
-        my $id;
-
-        for my $i ( keys %{ $self->{color_idmap__} } ) {
-            if ( $word eq $self->{color_idmap__}{$i} ) {
-                $id = $i;
-                last;
-            }
-        }
-
-        if ( defined( $id ) ) {
-            my @buckets = $self->{bayes__}->get_buckets( $self->{color__} );
-
-            return $self->{bayes__}->get_bucket_color(   # PROFILE BLOCK START
-                $self->{color__},
-                $self->{bayes__}->get_top_bucket__(
-                    $self->{color_userid__},
-                    $id,
-                    $self->{color_matrix__},
-                    \@buckets ) );                       # PROFILE BLOCK STOP
-        } else {
-            return 'black';
-        }
-    }
+    return '' unless defined $self->{color_resolver};
+    return $self->{color_resolver}->($word);
 }
 
 # ----------------------------------------------------------------------------
@@ -541,7 +517,7 @@ sub update_pseudoword
     my $mword = $self->{mangle__}->mangle( "$prefix:$word", 1 );
 
     if ( $mword ne '' ) {
-        if ( $self->{color__} ne '' ) {
+        if ( defined( $self->{color_resolver} ) ) {
             if ( $encoded == 1 ) {
                 $literal =~ s/</&lt;/g;
                 $literal =~ s/>/&gt;/g;
@@ -587,7 +563,7 @@ sub update_word
             push @{ $self->{quickmagnets__}{$prefix} }, $word;
         }
 
-        if ( $self->{color__} ne '' ) {
+        if ( defined( $self->{color_resolver} ) ) {
             my $color = $self->get_color__( $mword );
             if ( $encoded == 0 ) {
                 $after = '&' if ( $after eq '>' );
@@ -1717,7 +1693,7 @@ sub parse_file
 
     $self->stop_parse();
 
-    if ( $self->{color__} ne '' ) {
+    if ( defined( $self->{color_resolver} ) ) {
         $self->{colorized__} .= $self->{ut__} if ( $self->{ut__} ne '' );
 
         $self->{colorized__} .= "</tt>";
@@ -1805,7 +1781,7 @@ sub start_parse
     # Used to return a colorize page
 
     $self->{colorized__} = '';
-    $self->{colorized__} .= "<tt>" if ( $self->{color__} ne '' );
+    $self->{colorized__} .= "<tt>" if ( defined( $self->{color_resolver} ) );
 
     # Clear the character set to avoid using the wrong charsets
     $self->{charset__} = '';
@@ -1935,7 +1911,7 @@ sub parse_line
                 $line = $self->{nihongo_parser__}{parse}( $self, $line );
             }
 
-            if ( $self->{color__} ne '' ) {
+            if ( defined( $self->{color_resolver} ) ) {
 
                 if ( !$self->{in_html_tag__} ) {
                     $self->{colorized__} .= $self->{ut__};
@@ -2107,7 +2083,7 @@ sub clear_out_base64
     if ( $self->{base64__} ne '' ) {
         my $decoded = '';
 
-        $self->{ut__}     = '' if ( $self->{color__} ne '' );
+        $self->{ut__}     = '' if ( defined( $self->{color_resolver} ) );
         $self->{base64__} =~ s/ //g;
 
         print "Base64 data: " . $self->{base64__} . "\n" if $self->{debug__};
@@ -2125,11 +2101,11 @@ sub clear_out_base64
 
         print "Decoded: " . $decoded . "\n" if $self->{debug__};
 
-        if ( $self->{color__} ne '' ) {
+        if ( defined( $self->{color_resolver} ) ) {
             $self->{ut__} = "<b>Found in encoded data:</b> " . $self->{ut__};
         }
 
-        if ( $self->{color__} ne '' ) {
+        if ( defined( $self->{color_resolver} ) ) {
             if ( $self->{ut__} ne '' ) {
                 $colorized = $self->{ut__};
                 $self->{ut__} = '';
@@ -2296,12 +2272,12 @@ sub parse_header
     $argument =~ s/^[ \t]+//;
 
     if ( $self->update_pseudoword( 'header', $header, 0, $header ) ) {
-        if ( $self->{color__} ne '' ) {
+        if ( defined( $self->{color_resolver} ) ) {
             my $color     = $self->get_color__( "header:$header" );
             $self->{ut__} = "<b><font color=\"$color\">$header</font></b>: $fix_argument\015\012";
         }
     } else {
-        if ( $self->{color__} ne '' ) {
+        if ( defined( $self->{color_resolver} ) ) {
             $self->{ut__} = "$header: $fix_argument\015\012";
         }
     }

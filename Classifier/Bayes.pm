@@ -3723,16 +3723,15 @@ sub get_html_colored_message
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
-    $self->{parser__}->{color__} = $session;
-    $self->{parser__}->{color_matrix__} = undef;
-    $self->{parser__}->{color_idmap__}  = undef;
-    $self->{parser__}->{color_userid__} = undef;
-    $self->{parser__}->{bayes__} = bless $self;
+    $self->{parser__}->{color_resolver} = sub {
+        my ($word) = @_;
+        return $self->get_color( $session, $word );
+    };
 
     my $result = $self->{parser__}->parse_file( $file,   # PROFILE BLOCK START
             $self->global_config_( 'message_cutoff' ) ); # PROFILE BLOCK STOP
 
-    $self->{parser__}->{color__} = '';
+    $self->{parser__}->{color_resolver} = undef;
 
     return $result;
 }
@@ -3757,16 +3756,30 @@ sub fast_get_html_colored_message
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
-    $self->{parser__}->{color__}        = $session;
-    $self->{parser__}->{color_matrix__} = $matrix;
-    $self->{parser__}->{color_idmap__}  = $idmap;
-    $self->{parser__}->{color_userid__} = $userid;
-    $self->{parser__}->{bayes__}        = bless $self;
+    $self->{parser__}->{color_resolver} = sub {
+        my ($word) = @_;
+        my $id;
+        for my $i ( keys %$idmap ) {
+            if ( $word eq $idmap->{$i} ) {
+                $id = $i;
+                last;
+            }
+        }
+        if ( defined( $id ) ) {
+            my @buckets = $self->get_buckets( $session );
+            return $self->get_bucket_color(
+                $session,
+                $self->get_top_bucket__(
+                    $userid, $id, $matrix, \@buckets ) );
+        } else {
+            return 'black';
+        }
+    };
 
     my $result = $self->{parser__}->parse_file( $file,   # PROFILE BLOCK START
             $self->global_config_( 'message_cutoff' ) ); # PROFILE BLOCK STOP
 
-    $self->{parser__}->{color__} = '';
+    $self->{parser__}->{color_resolver} = undef;
 
     return $result;
 }
