@@ -1,0 +1,17 @@
+From: alice@example.com
+To: bob@example.com
+Subject: Meeting tomorrow
+Date: Mon, 01 Jan 2024 10:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+
+Hi Bob,
+
+Just a reminder about our meeting tomorrow at 10am in the conference room.
+Please bring the project report and your laptop.
+
+We will discuss the quarterly budget and the new development roadmap.
+Looking forward to seeing you there.
+
+Best regards,
+Alice
