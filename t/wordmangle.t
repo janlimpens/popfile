@@ -64,18 +64,16 @@ subtest 'colon handling' => sub {
 };
 
 subtest 'stopwords' => sub {
-    # Load a stopword manually (bypassing file I/O)
-    $wm->{stop__}{the} = 1;
-    $wm->{stop__}{and} = 1;
+    $wm->add_stopword('the', '');
+    $wm->add_stopword('and', '');
 
-    is( $wm->mangle('the'),            '',    'stopword filtered' );
-    is( $wm->mangle('and'),            '',    'stopword filtered' );
+    is( $wm->mangle('the'),            '',      'stopword filtered' );
+    is( $wm->mangle('and'),            '',      'stopword filtered' );
     is( $wm->mangle('hello'),          'hello', 'non-stopword passes' );
-    is( $wm->mangle('the', undef, 1), 'the',  'stopword bypassed with ignore_stops' );
+    is( $wm->mangle('the', undef, 1), 'the',   'stopword bypassed with ignore_stops' );
 
-    # Clean up
-    delete $wm->{stop__}{the};
-    delete $wm->{stop__}{and};
+    $wm->remove_stopword('the', '');
+    $wm->remove_stopword('and', '');
 };
 
 subtest 'add_stopword / remove_stopword' => sub {

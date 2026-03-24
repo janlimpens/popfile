@@ -199,12 +199,10 @@ sub initialize
 # used.
 #
 # ----------------------------------------------------------------------------
-sub start {
+sub start
+{
     my ( $self ) = @_;
-    $self->debug($self, as => __PACKAGE__);
-    print STDERR "start\n";
-    print STDOUT "start\n";
-    return 1
+    return 1;
 }
 
 # ----------------------------------------------------------------------------
@@ -926,13 +924,6 @@ sub last_ten_log_entries
     my ( $self ) = @_;
 
     return $self->{logger__}->last_ten();
-}
-
-sub debug($self, $what, %args) {
-    my $as = $args{as};
-    my $level = delete($args{level}) || 2;
-    $self->log_($level, np($what, %args));
-    return
 }
 
 1;

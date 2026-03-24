@@ -24,81 +24,56 @@ package POPFile::Mutex;
 #
 #----------------------------------------------------------------------------
 
-use strict;
+use Object::Pad;
 
-#----------------------------------------------------------------------------
-# new
-#
-#   Create a new Mutex object (which may refer to a file referred to by
-#   other mutexes) with a specific name generated from the name passed
-#   in.
-#
-#----------------------------------------------------------------------------
-sub new
-{
-    my ( $type, $name ) = @_;
-    my $self;
+class POPFile::Mutex {
 
-    $self->{name__} = "popfile_mutex_${name}.mtx";
-    release( $self );
+    field $name__;
+    field $locked__ = undef;
 
-    return bless $self, $type;
-}
+    BUILD ($name) {
+        $name__ = "popfile_mutex_${name}.mtx";
+        $self->release();
+    }
 
-#----------------------------------------------------------------------------
-#
-# acquire
-#
-#   Returns 1 if it manages to grab the mutex (and will block if necessary)
-#   and 0 if it fails.
-#
-#   $self                     Reference to this object
-#   $timeout                  Timeout in seconds to wait (undef = infinite)
-#
-#----------------------------------------------------------------------------
-sub acquire
-{
-    my ( $self, $timeout ) = @_;
+    #------------------------------------------------------------------------
+    #
+    # acquire
+    #
+    #   Returns 1 if it manages to grab the mutex (and will block if
+    #   necessary) and 0 if it fails.
+    #
+    #   $timeout    Timeout in seconds to wait (undef = infinite)
+    #
+    #------------------------------------------------------------------------
+    method acquire ($timeout = undef) {
+        return 0 if defined $locked__;
 
-    # If acquire() has been called without a matching release() then
-    # fail at once
+        $timeout = 0xFFFFFFFF if !defined $timeout;
+        my $now = time;
 
-    if ( defined( $self->{locked__} ) ) {
+        do {
+            if ( mkdir( $name__, 0755 ) ) {
+                $locked__ = 1;
+                return 1;
+            }
+            select( undef, undef, undef, 0.01 );
+        } while ( time < ( $now + $timeout ) );
+
         return 0;
     }
 
-    # Wait a very long time if no timeout is specified
-
-    $timeout = 0xFFFFFFFF if ( !defined( $timeout ) );
-    my $now = time;
-
-    # Try to create a directory during the timeout period
-
-    do {
-        if ( mkdir( $self->{name__}, 0755 ) ) { # Create a directory
-            $self->{locked__} = 1;
-            return 1;
-        }
-        select( undef, undef, undef, 0.01 );
-    } while ( time < ( $now + $timeout ) );
-
-    # Timed out so return 0
-    return 0;
-}
-
-#----------------------------------------------------------------------------
-#
-# release
-#
-#   Release the lock if we acquired it with a call to acquire()
-#
-#----------------------------------------------------------------------------
-sub release
-{
-    my ( $self ) = @_;
-
-    rmdir( $self->{name__} ); # Delete the Mutex directory
-    $self->{locked__} = undef;
+    #------------------------------------------------------------------------
+    #
+    # release
+    #
+    #   Release the lock if we acquired it with a call to acquire()
+    #
+    #------------------------------------------------------------------------
+    method release {
+        rmdir $name__;
+        $locked__ = undef;
+    }
 }
 
 1;
