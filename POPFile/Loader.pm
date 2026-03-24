@@ -592,6 +592,22 @@ sub CORE_link_components
         $self->{components__}{services}{$name}->history(    $self->{components__}{core}{history} );
     }
 
+    # Wire the classifier service to proxy and interface modules so they
+    # can call it instead of reaching into Bayes directly
+
+    if ( defined $self->{components__}{services}{classifier_service} ) {
+        my $svc = $self->{components__}{services}{classifier_service};
+
+        foreach my $name (sort keys %{$self->{components__}{proxy}}) {
+            my $mod = $self->{components__}{proxy}{$name};
+            $mod->set_service( $svc ) if $mod->can('set_service');
+        }
+        foreach my $name (sort keys %{$self->{components__}{interface}}) {
+            my $mod = $self->{components__}{interface}{$name};
+            $mod->set_service( $svc ) if $mod->can('set_service');
+        }
+    }
+
     # Classifier::Bayes and POPFile::History are friends and are aware
     # of one another
 
@@ -624,7 +640,7 @@ sub CORE_initialize
         print "\n         {$type:" if $self->{debug__};
         foreach my $name (sort keys %{$self->{components__}{$type}}) {
             print " $name" if $self->{debug__};
-            flush STDOUT;
+            STDOUT->flush();
 
             my $mod = $self->{components__}{$type}{$name};
 
@@ -698,14 +714,14 @@ sub CORE_start
                 delete $self->{components__}{$type}{$name};
 	    } else {
                 print " $name" if $self->{debug__};
-                flush STDOUT;
+                STDOUT->flush();
             }
         }
         print '} ' if $self->{debug__};
     }
 
     print "\n\nPOPFile Engine ", scalar($self->CORE_version()), " running\n" if $self->{debug__};
-    flush STDOUT;
+    STDOUT->flush();
 }
 
 #----------------------------------------------------------------------------
@@ -769,7 +785,7 @@ sub CORE_stop
 
     if ( $self->{debug__} ) {
         print "\n\nPOPFile Engine $self->{version_string__} stopping\n";
-        flush STDOUT;
+        STDOUT->flush();
         print "\n    Stopping... ";
     }
 
@@ -788,7 +804,7 @@ sub CORE_stop
         print "\n         {$type:" if $self->{debug__};
         foreach my $name (sort keys %{$self->{components__}{$type}}) {
             print " $name" if $self->{debug__};
-            flush STDOUT;
+            STDOUT->flush();
 
             next if ( $name eq 'mq' );
             next if ( $name eq 'history' );
