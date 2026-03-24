@@ -69,15 +69,6 @@ sub new
 
     $self->{shutdown__} = 0;
 
-    # This stuff lets us do some things in a way that tolerates some
-    # window-isms
-
-    $self->{on_windows__} = 0;
-
-    if ( $^O eq 'MSWin32' ) {
-        require v5.8.0;
-        $self->{on_windows__} = 1;
-    }
 
     # See CORE_loader_init below for an explanation of these
 
@@ -196,23 +187,10 @@ sub pipeready
         return 0;
     }
 
-    if ( $self->{on_windows__} ) {
-
-        # I am NOT doing a select() here because that does not work
-        # on Perl running on Windows.  -s returns the "size" of the file
-        # (in this case a pipe) and will be non-zero if there is data to read
-
-        return ( ( -s $pipe ) > 0 );
-    } else {
-
-        # Here I do a select because we are not running on Windows where
-        # you can't select() on a pipe
-
-        my $rin = '';
-        vec( $rin, fileno( $pipe ), 1 ) = 1;
-        my $ready = select( $rin, undef, undef, 0.01 );
-        return ( $ready > 0 );
-    }
+    my $rin = '';
+    vec( $rin, fileno( $pipe ), 1 ) = 1;
+    my $ready = select( $rin, undef, undef, 0.01 );
+    return ( $ready > 0 );
 }
 
 #----------------------------------------------------------------------------
@@ -515,11 +493,7 @@ sub CORE_signals
     $SIG{TERM}  = $self->{aborting__};
     $SIG{INT}   = $self->{aborting__};
 
-    # Yuck.  On Windows SIGCHLD isn't calling the reaper under
-    # ActiveState 5.8.0 so we detect Windows and ignore SIGCHLD and
-    # call the reaper code below
-
-    $SIG{CHLD}  = $self->{on_windows__}?'IGNORE':$self->{reaper__};
+    $SIG{CHLD}  = $self->{reaper__};
 
     # I've seen spurious ALRM signals happen on Windows so here we for
     # safety say that we want to ignore them
@@ -541,34 +515,6 @@ sub CORE_signals
     return $SIG;
 }
 
-#----------------------------------------------------------------------------
-#
-# CORE_platform_
-#
-# Loads POPFile's platform-specific code
-#
-#----------------------------------------------------------------------------
-sub CORE_platform_
-{
-    my ( $self ) = @_;
-
-    # Look for a module called Platform::<platform> where <platform>
-    # is the value of $^O and if it exists then load it as a component
-    # of POPFile.  IN this way we can have platform specific code (or
-    # not) encapsulated.  Note that such a module needs to be a
-    # POPFile Loadable Module and a subclass of POPFile::Module to
-    # operate correctly
-
-    my $platform = $^O;
-
-    if ( -e $self->root_path__( "Platform/$platform.pm" ) ) {
-        print "\n         {core:" if $self->{debug__};
-
-        $self->CORE_load_module( "Platform/$platform.pm",'core');
-
-        print "}" if $self->{debug__};
-    }
-}
 
 #----------------------------------------------------------------------------
 #
@@ -589,9 +535,6 @@ sub CORE_load
 
     print "\n    Loading... " if $self->{debug__};
 
-    # Do our platform-specific stuff
-
-    $self->CORE_platform_();
 
     # populate our components hash
 
@@ -799,15 +742,6 @@ sub CORE_service
 
         select(undef, undef, undef, 0.05) if !$nowait;
 
-        # If we are on Windows then reap children here
-
-        if ( $self->{on_windows__} ) {
-            foreach my $type (sort keys %{$self->{components__}}) {
-                foreach my $name (sort keys %{$self->{components__}{$type}}) {
-                    $self->{components__}{$type}{$name}->reaper();
-                }
-            }
-        }
 
         last if $nowait;
         

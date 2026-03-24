@@ -76,9 +76,7 @@ sub initialize
 
     $self->config_( 'enabled', 0 );
 
-    # By default we don't fork on Windows
-
-    $self->config_( 'force_fork', ($^O eq 'MSWin32')?0:1 );
+    $self->config_( 'force_fork', 1 );
 
     # Default ports for NNTP service and the user interface
 

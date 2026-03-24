@@ -411,24 +411,6 @@ sub start
         $self->log_( 2, "Use Nihongo (Japanese) parser : $nihongo_parser" );
         $self->config_( 'nihongo_parser', $nihongo_parser );
 
-        # Since Text::Kakasi is not thread-safe, we use it under the
-        # control of a Mutex to avoid a crash if we are running on
-        # Windows and using the fork.
-
-        if ( ( $nihongo_parser eq 'kakasi' ) && ( $^O eq 'MSWin32' ) &&    # PROFILE BLOCK START
-             ( ( ( $self->module_config_( 'pop3', 'enabled' ) ) &&
-                 ( $self->module_config_( 'pop3', 'force_fork' ) ) ) ||
-               ( ( $self->module_config_( 'nntp', 'enabled' ) ) &&
-                 ( $self->module_config_( 'nntp', 'force_fork' ) ) ) ||
-               ( ( $self->module_config_( 'smtp', 'enabled' ) ) &&
-                 ( $self->module_config_( 'smtp', 'force_fork' ) ) ) ) ) { # PROFILE BLOCK STOP
-            $self->{parser__}->{need_kakasi_mutex__} = 1; # PROFILE PLATFORM START MSWin32
-
-            # Prepare the Mutex.
-            require POPFile::Mutex;
-            $self->{parser__}->{kakasi_mutex__} = new POPFile::Mutex( 'mailparse_kakasi' );
-            $self->log_( 2, "Create mutex for Kakasi." ); # PROFILE PLATFORM STOP MSWin32
-        }
     }
 
     $self->upgrade_predatabase_data__();
@@ -872,31 +854,6 @@ sub db_connect__
         }
     }
 
-    if ( $sqlite && ( $^O eq 'MSWin32' ) &&               # PROFILE BLOCK START
-         ( $self->{parser__}->{lang__} eq 'Nihongo' ) &&
-         ( $dbconnect =~ /SQLite:/ ) ) {                  # PROFILE BLOCK STOP
-
-        require DBD::SQLite;
-
-        if ( ( $DBD::SQLite::VERSION ge '1.10' ) ||          # PROFILE BLOCK START
-             ( $DBD::SQLite::sqlite_version ge '3.2.6' ) ) { # PROFILE BLOCK STOP
-
-            # SQLite 3.2.6 or later uses the unicode API in Windows.
-            # http://www.sqlite.org/changes.html#version_3_2_6
-
-            # We need to convert database path to UTF-8 if we are using
-            # SQLite 3.2.6 or later.
-
-            require File::Glob::Windows;
-            require Encode;
-
-            my $code_page = File::Glob::Windows::getCodePage();
-
-            $self->log_( 1, "Converting database connection string from $code_page to utf-8." );
-
-            Encode::from_to( $dbconnect, $code_page, 'utf-8' );
-        }
-    }
 
     $self->{db__} = DBI->connect( $dbconnect,                 # PROFILE BLOCK START
                                   $self->config_( 'dbuser' ),

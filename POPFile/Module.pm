@@ -738,20 +738,8 @@ sub flush_extra_
     my $always_read = 0;
     my $selector;
 
-    if (($^O eq 'MSWin32') && !($mail =~ /socket/i) ) {
-
-        # select only works reliably on IO::Sockets in Win32, so we
-        # always read files on MSWin32 (sysread returns 0 for eof)
-
-        $always_read = 1; # PROFILE PLATFORM START MSWin32
-                          # PROFILE PLATFORM STOP
-    } else {
-
-        # in all other cases, a selector is used to decide whether to read
-
-        $selector    = new IO::Select( $mail );
-        $always_read = 0;
-    }
+    $selector    = new IO::Select( $mail );
+    $always_read = 0;
 
     my $ready;
 
@@ -791,10 +779,7 @@ sub can_read__
     my ( $self, $handle, $timeout ) = @_;
     $timeout = $self->global_config_( 'timeout' ) if ( !defined($timeout) );
 
-    # This unpleasant boolean is to handle the case where we
-    # are slurping a non-socket stream under Win32
-
-    my $can_read = ( ( $handle !~ /socket/i ) && ( $^O eq 'MSWin32' ) );
+    my $can_read = 0;
 
     if ( !$can_read ) {
         if ( $handle =~ /ssl/i ) {

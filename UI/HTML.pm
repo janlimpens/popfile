@@ -1198,18 +1198,6 @@ sub advanced_page
         $config_file = abs_path( $config_file );
     }
 
-    if ( ( $^O eq 'MSWin32' ) &&                           # PROFILE BLOCK START
-         ( $self->config_( 'language' ) eq 'Nihongo' ) ) { # PROFILE BLOCK STOP
-
-        # Converts configuration file path to LanguageCharset
-
-        require Encode;
-        require File::Glob::Windows;
-
-        Encode::from_to( $config_file,                           # PROFILE BLOCK START
-                         File::Glob::Windows::getCodePage(),
-                         $self->{language__}{LanguageCharset} ); # PROFILE BLOCK STOP
-    }
 
     $templ->param( 'Advanced_POPFILE_CFG' => $config_file );
 

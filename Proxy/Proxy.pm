@@ -58,9 +58,6 @@ sub new
 
     $self->{child_}            = 0;
 
-    # Holding variable for MSWin32 pipe handling
-
-    $self->{pipe_cache__} = {};
 
     # This is where we keep the session with the Classifier::Bayes
     # module
@@ -581,9 +578,7 @@ sub verify_connected_
                 my $hit_newline = 0;
                 my $temp_buf;
 
-                # If we are on Windows, we will have to wait ourselves as
-                # we are not going to call IO::Select::can_read.
-                my $wait = ( ($^O eq 'MSWin32') && !($mail =~ /socket/i) ) ? 1 : 0;
+                my $wait = 0;
 
                 # Read until timeout or a newline (newline _should_ be immediate)
 

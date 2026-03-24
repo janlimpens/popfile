@@ -69,8 +69,7 @@ sub initialize
 {
     my ( $self ) = @_;
 
-    # By default we don't fork on Windows
-    $self->config_( 'force_fork', ($^O eq 'MSWin32')?0:1 );
+    $self->config_( 'force_fork', 1 );
 
     # Default port for SMTP service
     $self->config_( 'port', 25 );

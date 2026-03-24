@@ -276,36 +276,8 @@ sub read_pipe_
 {
     my ( $self, $handle ) = @_;
 
-    if ( $^O eq "MSWin32" ) {
-
-        # bypasses bug in -s $pipe under ActivePerl
-
-        my $message;         # PROFILE PLATFORM START MSWin32
-
-        if ( &{ $self->{pipeready_} }($handle) ) {
-
-            # add data to the pipe cache whenever the pipe is ready
-
-            sysread($handle, my $string, -s $handle);
-
-            # push messages onto the end of our cache
-
-            $self->{pipe_cache__} .= $string;
-        }
-
-        # pop the oldest message;
-
-        $message = $1 if (defined($self->{pipe_cache__}) &&           # PROFILE BLOCK START
-                          ( $self->{pipe_cache__} =~ s/(.*?\n)// ) ); # PROFILE BLOCK STOP
-
-        return $message;        # PROFILE PLATFORM STOP
-    } else {
-
-        # do things normally
-
-        if ( &{ $self->{pipeready_} }($handle) ) {
-            return <$handle>;
-        }
+    if ( &{ $self->{pipeready_} }($handle) ) {
+        return <$handle>;
     }
 
     return undef;
