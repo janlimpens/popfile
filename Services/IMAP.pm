@@ -1,8 +1,7 @@
 # POPFILE LOADABLE MODULE
 package Services::IMAP;
-use POPFile::Module;
+use parent 'POPFile::Module';
 use Services::IMAP::Client;
-@ISA = ("POPFile::Module");
 use Carp;
 use Fcntl;
 use v5.40;

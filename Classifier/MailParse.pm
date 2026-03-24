@@ -1698,13 +1698,13 @@ sub parse_file
 
     my $size_read = 0;
 
-    open MSG, "<$file";
-    binmode MSG;
+    open my $msg, '<', $file;
+    binmode $msg;
 
     # Read each line and find each "word" which we define as a
     # sequence of alpha characters
 
-    while ( <MSG> ) {
+    while ( <$msg> ) {
         $size_read += length( $_ );
         $self->parse_line( $_ );
         if ( ( $max_size > 0 ) &&           # PROFILE BLOCK START
@@ -1713,7 +1713,7 @@ sub parse_file
         }
     }
 
-    close MSG;
+    close $msg;
 
     $self->stop_parse();
 

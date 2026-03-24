@@ -23,8 +23,7 @@
 #----------------------------------------------------------------------------
 package UI::HTTP;
 
-use POPFile::Module;
-@ISA = ("POPFile::Module");
+use parent 'POPFile::Module';
 
 use strict;
 use warnings;
@@ -88,7 +87,7 @@ EOM
         return 0;
     }
 
-    $self->{selector_} = new IO::Select( $self->{server_} );
+    $self->{selector_} = IO::Select->new( $self->{server_} );
 
     return 1;
 }

@@ -30,8 +30,7 @@ package UI::XMLRPC;
 #
 #----------------------------------------------------------------------------
 
-use POPFile::Module;
-@ISA = ("POPFile::Module");
+use parent 'POPFile::Module';
 
 use POPFile::API;
 
@@ -84,7 +83,7 @@ sub initialize
 
     $self->config_( 'local', 1 );
 
-    $self->{api__} = new POPFile::API;
+    $self->{api__} = POPFile::API->new();
 
     return 1;
 }
@@ -170,7 +169,7 @@ EOM
     # we can create a selector on it, so here we access a PRIVATE variable on the XMLRPC
     # object.  This is very bad behaviour, but it works until someone changes XMLRPC.
 
-    $self->{selector__} = new IO::Select( $self->{server__}->{_daemon} );
+    $self->{selector__} = IO::Select->new( $self->{server__}->{_daemon} );
 
     return 1;
 }

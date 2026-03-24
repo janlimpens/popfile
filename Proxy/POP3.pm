@@ -1,9 +1,8 @@
 # POPFILE LOADABLE MODULE
 package Proxy::POP3;
 
-use Proxy::Proxy;
+use parent 'Proxy::Proxy';
 use Digest::MD5;
-@ISA = ("Proxy::Proxy");
 
 # ----------------------------------------------------------------------------
 #

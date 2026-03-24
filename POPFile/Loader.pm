@@ -131,11 +131,11 @@ sub CORE_loader_init
     my $version_file = $self->root_path__( 'POPFile/popfile_version' );
 
     if ( -e $version_file ) {
-        open VER, "<$version_file";
-        my $major = int(<VER>);
-        my $minor = int(<VER>);
-        my $rev   = int(<VER>);
-        close VER;
+        open my $ver, '<', $version_file;
+        my $major = int(<$ver>);
+        my $minor = int(<$ver>);
+        my $rev   = int(<$ver>);
+        close $ver;
         $self->CORE_version( $major, $minor, $rev );
     }
 
@@ -454,9 +454,9 @@ sub load_module_
 
     my $mod;
 
-    if ( open MODULE, '<' . $self->root_path__( $module ) ) {
-        my $first = <MODULE>;
-        close MODULE;
+    if ( open my $module_fh, '<', $self->root_path__( $module ) ) {
+        my $first = <$module_fh>;
+        close $module_fh;
 
         if ( $first =~ /^# POPFILE LOADABLE MODULE/ ) {
             require $module;

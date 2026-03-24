@@ -1,8 +1,7 @@
 # POPFILE LOADABLE MODULE
 package Classifier::WordMangle;
 
-use POPFile::Module;
-@ISA = ("POPFile::Module");
+use parent 'POPFile::Module';
 
 # ----------------------------------------------------------------------------
 #

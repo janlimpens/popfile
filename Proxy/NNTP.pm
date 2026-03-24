@@ -1,8 +1,7 @@
 # POPFILE LOADABLE MODULE
 package Proxy::NNTP;
 
-use Proxy::Proxy;
-@ISA = ("Proxy::Proxy");
+use parent 'Proxy::Proxy';
 
 # ----------------------------------------------------------------------------
 #

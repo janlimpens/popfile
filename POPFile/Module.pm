@@ -641,7 +641,7 @@ sub slurp_
     $timeout = $self->global_config_( 'timeout' ) if ( !defined( $timeout ) );
 
     if ( !defined( $slurp_data__{"$handle"}{data} ) ) {
-        $slurp_data__{"$handle"}{select} = new IO::Select( $handle );
+        $slurp_data__{"$handle"}{select} = IO::Select->new( $handle );
         $slurp_data__{"$handle"}{data}   = '';
     }
 
@@ -738,7 +738,7 @@ sub flush_extra_
     my $always_read = 0;
     my $selector;
 
-    $selector    = new IO::Select( $mail );
+    $selector    = IO::Select->new( $mail );
     $always_read = 0;
 
     my $ready;
@@ -792,7 +792,7 @@ sub can_read__
             if ( defined( $slurp_data__{"$handle"}{select} ) ) {
                 $can_read = defined( $slurp_data__{"$handle"}{select}->can_read( $timeout ) );
             } else {
-                my $selector    = new IO::Select( $handle );
+                my $selector    = IO::Select->new( $handle );
                 $can_read = defined( $selector->can_read( $timeout ) );
             }
         }

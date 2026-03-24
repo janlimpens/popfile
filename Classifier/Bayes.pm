@@ -1,8 +1,7 @@
 # POPFILE LOADABLE MODULE
 package Classifier::Bayes;
 
-use POPFile::Module;
-@ISA = ("POPFile::Module");
+use parent 'POPFile::Module';
 
 #----------------------------------------------------------------------------
 #
@@ -123,7 +122,7 @@ sub new
 
     # Used to parse mail messages
 
-    $self->{parser__}            = new Classifier::MailParse;
+    $self->{parser__}            = Classifier::MailParse->new();
 
     # The possible colors for buckets
     $self->{possible_colors__} = [ 'red',       'green',      'blue',       'brown', # PROFILE BLOCK START
@@ -799,10 +798,10 @@ sub db_connect__
 
         # Check if the database is SQLite2 format
 
-        open DBFILE, $dbname;
+        open my $dbfile, '<', $dbname;
         my $buffer;
-        my $readed = sysread( DBFILE, $buffer, 47 );
-        close DBFILE;
+        my $readed = sysread( $dbfile, $buffer, 47 );
+        close $dbfile;
 
         if ( $buffer eq '** This file contains an SQLite 2.1 database **' ) {
             $self->log_( 0, 'SQLite 2 database found. Try to upgrade' );
@@ -910,10 +909,10 @@ sub db_connect__
     # version number.  If the version number doesn't match or is
     # missing then do the upgrade.
 
-    open SCHEMA, '<' . $self->get_root_path_( 'Classifier/popfile.sql' );
-    <SCHEMA> =~ /-- POPFILE SCHEMA (\d+)/;
+    open my $schema_fh, '<', $self->get_root_path_( 'Classifier/popfile.sql' );
+    <$schema_fh> =~ /-- POPFILE SCHEMA (\d+)/;
     my $version = $1;
-    close SCHEMA;
+    close $schema_fh;
 
     my $need_upgrade = 1;
 
@@ -1050,8 +1049,8 @@ sub insert_schema__
 
         $self->log_( 0, "Creating database schema" );
 
-        open SCHEMA, '<' . $self->get_root_path_( 'Classifier/popfile.sql' );
-        while ( <SCHEMA> ) {
+        open my $schema_fh, '<', $self->get_root_path_( 'Classifier/popfile.sql' );
+        while ( <$schema_fh> ) {
             next if ( /^--/ );
             next if ( !/[a-z;]/ );
             s/--.*$//;
@@ -1070,7 +1069,7 @@ sub insert_schema__
                 $schema = '';
             }
         }
-        close SCHEMA;
+        close $schema_fh;
         return 1;
     } else {
         $self->log_( 0, "Can't find the database schema" );
@@ -2862,8 +2861,9 @@ sub classify_and_modify
     # middle of downloading a message and we refresh the history we do not
     # get class file errors
 
+    my $msg;
     if ( !$nosave ) {
-        open MSG, ">$msg_file" or $self->log_( 0, "Could not open $msg_file : $!" );
+        open $msg, '>', $msg_file or $self->log_( 0, "Could not open $msg_file : $!" );
     }
 
     while ( my $line = $self->slurp_( $mail ) ) {
@@ -2898,7 +2898,7 @@ sub classify_and_modify
 
             if ( !( $line =~ /^(\r\n|\r|\n)$/i ) )  {
                 $message_size += length $line;
-                $self->write_line__( $nosave?undef:\*MSG, $fileline, $class );
+                $self->write_line__( $nosave?undef:$msg, $fileline, $class );
 
                 # If there is no echoing occuring, it doesn't matter
                 # what we do to these
@@ -2951,14 +2951,14 @@ sub classify_and_modify
                     }
                 }
             } else {
-                $self->write_line__( $nosave?undef:\*MSG, "\n", $class );
+                $self->write_line__( $nosave?undef:$msg, "\n", $class );
                 $message_size += length $crlf;
                 $getting_headers = 0;
             }
         } else {
             $message_size += length $line;
             $msg_body     .= $line;
-            $self->write_line__( $nosave?undef:\*MSG, $fileline, $class );
+            $self->write_line__( $nosave?undef:$msg, $fileline, $class );
         }
 
         # Check to see if too much time has passed and we need to keep
@@ -2975,7 +2975,7 @@ sub classify_and_modify
                   ( !$getting_headers ) );           # PROFILE BLOCK STOP
     }
 
-    close MSG unless $nosave;
+    close $msg unless $nosave;
 
     # If we don't yet know the classification then stop the parser
     if ( $class eq '' ) {

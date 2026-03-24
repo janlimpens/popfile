@@ -24,8 +24,7 @@ package UI::HTML;
 #
 #----------------------------------------------------------------------------
 
-use UI::HTTP;
-@ISA = ("UI::HTTP");
+use parent 'UI::HTTP';
 
 use strict;
 use warnings;
@@ -2782,10 +2781,10 @@ sub view_page
 
         my $body = '<tt>';
 
-        open MESSAGE, '<' . $mail_file;
+        open my $message_fh, '<', $mail_file;
         my $line;
 
-        while ($line = <MESSAGE>) {
+        while ($line = <$message_fh>) {
             $line =~ s/</&lt;/g;
             $line =~ s/>/&gt;/g;
 
@@ -2817,7 +2816,7 @@ sub view_page
 
             $body .= $line;
         }
-        close MESSAGE;
+        close $message_fh;
         $body .= '</tt>';
         $templ->param( 'View_Message' => $body );
     }

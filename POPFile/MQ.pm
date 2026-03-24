@@ -1,8 +1,7 @@
 # POPFILE LOADABLE MODULE
 package POPFile::MQ;
 
-use POPFile::Module;
-@ISA = ( "POPFile::Module" );
+use parent 'POPFile::Module';
 
 #----------------------------------------------------------------------------
 #

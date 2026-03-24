@@ -25,8 +25,7 @@ package Proxy::Proxy;
 #
 # ----------------------------------------------------------------------------
 
-use POPFile::Module;
-@ISA = ( "POPFile::Module" );
+use parent 'POPFile::Module';
 
 use IO::Handle;
 use IO::Socket;
@@ -154,7 +153,7 @@ EOM
     # This is used to perform select calls on the $server socket so that we can decide when there is
     # a call waiting an accept it without having to block
 
-    $self->{selector__} = new IO::Select( $self->{server__} );
+    $self->{selector__} = IO::Select->new( $self->{server__} );
 
     # Tell the UI about the SOCKS parameters
 
@@ -405,7 +404,7 @@ sub get_response_
         $can_read = ( $mail->pending() > 0 );
     }
     if ( !$can_read ) {
-        my $selector = new IO::Select( $mail );
+        my $selector = IO::Select->new( $mail );
         my ( $ready ) = $selector->can_read(                             # PROFILE BLOCK START
             ( !$null_resp ? $self->global_config_( 'timeout' ) : .5 ) ); # PROFILE BLOCK STOP
         $can_read = defined( $ready ) && ( $ready == $mail );
@@ -564,7 +563,7 @@ sub verify_connected_
                 # Wait 'timeout' seconds for a response from the remote server and
                 # if there isn't one then give up trying to connect
 
-                my $selector = new IO::Select( $mail );
+                my $selector = IO::Select->new( $mail );
                 last unless $selector->can_read($self->global_config_( 'timeout' ));
             }
 
