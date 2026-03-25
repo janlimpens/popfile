@@ -42,8 +42,14 @@ Registers configuration defaults: C<port> (8080) and C<static_dir> (public).
 =cut
 
     method initialize {
-        $self->config('port',       8080 );
-        $self->config('static_dir', 'public' );
+        $self->config('port',             8080 );
+        $self->config('static_dir',       'public' );
+        $self->config('password',         '' );
+        $self->config('local',            1 );
+        $self->config('page_size',        25 );
+        $self->config('date_format',      '' );
+        $self->config('session_dividers', 1 );
+        $self->config('wordtable_format', '' );
         return 1;
     }
 
@@ -360,30 +366,73 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
-        # GET /api/v1/config
-        #   Returns the subset of POPFile config params the UI cares about
+        # Config schema: key => [module, param]
+        # Keys match the frontend's SECTIONS schema.
         #--------------------------------------------------------------------
-        my @config_keys = qw( html_port html_password bayes_hostname logger_level );
+        my %CFG = (
+            mojo_ui_port             => [mojo_ui => 'port'],
+            mojo_ui_password         => [mojo_ui => 'password'],
+            mojo_ui_local            => [mojo_ui => 'local'],
+            mojo_ui_page_size        => [mojo_ui => 'page_size'],
+            mojo_ui_date_format      => [mojo_ui => 'date_format'],
+            mojo_ui_session_dividers => [mojo_ui => 'session_dividers'],
+            mojo_ui_wordtable_format => [mojo_ui => 'wordtable_format'],
+            pop3_port                => [pop3    => 'port'],
+            pop3_separator           => [pop3    => 'separator'],
+            pop3_local               => [pop3    => 'local'],
+            pop3_force_fork          => [pop3    => 'force_fork'],
+            pop3_toptoo              => [pop3    => 'toptoo'],
+            pop3_secure_server       => [pop3    => 'secure_server'],
+            pop3_secure_port         => [pop3    => 'secure_port'],
+            smtp_port                => [smtp    => 'port'],
+            smtp_chain_server        => [smtp    => 'chain_server'],
+            smtp_chain_port          => [smtp    => 'chain_port'],
+            smtp_local               => [smtp    => 'local'],
+            smtp_force_fork          => [smtp    => 'force_fork'],
+            nntp_port                => [nntp    => 'port'],
+            nntp_separator           => [nntp    => 'separator'],
+            nntp_local               => [nntp    => 'local'],
+            nntp_force_fork          => [nntp    => 'force_fork'],
+            nntp_headtoo             => [nntp    => 'headtoo'],
+            bayes_hostname           => [bayes   => 'hostname'],
+            bayes_message_cutoff     => [bayes   => 'message_cutoff'],
+            bayes_unclassified_weight => [bayes  => 'unclassified_weight'],
+            bayes_subject_mod_left   => [bayes   => 'subject_mod_left'],
+            bayes_subject_mod_right  => [bayes   => 'subject_mod_right'],
+            bayes_subject_mod_pos    => [bayes   => 'subject_mod_pos'],
+            bayes_sqlite_tweaks      => [bayes   => 'sqlite_tweaks'],
+            bayes_sqlite_journal_mode => [bayes  => 'sqlite_journal_mode'],
+            history_history_days     => [history => 'history_days'],
+            history_archive          => [history => 'archive'],
+            history_archive_dir      => [history => 'archive_dir'],
+            history_archive_classes  => [history => 'archive_classes'],
+            logger_level             => [logger  => 'level'],
+            logger_logdir            => [logger  => 'logdir'],
+        );
+
+        #--------------------------------------------------------------------
+        # GET /api/v1/config  →  { key: value, ... }
+        #--------------------------------------------------------------------
         $r->get( '/api/v1/config' => sub ($c) {
             my %cfg;
-            for my $key ( @config_keys ) {
-                # config keys are module__param formatted; try global first
-                my $val = $self->global_config($key );
-                $cfg{$key} = $val // '';
+            for my $key ( keys %CFG ) {
+                my ( $mod, $param ) = @{ $CFG{$key} };
+                $cfg{$key} = $self->module_config( $mod, $param ) // '';
             }
             $c->render( json => \%cfg );
         });
 
         #--------------------------------------------------------------------
-        # PUT /api/v1/config   { key: value, ... }
+        # PUT /api/v1/config  { key: value, ... }  →  persists to popfile.cfg
         #--------------------------------------------------------------------
         $r->put( '/api/v1/config' => sub ($c) {
             my $body = $c->req->json // {};
-            my %allowed = map { $_ => 1 } @config_keys;
             for my $key ( keys %{$body} ) {
-                next unless $allowed{$key};
-                $self->global_config($key, $body->{$key} );
+                next unless exists $CFG{$key};
+                my ( $mod, $param ) = @{ $CFG{$key} };
+                $self->module_config( $mod, $param, $body->{$key} );
             }
+            $self->configuration()->save_configuration();
             $c->render( json => { ok => \1 } );
         });
 
