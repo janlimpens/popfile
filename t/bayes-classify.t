@@ -99,6 +99,87 @@ subtest 'bucket parameters' => sub {
 };
 
 # -----------------------------------------------------------------------
+subtest 'word count APIs' => sub {
+    my $total_wc = $bayes->get_word_count($session);
+    ok( $total_wc > 0, "total word count ($total_wc) is positive" );
+
+    my $inbox_wc = $bayes->get_bucket_word_count($session, 'inbox');
+    my $spam_wc  = $bayes->get_bucket_word_count($session, 'spam');
+    is( $total_wc, $inbox_wc + $spam_wc, 'total equals sum of bucket counts' );
+
+    my $meeting_count = $bayes->get_count_for_word($session, 'inbox', 'meeting');
+    ok( $meeting_count > 0, "\"meeting\" appears in inbox ($meeting_count times)" );
+
+    my $inbox_unique = $bayes->get_bucket_unique_count($session, 'inbox');
+    ok( $inbox_unique > 0, "inbox has $inbox_unique unique words" );
+
+    my $total_unique = $bayes->get_unique_word_count($session);
+    ok( $total_unique >= $inbox_unique, 'total unique >= inbox unique' );
+};
+
+# -----------------------------------------------------------------------
+subtest 'word list retrieval' => sub {
+    my @prefixes = $bayes->get_bucket_word_prefixes($session, 'inbox');
+    ok( @prefixes > 0, 'get_bucket_word_prefixes returns some prefixes' );
+
+    my $prefix = $prefixes[0];
+    my @words  = $bayes->get_bucket_word_list($session, 'inbox', $prefix);
+    ok( @words > 0, "get_bucket_word_list returns words for prefix '$prefix'" );
+};
+
+# -----------------------------------------------------------------------
+subtest 'pseudo and all buckets' => sub {
+    my @pseudo = $bayes->get_pseudo_buckets($session);
+    ok( @pseudo > 0, 'get_pseudo_buckets returns at least one pseudo bucket' );
+    ok( (grep { $_ eq 'unclassified' } @pseudo), '"unclassified" is a pseudo bucket' );
+
+    ok(  $bayes->is_pseudo_bucket($session, 'unclassified'), 'is_pseudo_bucket true for "unclassified"' );
+    ok( !$bayes->is_pseudo_bucket($session, 'inbox'),        'is_pseudo_bucket false for real bucket' );
+
+    my @all     = $bayes->get_all_buckets($session);
+    my %all_set = map { $_ => 1 } @all;
+    ok( $all_set{inbox},        '"inbox" in get_all_buckets' );
+    ok( $all_set{unclassified}, '"unclassified" in get_all_buckets' );
+};
+
+# -----------------------------------------------------------------------
+subtest 'bucket parameter get/set' => sub {
+    my $fncount = $bayes->get_bucket_parameter($session, 'inbox', 'fncount');
+    ok( defined $fncount, 'fncount parameter is defined' );
+
+    $bayes->set_bucket_parameter($session, 'inbox', 'fncount', 42);
+    is( $bayes->get_bucket_parameter($session, 'inbox', 'fncount'), 42, 'fncount updated to 42' );
+
+    $bayes->set_bucket_parameter($session, 'inbox', 'fncount', $fncount);
+};
+
+# -----------------------------------------------------------------------
+subtest 'rename bucket' => sub {
+    is( $bayes->create_bucket($session, 'tmp-rename'),              1, 'created "tmp-rename"' );
+    is( $bayes->rename_bucket($session, 'tmp-rename', 'tmp-renamed'), 1, 'renamed to "tmp-renamed"' );
+    ok(  $bayes->is_bucket($session, 'tmp-renamed'), '"tmp-renamed" exists' );
+    ok( !$bayes->is_bucket($session, 'tmp-rename'),  '"tmp-rename" gone' );
+    is( $bayes->rename_bucket($session, 'tmp-rename', 'tmp-renamed'), 0, 'renaming non-existent returns 0' );
+    $bayes->delete_bucket($session, 'tmp-renamed');
+};
+
+# -----------------------------------------------------------------------
+subtest 'delete bucket' => sub {
+    is( $bayes->create_bucket($session, 'tmp-delete'),  1, 'created "tmp-delete"' );
+    is( $bayes->delete_bucket($session, 'tmp-delete'),  1, 'deleted "tmp-delete"' );
+    ok( !$bayes->is_bucket($session, 'tmp-delete'), '"tmp-delete" no longer exists' );
+    is( $bayes->delete_bucket($session, 'tmp-delete'), 0, 'deleting non-existent bucket returns 0' );
+};
+
+# -----------------------------------------------------------------------
+subtest 'clear bucket' => sub {
+    my $wc_before = $bayes->get_bucket_word_count($session, 'spam');
+    ok( $wc_before > 0, "spam has words before clear" );
+    is( $bayes->clear_bucket($session, 'spam'),         1, 'clear_bucket returned 1' );
+    is( $bayes->get_bucket_word_count($session, 'spam'), 0, 'spam word count is 0 after clear' );
+};
+
+# -----------------------------------------------------------------------
 $bayes->release_session_key($session);
 $bayes->stop();
 
