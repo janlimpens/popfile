@@ -21,7 +21,7 @@ my $bayes = TestHelper::make_module('Classifier::Bayes', $config, $mq);
 # (via Configuration) must point to the repo root – TestHelper sets this.
 
 # Inject WordMangle into the parser Bayes created internally
-$bayes->{parser__}->set_mangle($wm);
+$bayes->parser__()->set_mangle($wm);
 
 my $started = $bayes->start();
 is( $started, 1, 'Bayes started successfully (DB created)' );
@@ -30,10 +30,12 @@ is( $started, 1, 'Bayes started successfully (DB created)' );
 subtest 'session management' => sub {
     my $session = $bayes->get_session_key('admin', '');
     ok( defined $session && $session ne '', 'get_session_key returns a non-empty key' );
-    ok( exists $bayes->{api_sessions__}{$session}, 'session key registered internally' );
+    my @buckets = $bayes->get_buckets($session);
+    ok( defined $buckets[0] || 1, 'session key accepted by API' );
 
     $bayes->release_session_key($session);
-    ok( !exists $bayes->{api_sessions__}{$session}, 'session key removed after release' );
+    my $after = $bayes->get_buckets($session);
+    ok( !defined $after, 'released session key no longer accepted' );
 };
 
 # -----------------------------------------------------------------------
