@@ -294,7 +294,8 @@ class POPFile::Loader {
         require $module;
         (my $class = $module) =~ s/\//::/g;
         $class =~ s/\.pm$//;
-        my $mod = $class->new();
+        my $mod = eval { $class->new() };
+        return undef if $@;
         return $mod->DOES('POPFile::Loadable') ? $mod : undef
     }
 
@@ -389,9 +390,9 @@ class POPFile::Loader {
 
         # Classifier::Bayes and POPFile::History are friends.
 
-        $components{core}{history}->classifier(
+        $components{core}{history}->set_classifier(
             $components{classifier}{bayes} );
-        $components{classifier}{bayes}->history(
+        $components{classifier}{bayes}->set_history(
             $components{core}{history} );
 
         $components{classifier}{bayes}->parser()->set_mangle(

@@ -1021,6 +1021,7 @@ Disconnect from the POPFile database
 
 =cut
 method db_disconnect {
+    return unless ref $db_get_buckets;
     $db_get_buckets->finish;
     $db_get_wordid->finish;
     $db_get_userid->finish;

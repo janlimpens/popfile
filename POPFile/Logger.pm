@@ -72,7 +72,7 @@ class POPFile::Logger :isa(POPFile::Module) {
             popfile_level => $self->config('level') // 0,
             format        => $self->config('format') // 'default',
         );
-        Log::Any::Adapter->set('POPFile::Log::Adapter');
+        Log::Any::Adapter->set('+POPFile::Log::Adapter');
     }
 
     method remove_debug_files {
@@ -83,6 +83,11 @@ class POPFile::Logger :isa(POPFile::Module) {
                 unlink $f if $1 < ($self->time - 3 * $seconds_per_day);
             }
         }
+    }
+
+    method debug ($level, $message) {
+        Log::Any->get_logger(category => 'POPFile')->info($message)
+            if $level <= ($self->config('level') // 0);
     }
 
     method debug_filename { $debug_filename }
