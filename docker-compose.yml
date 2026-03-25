@@ -1,0 +1,9 @@
+services:
+  popfile:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./popfile.cfg:/app/popfile.cfg
+      - ./popfile.db:/app/popfile.db
+      - ./messages:/app/messages

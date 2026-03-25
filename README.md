@@ -7,18 +7,18 @@ which trains the classifier over time.
 
 ## Prerequisites
 
-- [perlbrew](https://perlbrew.pl/) with perl ≥ 5.38
-- [Carton](https://metacpan.org/pod/Carton)
-
-## Setup
-
-```sh
-carton install
-```
+- [Docker](https://docs.docker.com/get-docker/) + [Compose](https://docs.docker.com/compose/)
 
 ## Run
 
 ```sh
+docker compose up
+```
+
+### Local (with perlbrew + Carton)
+
+```sh
+carton install
 carton exec perl popfile.pl
 ```
 
