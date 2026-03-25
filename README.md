@@ -8,19 +8,18 @@ which trains the classifier over time.
 ## Prerequisites
 
 - [perlbrew](https://perlbrew.pl/) with perl ≥ 5.38
-- [cpanm](https://metacpan.org/pod/App::cpanminus)
+- [Carton](https://metacpan.org/pod/Carton)
 
 ## Setup
 
 ```sh
-# Install dependencies into local/
-cpanm --installdeps --local-lib local .
+carton install
 ```
 
 ## Run
 
 ```sh
-perl -Ilocal/lib/perl5 popfile.pl
+carton exec perl popfile.pl
 ```
 
 The web UI is available at <http://localhost:8080> by default.
@@ -32,10 +31,10 @@ cache (default: `./`).
 
 ```sh
 # Classify a message and show word scores
-perl -Ilocal/lib/perl5 bayes.pl <message-file>
+carton exec perl bayes.pl <message-file>
 
 # Train a message into a bucket
-perl -Ilocal/lib/perl5 insert.pl <bucket-name> <message-file>
+carton exec perl insert.pl <bucket-name> <message-file>
 ```
 
 ## Svelte UI
@@ -55,7 +54,7 @@ npm run build
 ## Tests
 
 ```sh
-perl -Ilocal/lib/perl5 -I. t/mailparse.t
+carton exec perl -I. t/mailparse.t
 ```
 
 ## Runtime files (gitignored)
