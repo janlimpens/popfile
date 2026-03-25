@@ -365,7 +365,7 @@ method start {
 
     # Pass in the current interface language for language specific parsing
 
-    $self->{parser__}->{lang__}  = $language;
+    $self->{parser__}->lang( $language );
     $self->{unclassified__} = log( $self->config_( 'unclassified_weight' ) );
 
     if ( !$self->db_connect__() ) {
@@ -828,7 +828,7 @@ method db_connect__ {
 
         # For Japanese compatibility
 
-        if ( $self->{parser__}->{lang__} eq 'Nihongo' ) {
+        if ( $self->{parser__}->lang() eq 'Nihongo' ) {
             $self->{db__}->do( 'pragma case_sensitive_like=1;' );
         }
 
@@ -1765,7 +1765,7 @@ method add_words_to_bucket__ ($session, $bucket, $subtract) {
     # then update those counts and write them back to the database.
 
     my $words;
-    $words = join( ',', map( $self->{db__}->quote( $_ ), (sort keys %{$self->{parser__}{words__}}) ) );
+    $words = join( ',', map( $self->{db__}->quote( $_ ), (sort keys %{$self->{parser__}->words()}) ) );
     $self->{get_wordids__} = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
              "select id, word from words
                      where word in ( $words );" );                     # PROFILE BLOCK STOP
@@ -1803,7 +1803,7 @@ method add_words_to_bucket__ ($session, $bucket, $subtract) {
     undef $self->{db_getwords__};
 
     $self->{db__}->begin_work;
-    foreach my $word (keys %{$self->{parser__}->{words__}}) {
+    foreach my $word (keys %{$self->{parser__}->words()}) {
 
         # If there's already a count then it means that the word is
         # already in the database and we have its id in
@@ -1817,7 +1817,7 @@ method add_words_to_bucket__ ($session, $bucket, $subtract) {
                 $self->{db_bucketid__}{$userid}{$bucket}{id},
                 $wordmap{$word},
                 $counts{$wordmap{$word}} +
-                    $subtract * $self->{parser__}->{words__}{$word} ); # PROFILE BLOCK STOP
+                    $subtract * $self->{parser__}->words()->{$word} ); # PROFILE BLOCK STOP
         } else {
 
             # If the word is not in the database and we are trying to
@@ -1825,7 +1825,7 @@ method add_words_to_bucket__ ($session, $bucket, $subtract) {
             # meaningless
 
             if ( $subtract == 1 ) {
-                $self->db_put_word_count__( $session, $bucket, $word, $self->{parser__}->{words__}{$word} );
+                $self->db_put_word_count__( $session, $bucket, $word, $self->{parser__}->words()->{$word} );
             }
         }
     }
@@ -2286,7 +2286,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     # winning bucket is.
 
     my $words;
-    $words = join( ',', map( $self->{db__}->quote( $_ ), (sort keys %{$self->{parser__}{words__}}) ) );
+    $words = join( ',', map( $self->{db__}->quote( $_ ), (sort keys %{$self->{parser__}->words()}) ) );
     $self->{get_wordids__} = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
              "select id, word
                   from words
@@ -2342,7 +2342,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     foreach my $id (@id_list) {
         $word_count += 2;
         my $wmax = -10000;
-        my $count = $self->{parser__}{words__}{$$idmap{$id}};
+        my $count = $self->{parser__}->words()->{$$idmap{$id}};
 
         foreach my $bucket (@buckets) {
             my $probability = $not_likely;
@@ -2543,7 +2543,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
 
                 if ( $known == 1 ) {
                     my $wordcolor = $self->get_bucket_color( $session, $self->get_top_bucket__( $userid, $id, $matrix, \@ranking ) );
-                    my $count = $self->{parser__}->{words__}{$$idmap{$id}};
+                    my $count = $self->{parser__}->words()->{$$idmap{$id}};
 
                     $row_data{View_Score_Word} = $$idmap{$id};
                     $row_data{View_Score_Word_Color} = $wordcolor;
@@ -2965,7 +2965,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
        if ( $quarantine ) {
            my ( $orig_from, $orig_to, $orig_subject ) = ( $self->{parser__}->get_header('from'), $self->{parser__}->get_header('to'), $self->{parser__}->get_header('subject') );
            my ( $encoded_from, $encoded_to ) = ( $orig_from, $orig_to );
-           if ( $self->{parser__}->{lang__} eq 'Nihongo' ) {
+           if ( $self->{parser__}->lang() eq 'Nihongo' ) {
                require Encode;
 
                Encode::from_to( $orig_from, 'euc-jp', 'iso-2022-jp');
@@ -2987,7 +2987,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
            print $client "MIME-Version: 1.0$crlf";
            print $client "Content-Type: multipart/report; boundary=\"$slot\"$crlf$crlf--$slot$crlf";
            print $client "Content-Type: text/plain";
-           print $client "; charset=iso-2022-jp" if ( $self->{parser__}->{lang__} eq 'Nihongo' );
+           print $client "; charset=iso-2022-jp" if ( $self->{parser__}->lang() eq 'Nihongo' );
            print $client "$crlf$crlf";
            print $client "POPFile has quarantined a message.  It is attached to this email.$crlf$crlf";
            print $client "Quarantined Message Detail$crlf$crlf";
@@ -3002,7 +3002,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
            print $client "The first 20 words found in the email are:$crlf$crlf";
 
            my $first20 = $self->{parser__}->first20();
-           if ( $self->{parser__}->{lang__} eq 'Nihongo' ) {
+           if ( $self->{parser__}->lang() eq 'Nihongo' ) {
                require Encode;
 
                Encode::from_to( $first20, 'euc-jp', 'iso-2022-jp');
@@ -3588,15 +3588,15 @@ method get_html_colored_message ($session, $file) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
-    $self->{parser__}->{color_resolver} = sub {
+    $self->{parser__}->color_resolver(sub {
         my ($word) = @_;
         return $self->get_color( $session, $word );
-    };
+    });
 
     my $result = $self->{parser__}->parse_file( $file,   # PROFILE BLOCK START
             $self->global_config_( 'message_cutoff' ) ); # PROFILE BLOCK STOP
 
-    $self->{parser__}->{color_resolver} = undef;
+    $self->{parser__}->color_resolver(undef);
 
     return $result;
 }
@@ -3619,7 +3619,7 @@ method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
-    $self->{parser__}->{color_resolver} = sub {
+    $self->{parser__}->color_resolver(sub {
         my ($word) = @_;
         my $id;
         for my $i ( keys %$idmap ) {
@@ -3637,12 +3637,12 @@ method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
         } else {
             return 'black';
         }
-    };
+    });
 
     my $result = $self->{parser__}->parse_file( $file,   # PROFILE BLOCK START
             $self->global_config_( 'message_cutoff' ) ); # PROFILE BLOCK STOP
 
-    $self->{parser__}->{color_resolver} = undef;
+    $self->{parser__}->color_resolver(undef);
 
     return $result;
 }
@@ -4151,7 +4151,7 @@ method get_stopword_list ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
-    return $self->{parser__}->{mangle__}->stopwords();
+    return $self->{parser__}->mangle()->stopwords();
 }
 
 #----------------------------------------------------------------------------
@@ -4201,7 +4201,7 @@ method add_stopword ($session, $stopword) {
 
     # Pass language parameter to add_stopword()
 
-    return $self->{parser__}->{mangle__}->add_stopword(           # PROFILE BLOCK START
+    return $self->{parser__}->mangle()->add_stopword(           # PROFILE BLOCK START
         $stopword, $self->module_config_( 'html', 'language' ) ); # PROFILE BLOCK STOP
 }
 
@@ -4212,7 +4212,7 @@ method remove_stopword ($session, $stopword) {
 
     # Pass language parameter to remove_stopword()
 
-    return $self->{parser__}->{mangle__}->remove_stopword(        # PROFILE BLOCK START
+    return $self->{parser__}->mangle()->remove_stopword(        # PROFILE BLOCK START
         $stopword, $self->module_config_( 'html', 'language' ) ); # PROFILE BLOCK STOP
 }
 

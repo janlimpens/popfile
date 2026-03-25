@@ -140,63 +140,17 @@ my $non_spacing_tags = "a|abbr|acronym|b|big|blink" .    # PROFILE BLOCK START
 
 my $eol = "\015\012";
 
-class Classifier::MailParse :repr(HASH) {
-
-    BUILD {
-        # Hash of word frequences
-
-        $self->{words__} = {};
-
-        # Total word cout
-
-        $self->{msg_total__} = 0;
-
-        # Internal use for keeping track of a line without touching it
-
-        $self->{ut__} = '';
-
-        # Specifies the parse mode; color_resolver is a sub($word)->$color
-        # set by the caller (Bayes) when colorized output is needed
-
-        $self->{color_resolver} = undef;
-
-        # This will store the from, to, cc and subject from the last parse
-        $self->{from__}    = '';
-        $self->{to__}      = '';
-        $self->{cc__}      = '';
-        $self->{subject__} = '';
-
-        # This is used to store the words found in the from, to, and subject
-        # lines for use in creating new magnets, it is a list of pairs mapping
-        # a magnet type to a magnet string, e.g. from => popfile@jgc.org
-
-        $self->{quickmagnets__} = {};
-
-        # store the tag that set the foreground/background color so the
-        # color can be unset when the tag closes
-
-        $self->{cssfontcolortag__} = '';
-        $self->{cssbackcolortag__} = '';
-
-    # This is the distance betwee the back color and the font color
-    # as computed using compute_rgb_distance
-
-    $self->{htmlcolordistance__} = 0;
-
-    # This is a mapping between HTML color names and HTML hexadecimal
-    # color values used by the map_color value to get canonical color
-    # values
-
-    $self->{color_map__} = { # PROFILE BLOCK START
-             'aliceblue',            'f0f8ff', 'antiquewhite',      'faebd7',
-             'aqua',                 '00ffff', 'aquamarine',        '7fffd4',
-             'azure',                'f0ffff', 'beige',             'f5f5dc',
-             'bisque',               'ffe4c4', 'black',             '000000',
-             'blanchedalmond',       'ffebcd', 'blue',              '0000ff',
-             'blueviolet',           '8a2be2', 'brown',             'a52a2a',
-             'burlywood',            'deb887', 'cadetblue',         '5f9ea0',
-             'chartreuse',           '7fff00', 'chocolate',         'd2691e',
-             'coral',                'ff7f50', 'cornflowerblue',    '6495ed',
+# Mapping from HTML color names to hexadecimal values (static, shared across instances)
+my %color_map = ( # PROFILE BLOCK START
+         'aliceblue',            'f0f8ff', 'antiquewhite',      'faebd7',
+         'aqua',                 '00ffff', 'aquamarine',        '7fffd4',
+         'azure',                'f0ffff', 'beige',             'f5f5dc',
+         'bisque',               'ffe4c4', 'black',             '000000',
+         'blanchedalmond',       'ffebcd', 'blue',              '0000ff',
+         'blueviolet',           '8a2be2', 'brown',             'a52a2a',
+         'burlywood',            'deb887', 'cadetblue',         '5f9ea0',
+         'chartreuse',           '7fff00', 'chocolate',         'd2691e',
+         'coral',                'ff7f50', 'cornflowerblue',    '6495ed',
              'cornsilk',             'fff8dc', 'crimson',           'dc143c',
              'cyan',                 '00ffff', 'darkblue',          '00008b',
              'darkcyan',             '008b8b', 'darkgoldenrod',     'b8860b',
@@ -258,63 +212,95 @@ class Classifier::MailParse :repr(HASH) {
              'violet',               'ee82ee', 'wheat',             'f5deb3',
              'white',                'ffffff', 'whitesmoke',        'f5f5f5',
              'yellow',               'ffff00', 'yellowgreen',       '9acd32'
-    }; # PROFILE BLOCK STOP
+); # PROFILE BLOCK STOP
 
-    # These store the current HTML background color and font color to
-    # detect "invisible ink" used by spammers
+class Classifier::MailParse {
 
-        $self->{htmlbackcolor__} = $self->map_color( 'white' );
-        $self->{htmlbodycolor__} = $self->map_color( 'white' );
-        $self->{htmlfontcolor__} = $self->map_color( 'black' );
+    # Hash of word frequencies
+    field %words;
+    field $msg_total       = 0;
 
-        $self->{content_type__} = '';
-        $self->{base64__}       = '';
-        $self->{in_html_tag__}  = 0;
-        $self->{html_tag__}     = '';
-        $self->{html_arg__}     = '';
-        $self->{in_headers__}   = 0;
+    # Internal buffer for colorized output
+    field $ut              = '';
 
-        # This is used for switching on/off language specific functionality
+    # Optional callback sub($word)->$color set by Bayes when colorized output is needed
+    field $color_resolver  = undef;
 
-        $self->{lang__}    = '';
-        $self->{first20__} = '';
+    # From/To/Cc/Subject values captured during parsing
+    field $from            = '';
+    field $to              = '';
+    field $cc              = '';
+    field $subject         = '';
 
-        # For support Quoted Printable, save encoded text in multiple lines
+    # Pairs of magnet-type => magnet-string extracted from headers
+    field %quickmagnets;
 
-        $self->{prev__} = '';
+    # CSS tag names that set the current foreground/background color
+    field $cssfontcolortag  = '';
+    field $cssbackcolortag  = '';
 
-        # Object for the Nihongo (Japanese) parser.
-        $self->{nihongo_parser__} = undef;
-    }
+    # RGB distance between back and font color (for invisible-ink detection)
+    field $htmlcolordistance = 0;
 
-# ----------------------------------------------------------------------------
-#
-# get_color__
-#
-# Gets the color for the passed in word
-#
-# $word          The word to check
-#
-# ----------------------------------------------------------------------------
+    # Current HTML color state (defaults: white background, black font)
+    field $htmlbackcolor    = 'ffffff';
+    field $htmlbodycolor    = 'ffffff';
+    field $htmlfontcolor    = '000000';
+
+    field $content_type     = '';
+    field $base64           = '';
+    field $in_html_tag      = 0;
+    field $html_tag         = '';
+    field $html_arg         = '';
+    field $html_end         = 0;
+    field $in_headers       = 0;
+
+    field $lang             = '';
+    field $first20          = '';
+    field $first20count     = 0;
+
+    # Accumulates soft-wrapped quoted-printable lines
+    field $prev             = '';
+
+    # Dispatch table for the active Nihongo (Japanese) parser
+    field %nihongo_parser;
+
+    # Parsing state: current MIME boundary list, encoding, header name, header value
+    field $cur_mime         = '';
+    field $cur_encoding     = '';
+    field $cur_header       = '';
+    field $cur_argument     = '';
+
+    # WordMangle instance injected by Bayes
+    field $mangle           = undef;
+    field $date             = '';
+
+    field $colorized        = '';
+    field $charset          = '';
+    field $debug            = 0;
+    field $need_kakasi_mutex = 0;
+    field $kakasi_mutex     = undef;
+
+=head2 get_color__
+
+Returns the highlight color for C<$word> by calling the C<color_resolver>
+callback, or an empty string if no resolver is set.
+
+=cut
+
 method get_color__ ($word) {
 
-    return '' unless defined $self->{color_resolver};
-    return $self->{color_resolver}->($word);
+    return '' unless defined $color_resolver;
+    return $color_resolver->($word);
 }
 
-# ----------------------------------------------------------------------------
-#
-# compute_rgb_distance
-#
-# Given two RGB colors compute the distance between them by
-# considering them as points in 3 dimensions and calculating the
-# distance between them (or equivalently the length of a vector
-# between them)
-#
-# $left          One color
-# $right         The other color
-#
-# ----------------------------------------------------------------------------
+=head2 compute_rgb_distance
+
+Computes the Euclidean distance between two C<rrggbb> hex color strings
+treated as points in 3-D RGB space. Returns an integer distance.
+
+=cut
+
 method compute_rgb_distance ($left, $right) {
 
     # TODO: store front/back colors in a RGB hash/array
@@ -336,19 +322,18 @@ method compute_rgb_distance ($left, $right) {
 
     my $distance = int( sqrt( $r*$r + $g*$g + $b*$b ) );
 
-    print "rgb distance: $left -> $right = $distance" if $self->{debug__};
+    print "rgb distance: $left -> $right = $distance" if $debug;
 
     return $distance;
 }
 
-# ----------------------------------------------------------------------------
-#
-# compute_html_color_distance
-#
-# Calls compute_rgb_distance to set up htmlcolordistance__ from the
-# current HTML back and font colors
-#
-# ----------------------------------------------------------------------------
+=head2 compute_html_color_distance
+
+Updates C<$htmlcolordistance> from the current C<$htmlbackcolor> and
+C<$htmlfontcolor> fields via C<compute_rgb_distance>.
+
+=cut
+
 method compute_html_color_distance {
 
     # TODO: store front/back colors in a RGB hash/array
@@ -356,22 +341,19 @@ method compute_html_color_distance {
     #       is a waste as is repeatedly decoding
     #       from hh hh hh format
 
-    if ( $self->{htmlfontcolor__} ne '' && $self->{htmlbackcolor__} ne '' ) {
-        $self->{htmlcolordistance__} = $self->compute_rgb_distance( # PROFILE BLOCK START
-            $self->{htmlfontcolor__}, $self->{htmlbackcolor__} );   # PROFILE BLOCK STOP
+    if ( $htmlfontcolor ne '' && $htmlbackcolor ne '' ) {
+        $htmlcolordistance = $self->compute_rgb_distance( # PROFILE BLOCK START
+            $htmlfontcolor, $htmlbackcolor );   # PROFILE BLOCK STOP
     }
 }
 
-# ----------------------------------------------------------------------------
-#
-# map_color
-#
-# Convert an HTML color value into its canonical lower case
-# hexadecimal form with no #
-#
-# $color        A color value found in a tag
-#
-# ----------------------------------------------------------------------------
+=head2 map_color
+
+Converts an HTML color value (name, C<#rrggbb>, or IE flex-hex) into
+its canonical lowercase C<rrggbb> hexadecimal form.
+
+=cut
+
 method map_color ($color) {
 
     # The canonical form is lowercase hexadecimal, so start by
@@ -381,8 +363,8 @@ method map_color ($color) {
 
     # Map color names to hexadecimal values
 
-    if ( defined( $self->{color_map__}{$color} ) ) {
-        return $self->{color_map__}{$color};
+    if ( defined( $color_map{$color} ) ) {
+        return $color_map{$color};
     } else {
 
         # Do this after checking the color map, as there is no "#blue" color
@@ -415,7 +397,7 @@ method map_color ($color) {
         my ( $r, $g, $b ) =                                             # PROFILE BLOCK START
             ( $color =~ /(.{$quotient})(.{$quotient})(.{$quotient})/ ); # PROFILE BLOCK STOP
 
-        print "$r $g $b\n" if $self->{debug__};
+        print "$r $g $b\n" if $debug;
 
         # left-trim very long triplets to 4 bytes
         $r =~ s/.*(.{8})$/$1/;
@@ -437,7 +419,7 @@ method map_color ($color) {
         # Any non-hex values remaining get 0'd out
         $color =~ s/[^0-9a-f]/0/g;
 
-        if ( $self->{debug__} ) { # PROFILE BLOCK START
+        if ( $debug ) { # PROFILE BLOCK START
             print "hex color $color\n";
             print "flex-hex detected\n" if ( $color ne $old_color );
         }                         # PROFILE BLOCK STOP
@@ -452,51 +434,40 @@ method map_color ($color) {
     }
 }
 
-# ----------------------------------------------------------------------------
-#
-# increment_word
-#
-# Updates the word frequency for a word without performing any
-# coloring or transformation on the word
-#
-# $word     The word
-#
-# ----------------------------------------------------------------------------
+=head2 increment_word
+
+Increments the raw frequency count for C<$word> without mangling or colorization.
+
+=cut
+
 method increment_word ($word) {
 
-    $self->{words__}{$word} += 1;
-    $self->{msg_total__}    += 1;
+    $words{$word} += 1;
+    $msg_total    += 1;
 
-    print "--- $word ($self->{words__}{$word})\n" if $self->{debug__};
+    print "--- $word ($words{$word})\n" if $debug;
 }
 
-# ----------------------------------------------------------------------------
-#
-# update_pseudoword
-#
-# Updates the word frequency for a pseudoword, note that this differs
-# from update_word because it does no word mangling
-#
-# $prefix       The pseudoword prefix (e.g. header)
-# $word         The pseudoword (e.g. Mime-Version)
-# $encoded      Whether this was found inside encoded text
-# $literal      The literal text that generated this pseudoword
-#
-# Returns 0 if the pseudoword was filtered out by a stopword
-#
-# ----------------------------------------------------------------------------
+=head2 update_pseudoword
+
+Adds C<$prefix:$word> to the word frequency table after mangling. Unlike
+C<update_word>, no further tokenization is applied. Returns 1 if the
+pseudoword was accepted, 0 if filtered by a stopword.
+
+=cut
+
 method update_pseudoword ($prefix, $word, $encoded, $literal) {
 
-    my $mword = $self->{mangle__}->mangle( "$prefix:$word", 1 );
+    my $mword = $mangle->mangle( "$prefix:$word", 1 );
 
     if ( $mword ne '' ) {
-        if ( defined( $self->{color_resolver} ) ) {
+        if ( defined( $color_resolver ) ) {
             if ( $encoded == 1 ) {
                 $literal =~ s/</&lt;/g;
                 $literal =~ s/>/&gt;/g;
                 my $color = $self->get_color__( $mword );
                 my $to    = "<b><font color=\"$color\"><a title=\"$mword\">$literal</a></font></b>";
-                $self->{ut__} .= $to . ' ';
+                $ut .= $to . ' ';
             }
         }
 
@@ -507,44 +478,37 @@ method update_pseudoword ($prefix, $word, $encoded, $literal) {
     return 0;
 }
 
-# ----------------------------------------------------------------------------
-#
-# update_word
-#
-# Updates the word frequency for a word
-#
-# $word         The word that is being updated
-# $encoded      1 if the line was found in encoded text (base64)
-# $before       The character that appeared before the word in the original
-#               line
-# $after        The character that appeared after the word in the original line
-# $prefix       A string to prefix any words with in the corpus, used for the
-#               special
-#               identification of values found in for example the subject line
-#
-# ----------------------------------------------------------------------------
+=head2 update_word
+
+Mangles and adds C<$word> to the frequency table. C<$encoded> is 1 for
+base64 content, C<$before>/C<$after> are surrounding characters for
+colorization anchoring, and C<$prefix> is prepended to the mangled word
+(e.g. C<"from">, C<"subject">).
+
+=cut
+
 method update_word ($word, $encoded, $before, $after, $prefix) {
 
-    my $mword = $self->{mangle__}->mangle( $word );
+    my $mword = $mangle->mangle( $word );
 
     if ( $mword ne '' ) {
         $mword = $prefix . ':' . $mword if ( $prefix ne '' );
 
         if ( $prefix =~ /(from|to|cc|subject)/i ) {
-            push @{ $self->{quickmagnets__}{$prefix} }, $word;
+            push @{ $quickmagnets{$prefix} }, $word;
         }
 
-        if ( defined( $self->{color_resolver} ) ) {
+        if ( defined( $color_resolver ) ) {
             my $color = $self->get_color__( $mword );
             if ( $encoded == 0 ) {
                 $after = '&' if ( $after eq '>' );
-                if ( !( $self->{ut__} =~                                           # PROFILE BLOCK START
+                if ( !( $ut =~                                           # PROFILE BLOCK START
                         s/($before)\Q$word\E($after)
                          /$1<b><font color=\"$color\">$word<\/font><\/b>$2/x ) ) { # PROFILE BLOCK STOP
-                    print "Could not find $word for colorization\n" if $self->{debug__};
+                    print "Could not find $word for colorization\n" if $debug;
                 }
             } else {
-                $self->{ut__} .= "<font color=\"$color\">$word<\/font> ";
+                $ut .= "<font color=\"$color\">$word<\/font> ";
             }
         }
 
@@ -552,25 +516,20 @@ method update_word ($word, $encoded, $before, $after, $prefix) {
     }
 }
 
-# ----------------------------------------------------------------------------
-#
-# add_line
-#
-# Parses a single line of text and updates the word frequencies
-#
-# $bigline      The line to split into words and add to the word counts
-# $encoded      1 if the line was found in encoded text (base64)
-# $prefix       A string to prefix any words with in the corpus, used for the
-#               special identification of values found in for example the
-#               subject line
-#
-# ----------------------------------------------------------------------------
+=head2 add_line
+
+Tokenizes C<$bigline> and updates word frequencies. C<$encoded> is 1 for
+base64-decoded content; C<$prefix> is prepended to word tokens (e.g. C<"subject">).
+Words hidden by invisible-ink colors generate a pseudoword instead.
+
+=cut
+
 method add_line ($bigline, $encoded, $prefix) {
     my $p = 0;
 
     return if ( !defined( $bigline ) );
 
-    print "add_line: [$bigline]\n" if $self->{debug__};
+    print "add_line: [$bigline]\n" if $debug;
 
     # If the line is really long then split at every 1k and feed it to
     # the parser below
@@ -578,7 +537,7 @@ method add_line ($bigline, $encoded, $prefix) {
     # Check the HTML back and font colors to ensure that we are not
     # about to add words that are hidden inside invisible ink
 
-    if ( $self->{htmlfontcolor__} ne $self->{htmlbackcolor__} ) {
+    if ( $htmlfontcolor ne $htmlbackcolor ) {
 
         # If we are adding a line and the colors are different then we
         # will add a count for the color difference to make sure that
@@ -589,9 +548,9 @@ method add_line ($bigline, $encoded, $prefix) {
         # 255.  100 seems like a reasonable upper bound for tracking
         # evil spammer tricks with similar colors
 
-        if ( $self->{htmlcolordistance__} < 100 ) {
+        if ( $htmlcolordistance < 100 ) {
             $self->update_pseudoword(  # PROFILE BLOCK START
-                'html', "colordistance$self->{htmlcolordistance__}",
+                'html', "colordistance$htmlcolordistance",
                 $encoded, '' );        # PROFILE BLOCK STOP
         }
 
@@ -602,7 +561,7 @@ method add_line ($bigline, $encoded, $prefix) {
             # these are just the low ISO-Latin1 entities
             # see: http://www.w3.org/TR/REC-html32#latin1
             # TODO: find a way to make this (and other similar stuff) highlight
-            #       without using the encoded content printer or modifying $self->{ut__}
+            #       without using the encoded content printer or modifying $ut
 
             while ( $line =~ m/(&(\w{3,6});)/g ) {
                 my $from = $1;
@@ -613,14 +572,14 @@ method add_line ($bigline, $encoded, $prefix) {
                     # HTML entities confilict with DBCS and EUC-JP
                     # chars. Replace entities with blanks.
 
-                    if ( $self->{lang__} =~ /^(Korean|Nihongo)$/ ) {
+                    if ( $lang =~ /^(Korean|Nihongo)$/ ) {
                         $to = ' ';
                     } else {
                         $to = chr( $to );
                     }
                     $line         =~ s/$from/$to/g;
-                    $self->{ut__} =~ s/$from/$to/g;
-                    print "$from -> $to\n" if $self->{debug__};
+                    $ut =~ s/$from/$to/g;
+                    print "$from -> $to\n" if $debug;
                 }
             }
 
@@ -636,8 +595,8 @@ method add_line ($bigline, $encoded, $prefix) {
 
                     if ( defined( $to ) && ( $to ne '' ) ) {
                         $line         =~ s/$from/$to/g;
-                        $self->{ut__} =~ s/$from/$to/g;
-                        print "$from -> $to\n" if $self->{debug__};
+                        $ut =~ s/$from/$to/g;
+                        print "$from -> $to\n" if $debug;
                         $self->update_pseudoword(                       # PROFILE BLOCK START
                             'html', 'numericentity', $encoded, $from ); # PROFILE BLOCK STOP
                     }
@@ -717,9 +676,9 @@ method add_line ($bigline, $encoded, $prefix) {
                                ([ ]|\3|[!\?,]|$)/ /x ) { # PROFILE BLOCK STOP
                 my $original = "$1$2$4";
                 my $word     = $2;
-                print "$word ->" if $self->{debug__};
+                print "$word ->" if $debug;
                 $word =~ s/[^A-Z]//gi;
-                print "$word\n" if $self->{debug__};
+                print "$word\n" if $debug;
                 $self->update_word( $word, $encoded, ' ', ' ', $prefix );
                 $self->update_pseudoword( 'trick', 'spacedout',  # PROFILE BLOCK START
                                           $encoded, $original ); # PROFILE BLOCK STOP
@@ -732,7 +691,7 @@ method add_line ($bigline, $encoded, $prefix) {
                                           $encoded, "$1$2" );      # PROFILE BLOCK STOP
             }
 
-            if ( $self->{lang__} eq 'Nihongo' ) {
+            if ( $lang eq 'Nihongo' ) {
 
                 # In Japanese mode, non-symbol EUC-JP characters should be
                 # matched.
@@ -751,10 +710,10 @@ method add_line ($bigline, $encoded, $prefix) {
                                     $non_symbol_euc_jp{2,45})
                                    (?:[_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
                                   //ox ) {     # PROFILE BLOCK STOP
-                    if ( ( $self->{in_headers__} == 0 ) &&    # PROFILE BLOCK START
-                         ( $self->{first20count__} < 20 ) ) { # PROFILE BLOCK STOP
-                        $self->{first20count__} += 1;
-                        $self->{first20__} .= " $1";
+                    if ( ( $in_headers == 0 ) &&    # PROFILE BLOCK START
+                         ( $first20count < 20 ) ) { # PROFILE BLOCK STOP
+                        $first20count += 1;
+                        $first20 .= " $1";
                     }
 
                     $self->update_word(  # PROFILE BLOCK START
@@ -763,7 +722,7 @@ method add_line ($bigline, $encoded, $prefix) {
                         $prefix );       # PROFILE BLOCK STOP
                 }
             } else {
-                if ( $self->{lang__} eq 'Korean' ) {
+                if ( $lang eq 'Korean' ) {
 
                     # In Korean mode, [[:alpha:]] in regular
                     # expression is changed to 2bytes chars to support
@@ -776,10 +735,10 @@ method add_line ($bigline, $encoded, $prefix) {
                                         ([A-Za-z\']|$eksc){1,44})
                                         ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
                                       //x ) {             # PROFILE BLOCK STOP
-                        if ( ( $self->{in_headers__} == 0 ) &&    # PROFILE BLOCK START
-                             ( $self->{first20count__} < 20 ) ) { # PROFILE BLOCK STOP
-                            $self->{first20count__} += 1;
-                            $self->{first20__} .= " $1";
+                        if ( ( $in_headers == 0 ) &&    # PROFILE BLOCK START
+                             ( $first20count < 20 ) ) { # PROFILE BLOCK STOP
+                            $first20count += 1;
+                            $first20 .= " $1";
                         }
 
                         $self->update_word( $1, $encoded, '',                # PROFILE BLOCK START
@@ -797,10 +756,10 @@ method add_line ($bigline, $encoded, $prefix) {
                     while ( $line =~ s/([[:alpha:]][[:alpha:]\']{1,44})  # PROFILE BLOCK START
                                        ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
                                       //x ) {                            # PROFILE BLOCK STOP
-                        if ( ( $self->{in_headers__} == 0 ) &&    # PROFILE BLOCK START
-                             ( $self->{first20count__} < 20 ) ) { # PROFILE BLOCK STOP
-                            $self->{first20count__} += 1;
-                            $self->{first20__} .= " $1";
+                        if ( ( $in_headers == 0 ) &&    # PROFILE BLOCK START
+                             ( $first20count < 20 ) ) { # PROFILE BLOCK STOP
+                            $first20count += 1;
+                            $first20 .= " $1";
                         }
 
                         $self->update_word( $1, $encoded, '',                # PROFILE BLOCK START
@@ -820,19 +779,14 @@ method add_line ($bigline, $encoded, $prefix) {
     }
 }
 
-# ----------------------------------------------------------------------------
-#
-# update_tag
-#
-# Extract elements from within HTML tags that are considered important
-# 'words' for analysis such as domain names, alt tags,
-#
-# $tag      The tag name
-# $arg      The arguments
-# $end_tag  Whether this is an end tag or not
-# $encoded  1 if this HTML was found inside encoded (base64) text
-#
-# ----------------------------------------------------------------------------
+=head2 update_tag
+
+Extracts classifiable tokens (domain names, alt text, color attributes,
+CSS styles) from an HTML tag. C<$end_tag> is true for closing tags.
+Updates word frequencies and HTML color state.
+
+=cut
+
 method update_tag ($tag, $arg, $end_tag, $encoded) {
 
     # TODO: Make sure $tag only ever gets alphanumeric input (in some
@@ -842,41 +796,41 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
     $tag =~ s/[\r\n]//g;
     $arg =~ s/[\r\n]//g;
 
-    print "HTML " . ( $end_tag ? "closing" : '' ) . " tag $tag with argument $arg\n" if $self->{debug__};
+    print "HTML " . ( $end_tag ? "closing" : '' ) . " tag $tag with argument $arg\n" if $debug;
 
     # End tags do not require any argument decoding but we do look at
     # them to make sure that we handle /font to change the font color
 
     if ( $end_tag ) {
         if ( $tag =~ /^font$/i ) {
-            $self->{htmlfontcolor__} = $self->map_color( 'black' );
+            $htmlfontcolor = $self->map_color( 'black' );
             $self->compute_html_color_distance();
         }
 
         # If we hit a table tag then any font information is lost
 
         if ( $tag =~ /^(table|td|tr|th)$/i ) {
-            $self->{htmlfontcolor__} = $self->map_color( 'black' );
-            $self->{htmlbackcolor__} = $self->{htmlbodycolor__};
+            $htmlfontcolor = $self->map_color( 'black' );
+            $htmlbackcolor = $htmlbodycolor;
             $self->compute_html_color_distance();
         }
 
-        if ( lc( $tag ) eq $self->{cssbackcolortag__} ) {
-            $self->{htmlbackcolor__}   = $self->{htmlbodycolor__};
-            $self->{cssbackcolortag__} = '';
+        if ( lc( $tag ) eq $cssbackcolortag ) {
+            $htmlbackcolor   = $htmlbodycolor;
+            $cssbackcolortag = '';
 
             $self->compute_html_color_distance();
 
-            print "CSS back color reset to $self->{htmlbackcolor__} (tag closed: $tag)\n" if $self->{debug__};
+            print "CSS back color reset to $htmlbackcolor (tag closed: $tag)\n" if $debug;
         }
 
-        if ( lc( $tag ) eq $self->{cssfontcolortag__} ) {
-            $self->{htmlfontcolor__}   = $self->map_color( 'black' );
-            $self->{cssfontcolortag__} = '';
+        if ( lc( $tag ) eq $cssfontcolortag ) {
+            $htmlfontcolor   = $self->map_color( 'black' );
+            $cssfontcolortag = '';
 
             $self->compute_html_color_distance();
 
-            print "CSS font color reset to $self->{htmlfontcolor__} (tag closed: $tag)\n" if $self->{debug__};
+            print "CSS font color reset to $htmlfontcolor (tag closed: $tag)\n" if $debug;
         }
 
         return;
@@ -916,12 +870,12 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             $end_quote = $4;
         }
 
-        print "   attribute $attribute with value $quote$value$quote\n" if $self->{debug__};
+        print "   attribute $attribute with value $quote$value$quote\n" if $debug;
 
         # Remove leading whitespace and leading value-less attributes
 
         if ( $arg =~ s/^(([ \t]*(\w+)[\t ]+)+)([^=])/$4/ ) {
-            print "   attribute(s) $1 with no value\n" if $self->{debug__};
+            print "   attribute(s) $1 with no value\n" if $debug;
         }
 
         # Toggle for parsing script URI's.
@@ -1037,9 +991,9 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             $self->update_word( $value, $encoded, $quote, $end_quote, '' );
             $self->update_pseudoword( 'html', "fontcolor$value",  # PROFILE BLOCK START
                                       $encoded, $original );      # PROFILE BLOCK STOP
-            $self->{htmlfontcolor__} = $self->map_color( $value );
+            $htmlfontcolor = $self->map_color( $value );
             $self->compute_html_color_distance();
-            print "Set html font color to $self->{htmlfontcolor__}\n" if $self->{debug__};
+            print "Set html font color to $htmlfontcolor\n" if $debug;
             next;
         }
 
@@ -1047,9 +1001,9 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             $self->update_pseudoword( 'html', "fontcolor$value",  # PROFILE BLOCK START
                                       $encoded, $original );      # PROFILE BLOCK STOP
             $self->update_word( $value, $encoded, $quote, $end_quote, '' );
-            $self->{htmlfontcolor__} = $self->map_color( $value );
+            $htmlfontcolor = $self->map_color( $value );
             $self->compute_html_color_distance();
-            print "Set html font color to $self->{htmlfontcolor__}\n" if $self->{debug__};
+            print "Set html font color to $htmlfontcolor\n" if $debug;
             next;
         }
 
@@ -1081,11 +1035,11 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             $self->update_word( $value, $encoded, $quote, $end_quote, '' );
             $self->update_pseudoword( 'html', "backcolor$value",  # PROFILE BLOCK START
                                       $encoded, $original );      # PROFILE BLOCK STOP
-            $self->{htmlbackcolor__} = $self->map_color( $value );
-            print "Set html back color to $self->{htmlbackcolor__}\n" if $self->{debug__};
+            $htmlbackcolor = $self->map_color( $value );
+            print "Set html back color to $htmlbackcolor\n" if $debug;
 
             if ( $tag =~ /^body$/i ) {
-                $self->{htmlbodycolor__} = $self->{htmlbackcolor__}
+                $htmlbodycolor = $htmlbackcolor
             }
             $self->compute_html_color_distance();
             next;
@@ -1104,11 +1058,11 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         if ( !exists( $HTML::Tagset::emptyElement->{ lc( $tag ) } ) &&  # PROFILE BLOCK START
              ( $attribute =~ /^style$/i ) ) {                           # PROFILE BLOCK STOP
-            print "      Inline style tag found in $tag: $attribute=$value\n" if $self->{debug__};
+            print "      Inline style tag found in $tag: $attribute=$value\n" if $debug;
 
             my $style = $self->parse_css_style( $value );
 
-            if ( $self->{debug__} ) { # PROFILE BLOCK START
+            if ( $debug ) { # PROFILE BLOCK START
                 print "      CSS properties: ";
                 foreach my $key ( keys( %{$style} ) ) {
                     print "$key($style->{$key}), ";
@@ -1131,7 +1085,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                                 xx-large)/x ) {      # PROFILE BLOCK STOP
                     $self->update_pseudoword( 'html', "cssfontsize$size",  # PROFILE BLOCK START
                                               $encoded, $original );       # PROFILE BLOCK STOP
-                    print "     CSS font-size set to: $size\n" if $self->{debug__};
+                    print "     CSS font-size set to: $size\n" if $debug;
                 }
             }
 
@@ -1155,20 +1109,20 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             if ( defined( $style->{'color'} ) ) {
                 my $color = $style->{'color'};
 
-                print "      CSS color: $color\n" if $self->{debug__};
+                print "      CSS color: $color\n" if $debug;
 
                 $color = $self->parse_css_color( $color );
 
                 if ( $color ne "error" ) {
-                    $self->{htmlfontcolor__} = $color;
+                    $htmlfontcolor = $color;
                     $self->compute_html_color_distance();
 
-                    print "      CSS set html font color to $self->{htmlfontcolor__}\n" if $self->{debug__};
+                    print "      CSS set html font color to $htmlfontcolor\n" if $debug;
                     $self->update_pseudoword(  # PROFILE BLOCK START
-                        'html', "cssfontcolor$self->{htmlfontcolor__}",
+                        'html', "cssfontcolor$htmlfontcolor",
                         $encoded, $original ); # PROFILE BLOCK STOP
 
-                    $self->{cssfontcolortag__} = lc( $tag );
+                    $cssfontcolortag = lc( $tag );
                 }
             }
 
@@ -1182,16 +1136,16 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                     $self->parse_css_color( $background_color ); # PROFILE BLOCK STOP
 
                 if ( $background_color ne "error" ) {
-                    $self->{htmlbackcolor__} = $background_color;
+                    $htmlbackcolor = $background_color;
                     $self->compute_html_color_distance();
-                    print "       CSS set html back color to $self->{htmlbackcolor__}\n" if $self->{debug__};
+                    print "       CSS set html back color to $htmlbackcolor\n" if $debug;
 
-                    $self->{htmlbodycolor__} = $background_color  # PROFILE BLOCK START
+                    $htmlbodycolor = $background_color  # PROFILE BLOCK START
                         if ( $tag =~ /^body$/i );                 # PROFILE BLOCK STOP
-                    $self->{cssbackcolortag__} = lc( $tag );
+                    $cssbackcolortag = lc( $tag );
 
                     $self->update_pseudoword(  # PROFILE BLOCK START
-                        'html', "cssbackcolor$self->{htmlbackcolor__}",
+                        'html', "cssbackcolor$htmlbackcolor",
                         $encoded, $original ); # PROFILE BLOCK STOP
                 }
             }
@@ -1209,7 +1163,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                     # and examine each expression individually
 
                     $expression = $1;
-                    print "       CSS expression $expression in background property\n" if $self->{debug__};
+                    print "       CSS expression $expression in background property\n" if $debug;
 
                     my $background_color =                     # PROFILE BLOCK START
                         $self->parse_css_color( $expression ); # PROFILE BLOCK STOP
@@ -1217,17 +1171,17 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                     # to see if it is a color
 
                     if ( $background_color ne "error" ) {
-                        $self->{htmlbackcolor__} = $background_color;
+                        $htmlbackcolor = $background_color;
                         $self->compute_html_color_distance();
-                        print "       CSS set html back color to $self->{htmlbackcolor__}\n" if $self->{debug__};
+                        print "       CSS set html back color to $htmlbackcolor\n" if $debug;
 
                         if ( $tag =~ /^body$/i ) {
-                            $self->{htmlbodycolor__} = $background_color;
+                            $htmlbodycolor = $background_color;
                         }
-                        $self->{cssbackcolortag__} = lc( $tag );
+                        $cssbackcolortag = lc( $tag );
 
                         $self->update_pseudoword(  # PROFILE BLOCK START
-                            'html', "cssbackcolor$self->{htmlbackcolor__}",
+                            'html', "cssbackcolor$htmlbackcolor",
                             $encoded, $original ); # PROFILE BLOCK STOP
                     }
                 }
@@ -1275,25 +1229,15 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
     }
 }
 
-# ----------------------------------------------------------------------------
-#
-# add_url
-#
-# Parses a single url or domain and identifies interesting parts
-#
-# $url          the domain name to handle
-# $encoded      1 if the domain was found in encoded text (base64)
-# $before       The character that appeared before the URL in the original line
-# $after        The character that appeared after the URL in the original line
-# $prefix       A string to prefix any words with in the corpus, used for the
-#               special identification of values found in for example the
-#               subject line
-# $noadd        If defined indicates that only parsing should be done, no
-#               word updates
-#
-# Returns the hostname
-#
-# ----------------------------------------------------------------------------
+=head2 add_url
+
+Parses a URL or domain, decomposes it into host/path/query, and adds the
+hostname and its sub-domains as words. Returns the extracted hostname, or
+an empty string when none is found. Pass C<$noadd> to parse without
+updating word frequencies.
+
+=cut
+
 method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
 
     my $temp_url = $url;
@@ -1442,7 +1386,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
     }
 
     if ( !defined( $host ) || ( $host eq '' ) ) {
-        print "no hostname found: [$temp_url]\n" if $self->{debug__};
+        print "no hostname found: [$temp_url]\n" if $debug;
         return '';
     }
 
@@ -1515,13 +1459,13 @@ method parse_html ($line, $encoded) {
 
     $line =~ s/[\r\n]+/ /gm;
 
-    print "parse_html: [$line] " . $self->{in_html_tag__} . "\n" if $self->{debug__};
+    print "parse_html: [$line] " . $in_html_tag . "\n" if $debug;
 
     # Remove HTML comments and other tags that begin !
 
     while ( $line =~ s/(<!.*?>)// ) {
         $self->update_pseudoword( 'html', 'comment', $encoded, $1 );
-        print "$line\n" if $self->{debug__};
+        print "$line\n" if $debug;
     }
 
     # Remove invalid tags.  This finds tags of the form [a-z0-9]+ with
@@ -1536,7 +1480,7 @@ method parse_html ($line, $encoded) {
     while ( $line =~ s/(<\/?(?!(?:$spacing_tags|$non_spacing_tags)\W)  # PROFILE BLOCK START
                         [a-z0-9]+(?:\s+.*?)?\/?>)//iox ) {             # PROFILE BLOCK STOP
         $self->update_pseudoword( 'html', 'invalidtag', $encoded, $1 );
-        print "html:invalidtag: $1\n" if $self->{debug__};
+        print "html:invalidtag: $1\n" if $debug;
     }
 
     # Remove pairs of non-spacing tags without content such as <b></b>
@@ -1546,7 +1490,7 @@ method parse_html ($line, $encoded) {
 
     while ( $line =~ s/(<($non_spacing_tags)(?:\s+[^>]*?)?><\/\2>)//io ) {
         $self->update_pseudoword( 'html', 'emptypair', $encoded, $1 );
-        print "html:emptypair: $1\n" if $self->{debug__};
+        print "html:emptypair: $1\n" if $debug;
     }
 
     while ( $found && ( $line ne '' ) ) {
@@ -1556,20 +1500,20 @@ method parse_html ($line, $encoded) {
         # if we get it then handle the tag, if we don't then keep
         # building up the arguments of the tag
 
-        if ( $self->{in_html_tag__} ) {
+        if ( $in_html_tag ) {
             if ( $line =~ s/^([^>]*?)>// ) {
-                $self->{html_arg__} .= $1;
-                $self->{in_html_tag__} = 0;
-                $self->{html_tag__} =~ s/=\n ?//g;
-                $self->{html_arg__} =~ s/=\n ?//g;
-                $self->update_tag( $self->{html_tag__}, $self->{html_arg__},  # PROFILE BLOCK START
-                                   $self->{html_end}, $encoded );             # PROFILE BLOCK STOP
-                $self->{html_tag__} = '';
-                $self->{html_arg__} = '';
+                $html_arg .= $1;
+                $in_html_tag = 0;
+                $html_tag =~ s/=\n ?//g;
+                $html_arg =~ s/=\n ?//g;
+                $self->update_tag( $html_tag, $html_arg,  # PROFILE BLOCK START
+                                   $html_end, $encoded );             # PROFILE BLOCK STOP
+                $html_tag = '';
+                $html_arg = '';
                 $found              = 1;
                 next;
             } else {
-                $self->{html_arg__} .= $line;
+                $html_arg .= $line;
                 return 1;
             }
         }
@@ -1589,10 +1533,10 @@ method parse_html ($line, $encoded) {
         # to indicate to the caller that we have an unclosed tag
 
         if ( $line =~ /^<([\/]?)([A-Za-z][^ >]+)([^>]*)$/ ) {
-            $self->{html_end}      = ( $1 eq '/' );
-            $self->{html_tag__}    = $2;
-            $self->{html_arg__}    = $3;
-            $self->{in_html_tag__} = 1;
+            $html_end      = ( $1 eq '/' );
+            $html_tag    = $2;
+            $html_arg    = $3;
+            $in_html_tag = 1;
             return 1;
         }
 
@@ -1654,15 +1598,15 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
 
     $self->stop_parse();
 
-    if ( defined( $self->{color_resolver} ) ) {
-        $self->{colorized__} .= $self->{ut__} if ( $self->{ut__} ne '' );
+    if ( defined( $color_resolver ) ) {
+        $colorized .= $ut if ( $ut ne '' );
 
-        $self->{colorized__} .= "</tt>";
-        $self->{colorized__} =~ s/(\r\n\r\n|\r\r|\n\n)/__BREAK____BREAK__/g;
-        $self->{colorized__} =~ s/[\r\n]+/__BREAK__/g;
-        $self->{colorized__} =~ s/__BREAK__/<br \/>/g;
+        $colorized .= "</tt>";
+        $colorized =~ s/(\r\n\r\n|\r\r|\n\n)/__BREAK____BREAK__/g;
+        $colorized =~ s/[\r\n]+/__BREAK__/g;
+        $colorized =~ s/__BREAK__/<br \/>/g;
 
-        return $self->{colorized__};
+        return $colorized;
     } else {
         return '';
     }
@@ -1687,76 +1631,76 @@ method start_parse ($reset = undef) {
 
     # This will contain the mime boundary information in a mime message
 
-    $self->{mime__} = '';
+    $cur_mime = '';
 
     # Contains the encoding for the current block in a mime message
 
-    $self->{encoding__} = '';
+    $cur_encoding = '';
 
     # Variables to save header information to while parsing headers
 
-    $self->{header__}   = '';
-    $self->{argument__} = '';
+    $cur_header   = '';
+    $cur_argument = '';
 
     # Clear the word hash
 
-    $self->{content_type__} = '';
+    $content_type = '';
 
     # Base64 attachments are loaded into this as we read them
 
-    $self->{base64__} = '';
+    $base64 = '';
 
     # Variable to note that the temporary colorized storage is
     # "frozen", and what type of freeze it is (allows nesting of
     # reasons to freeze colorization)
 
-    $self->{in_html_tag__} = 0;
+    $in_html_tag = 0;
 
-    $self->{html_tag__}    = '';
-    $self->{html_arg__}    = '';
+    $html_tag    = '';
+    $html_arg    = '';
 
     if ( $reset ) {
-        $self->{words__} = {};
+        %words = ();
     }
 
-    $self->{msg_total__}    = 0;
-    $self->{from__}         = '';
-    $self->{to__}           = '';
-    $self->{cc__}           = '';
-    $self->{subject__}      = '';
-    $self->{ut__}           = '';
-    $self->{quickmagnets__} = {};
+    $msg_total    = 0;
+    $from         = '';
+    $to           = '';
+    $cc           = '';
+    $subject      = '';
+    $ut           = '';
+    %quickmagnets = ();
 
-    $self->{htmlbodycolor__} = $self->map_color( 'white' );
-    $self->{htmlbackcolor__} = $self->map_color( 'white' );
-    $self->{htmlfontcolor__} = $self->map_color( 'black' );
+    $htmlbodycolor = $self->map_color( 'white' );
+    $htmlbackcolor = $self->map_color( 'white' );
+    $htmlfontcolor = $self->map_color( 'black' );
     $self->compute_html_color_distance();
 
-    $self->{in_headers__} = 1;
+    $in_headers = 1;
 
-    $self->{first20__}      = '';
-    $self->{first20count__} = 0;
+    $first20      = '';
+    $first20count = 0;
 
     # Used to return a colorize page
 
-    $self->{colorized__} = '';
-    $self->{colorized__} .= "<tt>" if ( defined( $self->{color_resolver} ) );
+    $colorized = '';
+    $colorized .= "<tt>" if ( defined( $color_resolver ) );
 
     # Clear the character set to avoid using the wrong charsets
-    $self->{charset__} = '';
+    $charset = '';
 
-    if ( $self->{lang__} eq 'Nihongo' ) {
+    if ( $lang eq 'Nihongo' ) {
 
         # Since Text::Kakasi is not thread-safe, we use it under the
         # control of a Mutex to avoid a crash if we are running on
         # Windows.
-        if ( $self->{need_kakasi_mutex__} ) {
+        if ( $need_kakasi_mutex ) {
             require POPFile::Mutex;
-            $self->{kakasi_mutex__}->acquire();
+            $kakasi_mutex->acquire();
         }
 
         # Initialize Nihongo (Japanese) parser
-        $self->{nihongo_parser__}{init}( $self );
+        $nihongo_parser{init}( $self );
     }
 }
 
@@ -1771,7 +1715,7 @@ method start_parse ($reset = undef) {
 # ----------------------------------------------------------------------------
 method stop_parse {
 
-    $self->{colorized__} .= $self->clear_out_base64();
+    $colorized .= $self->clear_out_base64();
 
     $self->clear_out_qp();
 
@@ -1780,8 +1724,8 @@ method stop_parse {
     # a < in the text messing things up) and so we dump whatever is
     # stored in the HTML tag out
 
-    if ( $self->{in_html_tag__} ) {
-        $self->add_line( "$self->{html_tag__} $self->{html_arg__}", 0, '' );
+    if ( $in_html_tag ) {
+        $self->add_line( "$html_tag $html_arg", 0, '' );
     }
 
     # if we are here, and still have headers stored, we must have a
@@ -1789,23 +1733,23 @@ method stop_parse {
 
     # TODO: Fix me
 
-    if ( $self->{header__} ne '' ) {
-        $self->parse_header( $self->{header__}, $self->{argument__},  # PROFILE BLOCK START
-                             $self->{mime__}, $self->{encoding__} );  # PROFILE BLOCK STOP
-        $self->{header__}   = '';
-        $self->{argument__} = '';
+    if ( $cur_header ne '' ) {
+        $self->parse_header( $cur_header, $cur_argument,  # PROFILE BLOCK START
+                             $cur_mime, $cur_encoding );  # PROFILE BLOCK STOP
+        $cur_header   = '';
+        $cur_argument = '';
     }
 
-    $self->{in_html_tag__} = 0;
+    $in_html_tag = 0;
 
-    if ( $self->{lang__} eq 'Nihongo' ) {
+    if ( $lang eq 'Nihongo' ) {
 
         # Close Nihongo (Japanese) parser
-        $self->{nihongo_parser__}{close}( $self );
+        $nihongo_parser{close}( $self );
 
-        if ( $self->{need_kakasi_mutex__} ) {
+        if ( $need_kakasi_mutex ) {
             require POPFile::Mutex;
-            $self->{kakasi_mutex__}->release();
+            $kakasi_mutex->release();
         }
     }
 }
@@ -1833,76 +1777,76 @@ method parse_line ($read) {
 
             next if ( !defined( $line ) );
 
-            print ">>> $line" if $self->{debug__};
+            print ">>> $line" if $debug;
 
             # Decode quoted-printable
 
-            if ( !$self->{in_headers__} &&                           # PROFILE BLOCK START
-                 ( $self->{encoding__} =~ /quoted\-printable/i ) ) { # PROFILE BLOCK STOP
+            if ( !$in_headers &&                           # PROFILE BLOCK START
+                 ( $cur_encoding =~ /quoted\-printable/i ) ) { # PROFILE BLOCK STOP
                 if ( $line =~ s/=\r\n$// ) {
 
                     # Encoded in multiple lines
 
-                    $self->{prev__} .= $line;
+                    $prev .= $line;
                     next;
                 } else {
-                    $line = $self->{prev__} . $line;
-                    $self->{prev__} = '';
+                    $line = $prev . $line;
+                    $prev = '';
                 }
                 $line = decode_qp( $line );
                 $line =~ s/\x00/NUL/g;
             }
 
-            if ( ( $self->{lang__} eq 'Nihongo' ) &&      # PROFILE BLOCK START
-                 !$self->{in_headers__} &&
-                 ( $self->{encoding__} !~ /base64/i ) ) { # PROFILE BLOCK STOP
+            if ( ( $lang eq 'Nihongo' ) &&      # PROFILE BLOCK START
+                 !$in_headers &&
+                 ( $cur_encoding !~ /base64/i ) ) { # PROFILE BLOCK STOP
 
                 # Decode \x??
                 $line =~ s/\\x([8-9A-F][A-F0-9])/pack("C", hex($1))/eig;
 
                 $line = convert_encoding(                           # PROFILE BLOCK START
-                    $line, $self->{charset__}, 'euc-jp', '7bit-jis',
-                    @{ $encoding_candidates{ $self->{lang__} } } ); # PROFILE BLOCK STOP
-                $line = $self->{nihongo_parser__}{parse}( $self, $line );
+                    $line, $charset, 'euc-jp', '7bit-jis',
+                    @{ $encoding_candidates{ $lang } } ); # PROFILE BLOCK STOP
+                $line = $nihongo_parser{parse}( $self, $line );
             }
 
-            if ( defined( $self->{color_resolver} ) ) {
+            if ( defined( $color_resolver ) ) {
 
-                if ( !$self->{in_html_tag__} ) {
-                    $self->{colorized__} .= $self->{ut__};
-                    $self->{ut__} = '';
+                if ( !$in_html_tag ) {
+                    $colorized .= $ut;
+                    $ut = '';
                 }
 
-                $self->{ut__} .= $self->splitline( $line,                 # PROFILE BLOCK START
-                                                   $self->{encoding__} ); # PROFILE BLOCK STOP
+                $ut .= $self->splitline( $line,                 # PROFILE BLOCK START
+                                                   $cur_encoding ); # PROFILE BLOCK STOP
             }
 
-            if ( $self->{in_headers__} ) {
+            if ( $in_headers ) {
 
                 # temporary colorization while in headers is handled
                 # within parse_header
 
-                $self->{ut__} = '';
+                $ut = '';
 
                 # Check for blank line signifying end of headers
 
                 if ( $line =~ /^(\r\n|\r|\n)/ ) {
 
                     # Parse the last header
-                    ( $self->{mime__}, $self->{encoding__} ) =      # PROFILE BLOCK START
+                    ( $cur_mime, $cur_encoding ) =      # PROFILE BLOCK START
                         $self->parse_header(
-                            $self->{header__}, $self->{argument__},
-                            $self->{mime__}, $self->{encoding__} ); # PROFILE BLOCK STOP
+                            $cur_header, $cur_argument,
+                            $cur_mime, $cur_encoding ); # PROFILE BLOCK STOP
 
                     # Clear the saved headers
-                    $self->{header__}   = '';
-                    $self->{argument__} = '';
+                    $cur_header   = '';
+                    $cur_argument = '';
 
-                    $self->{ut__} .= $self->splitline( "\015\012", 0 );
-                    $self->{ut__} .= "<a name=\"message_body\" />";
+                    $ut .= $self->splitline( "\015\012", 0 );
+                    $ut .= "<a name=\"message_body\" />";
 
-                    $self->{in_headers__} = 0;
-                    print "Header parsing complete.\n" if $self->{debug__};
+                    $in_headers = 0;
+                    print "Header parsing complete.\n" if $debug;
 
                     next;
                 }
@@ -1911,7 +1855,7 @@ method parse_line ($read) {
                 # whitespace (isn't a new header)
 
                 if ( $line =~ /^([\t ])([^\r\n]+)/ ) {
-                    $self->{argument__} .= "$eol$1$2";
+                    $cur_argument .= "$eol$1$2";
                     next;
                 }
 
@@ -1922,16 +1866,16 @@ method parse_line ($read) {
 
                     # Parse the last header
 
-                    ( $self->{mime__}, $self->{encoding__} ) =   # PROFILE BLOCK START
+                    ( $cur_mime, $cur_encoding ) =   # PROFILE BLOCK START
                         $self->parse_header(
-                            $self->{header__}, $self->{argument__},
-                            $self->{mime__}, $self->{encoding__} )
-                        if ( $self->{header__} ne '' );          # PROFILE BLOCK STOP
+                            $cur_header, $cur_argument,
+                            $cur_mime, $cur_encoding )
+                        if ( $cur_header ne '' );          # PROFILE BLOCK STOP
 
                     # Save the new information for the current header
 
-                    $self->{header__}   = $1;
-                    $self->{argument__} = $2;
+                    $cur_header   = $1;
+                    $cur_argument = $2;
                     next;
                 }
 
@@ -1940,12 +1884,12 @@ method parse_line ($read) {
 
             # If we are in a mime document then spot the boundaries
 
-            if ( ( $self->{mime__} ne '' ) &&                     # PROFILE BLOCK START
-                 ( $line =~ /^\-\-($self->{mime__})(\-\-)?/ ) ) { # PROFILE BLOCK STOP
+            if ( ( $cur_mime ne '' ) &&                     # PROFILE BLOCK START
+                 ( $line =~ /^\-\-($cur_mime)(\-\-)?/ ) ) { # PROFILE BLOCK STOP
 
                 # approach each mime part with fresh eyes
 
-                $self->{encoding__} = '';
+                $cur_encoding = '';
 
                 if ( !defined( $2 ) ) {
 
@@ -1954,23 +1898,23 @@ method parse_line ($read) {
                     # a boundary, so now we have a new part of the
                     # document, hence we need to look for new headers
 
-                    print "Hit MIME boundary --$1\n" if $self->{debug__};
+                    print "Hit MIME boundary --$1\n" if $debug;
 
                     $self->clear_out_qp();
 
                     # Decode base64 for every part.
-                    $self->{colorized__} .= $self->clear_out_base64() . "\n\n";
+                    $colorized .= $self->clear_out_base64() . "\n\n";
 
-                    $self->{in_headers__} = 1;
+                    $in_headers = 1;
                 } else {
 
                     # A boundary was just terminated
 
-                    $self->{in_headers__} = 0;
+                    $in_headers = 0;
 
                     my $boundary = $1;
 
-                    print "Hit MIME boundary terminator --$1--\n" if $self->{debug__};
+                    print "Hit MIME boundary terminator --$1--\n" if $debug;
 
                     # Escape to match escaped boundary characters
 
@@ -1978,13 +1922,13 @@ method parse_line ($read) {
 
                     # Remove the boundary we just found from the
                     # boundary list.  The list is stored in
-                    # $self->{mime__} and consists of mime boundaries
+                    # $cur_mime and consists of mime boundaries
                     # separated by the alternation characters | for
                     # use within a regexp
 
                     my $temp_mime = '';
 
-                    foreach my $aboundary ( split( /\|/, $self->{mime__} ) ) {
+                    foreach my $aboundary ( split( /\|/, $cur_mime ) ) {
                         if ( $boundary ne $aboundary ) {
                             if ( $temp_mime ne '' ) {
                                 $temp_mime = join( '|',                      # PROFILE BLOCK START
@@ -1995,9 +1939,9 @@ method parse_line ($read) {
                         }
                     }
 
-                    $self->{mime__} = $temp_mime;
+                    $cur_mime = $temp_mime;
 
-                    print "MIME boundary list now $self->{mime__}\n" if $self->{debug__};
+                    print "MIME boundary list now $cur_mime\n" if $debug;
                 }
 
                 next;
@@ -2006,10 +1950,10 @@ method parse_line ($read) {
             # If we are doing base64 decoding then look for suitable
             # lines and remove them for decoding
 
-            if ( $self->{encoding__} =~ /base64/i ) {
+            if ( $cur_encoding =~ /base64/i ) {
                 $line =~ s/[\r\n]//g;
                 $line =~ s/!$//;
-                $self->{base64__} .= $line;
+                $base64 .= $line;
 
                 next;
             }
@@ -2033,40 +1977,40 @@ method clear_out_base64 {
 
     my $colorized = '';
 
-    if ( $self->{base64__} ne '' ) {
+    if ( $base64 ne '' ) {
         my $decoded = '';
 
-        $self->{ut__}     = '' if ( defined( $self->{color_resolver} ) );
-        $self->{base64__} =~ s/ //g;
+        $ut     = '' if ( defined( $color_resolver ) );
+        $base64 =~ s/ //g;
 
-        print "Base64 data: " . $self->{base64__} . "\n" if $self->{debug__};
+        print "Base64 data: " . $base64 . "\n" if $debug;
 
-        $decoded = decode_base64( $self->{base64__} );
+        $decoded = decode_base64( $base64 );
 
-        if ( $self->{lang__} eq 'Nihongo' ) {
+        if ( $lang eq 'Nihongo' ) {
             $decoded = convert_encoding(                        # PROFILE BLOCK START
-                $decoded, $self->{charset__}, 'euc-jp', '7bit-jis',
-                @{ $encoding_candidates{ $self->{lang__} } } ); # PROFILE BLOCK STOP
-            $decoded = $self->{nihongo_parser__}{parse}( $self, $decoded );
+                $decoded, $charset, 'euc-jp', '7bit-jis',
+                @{ $encoding_candidates{ $lang } } ); # PROFILE BLOCK STOP
+            $decoded = $nihongo_parser{parse}( $self, $decoded );
         }
 
         $self->parse_html( $decoded, 1 );
 
-        print "Decoded: " . $decoded . "\n" if $self->{debug__};
+        print "Decoded: " . $decoded . "\n" if $debug;
 
-        if ( defined( $self->{color_resolver} ) ) {
-            $self->{ut__} = "<b>Found in encoded data:</b> " . $self->{ut__};
+        if ( defined( $color_resolver ) ) {
+            $ut = "<b>Found in encoded data:</b> " . $ut;
         }
 
-        if ( defined( $self->{color_resolver} ) ) {
-            if ( $self->{ut__} ne '' ) {
-                $colorized = $self->{ut__};
-                $self->{ut__} = '';
+        if ( defined( $color_resolver ) ) {
+            if ( $ut ne '' ) {
+                $colorized = $ut;
+                $ut = '';
             }
         }
     }
 
-    $self->{base64__} = '';
+    $base64 = '';
 
     return $colorized;
 }
@@ -2080,22 +2024,22 @@ method clear_out_base64 {
 # ----------------------------------------------------------------------------
 method clear_out_qp {
 
-    if ( ( $self->{encoding__} =~ /quoted\-printable/i ) &&
-         ( $self->{prev__} ne '' ) ) {
-        my $line = decode_qp( $self->{prev__} );
+    if ( ( $cur_encoding =~ /quoted\-printable/i ) &&
+         ( $prev ne '' ) ) {
+        my $line = decode_qp( $prev );
         $line =~ s/\x00/NUL/g;
 
-        if ( $self->{lang__} eq 'Nihongo' ) {
+        if ( $lang eq 'Nihongo' ) {
             $line = convert_encoding(
-                $line, $self->{charset__}, 'euc-jp', '7bit-jis',
-                @{ $encoding_candidates{ $self->{lang__} } } );
-            $line = $self->{nihongo_parser__}{parse}( $self, $line );
+                $line, $charset, 'euc-jp', '7bit-jis',
+                @{ $encoding_candidates{ $lang } } );
+            $line = $nihongo_parser{parse}( $self, $line );
         }
 
-        $self->{ut__} .= $self->splitline( $line, '' );
+        $ut .= $self->splitline( $line, '' );
 
         $self->parse_html( $line, 0 );
-        $self->{prev__} = '';
+        $prev = '';
     }
 }
 
@@ -2126,7 +2070,7 @@ method decode_string ($mystring, $lang = undef) {
 
     return '' if ( !defined( $mystring ) );
 
-    $lang = $self->{lang__} if ( !defined( $lang ) || ( $lang eq '' ) );
+    $lang = $lang if ( !defined( $lang ) || ( $lang eq '' ) );
 
     my $output          = '';
     my $last_is_encoded = 0;
@@ -2147,7 +2091,7 @@ method decode_string ($mystring, $lang = undef) {
                 if ( $lang eq 'Nihongo' ) {
                     $value = convert_encoding(                          # PROFILE BLOCK START
                         $value, $charset, 'euc-jp', '7bit-jis',
-                        @{ $encoding_candidates{ $self->{lang__} } } ); # PROFILE BLOCK STOP
+                        @{ $encoding_candidates{ $lang } } ); # PROFILE BLOCK STOP
                 }
                 $last_is_encoded = 1;
             } elsif ( $encoding =~ /^[qQ]$/ ) {
@@ -2160,7 +2104,7 @@ method decode_string ($mystring, $lang = undef) {
                 if ( $lang eq 'Nihongo' ) {
                     $value = convert_encoding(                          # PROFILE BLOCK START
                         $value, $charset, 'euc-jp', '7bit-jis',
-                        @{ $encoding_candidates{ $self->{lang__} } } ); # PROFILE BLOCK STOP
+                        @{ $encoding_candidates{ $lang } } ); # PROFILE BLOCK STOP
                 }
                 $last_is_encoded = 1;
             }
@@ -2186,7 +2130,11 @@ method decode_string ($mystring, $lang = undef) {
 # ----------------------------------------------------------------------------
 method get_header ($header) {
 
-    return $self->{ $header . '__' } || '';
+    return $from    if $header eq 'from';
+    return $to      if $header eq 'to';
+    return $cc      if $header eq 'cc';
+    return $subject if $header eq 'subject';
+    return '';
 }
 
 # ----------------------------------------------------------------------------
@@ -2201,7 +2149,7 @@ method get_header ($header) {
 # ----------------------------------------------------------------------------
 method parse_header ($header, $argument, $mime, $encoding) {
 
-    print "Header ($header) ($argument)\n" if $self->{debug__};
+    print "Header ($header) ($argument)\n" if $debug;
 
     # After a discussion with Tim Peters and some looking at emails
     # I'd received I discovered that the header names (case sensitive)
@@ -2217,13 +2165,13 @@ method parse_header ($header, $argument, $mime, $encoding) {
     $argument =~ s/^[ \t]+//;
 
     if ( $self->update_pseudoword( 'header', $header, 0, $header ) ) {
-        if ( defined( $self->{color_resolver} ) ) {
+        if ( defined( $color_resolver ) ) {
             my $color     = $self->get_color__( "header:$header" );
-            $self->{ut__} = "<b><font color=\"$color\">$header</font></b>: $fix_argument\015\012";
+            $ut = "<b><font color=\"$color\">$header</font></b>: $fix_argument\015\012";
         }
     } else {
-        if ( defined( $self->{color_resolver} ) ) {
-            $self->{ut__} = "$header: $fix_argument\015\012";
+        if ( defined( $color_resolver ) ) {
+            $ut = "$header: $fix_argument\015\012";
         }
     }
 
@@ -2251,29 +2199,29 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
         # These headers at least can be decoded
 
-        $argument = $self->decode_string( $argument, $self->{lang__} );
+        $argument = $self->decode_string( $argument, $lang );
 
         if ( $header =~ /^From$/i ) {
             $prefix = 'from';
-            if ( $self->{from__} eq '' ) {
-                $self->{from__} = $argument;
-                $self->{from__} =~ s/[\t\r\n]//g;
+            if ( $from eq '' ) {
+                $from = $argument;
+                $from =~ s/[\t\r\n]//g;
             }
         }
 
         if ( $header =~ /^To$/i ) {
             $prefix = 'to';
-            if ( $self->{to__} eq '' ) {
-                $self->{to__} = $argument;
-                $self->{to__} =~ s/[\t\r\n]//g;
+            if ( $to eq '' ) {
+                $to = $argument;
+                $to =~ s/[\t\r\n]//g;
             }
         }
 
         if ( $header =~ /^Cc$/i ) {
             $prefix = 'cc';
-            if ( $self->{cc__} eq '' ) {
-                $self->{cc__} = $argument;
-                $self->{cc__} =~ s/[\t\r\n]//g;
+            if ( $cc eq '' ) {
+                $cc = $argument;
+                $cc =~ s/[\t\r\n]//g;
             }
         }
 
@@ -2294,20 +2242,20 @@ method parse_header ($header, $argument, $mime, $encoding) {
     if ( $header =~ /^Subject$/i ) {
 
         $prefix = 'subject';
-        $argument = $self->decode_string( $argument, $self->{lang__} );
-        if ( $self->{subject__} eq '' ) {
+        $argument = $self->decode_string( $argument, $lang );
+        if ( $subject eq '' ) {
 
             # In Japanese mode, parse subject with Nihongo (Japanese) parser
 
-            $argument = $self->{nihongo_parser__}{parse}( $self, $argument )    # PROFILE BLOCK START
-                if ( ( $self->{lang__} eq 'Nihongo' ) && ( $argument ne '' ) ); # PROFILE BLOCK STOP
+            $argument = $nihongo_parser{parse}( $self, $argument )    # PROFILE BLOCK START
+                if ( ( $lang eq 'Nihongo' ) && ( $argument ne '' ) ); # PROFILE BLOCK STOP
 
-            $self->{subject__} = $argument;
-            $self->{subject__} =~ s/[\t\r\n]//g;
+            $subject = $argument;
+            $subject =~ s/[\t\r\n]//g;
         }
     }
 
-    $self->{date__} = $argument if ( $header =~ /^Date$/i );
+    $date = $argument if ( $header =~ /^Date$/i );
 
     if ( $header =~ /^X-Spam-Status$/i ) {
 
@@ -2361,13 +2309,13 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
     if ( $header =~ /^Content-Type$/i ) {
         if ( $argument =~ /charset=\"?([^\"\r\n\t ]{1,40})\"?/ ) {
-            $self->{charset__} = $1;
+            $charset = $1;
             $self->update_word( $1, 0, '', '', 'charset' );
         }
 
         if ( $argument =~ /^(.*?)(;)/ ) {
-            print "Set content type to $1\n" if $self->{debug__};
-            $self->{content_type__} = $1;
+            print "Set content type to $1\n" if $debug;
+            $content_type = $1;
         }
 
         if ( $argument =~ /multipart\//i ) {
@@ -2392,7 +2340,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
                 } else {
                     $mime = $boundary;
                 }
-                print "Set mime boundary to $mime\n" if $self->{debug__};
+                print "Set mime boundary to $mime\n" if $debug;
                 return ( $mime, $encoding );
             }
         }
@@ -2410,7 +2358,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
     if ( $header =~ /^Content-Transfer-Encoding$/i ) {
         $encoding = $argument;
-        print "Setting encoding to $encoding\n" if $self->{debug__};
+        print "Setting encoding to $encoding\n" if $debug;
         my $compact_encoding = $encoding;
         $compact_encoding =~ s/[^A-Za-z0-9]//g;
         $self->update_pseudoword( 'encoding', $compact_encoding,  # PROFILE BLOCK START
@@ -2426,7 +2374,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
     # Some headers should never be RFC 2047 decoded
 
-    $argument = $self->decode_string( $argument, $self->{lang__} )            # PROFILE BLOCK START
+    $argument = $self->decode_string( $argument, $lang )            # PROFILE BLOCK START
         if ( $header !~ /^(Received|Content\-Type|Content\-Disposition)$/i ); # PROFILE BLOCK STOP
 
     if ( $header =~ /^Content-Disposition$/i ) {
@@ -2558,12 +2506,12 @@ method parse_css_color ($color) {
             $error     = 1;
         }
 
-        print "        CSS rgb($r, $g, $b) percent: $ispercent\n" if $self->{debug__};
+        print "        CSS rgb($r, $g, $b) percent: $ispercent\n" if $debug;
     }
     if ( $color =~ /^#(([0-9a-f]{3})|([0-9a-f]{6}))$/i ) {
 
         # #rgb or #rrggbb
-        print "        CSS numeric form: $color\n" if $self->{debug__};
+        print "        CSS numeric form: $color\n" if $debug;
 
         $color = $2 || $3;
 
@@ -2585,7 +2533,7 @@ method parse_css_color ($color) {
 
         # these are the only CSS defined colours
 
-        print "       CSS textual color form: $color\n" if $self->{debug__};
+        print "       CSS textual color form: $color\n" if $debug;
 
         my $new_color = $self->map_color( $color );
 
@@ -2664,7 +2612,7 @@ method file_extension ($filename) {
 method add_attachment_filename ($filename) {
 
     if ( defined( $filename ) && ( $filename ne '' ) ) {
-        print "Add filename $filename\n" if $self->{debug__};
+        print "Add filename $filename\n" if $debug;
 
         # Decode the filename
         $filename = $self->decode_string( $filename );
@@ -2730,17 +2678,30 @@ method splitline ($line, $encoding) {
 
 method first20 {
 
-    return $self->{first20__};
+    return $first20;
 }
 
 method quickmagnets {
-
-    return $self->{quickmagnets__};
+    return \%quickmagnets;
 }
 
 method mangle ($value = undef) {
+    $mangle = $value if defined $value;
+    return $mangle;
+}
 
-    $self->{mangle__} = $value;
+method lang ($value = undef) {
+    $lang = $value if defined $value;
+    return $lang;
+}
+
+method words {
+    return \%words;
+}
+
+method color_resolver ($value = undef) {
+    $color_resolver = $value if defined $value;
+    return $color_resolver;
 }
 
 # ----------------------------------------------------------------------------
@@ -2843,7 +2804,7 @@ method parse_line_with_mecab ($line) {
     return $line if ( $line =~ /^[\x00-\x7F]*$/ );
 
     # Split Japanese line into words using MeCab
-    $line = $self->{nihongo_parser__}{obj_mecab}->parse( $line );
+    $line = $nihongo_parser{obj_mecab}->parse( $line );
 
     # Remove the unnecessary white spaces
     $line =~ s/([\x00-\x1f\x21-\x7f]) (?=[\x00-\x1f\x21-\x7f])/$1/g;
@@ -2901,7 +2862,7 @@ method init_mecab {
     # Initialize MeCab (-F %M\s -U %M\s -E \n is passed to MeCab as argument).
     # Insert white spaces after words.
 
-    $self->{nihongo_parser__}{obj_mecab}                 # PROFILE BLOCK START
+    $nihongo_parser{obj_mecab}                 # PROFILE BLOCK START
         = MeCab::Tagger->new( '-F %M\s -U %M\s -E \n' ); # PROFILE BLOCK STOP
 }
 
@@ -2926,7 +2887,7 @@ sub close_kakasi
 # ----------------------------------------------------------------------------
 method close_mecab {
 
-    $self->{nihongo_parser__}{obj_mecab} = undef;
+    $nihongo_parser{obj_mecab} = undef;
 }
 
 # ----------------------------------------------------------------------------
@@ -2980,24 +2941,24 @@ method setup_nihongo_parser ($nihongo_parser) {
         require MeCab;
         MeCab->import();
 
-        $self->{nihongo_parser__}{init}  = \&init_mecab;
-        $self->{nihongo_parser__}{parse} = \&parse_line_with_mecab;
-        $self->{nihongo_parser__}{close} = \&close_mecab;
+        $nihongo_parser{init}  = \&init_mecab;
+        $nihongo_parser{parse} = \&parse_line_with_mecab;
+        $nihongo_parser{close} = \&close_mecab;
     } elsif ( $nihongo_parser eq 'kakasi' ) {
 
         # Import Text::Kakasi module
         require Text::Kakasi;
         Text::Kakasi->import();
 
-        $self->{nihongo_parser__}{init}  = \&init_kakasi;
-        $self->{nihongo_parser__}{parse} = \&parse_line_with_kakasi;
-        $self->{nihongo_parser__}{close} = \&close_kakasi;
+        $nihongo_parser{init}  = \&init_kakasi;
+        $nihongo_parser{parse} = \&parse_line_with_kakasi;
+        $nihongo_parser{close} = \&close_kakasi;
     } else {
 
         # Require no external modules
-        $self->{nihongo_parser__}{init}  = sub { }; # Needs no initialization
-        $self->{nihongo_parser__}{parse} = \&parse_line_with_internal_parser;
-        $self->{nihongo_parser__}{close} = sub { };
+        $nihongo_parser{init}  = sub { }; # Needs no initialization
+        $nihongo_parser{parse} = \&parse_line_with_internal_parser;
+        $nihongo_parser{close} = sub { };
     }
 
     return $nihongo_parser;

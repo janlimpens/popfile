@@ -57,24 +57,24 @@ sub new {
 
     $self->name( 'imap' );
 
-    $self->{classifier__} = 0;
+    $self->{classifier} = 0;
 
     # Here are the variables used by this module:
 
     # A place to store the last response that the IMAP server sent us
-    $self->{last_response__} = '';
+    $self->{last_response} = '';
 
     # A place to store the last command we sent to the server
-    $self->{last_command__} = '';
+    $self->{last_command} = '';
 
     # The tag that preceeds any command we sent, actually just a simple counter var
-    $self->{tag__} = 0;
+    $self->{tag} = 0;
 
     # A list of mailboxes on the server:
-    $self->{mailboxes__} = [];
+    $self->{mailboxes} = [];
 
     # The session id for the current session:
-    $self->{api_session__} = '';
+    $self->{api_session} = '';
 
     # A hash to hold per-folder data (watched and output flag + socket connection)
     # This data structure is extremely important to the work done by this
@@ -84,18 +84,18 @@ sub new {
     # can be {output} for an output folder
     # {watched} for a watched folder.
     # {imap} will hold a valid socket object for the connection of this folder.
-    $self->{folders__} = ();
+    $self->{folders} = ();
 
     # A flag that tells us that the folder list has changed
-    $self->{folder_change_flag__} = 0;
+    $self->{folder_change_flag} = 0;
 
     # A hash containing the hash values of messages that we encountered
     # during a single run through service().
     # If you provide a hash as a key and if that key exists, the value
     # will be the folder where the original message was placed (or left) in.
-    $self->{hash_values__} = ();
+    $self->{hash_values} = ();
 
-    $self->{history__} = 0;
+    $self->{history} = 0;
 
     $self->{imap_error} = '';
 
@@ -138,7 +138,7 @@ sub initialize {
     # Set the time stamp for the last update to the current time
     # minus the update interval so that we will connect as soon
     # as service() is called for the first time.
-    $self->{last_update__} = time - $self->config_( 'update_interval' );
+    $self->{last_update} = time - $self->config_( 'update_interval' );
 
     return $self->SUPER::initialize();
 }
@@ -224,7 +224,7 @@ sub stop {
 sub service {
     my $self = shift;
 
-    if ( time - $self->{last_update__} >= $self->config_( 'update_interval' ) ) {
+    if ( time - $self->{last_update} >= $self->config_( 'update_interval' ) ) {
 
         # Since the IMAP-Client module can throw an exception, i.e. die if
         # it detects a lost connection, we eval the following code to be able
@@ -241,8 +241,8 @@ sub service {
 
                 # If we haven't yet set up a list of serviced folders,
                 # or if the list was changed by the user, build up a
-                # list of folder in $self->{folders__}
-                if ( ( keys %{$self->{folders__}} == 0 ) || ( $self->{folder_change_flag__} == 1 ) ) {
+                # list of folder in $self->{folders}
+                if ( ( keys %{$self->{folders}} == 0 ) || ( $self->{folder_change_flag} == 1 ) ) {
                     $self->build_folder_list__();
                 }
 
@@ -250,11 +250,11 @@ sub service {
 
                 # Reset the hash containing the hash values we have seen the
                 # last time through service.
-                $self->{hash_values__} = ();
+                $self->{hash_values} = ();
 
                 # Now do the real job
-                foreach my $folder ( keys %{$self->{folders__}} ) {
-                    if ( exists $self->{folders__}{$folder}{imap} ) {
+                foreach my $folder ( keys %{$self->{folders}} ) {
+                    if ( exists $self->{folders}{$folder}{imap} ) {
                         $self->scan_folder( $folder );
                     }
                 }
@@ -276,7 +276,7 @@ sub service {
             }
         }
         # Save the current time.
-        $self->{last_update__} = time;
+        $self->{last_update} = time;
     }
 
     return 1;
@@ -289,7 +289,7 @@ sub service {
 #   This function builds a list of all the folders that we have to care
 #   about. This list consists of the folders we are watching for new mail
 #   and of the folders that we are watching for reclassification requests.
-#   The complete list is stored in a hash: $self->{folders__}.
+#   The complete list is stored in a hash: $self->{folders}.
 #   The keys in this hash are the names of our folders, the values represent
 #   flags. Currently, the flags can be
 #       {watched} for watched folders and
@@ -314,11 +314,11 @@ sub build_folder_list__ {
     # if we have already been connected. But I trust in Perl's garbage collection
     # and keep my fingers crossed.
 
-    %{$self->{folders__}} = ();
+    %{$self->{folders}} = ();
 
     # watched folders
     foreach my $folder ( $self->watched_folders__() ) {
-        $self->{folders__}{$folder}{watched} = 1;
+        $self->{folders}{$folder}{watched} = 1;
     }
 
     # output folders
@@ -327,7 +327,7 @@ sub build_folder_list__ {
         my $folder = $self->folder_for_bucket__( $bucket );
 
         if ( defined $folder ) {
-            $self->{folders__}{$folder}{output} = $bucket;
+            $self->{folders}{$folder}{output} = $bucket;
         }
     }
 
@@ -336,12 +336,12 @@ sub build_folder_list__ {
     # which will point to the INBOX. Since this isn't enough
     # to do anything meaningful, we simply reset the hash:
 
-    if ( ( keys %{$self->{folders__}} ) == 1 ) {
-        %{$self->{folders__}} = ();
+    if ( ( keys %{$self->{folders}} ) == 1 ) {
+        %{$self->{folders}} = ();
     }
 
     # Reset the folder change flag
-    $self->{folder_change_flag__} = 0;
+    $self->{folder_change_flag} = 0;
 }
 
 
@@ -365,31 +365,31 @@ sub connect_server__ {
 
     my $imap = undef;
 
-    foreach my $folder ( keys %{$self->{folders__}} ) {
+    foreach my $folder ( keys %{$self->{folders}} ) {
         # We may already have a valid connection:
-        if ( exists $self->{folders__}{$folder}{imap} ) {
+        if ( exists $self->{folders}{$folder}{imap} ) {
             last;
         }
         # The folder may be write-only:
-        if ( exists $self->{folders__}{$folder}{output}
+        if ( exists $self->{folders}{$folder}{output}
                 &&
-            ! exists $self->{folders__}{$folder}{watched}
+            ! exists $self->{folders}{$folder}{watched}
                 &&
             $self->classifier()->is_pseudo_bucket( $self->api_session(),
-                        $self->{folders__}{$folder}{output} ) ) {
+                        $self->{folders}{$folder}{output} ) ) {
                 next;
         }
 
         # We may have to create a fresh connection here.
         if ( ! defined $imap ) {
             # Have we got a stored active connection?
-            $imap = $self->{folders__}{$folder}{imap};
+            $imap = $self->{folders}{$folder}{imap};
 
             # Nope, must be the first time we end up here.
             if ( ! defined $imap ) {
                 $imap = $self->new_imap_client();
                 if ( $imap ) {
-                    $self->{folders__}{$folder}{imap} = $imap;
+                    $self->{folders}{$folder}{imap} = $imap;
                 }
                 else {
                     die "POPFILE-IMAP-EXCEPTION: Could not connect: $self->{imap_error} " . __FILE__ . '(' . __LINE__ . '))';
@@ -398,8 +398,8 @@ sub connect_server__ {
         }
 
         # Build a list of IMAP mailboxes if we haven't already got one:
-        unless ( @{$self->{mailboxes__}} ) {
-            @{$self->{mailboxes__}} = $imap->get_mailbox_list();
+        unless ( @{$self->{mailboxes}} ) {
+            @{$self->{mailboxes}} = $imap->get_mailbox_list();
         }
 
         # Do a STATUS to check UIDVALIDITY and UIDNEXT
@@ -408,7 +408,7 @@ sub connect_server__ {
         my $uidvalidity = $info->{UIDVALIDITY};
 
         if ( defined $uidvalidity && defined $uidnext ) {
-            $self->{folders__}{$folder}{imap} = $imap;
+            $self->{folders}{$folder}{imap} = $imap;
 
             # If we already have a UIDVALIDITY value stored,
             # we compare the old and the new value.
@@ -459,9 +459,9 @@ sub disconnect_folders__ {
 
     $self->log_( 1, "Trying to disconnect all connections." );
 
-    foreach my $folder ( keys %{$self->{folders__}} ) {
+    foreach my $folder ( keys %{$self->{folders}} ) {
 
-        my $imap = $self->{folders__}{$folder}{imap};
+        my $imap = $self->{folders}{$folder}{imap};
         if ( defined $imap  && $imap->connected() ) {
             # Workaround for POPFile crashes when disconnecting from server
             eval {
@@ -469,7 +469,7 @@ sub disconnect_folders__ {
             };
         }
     }
-    %{$self->{folders__}} = ();
+    %{$self->{folders}} = ();
 }
 
 
@@ -497,12 +497,12 @@ sub scan_folder {
     my $folder = shift;
 
     # make the flags more accessible.
-    my $is_watched = ( exists $self->{folders__}{$folder}{watched} ) ? 1 : 0;
-    my $is_output  = ( exists $self->{folders__}{$folder}{output } ) ? $self->{folders__}{$folder}{output} : '';
+    my $is_watched = ( exists $self->{folders}{$folder}{watched} ) ? 1 : 0;
+    my $is_output  = ( exists $self->{folders}{$folder}{output } ) ? $self->{folders}{$folder}{output} : '';
 
     $self->log_( 1, "Looking for new messages in folder $folder." );
 
-    my $imap = $self->{folders__}{$folder}{imap};
+    my $imap = $self->{folders}{$folder}{imap};
 
     # Do a NOOP first. Certain implementations won't tell us about
     # new messages while we are connected and selected otherwise:
@@ -532,8 +532,8 @@ sub scan_folder {
 
         # Watch our for those pesky duplicate and triplicate spam messages:
 
-        if ( exists $self->{hash_values__}{$hash} ) {
-            my $destination = $self->{hash_values__}{$hash};
+        if ( exists $self->{hash_values}{$hash} ) {
+            my $destination = $self->{hash_values}{$hash};
             if ( $destination ne $folder ) {
                 $self->log_( 0, "Found duplicate hash value: $hash. Moving the message to $destination." );
                 $imap->move_message( $msg, $destination );
@@ -556,10 +556,10 @@ sub scan_folder {
                 if ( defined $result ) {
                     if ( $result ne '' ) {
                         $moved_message++;
-                        $self->{hash_values__}{$hash} = $result;
+                        $self->{hash_values}{$hash} = $result;
                     }
                     else {
-                        $self->{hash_values__}{$hash} = $folder;
+                        $self->{hash_values}{$hash} = $folder;
                     }
                 }
                 next;
@@ -636,7 +636,7 @@ sub classify_message {
     # E.g. we could generate a list of parts by
     # first looking at the parts the message really has.
 
-    my $imap = $self->{folders__}{$folder}{imap};
+    my $imap = $self->{folders}{$folder}{imap};
 
     PART:
     foreach my $part ( qw/ HEADER TEXT / ) {
@@ -737,8 +737,8 @@ sub reclassify_message {
     my $old_bucket = shift;
     my $hash = shift;
 
-    my $new_bucket = $self->{folders__}{$folder}{output};
-    my $imap = $self->{folders__}{$folder}{imap};
+    my $new_bucket = $self->{folders}{$folder}{output};
+    my $imap = $self->{folders}{$folder}{imap};
     my ( $ok, @lines ) = $imap->fetch_message_part( $msg, '' );
 
     unless ( $ok ) {
@@ -863,10 +863,10 @@ sub classifier {
     my $classifier = shift;
 
     if ( defined $classifier ) {
-        $self->{classifier__} = $classifier;
+        $self->{classifier} = $classifier;
     }
     else {
-        return $self->{classifier__};
+        return $self->{classifier};
     }
 }
 
@@ -883,10 +883,10 @@ sub history {
     my $history = shift;
 
     if ( defined $history ) {
-        $self->{history__} = $history;
+        $self->{history} = $history;
     }
     else {
-        return $self->{history__};
+        return $self->{history};
     }
 }
 
@@ -901,11 +901,11 @@ sub history {
 sub api_session {
     my $self = shift;
 
-    if ( ! $self->{api_session__} ) {
-        $self->{api_session__} = $self->classifier()->get_session_key( 'admin', '' );
+    if ( ! $self->{api_session} ) {
+        $self->{api_session} = $self->classifier()->get_session_key( 'admin', '' );
     }
 
-    return $self->{api_session__};
+    return $self->{api_session};
 }
 
 
@@ -930,7 +930,7 @@ sub get_hash {
     my $folder = shift;
     my $msg    = shift;
 
-    my $imap = $self->{folders__}{$folder}{imap};
+    my $imap = $self->{folders}{$folder}{imap};
 
     my ( $ok, @lines ) = $imap->fetch_message_part( $msg, "HEADER.FIELDS (Message-id Date Subject Received)" );
 
@@ -1113,7 +1113,7 @@ sub configure_item {
     if ( $name eq 'imap_1_watch_folders' ) {
 
         # We can only configure this if we have a list of mailboxes on the server available
-        if ( @{$self->{mailboxes__}} < 1 || ( ! $self->watched_folders__() ) ) {
+        if ( @{$self->{mailboxes}} < 1 || ( ! $self->watched_folders__() ) ) {
             $templ->param( IMAP_if_mailboxes => 0 );
         }
         else {
@@ -1140,7 +1140,7 @@ sub configure_item {
                 my @loop_mailboxes = ();
 
                 # loop over IMAP mailboxes and generate a select element for reach one
-                foreach my $mailbox ( @{$self->{mailboxes__}} ) {
+                foreach my $mailbox ( @{$self->{mailboxes}} ) {
 
                     # Populate inner loop entries:
                     my %data_mailboxes = ();
@@ -1171,7 +1171,7 @@ sub configure_item {
 
     # Give me another watched folder.
     if ( $name eq 'imap_2_watch_more_folders' ) {
-        if ( @{$self->{mailboxes__}} < 1 ) {
+        if ( @{$self->{mailboxes}} < 1 ) {
             $templ->param( IMAP_if_mailboxes => 0 );
         }
         else {
@@ -1182,7 +1182,7 @@ sub configure_item {
 
     # Which folder corresponds to which bucket?
     if ( $name eq 'imap_3_bucket_folders' ) {
-        if ( @{$self->{mailboxes__}} < 1 ) {
+        if ( @{$self->{mailboxes}} < 1 ) {
             $templ->param( IMAP_if_mailboxes => 0 );
         }
         else {
@@ -1200,7 +1200,7 @@ sub configure_item {
                 $outer_data{IMAP_Bucket_Header} = sprintf( $$language{Imap_Bucket2Folder}, $bucket );
 
                 my @inner_loop = ();
-                foreach my $mailbox ( @{$self->{mailboxes__}} ) {
+                foreach my $mailbox ( @{$self->{mailboxes}} ) {
                     my %inner_data = ();
 
                     $inner_data{IMAP_mailbox} = $mailbox;
@@ -1282,7 +1282,7 @@ sub validate_item {
             }
 
             $self->watched_folders__( sort keys %folders );
-            $self->{folder_change_flag__} = 1;
+            $self->{folder_change_flag} = 1;
         }
         return;
     }
@@ -1327,7 +1327,7 @@ sub validate_item {
                 }
                 else {
                     $self->folder_for_bucket__( $bucket, $folder );
-                    $self->{folder_change_flag__} = 1;
+                    $self->{folder_change_flag} = 1;
                 }
             }
             $templ->param( IMAP_buckets_to_folders_if_error => $bad );
@@ -1485,7 +1485,7 @@ sub validate_update_mailbox_list {
 
             my $imap = $self->new_imap_client();
             if ( defined $imap ) {
-                @{$self->{mailboxes__}} = $imap->get_mailbox_list();
+                @{$self->{mailboxes}} = $imap->get_mailbox_list();
                 $imap->logout();
             }
             else {
@@ -1526,27 +1526,27 @@ sub train_on_archive__ {
 
     # Reset the folders hash and build it again.
 
-    %{$self->{folders__}} = ();
+    %{$self->{folders}} = ();
     $self->build_folder_list__();
 
     # eliminate all watched folders
-    foreach my $folder ( keys %{$self->{folders__}} ) {
-        if ( exists $self->{folders__}{$folder}{watched} ) {
-            delete $self->{folders__}{$folder};
+    foreach my $folder ( keys %{$self->{folders}} ) {
+        if ( exists $self->{folders}{$folder}{watched} ) {
+            delete $self->{folders}{$folder};
         }
     }
 
     # Connect to server
     $self->connect_server__();
 
-    foreach my $folder ( keys %{$self->{folders__}} ) {
-        my $bucket = $self->{folders__}{$folder}{output};
+    foreach my $folder ( keys %{$self->{folders}} ) {
+        my $bucket = $self->{folders}{$folder}{output};
 
         # Skip pseudobuckets and the INBOX
         next if $self->classifier()->is_pseudo_bucket( $self->api_session(), $bucket );
         next if $folder eq 'INBOX';
 
-        my $imap = $self->{folders__}{$folder}{imap};
+        my $imap = $self->{folders}{$folder}{imap};
 
         # Set uidnext value to 1. We will train on all messages.
         $imap->uid_next( $folder, 1 );
@@ -1583,7 +1583,7 @@ sub train_on_archive__ {
     }
 
     # Again, reset folders__ hash.
-    %{$self->{folders__}} = ();
+    %{$self->{folders}} = ();
 
     # And disable training mode so we won't do this again the next time service is called.
     $self->config_( 'training_mode', 0 );

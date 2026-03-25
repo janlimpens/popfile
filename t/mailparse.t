@@ -26,7 +26,7 @@ my $fixture_dir = "$Bin/fixtures";
 subtest 'parse ham email' => sub {
     $mp->parse_file("$fixture_dir/ham.eml");
 
-    my %words = %{ $mp->{words__} };
+    my %words = %{ $mp->words() };
     ok( scalar keys %words > 0, 'extracted some words from ham.eml' );
 
     # The ham fixture contains "meeting", "budget", "project", "report"
@@ -44,7 +44,7 @@ subtest 'parse ham email' => sub {
 subtest 'parse spam email' => sub {
     $mp->parse_file("$fixture_dir/spam.eml");
 
-    my %words = %{ $mp->{words__} };
+    my %words = %{ $mp->words() };
     ok( scalar keys %words > 0, 'extracted some words from spam.eml' );
 
     # The spam fixture contains "prize", "free", "offer", "click"
@@ -57,7 +57,7 @@ subtest 'parse spam email' => sub {
 # -----------------------------------------------------------------------
 subtest 'word counts are positive integers' => sub {
     $mp->parse_file("$fixture_dir/ham.eml");
-    my %words = %{ $mp->{words__} };
+    my %words = %{ $mp->words() };
 
     for my $word (keys %words) {
         ok( $words{$word} > 0, "count for '$word' is positive" );
@@ -67,10 +67,10 @@ subtest 'word counts are positive integers' => sub {
 # -----------------------------------------------------------------------
 subtest 'repeated parse resets word list' => sub {
     $mp->parse_file("$fixture_dir/spam.eml");
-    my $spam_words = scalar keys %{ $mp->{words__} };
+    my $spam_words = scalar keys %{ $mp->words() };
 
     $mp->parse_file("$fixture_dir/ham.eml");
-    my %ham_words = %{ $mp->{words__} };
+    my %ham_words = %{ $mp->words() };
 
     # "prize" is in spam but not in ham
     ok( !exists $ham_words{prize}, 'word list reset between parses: "prize" absent after ham parse' );

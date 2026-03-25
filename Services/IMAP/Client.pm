@@ -60,12 +60,12 @@ sub new {
     my $self = bless {}, $class;
 
     # This is needed when the client module is run in POPFile 0.22.2 context
-    $self->{logger__} = $log or return;
+    $self->{logger} = $log or return;
     # And this one is for the 0.23 (aka 2.0) context:
-    $self->{modules__}{logger} = $log;
+    $self->{modules}{logger} = $log;
 
-    $self->{config__} = $config or return;
-    $self->{global_config__} = $global_config or return;
+    $self->{config_ref} = $config or return;
+    $self->{global_config_ref} = $global_config or return;
 
     $self->{host}  = $self->config_( 'hostname' );
     $self->{port}  = $self->config_( 'port' );
@@ -80,7 +80,7 @@ sub new {
     $self->{socket} = undef;
     $self->{folder} = undef;
     $self->{tag}    = 0;
-    $self->{name__} = 'IMAP-Client';
+    $self->{client_name} = 'IMAP-Client';
 
     return $self;
 }
@@ -93,7 +93,7 @@ sub new {
 
 sub config_ {
     my $self = shift;
-    return &{$self->{config__}}( @_ );
+    return &{$self->{config_ref}}( @_ );
 }
 
 
@@ -104,7 +104,7 @@ sub config_ {
 
 sub global_config_ {
     my $self = shift;
-    return &{$self->{global_config__}}( @_ );
+    return &{$self->{global_config_ref}}( @_ );
 }
 
 

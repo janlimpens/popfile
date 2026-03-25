@@ -1,3 +1,5 @@
+package UI::HTTP;
+
 #----------------------------------------------------------------------------
 #
 # This package contains an HTTP server used as a base class for other
@@ -21,59 +23,45 @@
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
 #----------------------------------------------------------------------------
-package UI::HTTP;
 
-use parent 'POPFile::Module';
-
-use strict;
-use warnings;
+use Object::Pad;
 use locale;
 
 use IO::Socket::INET qw(:DEFAULT :crlf);
 use IO::Select;
 use Date::Format qw(time2str);
 
-# A handy variable containing the value of an EOL for the network
-
 my $eol = "\015\012";
 
-#----------------------------------------------------------------------------
-# new
-#
-#   Class new() function
-#----------------------------------------------------------------------------
-sub new
-{
-    my $type = shift;
-    my $self = POPFile::Module->new();
+class UI::HTTP :isa(POPFile::Module) {
 
-    bless $self;
+    field $server      = undef;
+    field $selector    = undef;
+    field $url_handler = undef;
+    field %form;
+    field $history     = undef;
 
-    return $self;
-}
+=head2 start
 
-# ---------------------------------------------------------------------------
-#
-# start
-#
-# Called to start the HTTP interface running
-#
-# ---------------------------------------------------------------------------
-sub start
-{
-    my ( $self ) = @_;
-    $self->log_( 1, "Trying to open listening socket on port " . $self->config_('port') . '.' );
-    $self->{server_} = IO::Socket::INET->new( Proto     => 'tcp',             # PROFILE BLOCK START
-                                    $self->config_( 'local' )  == 1 ? (LocalAddr => 'localhost') : (),
-                                     LocalPort => $self->config_( 'port' ),
-                                     Listen    => SOMAXCONN,
-                                     Reuse     => 1 );                        # PROFILE BLOCK STOP
+Opens the HTTP listening socket. Returns 1 on success, 0 if the port
+cannot be bound.
 
-    if ( !defined( $self->{server_} ) ) {
-        my $port = $self->config_( 'port' );
-        my $name = $self->name();
-        $self->log_( 0, "Couldn't start the $name interface because POPFile could not bind to the listen port $port" );
-        print STDERR <<EOM;                                                   # PROFILE BLOCK START
+=cut
+
+    method start {
+        $self->log_( 1, "Trying to open listening socket on port " . $self->config_('port') . '.' );
+        $server = IO::Socket::INET->new(                             # PROFILE BLOCK START
+                                Proto     => 'tcp',
+                                $self->config_( 'local' ) == 1 ? (LocalAddr => 'localhost') : (),
+                                LocalPort => $self->config_( 'port' ),
+                                Listen    => SOMAXCONN,
+                                Reuse     => 1 );                    # PROFILE BLOCK STOP
+
+        if ( !defined( $server ) ) {
+            my $port = $self->config_( 'port' );
+            my $name = $self->name();
+            $self->log_( 0, "Couldn't start the $name interface because POPFile could not bind to the listen port $port" );
+            print STDERR <<EOM;                                      # PROFILE BLOCK START
 
 \nCouldn't start the $name interface because POPFile could not bind to the
 listen port $port. This could be because there is another service
@@ -84,373 +72,268 @@ and the port you specified is less than 1024).
 EOM
 # PROFILE BLOCK STOP
 
-        return 0;
+            return 0;
+        }
+
+        $selector = IO::Select->new( $server );
+
+        return 1;
     }
 
-    $self->{selector_} = IO::Select->new( $self->{server_} );
+=head2 stop
 
-    return 1;
-}
+Closes the HTTP listening socket.
 
-# ----------------------------------------------------------------------------
-#
-# stop
-#
-# Called when the interface must shutdown
-#
-# ----------------------------------------------------------------------------
-sub stop
-{
-    my ( $self ) = @_;
+=cut
 
-    close $self->{server_} if ( defined( $self->{server_} ) );
-}
+    method stop {
+        close $server if defined $server;
+    }
 
-# ----------------------------------------------------------------------------
-#
-# service
-#
-# Called to handle interface requests
-#
-# ----------------------------------------------------------------------------
-sub service
-{
-    my ( $self ) = @_;
+=head2 service
 
-    my $code = 1;
+Accepts one pending HTTP request and dispatches it via C<handle_url>.
+Returns 1 normally, 0 to request POPFile shutdown.
 
-    return $code if ( !defined( $self->{selector_} ) );
+=cut
 
-    # See if there's a connection waiting for us, if there is we
-    # accept it handle a single request and then exit
+    method service {
+        my $code = 1;
 
-    my ( $ready ) = $self->{selector_}->can_read(0);
+        return $code if !defined $selector;
 
-    # Handle HTTP requests for the UI
+        my ( $ready ) = $selector->can_read(0);
 
-    if ( ( defined( $ready ) ) && ( $ready == $self->{server_} ) ) {
+        if ( ( defined( $ready ) ) && ( $ready == $server ) ) {
 
-        if ( my $client = $self->{server_}->accept() ) {
+            if ( my $client = $server->accept() ) {
 
-            # Check that this is a connection from the local machine,
-            # if it's not then we drop it immediately without any
-            # further processing.  We don't want to allow remote users
-            # to admin POPFile
+                my ( $remote_port, $remote_host ) = sockaddr_in( $client->peername() );
 
-            my ( $remote_port, $remote_host ) = sockaddr_in( $client->peername() );
+                if ( ( $self->config_( 'local' ) == 0 ) ||                # PROFILE BLOCK START
+                     ( $remote_host eq inet_aton( "127.0.0.1" ) ) ) {     # PROFILE BLOCK STOP
 
-            if ( ( $self->config_( 'local' ) == 0 ) ||                # PROFILE BLOCK START
-                 ( $remote_host eq inet_aton( "127.0.0.1" ) ) ) {     # PROFILE BLOCK STOP
+                    $client->autoflush(1);
 
-                # Read the request line (GET or POST) from the client
-                # and if we manage to do that then read the rest of
-                # the HTTP headers grabbing the Content-Length and
-                # using it to read any form POST content into $content
+                    if ( ( defined( $client ) ) &&                          # PROFILE BLOCK START
+                         ( my $request = $self->slurp_( $client ) ) ) {    # PROFILE BLOCK STOP
+                        my $content_length = 0;
+                        my $content        = '';
+                        my $status_code    = 200;
 
-                $client->autoflush(1);
+                        $self->log_( 2, $request );
 
-                if ( ( defined( $client ) ) &&                      # PROFILE BLOCK START
-                     ( my $request = $self->slurp_( $client ) ) ) { # PROFILE BLOCK STOP
-                    my $content_length = 0;
-                    my $content = '';
-                    my $status_code = 200;
-
-                    $self->log_( 2, $request );
-
-                    while ( my $line = $self->slurp_( $client ) )  {
-                        $content_length = $1 if ( $line =~ /Content-Length: (\d+)/i );
-
-                        # Discovered that Norton Internet Security was
-                        # adding HTTP headers of the form
-                        #
-                        # ~~~~~~~~~~~~~~: ~~~~~~~~~~~~~
-                        #
-                        # which we were not recognizing as valid
-                        # (surprise, surprise) and this was messing
-                        # about our handling of POST data.  Changed
-                        # the end of header identification to any line
-                        # that does not contain a :
-
-                        last                 if ( $line !~ /:/ );
-                    }
-
-                    if ( $content_length > 0 ) {
-                        $content = $self->slurp_buffer_( $client,  # PROFILE BLOCK START
-                            $content_length );                     # PROFILE BLOCK STOP
-                        if ( !defined( $content ) ) {
-                            $status_code = 400;
-                        } else {
-                            $self->log_( 2, $content );
+                        while ( my $line = $self->slurp_( $client ) ) {
+                            $content_length = $1 if $line =~ /Content-Length: (\d+)/i;
+                            last if $line !~ /:/;
                         }
-                    }
 
-                    if ( $status_code != 200 ) {
-                        $self->http_error_( $client, $status_code );
-                    } else {
-                        if ( $request =~ /^(GET|POST) (.*) HTTP\/1\./i ) {
-                            $code = $self->handle_url( $client, $2, $1, $content );
-                            $self->log_( 2,                                # PROFILE BLOCK START
-                                "HTTP handle_url returned code $code\n" ); # PROFILE BLOCK STOP
+                        if ( $content_length > 0 ) {
+                            $content = $self->slurp_buffer_( $client,  # PROFILE BLOCK START
+                                $content_length );                      # PROFILE BLOCK STOP
+                            if ( !defined( $content ) ) {
+                                $status_code = 400;
+                            } else {
+                                $self->log_( 2, $content );
+                            }
+                        }
+
+                        if ( $status_code != 200 ) {
+                            $self->http_error_( $client, $status_code );
                         } else {
-                            $self->http_error_( $client, 500 );
+                            if ( $request =~ /^(GET|POST) (.*) HTTP\/1\./i ) {
+                                $code = $self->handle_url( $client, $2, $1, $content );
+                                $self->log_( 2,                                    # PROFILE BLOCK START
+                                    "HTTP handle_url returned code $code\n" );     # PROFILE BLOCK STOP
+                            } else {
+                                $self->http_error_( $client, 500 );
+                            }
                         }
                     }
                 }
-            }
 
-            $self->log_( 2, "Close HTTP connection on $client\n" );
-            $self->done_slurp_( $client );
-            close $client;
-        }
-    }
-
-    return $code;
-}
-
-# ----------------------------------------------------------------------------
-#
-# forked
-#
-# Called when someone forks POPFile
-#
-# ----------------------------------------------------------------------------
-sub forked
-{
-    my ( $self ) = @_;
-
-    close $self->{server_};
-}
-
-# ----------------------------------------------------------------------------
-#
-# handle_url - Handle a URL request
-#
-# $client     The web browser to send the results to
-# $url        URL to process
-# $command    The HTTP command used (GET or POST)
-# $content    Any non-header data in the HTTP command
-#
-# ----------------------------------------------------------------------------
-sub handle_url
-{
-    my ( $self, $client, $url, $command, $content ) = @_;
-
-    return $self->{url_handler_}( $self, $client, $url, $command, $content );
-}
-
-# ----------------------------------------------------------------------------
-#
-# parse_form_    - parse form data and fill in $self->{form_}
-#
-# $arguments         The text of the form arguments (e.g. foo=bar&baz=fou) or separated by
-#                    CR/LF
-#
-# ----------------------------------------------------------------------------
-sub parse_form_
-{
-    my ( $self, $arguments ) = @_;
-
-    # Normally the browser should have done &amp; to & translation on
-    # URIs being passed onto us, but there was a report that someone
-    # was having a problem with form arguments coming through with
-    # something like http://127.0.0.1/history?session=foo&amp;filter=bar
-    # which would mess things up in the argument splitter so this code
-    # just changes &amp; to & for safety
-
-    return if ( !defined $arguments );
-
-    $arguments =~ s/&amp;/&/g;
-
-    while ( $arguments =~ m/\G(.*?)=(.*?)(&|\r|\n|$)/g ) {
-        my $arg = $1;
-
-        my $need_array = defined( $self->{form_}{$arg} );
-
-        if ( $need_array ) {
-            if ( $#{ $self->{form_}{$arg . "_array"} } == -1 ) {
-                push( @{ $self->{form_}{$arg . "_array"} }, $self->{form_}{$arg} );
+                $self->log_( 2, "Close HTTP connection on $client\n" );
+                $self->done_slurp_( $client );
+                close $client;
             }
         }
 
-        $self->{form_}{$arg} = $2;
-        $self->{form_}{$arg} =~ s/\+/ /g;
+        return $code;
+    }
 
-        # Expand hex escapes in the form data
+=head2 forked
 
-        $self->{form_}{$arg} =~ s/%([0-9A-F][0-9A-F])/chr hex $1/gie;
+Called when POPFile forks; closes the server socket in the child.
 
-        # Push the value onto an array to allow for multiple values of
-        # the same name
+=cut
 
-        if ( $need_array ) {
-            push( @{ $self->{form_}{$arg . "_array"} }, $self->{form_}{$arg} );
+    method forked ($writer = undef) {
+        close $server;
+    }
+
+=head2 handle_url
+
+Dispatches an incoming HTTP request to the registered C<url_handler>.
+
+=cut
+
+    method handle_url ($client, $url, $command, $content) {
+        return $url_handler->( $self, $client, $url, $command, $content );
+    }
+
+=head2 parse_form_
+
+Parses URL-encoded form data and populates the C<%form> hash.
+
+=cut
+
+    method parse_form_ ($arguments) {
+        return if !defined $arguments;
+
+        $arguments =~ s/&amp;/&/g;
+
+        while ( $arguments =~ m/\G(.*?)=(.*?)(&|\r|\n|$)/g ) {
+            my $arg = $1;
+
+            my $need_array = defined( $form{$arg} );
+
+            if ( $need_array ) {
+                if ( $#{ $form{$arg . "_array"} } == -1 ) {
+                    push( @{ $form{$arg . "_array"} }, $form{$arg} );
+                }
+            }
+
+            $form{$arg} = $2;
+            $form{$arg} =~ s/\+/ /g;
+            $form{$arg} =~ s/%([0-9A-F][0-9A-F])/chr hex $1/gie;
+
+            if ( $need_array ) {
+                push( @{ $form{$arg . "_array"} }, $form{$arg} );
+            }
         }
     }
-}
 
-# ----------------------------------------------------------------------------
-#
-# url_encode_
-#
-# $text     Text to encode for URL safety
-#
-# Encode a URL so that it can be safely passed in a URL as per RFC2396
-#
-# ----------------------------------------------------------------------------
-sub url_encode_
-{
-    my ( $self, $text ) = @_;
+=head2 url_encode_
 
-    $text =~ s/ /\+/;
-    $text =~ s/([^a-zA-Z0-9_\-.\+\'!~*\(\)])/sprintf("%%%02x",ord($1))/eg;
+URL-encodes the given text per RFC 2396.
 
-    return $text;
-}
+=cut
 
-# ----------------------------------------------------------------------------
-#
-# http_redirect_ - tell the browser to redirect to a url
-#
-# $client   The web browser to send redirect to
-# $url      Where to go
-#
-# Return a valid HTTP/1.0 header containing a 302 redirect message to the passed in URL
-#
-# ----------------------------------------------------------------------------
-sub http_redirect_
-{
-    my ( $self, $client, $url ) = @_;
+    method url_encode_ ($text) {
+        $text =~ s/ /\+/;
+        $text =~ s/([^a-zA-Z0-9_\-.\+\'!~*\(\)])/sprintf("%%%02x",ord($1))/eg;
+        return $text;
+    }
 
-    my $header = "HTTP/1.0 302 Found$eol" .
-                 "Location: $url$eol" .
-                 "$eol";
-    print $client $header;
-}
+=head2 http_redirect_
 
-# ----------------------------------------------------------------------------
-#
-# http_error_ - Output a standard HTTP error message
-#
-# $client     The web browser to send the results to
-# $error      The error number
-#
-# Return a simple HTTP error message in HTTP 1/0 format
-#
-# ----------------------------------------------------------------------------
-sub http_error_
-{
-    my ( $self, $client, $error ) = @_;
+Sends an HTTP 302 redirect to the client.
 
-    $self->log_( 0, "HTTP error $error returned" );
+=cut
 
-    my $text =      # PROFILE BLOCK START
-            "<html><head><title>POPFile Web Server Error $error</title></head>
+    method http_redirect_ ($client, $url) {
+        print $client "HTTP/1.0 302 Found$eol" .
+                      "Location: $url$eol" .
+                      "$eol";
+    }
+
+=head2 http_error_
+
+Sends a simple HTML error page with the given HTTP status code.
+
+=cut
+
+    method http_error_ ($client, $error) {
+        $self->log_( 0, "HTTP error $error returned" );
+
+        my $text =                                                         # PROFILE BLOCK START
+                "<html><head><title>POPFile Web Server Error $error</title></head>
 <body>
 <h1>POPFile Web Server Error $error</h1>
 An error has occurred which has caused POPFile to return the error $error.
 <p>
 Click <a href=\"/\">here</a> to continue.
 </body>
-</html>$eol";       # PROFILE BLOCK STOP
+</html>$eol";                                                              # PROFILE BLOCK STOP
 
-    $self->log_( 1, $text );
+        $self->log_( 1, $text );
 
-    my $error_code = 500;
-    $error_code = $error if ( $error =~ /^\d{3}$/ );
+        my $error_code = 500;
+        $error_code = $error if $error =~ /^\d{3}$/;
 
-    print $client "HTTP/1.0 $error_code Error$eol";
-    print $client "Content-Type: text/html$eol";
-    print $client "Content-Length: ";
-    print $client length( $text );
-    print $client "$eol$eol";
-    print $client $text;
-}
+        print $client "HTTP/1.0 $error_code Error$eol";
+        print $client "Content-Type: text/html$eol";
+        print $client "Content-Length: ";
+        print $client length( $text );
+        print $client "$eol$eol";
+        print $client $text;
+    }
 
-# ----------------------------------------------------------------------------
-#
-# http_file_ - Read a file from disk and send it to the other end
-#
-# $client     The web browser to send the results to
-# $file       The file to read (always assumed to be a GIF right now)
-# $type       Set this to the HTTP return type (e.g. text/html or image/gif)
-#
-# Returns the contents of a file formatted into an HTTP 200 message or
-# an HTTP 404 if the file does not exist
-#
-# ----------------------------------------------------------------------------
-sub http_file_
-{
-    my ( $self, $client, $file, $type ) = @_;
-    my $contents = '';
+=head2 http_file_
 
-    if ( defined( $file ) && ( open FILE, "<$file" ) ) {
+Reads a file from disk and sends it to the client with appropriate headers,
+or returns a 404 if the file does not exist.
 
-        binmode FILE;
-        while (<FILE>) {
-            $contents .= $_;
+=cut
+
+    method http_file_ ($client, $file, $type) {
+        my $contents = '';
+
+        if ( defined( $file ) && ( open FILE, "<$file" ) ) {
+            binmode FILE;
+            while (<FILE>) {
+                $contents .= $_;
+            }
+            close FILE;
+
+            my $header = $self->build_http_header_( 200, $type, time + 60 * 60,
+                                                    length( $contents ) );
+            print $client $header . $contents;
+        } else {
+            $self->http_error_( $client, 404 );
         }
-        close FILE;
-
-        # To prevent the browser for continuously asking for file
-        # handled in this way we calculate the current date and time
-        # plus 1 hour to give the browser cache 1 hour to keep things
-        # like graphics and style sheets in cache.
-
-        my $header = $self->build_http_header_( 200, $type, time + 60 * 60,
-                                                length( $contents ) );
-
-        print $client $header . $contents;
-    } else {
-        $self->http_error_( $client, 404 );
-    }
-}
-
-# ----------------------------------------------------------------------------
-#
-# build_http_header_ - 
-#
-# $status     The status code
-# $type       The type of the content
-# $expires    The datetime the page cache expires
-#             If 0, the page cache will expire instantly
-# $length     The length of the content
-#
-# Returns the header
-#
-# ----------------------------------------------------------------------------
-sub build_http_header_
-{
-    my ( $self, $status, $type, $expires, $length ) = @_;
-
-    my $date = time2str( "%a, %d %h %Y %X %Z", time, 'GMT' );
-    if ( $expires != 0 ) {
-        $expires = time2str( "%a, %d %h %Y %X %Z", $expires, 'GMT' );
     }
 
-    my $header = "HTTP/1.0 $status OK$eol" .  # PROFILE BLOCK START
-                 "Connection: close$eol" .
-                 "Content-Type: $type$eol" .
-                 "Date: $date$eol" .
-                 "Expires: $expires$eol" .
-                 ( $expires eq '0' ?
-                   "Pragma: no-cache$eol" .
-                   "Cache-Control: no-cache$eol" : '' ) .
-                 "Content-Length: $length$eol" .
-                 "$eol";                      # PROFILE BLOCK STOP
+=head2 build_http_header_
 
-    return $header;
-}
+Builds and returns an HTTP 1.0 response header string.
 
-# GETTERS/SETTERS
+=cut
 
-sub history
-{
-    my ( $self, $value ) = @_;
+    method build_http_header_ ($status, $type, $expires, $length) {
+        my $date = time2str( "%a, %d %h %Y %X %Z", time, 'GMT' );
+        if ( $expires != 0 ) {
+            $expires = time2str( "%a, %d %h %Y %X %Z", $expires, 'GMT' );
+        }
 
-    if ( defined( $value ) ) {
-        $self->{history__} = $value;
+        return "HTTP/1.0 $status OK$eol" .               # PROFILE BLOCK START
+               "Connection: close$eol" .
+               "Content-Type: $type$eol" .
+               "Date: $date$eol" .
+               "Expires: $expires$eol" .
+               ( $expires eq '0' ?
+                 "Pragma: no-cache$eol" .
+                 "Cache-Control: no-cache$eol" : '' ) .
+               "Content-Length: $length$eol" .
+               "$eol";                                    # PROFILE BLOCK STOP
     }
 
-    return $self->{history__};
-}
+    # GETTERS / SETTERS
 
+    method history ($val = undef) {
+        $history = $val if defined $val;
+        return $history;
+    }
+
+    method url_handler ($val = undef) {
+        $url_handler = $val if defined $val;
+        return $url_handler;
+    }
+
+    method form ($val = undef) {
+        return \%form;
+    }
+
+} # end class UI::HTTP
+
+1;
