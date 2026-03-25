@@ -22,16 +22,13 @@ jobs:
         with:
           perl-version: ${{ matrix.perl-version }}
 
-      - name: Install Carton
-        run: cpanm --notest Carton
-
       - name: Install dependencies
-        run: carton install --deployment
+        run: cpanm --notest --installdeps . && cpanm --notest Test2::V0 Test::MockObject
 
       - name: Run tests
-        run: carton exec perl -I. prove -lr t/
+        run: perl -I. prove -lr t/
 
       - name: Syntax check all modules
         run: |
           find . -name '*.pm' -not -path './lib/*' -not -path './local/*' -print0 \
-            | xargs -0 -I{} carton exec perl -c {} 2>&1
+            | xargs -0 -I{} perl -c {} 2>&1
