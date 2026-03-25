@@ -408,6 +408,15 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             history_archive_classes  => [history => 'archive_classes'],
             logger_level             => [logger  => 'level'],
             logger_logdir            => [logger  => 'logdir'],
+            imap_enabled             => [imap    => 'enabled'],
+            imap_hostname            => [imap    => 'hostname'],
+            imap_port                => [imap    => 'port'],
+            imap_login               => [imap    => 'login'],
+            imap_password            => [imap    => 'password'],
+            imap_use_ssl             => [imap    => 'use_ssl'],
+            imap_update_interval     => [imap    => 'update_interval'],
+            imap_expunge             => [imap    => 'expunge'],
+            imap_training_mode       => [imap    => 'training_mode'],
         );
 
         #--------------------------------------------------------------------
@@ -432,6 +441,50 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
                 my ( $mod, $param ) = @{ $CFG{$key} };
                 $self->module_config( $mod, $param, $body->{$key} );
             }
+            $self->configuration()->save_configuration();
+            $c->render( json => { ok => \1 } );
+        });
+
+        #--------------------------------------------------------------------
+        # GET /api/v1/imap/folders
+        #   Returns { watched: [...], mappings: [{bucket, folder}, ...] }
+        #--------------------------------------------------------------------
+        my $imap_sep = '-->';
+        $r->get( '/api/v1/imap/folders' => sub ($c) {
+            my $watched_raw  = $self->module_config('imap', 'watched_folders')       // '';
+            my $mapping_raw  = $self->module_config('imap', 'bucket_folder_mappings') // '';
+
+            my @watched  = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
+            my %map_hash = split /\Q$imap_sep\E/, $mapping_raw;
+            my @mappings = map { { bucket => $_, folder => $map_hash{$_} } }
+                           grep { $_ ne '' } keys %map_hash;
+
+            $c->render( json => { watched => \@watched, mappings => \@mappings } );
+        });
+
+        #--------------------------------------------------------------------
+        # PUT /api/v1/imap/folders
+        #   Body: { watched: [...], mappings: [{bucket, folder}, ...] }
+        #--------------------------------------------------------------------
+        $r->put( '/api/v1/imap/folders' => sub ($c) {
+            my $body = $c->req->json // {};
+
+            if ( defined $body->{watched} ) {
+                my @w   = grep { defined $_ && $_ ne '' } @{ $body->{watched} };
+                my $raw = join( $imap_sep, @w ) . ( @w ? $imap_sep : '' );
+                $self->module_config('imap', 'watched_folders', $raw);
+            }
+
+            if ( defined $body->{mappings} ) {
+                my $raw = '';
+                for my $m ( @{ $body->{mappings} } ) {
+                    next unless defined $m->{bucket} && $m->{bucket} ne ''
+                             && defined $m->{folder} && $m->{folder} ne '';
+                    $raw .= "$m->{bucket}$imap_sep$m->{folder}$imap_sep";
+                }
+                $self->module_config('imap', 'bucket_folder_mappings', $raw);
+            }
+
             $self->configuration()->save_configuration();
             $c->render( json => { ok => \1 } );
         });
