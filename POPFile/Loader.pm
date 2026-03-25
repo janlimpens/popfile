@@ -290,22 +290,12 @@ class POPFile::Loader {
     # Returns the module handle (undef if not a loadable module).
     #------------------------------------------------------------------------
     method load_module_ ($module) {
-        my $mod;
-
-        if ( open my $fh, '<', $self->root_path__($module) ) {
-            my $first = <$fh>;
-            close $fh;
-
-            if ( $first =~ /^# POPFILE LOADABLE MODULE/ ) {
-                require $module;
-
-                $module =~ s/\//::/;
-                $module =~ s/\.pm//;
-
-                $mod = $module->new();
-            }
-        }
-        return $mod;
+        return undef unless -f $self->root_path__($module);
+        require $module;
+        (my $class = $module) =~ s/\//::/g;
+        $class =~ s/\.pm$//;
+        my $mod = $class->new();
+        return $mod->DOES('POPFile::Loadable') ? $mod : undef
     }
 
     #------------------------------------------------------------------------

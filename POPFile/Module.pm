@@ -16,6 +16,7 @@ package POPFile::Module;
 
 use Object::Pad;
 use IO::Select;
+use POPFile::Role::Loadable;
 use POPFile::Role::Logging;
 
 # Class-wide slurp buffer — keyed by filehandle stringification so that
@@ -23,7 +24,7 @@ use POPFile::Role::Logging;
 
 my %slurp_data;
 
-class POPFile::Module :repr(HASH) :does(POPFile::Role::Logging) {
+class POPFile::Module :repr(HASH) :does(POPFile::Loadable) :does(POPFile::Role::Logging) {
     # References to core infrastructure (injected by Loader::CORE_link_components)
     field $configuration :reader :writer = 0;
     field $mq :reader :writer = 0;
@@ -52,54 +53,6 @@ helper methods available to all subclasses.
 
 Lifecycle: C<initialize> → C<start> → C<service> [loop] → C<stop>
 
-=head1 LIFECYCLE METHODS
-
-Subclasses override these as needed.
-
-=head2 initialize
-
-Called once before C<start>.  Register configuration parameters here.
-Returns 1 on success, 0 to abort loading.
-
-=head2 start
-
-Called to open connections and begin operation.
-Returns 1 on success, 0 to abort, 2 to unload the module.
-
-=head2 service
-
-Called repeatedly in the main loop.  Do per-tick work here.
-Returns 1 to continue, 0 to request shutdown.
-
-=head2 stop
-
-Called on shutdown.  Clean up resources here.
-
-=head2 prefork / forked / postfork / childexit / reaper / deliver
-
-Fork-lifecycle and message-queue hooks — see individual subclass docs.
-
-=cut
-
-    method initialize { return 1 }
-
-    method start      { return 1 }
-
-    method stop       {}
-
-    method service    { return 1 }
-
-    method prefork    {}
-
-    method forked ($writer = undef) {}
-
-    method postfork ($pid = undef, $reader = undef) {}
-
-    method childexit  {}
-
-    method reaper     {}
-
-    method deliver ($type, @message) {}
 
 =head1 PROTECTED HELPERS
 

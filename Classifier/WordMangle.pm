@@ -1,4 +1,3 @@
-# POPFILE LOADABLE MODULE
 package Classifier::WordMangle;
 
 use Object::Pad;

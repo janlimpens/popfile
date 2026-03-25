@@ -1,4 +1,3 @@
-# POPFILE LOADABLE MODULE
 package POPFile::Logger;
 
 use Object::Pad;

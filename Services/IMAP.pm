@@ -1,4 +1,3 @@
-# POPFILE LOADABLE MODULE
 use Object::Pad;
 use Fcntl ();
 use Services::IMAP::Client;

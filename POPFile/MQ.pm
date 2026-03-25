@@ -1,4 +1,3 @@
-# POPFILE LOADABLE MODULE
 package POPFile::MQ;
 
 use Object::Pad;
