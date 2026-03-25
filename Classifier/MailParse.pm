@@ -42,10 +42,8 @@ my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
 # These are used for Japanese support
 
-my %encoding_candidates = (                       # PROFILE BLOCK START
-    'Nihongo' => [ 'cp932', 'euc-jp', '7bit-jis' ]
-);                                                # PROFILE BLOCK STOP
-
+my %encoding_candidates = (    'Nihongo' => [ 'cp932', 'euc-jp', '7bit-jis' ]
+);
 my $ascii              = '[\x00-\x7F]';                                      # ASCII chars
 my $two_bytes_euc_jp   = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';                   # 2bytes EUC-JP chars
 my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';                   # 3bytes EUC-JP chars
@@ -77,21 +75,18 @@ my $euc_jp_katakana  = '(?:(?:\xA5[\xA1-\xF6])+(?:\xA1[\xA6\xBC\xB3\xB4])*)+';  
 my $euc_jp_hkatakana = '(?:\x8E[\xA6-\xDF])+';                                       # One or more Half-width Katakana characters
 my $euc_jp_kanji     = '[\xB0-\xF4][\xA1-\xFE](?:[\xB0-\xF4][\xA1-\xFE]|\xA1\xB9)?'; # One or two Kanji characters
 
-my $euc_jp_word = '(' .        # PROFILE BLOCK START
-    $euc_jp_alphanum .     '|' . 
+my $euc_jp_word = '(' .    $euc_jp_alphanum .     '|' . 
     $euc_jp_hiragana .     '|' . 
     $euc_jp_katakana .     '|' . 
     $euc_jp_hkatakana .    '|' . 
     $euc_jp_kanji .        '|' . 
     $euc_jp_symbol .       '|' . 
     $ascii .              '+|' .
-    $three_bytes_euc_jp . ')'; # PROFILE BLOCK STOP
-
+    $three_bytes_euc_jp . ')';
 # HTML entity mapping to character codes, this maps things like &amp;
 # to their corresponding character code
 
-my %entityhash = (           # PROFILE BLOCK START
-          'aacute' => 225, 'Aacute' => 193, 'Acirc'  => 194, 'acirc'  => 226,
+my %entityhash = (          'aacute' => 225, 'Aacute' => 193, 'Acirc'  => 194, 'acirc'  => 226,
           'acute'  => 180, 'AElig'  => 198, 'aelig'  => 230, 'Agrave' => 192,
           'agrave' => 224, 'amp'    => 38,  'Aring'  => 197, 'aring'  => 229,
           'atilde' => 227, 'Atilde' => 195, 'Auml'   => 196, 'auml'   => 228,
@@ -115,16 +110,14 @@ my %entityhash = (           # PROFILE BLOCK START
           'Uacute' => 218, 'uacute' => 250, 'ucirc'  => 251, 'Ucirc'  => 219,
           'ugrave' => 249, 'Ugrave' => 217, 'uml'    => 168, 'Uuml'   => 220,
           'uuml'   => 252, 'Yacute' => 221, 'yacute' => 253, 'yen'    => 165,
-          'yuml'   => 255 ); # PROFILE BLOCK STOP
-
+          'yuml'   => 255 );
 # All known HTML tags divided into two groups: tags that generate
 # whitespace as in 'foo<br></br>bar' and tags that don't such as
 # 'foo<b></b>bar'.  The first case shouldn't count as an empty pair
 # because it breaks the line.  The second case doesn't have any visual
 # impact and it treated as 'foobar' with an empty pair.
 
-my $spacing_tags = "address|applet|area|base|basefont" . # PROFILE BLOCK START
-    "|bdo|bgsound|blockquote|body|br|button|caption" .
+my $spacing_tags = "address|applet|area|base|basefont" .    "|bdo|bgsound|blockquote|body|br|button|caption" .
     "|center|col|colgroup|dd|dir|div|dl|dt|embed" .
     "|fieldset|form|frame|frameset|h1|h2|h3|h4|h5|h6" .
     "|head|hr|html|iframe|ilayer|input|isindex|label" .
@@ -132,17 +125,13 @@ my $spacing_tags = "address|applet|area|base|basefont" . # PROFILE BLOCK START
     "|nobr|noembed|noframes|nolayer|noscript|object" .
     "|ol|optgroup|option|p|param|plaintext|pre|script" .
     "|select|spacer|style|table|tbody|td|textarea" .
-    "|tfoot|th|thead|title|tr|ul|wbr|xmp";               # PROFILE BLOCK STOP
-
-my $non_spacing_tags = "a|abbr|acronym|b|big|blink" .    # PROFILE BLOCK START
-    "|cite|code|del|dfn|em|font|i|img|ins|kbd|q|s" .
-    "|samp|small|span|strike|strong|sub|sup|tt|u|var";   # PROFILE BLOCK STOP
-
+    "|tfoot|th|thead|title|tr|ul|wbr|xmp";
+my $non_spacing_tags = "a|abbr|acronym|b|big|blink" .    "|cite|code|del|dfn|em|font|i|img|ins|kbd|q|s" .
+    "|samp|small|span|strike|strong|sub|sup|tt|u|var";
 my $eol = "\015\012";
 
 # Mapping from HTML color names to hexadecimal values (static, shared across instances)
-my %color_map = ( # PROFILE BLOCK START
-         'aliceblue',            'f0f8ff', 'antiquewhite',      'faebd7',
+my %color_map = (         'aliceblue',            'f0f8ff', 'antiquewhite',      'faebd7',
          'aqua',                 '00ffff', 'aquamarine',        '7fffd4',
          'azure',                'f0ffff', 'beige',             'f5f5dc',
          'bisque',               'ffe4c4', 'black',             '000000',
@@ -212,8 +201,7 @@ my %color_map = ( # PROFILE BLOCK START
              'violet',               'ee82ee', 'wheat',             'f5deb3',
              'white',                'ffffff', 'whitesmoke',        'f5f5f5',
              'yellow',               'ffff00', 'yellowgreen',       '9acd32'
-); # PROFILE BLOCK STOP
-
+);
 class Classifier::MailParse {
     # Hash of word frequencies
     field %words;
@@ -338,9 +326,7 @@ method compute_html_color_distance {
     #       from hh hh hh format
 
     if ( $htmlfontcolor ne '' && $htmlbackcolor ne '' ) {
-        $htmlcolordistance = $self->compute_rgb_distance( # PROFILE BLOCK START
-            $htmlfontcolor, $htmlbackcolor );   # PROFILE BLOCK STOP
-    }
+        $htmlcolordistance = $self->compute_rgb_distance(            $htmlfontcolor, $htmlbackcolor );    }
 }
 
 =head2 map_color
@@ -388,9 +374,7 @@ method map_color ($color) {
         $color .= "00" . "0" x $quotient;
 
         # even length RGB triplets
-        my ( $r, $g, $b ) =                                             # PROFILE BLOCK START
-            ( $color =~ /(.{$quotient})(.{$quotient})(.{$quotient})/ ); # PROFILE BLOCK STOP
-
+        my ( $r, $g, $b ) =            ( $color =~ /(.{$quotient})(.{$quotient})(.{$quotient})/ );
         print "$r $g $b\n" if $debug;
 
         # left-trim very long triplets to 4 bytes
@@ -413,11 +397,9 @@ method map_color ($color) {
         # Any non-hex values remaining get 0'd out
         $color =~ s/[^0-9a-f]/0/g;
 
-        if ( $debug ) { # PROFILE BLOCK START
-            print "hex color $color\n";
+        if ( $debug ) {            print "hex color $color\n";
             print "flex-hex detected\n" if ( $color ne $old_color );
-        }                         # PROFILE BLOCK STOP
-
+        }
         # Add pseudo-word anytime flex hex detected
 
         if ( $color ne $old_color ) {
@@ -493,10 +475,8 @@ method update_word ($word, $encoded, $before, $after, $prefix) {
             my $color = $self->get_color__( $mword );
             if ( $encoded == 0 ) {
                 $after = '&' if ( $after eq '>' );
-                if ( !( $ut =~                                           # PROFILE BLOCK START
-                        s/($before)\Q$word\E($after)
-                         /$1<b><font color=\"$color\">$word<\/font><\/b>$2/x ) ) { # PROFILE BLOCK STOP
-                    print "Could not find $word for colorization\n" if $debug;
+                if ( !( $ut =~                        s/($before)\Q$word\E($after)
+                         /$1<b><font color=\"$color\">$word<\/font><\/b>$2/x ) ) {                    print "Could not find $word for colorization\n" if $debug;
                 }
             } else {
                 $ut .= "<font color=\"$color\">$word<\/font> ";
@@ -539,10 +519,8 @@ method add_line ($bigline, $encoded, $prefix) {
         # evil spammer tricks with similar colors
 
         if ( $htmlcolordistance < 100 ) {
-            $self->update_pseudoword(  # PROFILE BLOCK START
-                'html', "colordistance$htmlcolordistance",
-                $encoded, '' );        # PROFILE BLOCK STOP
-        }
+            $self->update_pseudoword(                'html', "colordistance$htmlcolordistance",
+                $encoded, '' );        }
 
         while ( $p < length( $bigline ) ) {
             my $line = substr( $bigline, $p, 1024 );
@@ -575,51 +553,40 @@ method add_line ($bigline, $encoded, $prefix) {
             while ( $line =~ m/(&#([\d]{1,3});)/g ) {
                 # Don't decode odd (nonprintable) characters or < >'s.
 
-                if ( ( ( $2 < 255 ) && ( $2 > 63 ) ) ||  # PROFILE BLOCK START
-                     ( $2 == 61 ) ||
-                     ( ( $2 < 60 ) && ( $2 > 31 ) ) ) {  # PROFILE BLOCK STOP
-                    my $from = $1;
+                if ( ( ( $2 < 255 ) && ( $2 > 63 ) ) ||                     ( $2 == 61 ) ||
+                     ( ( $2 < 60 ) && ( $2 > 31 ) ) ) {                    my $from = $1;
                     my $to   = chr( $2 );
 
                     if ( defined( $to ) && ( $to ne '' ) ) {
                         $line         =~ s/$from/$to/g;
                         $ut =~ s/$from/$to/g;
                         print "$from -> $to\n" if $debug;
-                        $self->update_pseudoword(                       # PROFILE BLOCK START
-                            'html', 'numericentity', $encoded, $from ); # PROFILE BLOCK STOP
-                    }
+                        $self->update_pseudoword(                            'html', 'numericentity', $encoded, $from );                    }
                 }
             }
 
             # Pull out any email addresses in the line that are marked
             # with <> and have an @ in them
 
-            while ( $line =~ s/(mailto:)?                      # PROFILE BLOCK START
-                               ([[:alpha:]0-9\-_\.]+?
+            while ( $line =~ s/(mailto:)?                               ([[:alpha:]0-9\-_\.]+?
                                @
                                ([[:alpha:]0-9\-_\.]+\.[[:alpha:]0-9\-_]+))
-                               ([\"\&\)\?\:\/ >\&\;]|$)//x ) { # PROFILE BLOCK STOP
-                $self->update_word( $2, $encoded, ( $1 ? $1 : '' ),  # PROFILE BLOCK START
-                                    '[\&\?\:\/ >\&\;]', $prefix );   # PROFILE BLOCK STOP
-                $self->add_url( $3, $encoded, '\@', '[\&\?\:\/]', $prefix );
+                               ([\"\&\)\?\:\/ >\&\;]|$)//x ) {                $self->update_word( $2, $encoded, ( $1 ? $1 : '' ),                                    '[\&\?\:\/ >\&\;]', $prefix );                $self->add_url( $3, $encoded, '\@', '[\&\?\:\/]', $prefix );
             }
 
             # Grab domain names (gTLD)
             # http://en.wikipedia.org/wiki/List_of_Internet_top-level_domains
 
-            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)          # PROFILE BLOCK START
-                               (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
+            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)                               (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
                                 int|jobs|mil|mobi|museum|name|net|org|pro|tel|
                                 travel|xxx)
-                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) { # PROFILE BLOCK STOP
-                $self->add_url( "$1$3", $encoded, '', '', $prefix );
+                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {                $self->add_url( "$1$3", $encoded, '', '', $prefix );
             }
 
             # Grab country domain names (ccTLD)
             # http://en.wikipedia.org/wiki/List_of_Internet_top-level_domains
 
-            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)            # PROFILE BLOCK START
-                               (a[cdefgilmnoqrstuwxz]|
+            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)                               (a[cdefgilmnoqrstuwxz]|
                                 b[abdefghijmnorstvwyz]|
                                 c[acdfghiklmnorsuvxyz]|
                                 d[ejkmoz]|
@@ -644,40 +611,31 @@ method add_line ($bigline, $encoded, $prefix) {
                                 w[fs]|
                                 y[et]|
                                 z[amw])
-                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix )  {  # PROFILE BLOCK STOP
-                $self->add_url( "$1$3", $encoded, '', '', $prefix );
+                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix )  {                $self->add_url( "$1$3", $encoded, '', '', $prefix );
             }
 
             # Grab IP addresses
 
-            while ( $line =~ s/(?<![[:alpha:]\d.])      # PROFILE BLOCK START
-                               (([12]?\d{1,2}\.){3}[12]?\d{1,2})
-                               (?![[:alpha:]\d])//x ) { # PROFILE BLOCK STOP
-                $self->update_word( $1, $encoded, '', '', $prefix );
+            while ( $line =~ s/(?<![[:alpha:]\d.])                               (([12]?\d{1,2}\.){3}[12]?\d{1,2})
+                               (?![[:alpha:]\d])//x ) {                $self->update_word( $1, $encoded, '', '', $prefix );
             }
 
             # Deal with runs of alternating spaces and letters
 
-            while ( $line =~ s/([ ]|^)                   # PROFILE BLOCK START
-                               ([A-Za-z]([\'\*^`&\. ]|[ ][ ])
+            while ( $line =~ s/([ ]|^)                               ([A-Za-z]([\'\*^`&\. ]|[ ][ ])
                                 (?:[A-Za-z]\3){1,14}[A-Za-z])
-                               ([ ]|\3|[!\?,]|$)/ /x ) { # PROFILE BLOCK STOP
-                my $original = "$1$2$4";
+                               ([ ]|\3|[!\?,]|$)/ /x ) {                my $original = "$1$2$4";
                 my $word     = $2;
                 print "$word ->" if $debug;
                 $word =~ s/[^A-Z]//gi;
                 print "$word\n" if $debug;
                 $self->update_word( $word, $encoded, ' ', ' ', $prefix );
-                $self->update_pseudoword( 'trick', 'spacedout',  # PROFILE BLOCK START
-                                          $encoded, $original ); # PROFILE BLOCK STOP
-            }
+                $self->update_pseudoword( 'trick', 'spacedout',                                          $encoded, $original );            }
 
             # Deal with random insertion of . inside words
 
             while ( $line =~ s/ ([A-Z]+)\.([A-Z]{2,}) / $1$2 /i ) {
-                $self->update_pseudoword( 'trick', 'dottedwords',  # PROFILE BLOCK START
-                                          $encoded, "$1$2" );      # PROFILE BLOCK STOP
-            }
+                $self->update_pseudoword( 'trick', 'dottedwords',                                          $encoded, "$1$2" );            }
 
             if ( $lang eq 'Nihongo' ) {
                 # In Japanese mode, non-symbol EUC-JP characters should be
@@ -692,22 +650,16 @@ method add_line ($bigline, $encoded, $prefix) {
                 # In Japanese, one character words are common, so care about
                 # words between 2 and 45 characters
 
-                while ( $line =~ s/^$euc_jp*?  # PROFILE BLOCK START
-                                   ([A-Za-z][A-Za-z\']{2,44}|
+                while ( $line =~ s/^$euc_jp*?                                   ([A-Za-z][A-Za-z\']{2,44}|
                                     $non_symbol_euc_jp{2,45})
                                    (?:[_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
-                                  //ox ) {     # PROFILE BLOCK STOP
-                    if ( ( $in_headers == 0 ) &&    # PROFILE BLOCK START
-                         ( $first20count < 20 ) ) { # PROFILE BLOCK STOP
-                        $first20count += 1;
+                                  //ox ) {                    if ( ( $in_headers == 0 ) &&                         ( $first20count < 20 ) ) {                        $first20count += 1;
                         $first20 .= " $1";
                     }
 
-                    $self->update_word(  # PROFILE BLOCK START
-                        $1, $encoded, '',
+                    $self->update_word(                        $1, $encoded, '',
                         '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]|' . $symbol_euc_jp,
-                        $prefix );       # PROFILE BLOCK STOP
-                }
+                        $prefix );                }
             } else {
                 if ( $lang eq 'Korean' ) {
                     # In Korean mode, [[:alpha:]] in regular
@@ -717,20 +669,14 @@ method add_line ($bigline, $encoded, $prefix) {
                     # In Korean, care about words between 2 and 45
                     # characters.
 
-                    while ( $line =~ s/(([A-Za-z]|$eksc)  # PROFILE BLOCK START
-                                        ([A-Za-z\']|$eksc){1,44})
+                    while ( $line =~ s/(([A-Za-z]|$eksc)                                        ([A-Za-z\']|$eksc){1,44})
                                         ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
-                                      //x ) {             # PROFILE BLOCK STOP
-                        if ( ( $in_headers == 0 ) &&    # PROFILE BLOCK START
-                             ( $first20count < 20 ) ) { # PROFILE BLOCK STOP
-                            $first20count += 1;
+                                      //x ) {                        if ( ( $in_headers == 0 ) &&                             ( $first20count < 20 ) ) {                            $first20count += 1;
                             $first20 .= " $1";
                         }
 
-                        $self->update_word( $1, $encoded, '',                # PROFILE BLOCK START
-                                            '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
-                                            $prefix ) if ( length $1 >= 2 ); # PROFILE BLOCK STOP
-                    }
+                        $self->update_word( $1, $encoded, '',                                            '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
+                                            $prefix ) if ( length $1 >= 2 );                    }
                 } else {
                     # Only care about words between 3 and 45
                     # characters since short words like an, or, if are
@@ -738,19 +684,13 @@ method add_line ($bigline, $encoded, $prefix) {
                     # (according to the OED) is
                     # pneumonoultramicroscopicsilicovolcanoconiosis
 
-                    while ( $line =~ s/([[:alpha:]][[:alpha:]\']{1,44})  # PROFILE BLOCK START
-                                       ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
-                                      //x ) {                            # PROFILE BLOCK STOP
-                        if ( ( $in_headers == 0 ) &&    # PROFILE BLOCK START
-                             ( $first20count < 20 ) ) { # PROFILE BLOCK STOP
-                            $first20count += 1;
+                    while ( $line =~ s/([[:alpha:]][[:alpha:]\']{1,44})                                       ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
+                                      //x ) {                        if ( ( $in_headers == 0 ) &&                             ( $first20count < 20 ) ) {                            $first20count += 1;
                             $first20 .= " $1";
                         }
 
-                        $self->update_word( $1, $encoded, '',                # PROFILE BLOCK START
-                                            '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
-                                            $prefix ) if ( length $1 >= 3 ); # PROFILE BLOCK STOP
-                    }
+                        $self->update_word( $1, $encoded, '',                                            '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
+                                            $prefix ) if ( length $1 >= 3 );                    }
                 }
             }
 
@@ -758,9 +698,7 @@ method add_line ($bigline, $encoded, $prefix) {
         }
     } else {
         if ( $bigline =~ /[^ \t]/ ) {
-            $self->update_pseudoword( 'trick', 'invisibleink',  # PROFILE BLOCK START
-                                      $encoded, $bigline );     # PROFILE BLOCK STOP
-        }
+            $self->update_pseudoword( 'trick', 'invisibleink',                                      $encoded, $bigline );        }
     }
 }
 
@@ -840,11 +778,9 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
     my $original;
 
-    while ( $arg =~ s/[ \t]*   # PROFILE BLOCK START
-                      ((\w+)[ \t]*=[ \t]*
+    while ( $arg =~ s/[ \t]*                      ((\w+)[ \t]*=[ \t]*
                        (([\"\'])(.*?)\4|([^ \t>]+)($|([ \t>])))
-                      )//x ) { # PROFILE BLOCK STOP
-        $original  = $1;
+                      )//x ) {        $original  = $1;
         $attribute = $2;
         $value     = $5 || $6 || '';
         $quote     = '';
@@ -870,10 +806,8 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # Tags with src attributes
 
-        if ( ( $attribute =~ /^src$/i ) &&                            # PROFILE BLOCK START
-             ( ( $tag =~ /^img|frame|iframe$/i ) ||
-               ( ( $tag =~ /^script$/i ) && $parse_script_uri ) ) ) { # PROFILE BLOCK STOP
-
+        if ( ( $attribute =~ /^src$/i ) &&             ( ( $tag =~ /^img|frame|iframe$/i ) ||
+               ( ( $tag =~ /^script$/i ) && $parse_script_uri ) ) ) {
             # "CID:" links refer to an origin-controlled attachment to
             # a html email.  Adding strings from these, even if they
             # appear to be hostnames, may or may not be beneficial
@@ -881,16 +815,12 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             if ( $value =~ /^(cid)\:/i ) {
                 # Add a pseudo-word when CID source links are detected
 
-                $self->update_pseudoword( 'html', 'cidsrc',      # PROFILE BLOCK START
-                                          $encoded, $original ); # PROFILE BLOCK STOP
-
+                $self->update_pseudoword( 'html', 'cidsrc',                                          $encoded, $original );
                 # TODO: I've seen virus messages try to use a CID: href
 
 
             } else {
-                my $host = $self->add_url( $value, $encoded,         # PROFILE BLOCK START
-                                           $quote, $end_quote, '' ); # PROFILE BLOCK STOP
-
+                my $host = $self->add_url( $value, $encoded,                                           $quote, $end_quote, '' );
                 # If the host name is not blank (i.e. there was a
                 # hostname in the url and it was an image, then if the
                 # host was not this host then report an off machine
@@ -898,16 +828,12 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
                 if ( ( $host ne '' ) && ( $tag =~ /^img$/i ) ) {
                     if ( $host ne 'localhost' ) {
-                        $self->update_pseudoword( 'html', 'imgremotesrc',  # PROFILE BLOCK START
-                                                  $encoded, $original );   # PROFILE BLOCK STOP
-                    }
+                        $self->update_pseudoword( 'html', 'imgremotesrc',                                                  $encoded, $original );                    }
                 }
 
                 if ( ( $host ne '' ) && ( $tag =~ /^iframe$/i ) ) {
                     if ( $host ne 'localhost' ) {
-                        $self->update_pseudoword( 'html', 'iframeremotesrc',  # PROFILE BLOCK START
-                                                  $encoded, $original );      # PROFILE BLOCK STOP
-                    }
+                        $self->update_pseudoword( 'html', 'iframeremotesrc',                                                  $encoded, $original );                    }
                 }
             }
 
@@ -916,25 +842,17 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # Tags with href attributes
 
-        if ( ( $attribute =~ /^href$/i ) &&          # PROFILE BLOCK START
-             ( $tag =~ /^(a|link|base|area)$/i ) ) { # PROFILE BLOCK STOP
-
+        if ( ( $attribute =~ /^href$/i ) &&             ( $tag =~ /^(a|link|base|area)$/i ) ) {
             # Look for mailto:'s
 
             if ( $value =~ /^mailto:/i ) {
-                if ( ( $tag =~ /^a$/ ) &&                        # PROFILE BLOCK START
-                     ( $value =~ /^mailto:
+                if ( ( $tag =~ /^a$/ ) &&                     ( $value =~ /^mailto:
                                   ([[:alpha:]0-9\-_\.]+?
                                    @
                                    ([[:alpha:]0-9\-_\.]+?))
-                                  ([>\&\?\:\/\" \t]|$)/ix ) )  { # PROFILE BLOCK STOP
-                    $self->update_word(                               # PROFILE BLOCK START
-                        $1, $encoded, 'mailto:',
-                        ( $3 ? '[\\\>\&\?\:\/]' : $end_quote ), '' ); # PROFILE BLOCK STOP
-                    $self->add_url(                                 # PROFILE BLOCK START
-                        $2, $encoded, '@',
-                        ( $3 ? '[\\\&\?\:\/]' : $end_quote ), '' ); # PROFILE BLOCK STOP
-                }
+                                  ([>\&\?\:\/\" \t]|$)/ix ) )  {                    $self->update_word(                        $1, $encoded, 'mailto:',
+                        ( $3 ? '[\\\>\&\?\:\/]' : $end_quote ), '' );                    $self->add_url(                        $2, $encoded, '@',
+                        ( $3 ? '[\\\&\?\:\/]' : $end_quote ), '' );                }
             } else {
                 # Anything that isn't a mailto is probably an URL
 
@@ -953,9 +871,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # Tags with working background attributes
 
-        if ( ( $attribute =~ /^background$/i ) &&  # PROFILE BLOCK START
-             ( $tag =~ /^(td|table|body)$/i ) ) {  # PROFILE BLOCK STOP
-            $self->add_url( $value, $encoded, $quote, $end_quote, '' );
+        if ( ( $attribute =~ /^background$/i ) &&             ( $tag =~ /^(td|table|body)$/i ) ) {            $self->add_url( $value, $encoded, $quote, $end_quote, '' );
             next;
         }
 
@@ -970,18 +886,14 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         if ( ( $attribute =~ /^color$/i ) && ( $tag =~ /^font$/i ) ) {
             $self->update_word( $value, $encoded, $quote, $end_quote, '' );
-            $self->update_pseudoword( 'html', "fontcolor$value",  # PROFILE BLOCK START
-                                      $encoded, $original );      # PROFILE BLOCK STOP
-            $htmlfontcolor = $self->map_color( $value );
+            $self->update_pseudoword( 'html', "fontcolor$value",                                      $encoded, $original );            $htmlfontcolor = $self->map_color( $value );
             $self->compute_html_color_distance();
             print "Set html font color to $htmlfontcolor\n" if $debug;
             next;
         }
 
         if ( ( $attribute =~ /^text$/i ) && ( $tag =~ /^body$/i ) ) {
-            $self->update_pseudoword( 'html', "fontcolor$value",  # PROFILE BLOCK START
-                                      $encoded, $original );      # PROFILE BLOCK STOP
-            $self->update_word( $value, $encoded, $quote, $end_quote, '' );
+            $self->update_pseudoword( 'html', "fontcolor$value",                                      $encoded, $original );            $self->update_word( $value, $encoded, $quote, $end_quote, '' );
             $htmlfontcolor = $self->map_color( $value );
             $self->compute_html_color_distance();
             print "Set html font color to $htmlfontcolor\n" if $debug;
@@ -992,9 +904,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         if ( ( $attribute =~ /^(width|height)$/i ) && ( $tag =~ /^img$/i ) ) {
             $attribute = lc( $attribute );
-            $self->update_pseudoword( 'html', "img$attribute$value",  # PROFILE BLOCK START
-                                      $encoded, $original );          # PROFILE BLOCK STOP
-            next;
+            $self->update_pseudoword( 'html', "img$attribute$value",                                      $encoded, $original );            next;
         }
 
         # Font sizes
@@ -1003,19 +913,13 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             # TODO: unify font size scaling to use the same scale
             #       across size specifiers
 
-            $self->update_pseudoword( 'html', "fontsize$value",  # PROFILE BLOCK START
-                                      $encoded, $original );     # PROFILE BLOCK STOP
-            next;
+            $self->update_pseudoword( 'html', "fontsize$value",                                      $encoded, $original );            next;
         }
 
         # Tags with background colors
 
-        if ( ( $attribute =~ /^(bgcolor|back)$/i ) &&        # PROFILE BLOCK START
-             ( $tag =~ /^(td|table|body|tr|th|font)$/i ) ) { # PROFILE BLOCK STOP
-            $self->update_word( $value, $encoded, $quote, $end_quote, '' );
-            $self->update_pseudoword( 'html', "backcolor$value",  # PROFILE BLOCK START
-                                      $encoded, $original );      # PROFILE BLOCK STOP
-            $htmlbackcolor = $self->map_color( $value );
+        if ( ( $attribute =~ /^(bgcolor|back)$/i ) &&             ( $tag =~ /^(td|table|body|tr|th|font)$/i ) ) {            $self->update_word( $value, $encoded, $quote, $end_quote, '' );
+            $self->update_pseudoword( 'html', "backcolor$value",                                      $encoded, $original );            $htmlbackcolor = $self->map_color( $value );
             print "Set html back color to $htmlbackcolor\n" if $debug;
 
             if ( $tag =~ /^body$/i ) {
@@ -1036,20 +940,16 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # CSS handling
 
-        if ( !exists( $HTML::Tagset::emptyElement->{ lc( $tag ) } ) &&  # PROFILE BLOCK START
-             ( $attribute =~ /^style$/i ) ) {                           # PROFILE BLOCK STOP
-            print "      Inline style tag found in $tag: $attribute=$value\n" if $debug;
+        if ( !exists( $HTML::Tagset::emptyElement->{ lc( $tag ) } ) &&             ( $attribute =~ /^style$/i ) ) {            print "      Inline style tag found in $tag: $attribute=$value\n" if $debug;
 
             my $style = $self->parse_css_style( $value );
 
-            if ( $debug ) { # PROFILE BLOCK START
-                print "      CSS properties: ";
+            if ( $debug ) {                print "      CSS properties: ";
                 foreach my $key ( keys( %{$style} ) ) {
                     print "$key($style->{$key}), ";
                 }
                 print "\n";
-            }                         # PROFILE BLOCK STOP
-
+            }
             # CSS font sizing
             if ( defined( $style->{'font-size'} ) ) {
                 my $size = $style->{'font-size'};
@@ -1058,29 +958,21 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                 #       across size specifiers approximate font sizes here:
                 # http://www.dejeu.com/web/tools/tech/css/variablefontsizes.asp
 
-                if ( $size =~ /(((\+|\-)?\d?\.?\d+)  # PROFILE BLOCK START
-                                (em|ex|px|%|pt|in|cm|mm|pt|pc))|
+                if ( $size =~ /(((\+|\-)?\d?\.?\d+)                                (em|ex|px|%|pt|in|cm|mm|pt|pc))|
                                (xx-small|x-small|small|medium|large|x-large|
-                                xx-large)/x ) {      # PROFILE BLOCK STOP
-                    $self->update_pseudoword( 'html', "cssfontsize$size",  # PROFILE BLOCK START
-                                              $encoded, $original );       # PROFILE BLOCK STOP
-                    print "     CSS font-size set to: $size\n" if $debug;
+                                xx-large)/x ) {                    $self->update_pseudoword( 'html', "cssfontsize$size",                                              $encoded, $original );                    print "     CSS font-size set to: $size\n" if $debug;
                 }
             }
 
             # CSS visibility
             if ( defined( $style->{'visibility'} ) ) {
-                $self->update_pseudoword(                # PROFILE BLOCK START
-                    'html', "cssvisibility" . $style->{'visibility'},
-                    $encoded, $original );               # PROFILE BLOCK STOP
-            }
+                $self->update_pseudoword(                    'html', "cssvisibility" . $style->{'visibility'},
+                    $encoded, $original );            }
 
             # CSS display
             if ( defined( $style->{'display'} ) ) {
-                $self->update_pseudoword(                # PROFILE BLOCK START
-                    'html', "cssdisplay" . $style->{'display'},
-                    $encoded, $original );               # PROFILE BLOCK STOP
-            }
+                $self->update_pseudoword(                    'html', "cssdisplay" . $style->{'display'},
+                    $encoded, $original );            }
 
 
             # CSS foreground coloring
@@ -1097,10 +989,8 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                     $self->compute_html_color_distance();
 
                     print "      CSS set html font color to $htmlfontcolor\n" if $debug;
-                    $self->update_pseudoword(  # PROFILE BLOCK START
-                        'html', "cssfontcolor$htmlfontcolor",
-                        $encoded, $original ); # PROFILE BLOCK STOP
-
+                    $self->update_pseudoword(                        'html', "cssfontcolor$htmlfontcolor",
+                        $encoded, $original );
                     $cssfontcolortag = lc( $tag );
                 }
             }
@@ -1110,22 +1000,16 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             if ( defined( $style->{'background-color'} ) ) {
                 my $background_color = $style->{'background-color'};
 
-                $background_color =                              # PROFILE BLOCK START
-                    $self->parse_css_color( $background_color ); # PROFILE BLOCK STOP
-
+                $background_color =                    $self->parse_css_color( $background_color );
                 if ( $background_color ne "error" ) {
                     $htmlbackcolor = $background_color;
                     $self->compute_html_color_distance();
                     print "       CSS set html back color to $htmlbackcolor\n" if $debug;
 
-                    $htmlbodycolor = $background_color  # PROFILE BLOCK START
-                        if ( $tag =~ /^body$/i );                 # PROFILE BLOCK STOP
-                    $cssbackcolortag = lc( $tag );
+                    $htmlbodycolor = $background_color                        if ( $tag =~ /^body$/i );                    $cssbackcolortag = lc( $tag );
 
-                    $self->update_pseudoword(  # PROFILE BLOCK START
-                        'html', "cssbackcolor$htmlbackcolor",
-                        $encoded, $original ); # PROFILE BLOCK STOP
-                }
+                    $self->update_pseudoword(                        'html', "cssbackcolor$htmlbackcolor",
+                        $encoded, $original );                }
             }
 
             # CSS all-in one background declaration (ugh)
@@ -1142,9 +1026,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                     $expression = $1;
                     print "       CSS expression $expression in background property\n" if $debug;
 
-                    my $background_color =                     # PROFILE BLOCK START
-                        $self->parse_css_color( $expression ); # PROFILE BLOCK STOP
-
+                    my $background_color =                        $self->parse_css_color( $expression );
                     # to see if it is a color
 
                     if ( $background_color ne "error" ) {
@@ -1157,10 +1039,8 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                         }
                         $cssbackcolortag = lc( $tag );
 
-                        $self->update_pseudoword(  # PROFILE BLOCK START
-                            'html', "cssbackcolor$htmlbackcolor",
-                            $encoded, $original ); # PROFILE BLOCK STOP
-                    }
+                        $self->update_pseudoword(                            'html', "cssbackcolor$htmlbackcolor",
+                            $encoded, $original );                    }
                 }
             }
         }
@@ -1172,11 +1052,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
         # background style may not be in a predictable location
         # (search the entire value)
 
-        if ( ( $attribute =~ /^style$/i ) &&                    # PROFILE BLOCK START
-             ( $tag =~ /^(body|td|tr|table|span|div|p)$/i ) ) { # PROFILE BLOCK STOP
-            $self->add_url( $1, $encoded, '[\']', '[\']', '' )                           # PROFILE BLOCK START
-                if ( $value =~ /background\-image:[ \t]?url\([ \t]?\'(.*)\'[ \t]?\)/i ); # PROFILE BLOCK STOP
-            next;
+        if ( ( $attribute =~ /^style$/i ) &&             ( $tag =~ /^(body|td|tr|table|span|div|p)$/i ) ) {            $self->add_url( $1, $encoded, '[\']', '[\']', '' )                if ( $value =~ /background\-image:[ \t]?url\([ \t]?\'(.*)\'[ \t]?\)/i );            next;
         }
 
         # Tags with action attributes
@@ -1189,18 +1065,12 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
             # mailto forms
 
-            if ( $value =~ /^mailto:                     # PROFILE BLOCK START
-                            ([[:alpha:]0-9\-_\.]+?
+            if ( $value =~ /^mailto:                            ([[:alpha:]0-9\-_\.]+?
                              @
                              ([[:alpha:]0-9\-_\.]+?))
-                            ([>\&\?\:\/\" \t]|$)/ix )  { # PROFILE BLOCK STOP
-                $self->update_word(                               # PROFILE BLOCK START
-                    $1, $encoded, 'mailto:',
-                    ( $3 ? '[\\\>\&\?\:\/]' : $end_quote ), '' ); # PROFILE BLOCK STOP
-                $self->add_url(                                   # PROFILE BLOCK START
-                    $2, $encoded, '@',
-                    ( $3 ? '[\\\>\&\?\:\/]' : $end_quote ), '' ); # PROFILE BLOCK STOP
-            }
+                            ([>\&\?\:\/\" \t]|$)/ix )  {                $self->update_word(                    $1, $encoded, 'mailto:',
+                    ( $3 ? '[\\\>\&\?\:\/]' : $end_quote ), '' );                $self->add_url(                    $2, $encoded, '@',
+                    ( $3 ? '[\\\>\&\?\:\/]' : $end_quote ), '' );            }
             next;
         }
     }
@@ -1257,12 +1127,10 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
         }
     }
 
-    if ( $url =~ s/^(([[:alpha:]0-9\-_]+\.)+)          # PROFILE BLOCK START
-                    (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
+    if ( $url =~ s/^(([[:alpha:]0-9\-_]+\.)+)                    (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
                      int|jobs|mil|mobi|museum|name|net|org|pro|tel|
                      travel|xxx|[a-z]{2})
-                    ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) { # PROFILE BLOCK STOP
-        $host     = "$1$3";
+                    ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {        $host     = "$1$3";
         $hostform = "name";
     } else {
         if ( $url =~ /(([^:\/])+)/ ) {
@@ -1286,9 +1154,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
             # iterate through the possible hostname, build dotted quad
             # format
 
-            while ( $host_candidate =~                                # PROFILE BLOCK START
-                    s/\G^((0x)[0-9A-Fa-f]+|0[0-7]+|[0-9]+)(\.)?// ) { # PROFILE BLOCK STOP
-                my $hex = $2;
+            while ( $host_candidate =~                    s/\G^((0x)[0-9A-Fa-f]+|0[0-7]+|[0-9]+)(\.)?// ) {                my $hex = $2;
 
                 # possible IP quad(s)
 
@@ -1323,10 +1189,8 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
 
                     while ( $quad <= 4 ) {
                         my $shift = ( ( 4 - $quad ) * 8 );
-                        $quads{$quad} =       # PROFILE BLOCK START
-                            ( $number & ( hex( "0xFF" ) << $shift ) )
-                                >> $shift;    # PROFILE BLOCK STOP
-                        $quad += 1;
+                        $quads{$quad} =                            ( $number & ( hex( "0xFF" ) << $shift ) )
+                                >> $shift;                        $quad += 1;
                     }
                 } else {
                     # Just plug the quad in, no overflow allowed
@@ -1339,13 +1203,11 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
             }
 
             $host_candidate =~ s/\r|\n|$//g;
-            if ( ( $host_candidate eq '' ) &&  # PROFILE BLOCK START
-                 defined( $quads{1} )      &&
+            if ( ( $host_candidate eq '' ) &&                 defined( $quads{1} )      &&
                  defined( $quads{2} )      &&
                  defined( $quads{3} )      &&
                  defined( $quads{4} )      &&
-                 !defined( $quads{5} ) ) {     # PROFILE BLOCK STOP
-
+                 !defined( $quads{5} ) ) {
                 # we did actually find an IP address, and not some fake
 
                 $hostform = "ip";
@@ -1378,10 +1240,8 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
 
         # add the entire domain
 
-        $self->update_word(                                                 # PROFILE BLOCK START
-            $host, $encoded,
-            $temp_before, $temp_after, $prefix ) if ( !defined( $noadd ) ); # PROFILE BLOCK STOP
-
+        $self->update_word(            $host, $encoded,
+            $temp_before, $temp_after, $prefix ) if ( !defined( $noadd ) );
         # decided not to care about tld's beyond the verification
         # performed when grabbing $host special subTLD's can just get
         # their own classification weight (eg, .bc.ca)
@@ -1393,15 +1253,11 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
 
             while ( $host =~ s/^([^\.]+\.)?(([^\.]+\.?)*)(\.[^\.]+)$/$2$4/ ) {
                 if ( !defined( $1 ) ) {
-                    $self->update_word(                                # PROFILE BLOCK START
-                        $4, $encoded,
-                        $2, '[<]', $prefix) if ( !defined( $noadd ) ); # PROFILE BLOCK STOP
-                    last;
+                    $self->update_word(                        $4, $encoded,
+                        $2, '[<]', $prefix) if ( !defined( $noadd ) );                    last;
                 }
-                $self->update_word(                                      # PROFILE BLOCK START
-                    $host, $encoded,
-                    $1 || $2, '[<]', $prefix) if ( !defined( $noadd ) ); # PROFILE BLOCK STOP
-            }
+                $self->update_word(                    $host, $encoded,
+                    $1 || $2, '[<]', $prefix) if ( !defined( $noadd ) );            }
         }
     }
 
@@ -1444,9 +1300,7 @@ method parse_html ($line, $encoded) {
     # effected.  The correct fix seams to be to look at the
     # Content-Type header and only process mails of type text/html.
 
-    while ( $line =~ s/(<\/?(?!(?:$spacing_tags|$non_spacing_tags)\W)  # PROFILE BLOCK START
-                        [a-z0-9]+(?:\s+.*?)?\/?>)//iox ) {             # PROFILE BLOCK STOP
-        $self->update_pseudoword( 'html', 'invalidtag', $encoded, $1 );
+    while ( $line =~ s/(<\/?(?!(?:$spacing_tags|$non_spacing_tags)\W)                        [a-z0-9]+(?:\s+.*?)?\/?>)//iox ) {        $self->update_pseudoword( 'html', 'invalidtag', $encoded, $1 );
         print "html:invalidtag: $1\n" if $debug;
     }
 
@@ -1473,9 +1327,7 @@ method parse_html ($line, $encoded) {
                 $in_html_tag = 0;
                 $html_tag =~ s/=\n ?//g;
                 $html_arg =~ s/=\n ?//g;
-                $self->update_tag( $html_tag, $html_arg,  # PROFILE BLOCK START
-                                   $html_end, $encoded );             # PROFILE BLOCK STOP
-                $html_tag = '';
+                $self->update_tag( $html_tag, $html_arg,                                   $html_end, $encoded );                $html_tag = '';
                 $html_arg = '';
                 $found              = 1;
                 next;
@@ -1554,9 +1406,7 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
     while ( <$msg> ) {
         $size_read += length( $_ );
         $self->parse_line( $_ );
-        if ( ( $max_size > 0 ) &&           # PROFILE BLOCK START
-             ( $size_read > $max_size ) ) { # PROFILE BLOCK STOP
-            last;
+        if ( ( $max_size > 0 ) &&             ( $size_read > $max_size ) ) {            last;
         }
     }
 
@@ -1697,9 +1547,7 @@ method stop_parse {
     # TODO: Fix me
 
     if ( $cur_header ne '' ) {
-        $self->parse_header( $cur_header, $cur_argument,  # PROFILE BLOCK START
-                             $cur_mime, $cur_encoding );  # PROFILE BLOCK STOP
-        $cur_header   = '';
+        $self->parse_header( $cur_header, $cur_argument,                             $cur_mime, $cur_encoding );        $cur_header   = '';
         $cur_argument = '';
     }
 
@@ -1741,9 +1589,7 @@ method parse_line ($read) {
 
             # Decode quoted-printable
 
-            if ( !$in_headers &&                           # PROFILE BLOCK START
-                 ( $cur_encoding =~ /quoted\-printable/i ) ) { # PROFILE BLOCK STOP
-                if ( $line =~ s/=\r\n$// ) {
+            if ( !$in_headers &&                 ( $cur_encoding =~ /quoted\-printable/i ) ) {                if ( $line =~ s/=\r\n$// ) {
                     # Encoded in multiple lines
 
                     $prev .= $line;
@@ -1756,17 +1602,13 @@ method parse_line ($read) {
                 $line =~ s/\x00/NUL/g;
             }
 
-            if ( ( $lang eq 'Nihongo' ) &&      # PROFILE BLOCK START
-                 !$in_headers &&
-                 ( $cur_encoding !~ /base64/i ) ) { # PROFILE BLOCK STOP
-
+            if ( ( $lang eq 'Nihongo' ) &&                 !$in_headers &&
+                 ( $cur_encoding !~ /base64/i ) ) {
                 # Decode \x??
                 $line =~ s/\\x([8-9A-F][A-F0-9])/pack("C", hex($1))/eig;
 
-                $line = convert_encoding(                           # PROFILE BLOCK START
-                    $line, $charset, 'euc-jp', '7bit-jis',
-                    @{ $encoding_candidates{ $lang } } ); # PROFILE BLOCK STOP
-                $line = $nihongo_parser{parse}( $self, $line );
+                $line = convert_encoding(                    $line, $charset, 'euc-jp', '7bit-jis',
+                    @{ $encoding_candidates{ $lang } } );                $line = $nihongo_parser{parse}( $self, $line );
             }
 
             if ( defined( $color_resolver ) ) {
@@ -1775,9 +1617,7 @@ method parse_line ($read) {
                     $ut = '';
                 }
 
-                $ut .= $self->splitline( $line,                 # PROFILE BLOCK START
-                                                   $cur_encoding ); # PROFILE BLOCK STOP
-            }
+                $ut .= $self->splitline( $line,                                                   $cur_encoding );            }
 
             if ( $in_headers ) {
                 # temporary colorization while in headers is handled
@@ -1789,11 +1629,9 @@ method parse_line ($read) {
 
                 if ( $line =~ /^(\r\n|\r|\n)/ ) {
                     # Parse the last header
-                    ( $cur_mime, $cur_encoding ) =      # PROFILE BLOCK START
-                        $self->parse_header(
+                    ( $cur_mime, $cur_encoding ) =                        $self->parse_header(
                             $cur_header, $cur_argument,
-                            $cur_mime, $cur_encoding ); # PROFILE BLOCK STOP
-
+                            $cur_mime, $cur_encoding );
                     # Clear the saved headers
                     $cur_header   = '';
                     $cur_argument = '';
@@ -1821,12 +1659,10 @@ method parse_line ($read) {
                 if ( $line =~ /^([A-Za-z\-]+):[ \t]*([^\n\r]*)/ ) {
                     # Parse the last header
 
-                    ( $cur_mime, $cur_encoding ) =   # PROFILE BLOCK START
-                        $self->parse_header(
+                    ( $cur_mime, $cur_encoding ) =                        $self->parse_header(
                             $cur_header, $cur_argument,
                             $cur_mime, $cur_encoding )
-                        if ( $cur_header ne '' );          # PROFILE BLOCK STOP
-
+                        if ( $cur_header ne '' );
                     # Save the new information for the current header
 
                     $cur_header   = $1;
@@ -1839,9 +1675,7 @@ method parse_line ($read) {
 
             # If we are in a mime document then spot the boundaries
 
-            if ( ( $cur_mime ne '' ) &&                     # PROFILE BLOCK START
-                 ( $line =~ /^\-\-($cur_mime)(\-\-)?/ ) ) { # PROFILE BLOCK STOP
-
+            if ( ( $cur_mime ne '' ) &&                 ( $line =~ /^\-\-($cur_mime)(\-\-)?/ ) ) {
                 # approach each mime part with fresh eyes
 
                 $cur_encoding = '';
@@ -1884,9 +1718,7 @@ method parse_line ($read) {
                     foreach my $aboundary ( split( /\|/, $cur_mime ) ) {
                         if ( $boundary ne $aboundary ) {
                             if ( $temp_mime ne '' ) {
-                                $temp_mime = join( '|',                      # PROFILE BLOCK START
-                                                   $temp_mime, $aboundary ); # PROFILE BLOCK STOP
-                            } else {
+                                $temp_mime = join( '|',                                                   $temp_mime, $aboundary );                            } else {
                                 $temp_mime = $aboundary;
                             }
                         }
@@ -1940,10 +1772,8 @@ method clear_out_base64 {
         $decoded = decode_base64( $base64 );
 
         if ( $lang eq 'Nihongo' ) {
-            $decoded = convert_encoding(                        # PROFILE BLOCK START
-                $decoded, $charset, 'euc-jp', '7bit-jis',
-                @{ $encoding_candidates{ $lang } } ); # PROFILE BLOCK STOP
-            $decoded = $nihongo_parser{parse}( $self, $decoded );
+            $decoded = convert_encoding(                $decoded, $charset, 'euc-jp', '7bit-jis',
+                @{ $encoding_candidates{ $lang } } );            $decoded = $nihongo_parser{parse}( $self, $decoded );
         }
 
         $self->parse_html( $decoded, 1 );
@@ -2030,8 +1860,7 @@ method decode_string ($mystring, $lang = undef) {
         my ( $pre, $atom, $encoding, $value );
         ( $pre, $atom, $charset, $encoding, $value ) = ( $1, $2, $3, $4, $5 );
 
-        $output .= $pre unless ( $last_is_encoded && defined( $atom ) # PROFILE BLOCK START
-                                    && ( $pre =~ /^[\t ]+$/ ) );      # PROFILE BLOCK STOP( Per RFC 2047 section 6.2 )
+        $output .= $pre unless ( $last_is_encoded && defined( $atom )                                    && ( $pre =~ /^[\t ]+$/ ) );      # PROFILE BLOCK STOP( Per RFC 2047 section 6.2 )
 
         if ( defined( $atom ) ) {
             if ( $encoding =~ /^[bB]$/ ) {
@@ -2040,10 +1869,8 @@ method decode_string ($mystring, $lang = undef) {
                 # for Japanese header
 
                 if ( $lang eq 'Nihongo' ) {
-                    $value = convert_encoding(                          # PROFILE BLOCK START
-                        $value, $charset, 'euc-jp', '7bit-jis',
-                        @{ $encoding_candidates{ $lang } } ); # PROFILE BLOCK STOP
-                }
+                    $value = convert_encoding(                        $value, $charset, 'euc-jp', '7bit-jis',
+                        @{ $encoding_candidates{ $lang } } );                }
                 $last_is_encoded = 1;
             } elsif ( $encoding =~ /^[qQ]$/ ) {
                 $value =~ s/\_/=20/g;
@@ -2053,10 +1880,8 @@ method decode_string ($mystring, $lang = undef) {
                 # for Japanese header
 
                 if ( $lang eq 'Nihongo' ) {
-                    $value = convert_encoding(                          # PROFILE BLOCK START
-                        $value, $charset, 'euc-jp', '7bit-jis',
-                        @{ $encoding_candidates{ $lang } } ); # PROFILE BLOCK STOP
-                }
+                    $value = convert_encoding(                        $value, $charset, 'euc-jp', '7bit-jis',
+                        @{ $encoding_candidates{ $lang } } );                }
                 $last_is_encoded = 1;
             }
         } else {
@@ -2193,9 +2018,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
         if ( $subject eq '' ) {
             # In Japanese mode, parse subject with Nihongo (Japanese) parser
 
-            $argument = $nihongo_parser{parse}( $self, $argument )    # PROFILE BLOCK START
-                if ( ( $lang eq 'Nihongo' ) && ( $argument ne '' ) ); # PROFILE BLOCK STOP
-
+            $argument = $nihongo_parser{parse}( $self, $argument )                if ( ( $lang eq 'Nihongo' ) && ( $argument ne '' ) );
             $subject = $argument;
             $subject =~ s/[\t\r\n]//g;
         }
@@ -2213,9 +2036,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
         ( my $sa_keywords = $argument ) =~ s/[\r\n ]//sg;
         $sa_keywords =~ s/^.+tests=(.+)/$1/;
-        $sa_keywords =~ s/(.+)autolearn.+$/$1/ or  # PROFILE BLOCK START
-            $sa_keywords =~ s/(.+)version.+$/$1/;  # PROFILE BLOCK STOP
-
+        $sa_keywords =~ s/(.+)autolearn.+$/$1/ or            $sa_keywords =~ s/(.+)version.+$/$1/;
         # remove all spaces that may still be present:
         $sa_keywords =~ s/[\t ]//g;
 
@@ -2244,9 +2065,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
     if ( $header =~ /^X-Spam-Level$/i ) {
         my $count = ( $argument =~ tr/*// );
         for ( 1 .. $count ) {
-            $self->update_pseudoword( 'spamassassinlevel', 'spam',  # PROFILE BLOCK START
-                                      0, $argument );               # PROFILE BLOCK STOP
-        }
+            $self->update_pseudoword( 'spamassassinlevel', 'spam',                                      0, $argument );        }
     }
 
     # Look for MIME
@@ -2265,12 +2084,10 @@ method parse_header ($header, $argument, $mime, $encoding) {
         if ( $argument =~ /multipart\//i ) {
             my $boundary = $argument;
 
-            if ( $boundary =~ /boundary=[ ]?      # PROFILE BLOCK START
-                               (\"([A-Z0-9\'\(\)\+\_\,\-\.\/\:\=\?]
+            if ( $boundary =~ /boundary=[ ]?                               (\"([A-Z0-9\'\(\)\+\_\,\-\.\/\:\=\?]
                                    [A-Z0-9\'\(\)\+_,\-\.\/:=\? \@]{0,69})\"|
                                 ([^\(\)\<\>\@\,\;\:\\\"\/\[\]\?\=]{1,70})
-                               )/ix ) {           # PROFILE BLOCK STOP
-
+                               )/ix ) {
                 $boundary = ( $2 || $3 );
 
                 $boundary =~ s/(.*)/\Q$1\E/g;
@@ -2304,22 +2121,16 @@ method parse_header ($header, $argument, $mime, $encoding) {
         print "Setting encoding to $encoding\n" if $debug;
         my $compact_encoding = $encoding;
         $compact_encoding =~ s/[^A-Za-z0-9]//g;
-        $self->update_pseudoword( 'encoding', $compact_encoding,  # PROFILE BLOCK START
-                                  0, $encoding );                 # PROFILE BLOCK STOP
-        return ( $mime, $encoding );
+        $self->update_pseudoword( 'encoding', $compact_encoding,                                  0, $encoding );        return ( $mime, $encoding );
     }
 
     # Some headers to discard
 
-    return ( $mime, $encoding )                                     # PROFILE BLOCK START
-        if ( $header =~ /^(Thread-Index|X-UIDL|Message-ID|
-                           X-Text-Classification|X-Mime-Key)$/ix ); # PROFILE BLOCK STOP
-
+    return ( $mime, $encoding )        if ( $header =~ /^(Thread-Index|X-UIDL|Message-ID|
+                           X-Text-Classification|X-Mime-Key)$/ix );
     # Some headers should never be RFC 2047 decoded
 
-    $argument = $self->decode_string( $argument, $lang )            # PROFILE BLOCK START
-        if ( $header !~ /^(Received|Content\-Type|Content\-Disposition)$/i ); # PROFILE BLOCK STOP
-
+    $argument = $self->decode_string( $argument, $lang )        if ( $header !~ /^(Received|Content\-Type|Content\-Disposition)$/i );
     if ( $header =~ /^Content-Disposition$/i ) {
         $self->handle_disposition( $argument );
         return ( $mime, $encoding );
@@ -2354,10 +2165,8 @@ method parse_css_style ($line, $braces) {
     if ( $braces ) {
         $line =~ s/\{(.*?)\}/$1/;
     }
-    while ( $line =~ s/^[ \t\r\n\f]*                              # PROFILE BLOCK START
-                       ([a-z][a-z0-9\-]+)[ \t\r\n\f]*:
-                       [ \t\r\n\f]*(.*?)[ \t\r\n\f]?(;|$)//ix ) { # PROFILE BLOCK STOP
-        $hash->{ lc( $1 ) } = $2;
+    while ( $line =~ s/^[ \t\r\n\f]*                       ([a-z][a-z0-9\-]+)[ \t\r\n\f]*:
+                       [ \t\r\n\f]*(.*?)[ \t\r\n\f]?(;|$)//ix ) {        $hash->{ lc( $1 ) } = $2;
     }
     return $hash;
 }
@@ -2401,10 +2210,8 @@ method parse_css_color ($color) {
 
         my ( $r_temp, $g_temp, $b_temp );
 
-        if ( ( ($r_temp) = ($r =~ $percent_re) ) &&  # PROFILE BLOCK START
-             ( ($g_temp) = ($g =~ $percent_re) ) &&
-             ( ($b_temp) = ($b =~ $percent_re) ) ) { # PROFILE BLOCK STOP
-
+        if ( ( ($r_temp) = ($r =~ $percent_re) ) &&             ( ($g_temp) = ($g =~ $percent_re) ) &&
+             ( ($b_temp) = ($b =~ $percent_re) ) ) {
             $ispercent = 1;
 
             # clip to 0-100
@@ -2420,10 +2227,8 @@ method parse_css_color ($color) {
             $found = 1;
         }
 
-        if ( ( $r =~ $value_re ) &&  # PROFILE BLOCK START
-             ( $g =~ $value_re ) &&
-             ( $b =~ $value_re ) ) { # PROFILE BLOCK STOP
-
+        if ( ( $r =~ $value_re ) &&             ( $g =~ $value_re ) &&
+             ( $b =~ $value_re ) ) {
             $ispercent = 0;
 
             #clip to 0-255
@@ -2456,17 +2261,11 @@ method parse_css_color ($color) {
         if ( defined( $2 ) ) {
             # in 3 value form, the value is computed by doubling each digit
 
-            ( $r, $g, $b ) = ( hex( $1 x 2 ), hex( $2 x 2 ), hex( $3 x 2 ) )  # PROFILE BLOCK START
-                if ( $color =~ /^(.)(.)(.)$/ );                               # PROFILE BLOCK STOP
-        } else {
-            ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )  # PROFILE BLOCK START
-                if ( $color =~ /^(..)(..)(..)$/ );                # PROFILE BLOCK STOP
-        }
+            ( $r, $g, $b ) = ( hex( $1 x 2 ), hex( $2 x 2 ), hex( $3 x 2 ) )                if ( $color =~ /^(.)(.)(.)$/ );        } else {
+            ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )                if ( $color =~ /^(..)(..)(..)$/ );        }
         $found = 1;
     }
-    if ( $color =~ /^(aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|  # PROFILE BLOCK START
-                      olive|purple|red|silver|teal|white|yellow)$/i ) {     # PROFILE BLOCK STOP
-
+    if ( $color =~ /^(aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|                      olive|purple|red|silver|teal|white|yellow)$/i ) {
         # these are the only CSS defined colours
 
         print "       CSS textual color form: $color\n" if $debug;
@@ -2476,18 +2275,14 @@ method parse_css_color ($color) {
         # our color map may have failed
 
         $error = 1 if ( $new_color eq $color );
-        ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )  # PROFILE BLOCK START
-            if ( $new_color =~ /^(..)(..)(..)$/ );            # PROFILE BLOCK STOP
-        $found = 1;
+        ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )            if ( $new_color =~ /^(..)(..)(..)$/ );        $found = 1;
     }
 
     $found = 0 if ( $error );
 
-    if ( $found &&                                         # PROFILE BLOCK START
-         defined( $r ) && ( 0 <= $r ) && ( $r <= 255 ) &&
+    if ( $found &&         defined( $r ) && ( 0 <= $r ) && ( $r <= 255 ) &&
          defined( $g ) && ( 0 <= $g ) && ( $g <= 255 ) &&
-         defined( $b ) && ( 0 <= $b ) && ( $b <= 255 ) ) { # PROFILE BLOCK STOP
-        if ( wantarray ) {
+         defined( $b ) && ( 0 <= $b ) && ( $b <= 255 ) ) {        if ( wantarray ) {
             return ( $r, $g, $b );
         } else {
             $color = sprintf( '%1$02x%2$02x%3$02x', $r, $g, $b );
@@ -2771,9 +2566,7 @@ method init_mecab {
     # Initialize MeCab (-F %M\s -U %M\s -E \n is passed to MeCab as argument).
     # Insert white spaces after words.
 
-    $nihongo_parser{obj_mecab}                 # PROFILE BLOCK START
-        = MeCab::Tagger->new( '-F %M\s -U %M\s -E \n' ); # PROFILE BLOCK STOP
-}
+    $nihongo_parser{obj_mecab}        = MeCab::Tagger->new( '-F %M\s -U %M\s -E \n' );}
 
 # ----------------------------------------------------------------------------
 #

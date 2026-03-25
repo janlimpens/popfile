@@ -106,13 +106,11 @@ class Classifier::Bayes :isa(POPFile::Module) {
     field $parser = Classifier::MailParse->new();
 
     # The possible colors for buckets
-    field $possible_colors = [ 'red',       'green',      'blue',       'brown', # PROFILE BLOCK START
-                                 'orange',    'purple',     'magenta',    'gray',
+    field $possible_colors = [ 'red',       'green',      'blue',       'brown',                                 'orange',    'purple',     'magenta',    'gray',
                                  'plum',      'silver',     'pink',       'lightgreen',
                                  'lightblue', 'lightcyan',  'lightcoral', 'lightsalmon',
                                  'lightgrey', 'darkorange', 'darkcyan',   'feldspar',
-                                 'black' ];                                          # PROFILE BLOCK STOP
-
+                                 'black' ];
     # Precomputed per-bucket log-probabilities
     field $bucket_start = {};
 
@@ -368,9 +366,7 @@ There is no return value from this method
 
 =cut
 method classified ($session, $class) {
-    $self->set_bucket_parameter( $session, $class, 'count',             # PROFILE BLOCK START
-        $self->get_bucket_parameter( $session, $class, 'count' ) + 1 ); # PROFILE BLOCK STOP
-}
+    $self->set_bucket_parameter( $session, $class, 'count',        $self->get_bucket_parameter( $session, $class, 'count' ) + 1 );}
 
 =head2 backup_database__
 
@@ -382,9 +378,7 @@ method backup_database {
     # If database backup is turned on and we are using SQLite then
     # backup the database by copying it
 
-    if ( ( $self->config_( 'sqlite_tweaks' ) & 2 ) &&  # PROFILE BLOCK START
-         $db_is_sqlite ) {                   # PROFILE BLOCK STOP
-        if ( !copy( $db_name, $db_name . ".backup" ) ) {
+    if ( ( $self->config_( 'sqlite_tweaks' ) & 2 ) &&         $db_is_sqlite ) {        if ( !copy( $db_name, $db_name . ".backup" ) ) {
             $self->log_( 0, "Failed to backup database ".$db_name );
         }
     }
@@ -431,34 +425,18 @@ method reclassified ($session, $bucket, $newbucket, $undo) {
     my $c = $undo?-1:1;
 
     if ( $bucket ne $newbucket ) {
-        my $count = $self->get_bucket_parameter(           # PROFILE BLOCK START
-                $session, $newbucket, 'count' );           # PROFILE BLOCK STOP
-        my $newcount = $count + $c;
+        my $count = $self->get_bucket_parameter(                $session, $newbucket, 'count' );        my $newcount = $count + $c;
         $newcount = 0 if ( $newcount < 0 );
-        $self->set_bucket_parameter(                        # PROFILE BLOCK START
-                $session, $newbucket, 'count', $newcount ); # PROFILE BLOCK STOP
-
-        $count = $self->get_bucket_parameter(              # PROFILE BLOCK START
-                $session, $bucket, 'count' );              # PROFILE BLOCK STOP
-        $newcount = $count - $c;
+        $self->set_bucket_parameter(                $session, $newbucket, 'count', $newcount );
+        $count = $self->get_bucket_parameter(                $session, $bucket, 'count' );        $newcount = $count - $c;
         $newcount = 0 if ( $newcount < 0 );
-        $self->set_bucket_parameter(                       # PROFILE BLOCK START
-                $session, $bucket, 'count', $newcount );   # PROFILE BLOCK STOP
-
-        my $fncount = $self->get_bucket_parameter(         # PROFILE BLOCK START
-                $session, $newbucket, 'fncount' );         # PROFILE BLOCK STOP
-        my $newfncount = $fncount + $c;
+        $self->set_bucket_parameter(                $session, $bucket, 'count', $newcount );
+        my $fncount = $self->get_bucket_parameter(                $session, $newbucket, 'fncount' );        my $newfncount = $fncount + $c;
         $newfncount = 0 if ( $newfncount < 0 );
-        $self->set_bucket_parameter(                            # PROFILE BLOCK START
-                $session, $newbucket, 'fncount', $newfncount ); # PROFILE BLOCK STOP
-
-        my $fpcount = $self->get_bucket_parameter(         # PROFILE BLOCK START
-                $session, $bucket, 'fpcount' );            # PROFILE BLOCK STOP
-        my $newfpcount = $fpcount + $c;
+        $self->set_bucket_parameter(                $session, $newbucket, 'fncount', $newfncount );
+        my $fpcount = $self->get_bucket_parameter(                $session, $bucket, 'fpcount' );        my $newfpcount = $fpcount + $c;
         $newfpcount = 0 if ( $newfpcount < 0 );
-        $self->set_bucket_parameter(                         # PROFILE BLOCK START
-                $session, $bucket, 'fpcount', $newfpcount ); # PROFILE BLOCK STOP
-    }
+        $self->set_bucket_parameter(                $session, $bucket, 'fpcount', $newfpcount );    }
 }
 
 =head2 get_color
@@ -479,9 +457,7 @@ method get_color ($session, $word) {
         if ( $prob != 0 )  {
             if ( $prob > $max )  {
                 $max   = $prob;
-                $color = $self->get_bucket_parameter( $session, $bucket, # PROFILE BLOCK START
-                             'color' );                                  # PROFILE BLOCK STOP
-            }
+                $color = $self->get_bucket_parameter( $session, $bucket,                             'color' );            }
         }
     }
 
@@ -517,9 +493,7 @@ method get_value_ ($session, $bucket, $word) {
         # log( $value ) - $cached and this turned out to be
         # much slower than this single log with a division in it
 
-        return log( $value /                                             # PROFILE BLOCK START
-                    $self->get_bucket_word_count( $session, $bucket ) ); # PROFILE BLOCK STOP
-    } else {
+        return log( $value /                    $self->get_bucket_word_count( $session, $bucket ) );    } else {
         return 0;
     }
 }
@@ -541,17 +515,13 @@ counts for the bucket and globally
 
 =cut
 method set_value_ ($session, $bucket, $word, $value) {
-    if ( $self->db_put_word_count( $session, $bucket, # PROFILE BLOCK START
-             $word, $value ) == 1 ) {                   # PROFILE BLOCK STOP
-
+    if ( $self->db_put_word_count( $session, $bucket,             $word, $value ) == 1 ) {
         # If we set the word count to zero then clean it up by deleting the
         # entry
 
         my $userid = $self->valid_session_key( $session );
         my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-        $self->validate_sql_prepare_and_execute(          # PROFILE BLOCK START
-            $db_delete_zero_words, $bucketid ); # PROFILE BLOCK STOP
-
+        $self->validate_sql_prepare_and_execute(            $db_delete_zero_words, $bucketid );
         return 1;
     } else {
         return 0;
@@ -595,9 +565,7 @@ method update_constants ($session) {
             my $total = $self->get_bucket_word_count( $session, $bucket );
 
             if ( $total != 0 ) {
-                $bucket_start->{$userid}{$bucket} =  # PROFILE BLOCK START
-                    log( $total / $wc );                     # PROFILE BLOCK STOP
-            } else {
+                $bucket_start->{$userid}{$bucket} =                    log( $total / $wc );            } else {
                 $bucket_start->{$userid}{$bucket} = 0;
             }
         }
@@ -696,10 +664,8 @@ method db_connect {
                 $old_dbconnect =~ s/SQLite:/SQLite2:/;
                 $old_dbconnect =~ s/\$dbname/$old_dbname/g;
 
-                $old_dbh = DBI->connect( $old_dbconnect,               # PROFILE BLOCK START
-                                         $self->config_( 'dbuser' ),
-                                         $self->config_( 'dbauth' ) ); # PROFILE BLOCK STOP
-
+                $old_dbh = DBI->connect( $old_dbconnect,                                         $self->config_( 'dbuser' ),
+                                         $self->config_( 'dbauth' ) );
                 # Update the config file
 
                 $dbconnect = $self->config_( 'dbconnect' );
@@ -720,11 +686,9 @@ method db_connect {
     }
 
 
-    $db = DBI->connect( $dbconnect,                 # PROFILE BLOCK START
-                                  $self->config_( 'dbuser' ),
+    $db = DBI->connect( $dbconnect,                                  $self->config_( 'dbuser' ),
                                   $self->config_( 'dbauth' ),
-                                  \%connection_options );     # PROFILE BLOCK STOP
-
+                                  \%connection_options );
     if ( !defined( $db ) ) {
         $self->log_( 0, "Failed to connect to database and got error $DBI::errstr" );
         return 0;
@@ -792,9 +756,7 @@ method db_connect {
 
     foreach my $table (@tables) {
         if ( $table =~ /\.?popfile$/ ) {
-            my @row = $db->selectrow_array(  # PROFILE BLOCK START
-               'select version from popfile;' );       # PROFILE BLOCK STOP
-
+            my @row = $db->selectrow_array(               'select version from popfile;' );
             if ( $#row == 0 ) {
                 $need_upgrade = ( $row[0] != $version );
             }
@@ -819,76 +781,46 @@ method db_connect {
     # word
     # parameter
 
-    $db_get_buckets = $db->prepare(                                 # PROFILE BLOCK START
-             'select name, id, pseudo from buckets
-                  where buckets.userid = ?;' );                                         # PROFILE BLOCK STOP
-
-    $db_get_wordid = $db->prepare(                                  # PROFILE BLOCK START
-             'select id from words
-                  where words.word = ? limit 1;' );                                     # PROFILE BLOCK STOP
-
-    $db_get_userid = $db->prepare(                                  # PROFILE BLOCK START
-             'select id from users where name = ?
-                                     and password = ? limit 1;' );                      # PROFILE BLOCK STOP
-
-    $db_get_word_count = $db->prepare(                              # PROFILE BLOCK START
-             'select matrix.times from matrix
+    $db_get_buckets = $db->prepare(             'select name, id, pseudo from buckets
+                  where buckets.userid = ?;' );
+    $db_get_wordid = $db->prepare(             'select id from words
+                  where words.word = ? limit 1;' );
+    $db_get_userid = $db->prepare(             'select id from users where name = ?
+                                     and password = ? limit 1;' );
+    $db_get_word_count = $db->prepare(             'select matrix.times from matrix
                   where matrix.bucketid = ? and
-                        matrix.wordid = ? limit 1;' );                                  # PROFILE BLOCK STOP
-
-    $db_put_word_count = $db->prepare(                              # PROFILE BLOCK START
-           'replace into matrix ( bucketid, wordid, times ) values ( ?, ?, ? );' );     # PROFILE BLOCK STOP
-
-    $db_get_bucket_word_counts = $db->prepare(                      # PROFILE BLOCK START
-             'select sum(matrix.times), count(matrix.id), buckets.name from matrix, buckets
+                        matrix.wordid = ? limit 1;' );
+    $db_put_word_count = $db->prepare(           'replace into matrix ( bucketid, wordid, times ) values ( ?, ?, ? );' );
+    $db_get_bucket_word_counts = $db->prepare(             'select sum(matrix.times), count(matrix.id), buckets.name from matrix, buckets
                   where matrix.bucketid = buckets.id
                     and buckets.userid = ?
-                    group by buckets.name;' );                                          # PROFILE BLOCK STOP
-
-    $db_get_bucket_word_count = $db->prepare(                       # PROFILE BLOCK START
-             'select sum(times), count(*) from matrix
-                  where bucketid = ?' );                                                # PROFILE BLOCK STOP
-
-    $db_get_unique_word_count = $db->prepare(                       # PROFILE BLOCK START
-             'select count(*) from matrix
+                    group by buckets.name;' );
+    $db_get_bucket_word_count = $db->prepare(             'select sum(times), count(*) from matrix
+                  where bucketid = ?' );
+    $db_get_unique_word_count = $db->prepare(             'select count(*) from matrix
                   where matrix.bucketid in (
                         select buckets.id from buckets
-                            where buckets.userid = ? );' );                             # PROFILE BLOCK STOP
-
-    $db_get_full_total = $db->prepare(                              # PROFILE BLOCK START
-             'select sum(matrix.times) from matrix
+                            where buckets.userid = ? );' );
+    $db_get_full_total = $db->prepare(             'select sum(matrix.times) from matrix
                   where matrix.bucketid in (
                         select buckets.id from buckets
-                            where buckets.userid = ? );' );                             # PROFILE BLOCK STOP
-
-    $db_get_bucket_parameter = $db->prepare(                        # PROFILE BLOCK START
-             'select bucket_params.val from bucket_params
+                            where buckets.userid = ? );' );
+    $db_get_bucket_parameter = $db->prepare(             'select bucket_params.val from bucket_params
                   where bucket_params.bucketid = ? and
-                        bucket_params.btid = ?;' );                                     # PROFILE BLOCK STOP
-
-    $db_set_bucket_parameter = $db->prepare(                        # PROFILE BLOCK START
-           'replace into bucket_params ( bucketid, btid, val ) values ( ?, ?, ? );' );  # PROFILE BLOCK STOP
-
-    $db_get_bucket_parameter_default = $db->prepare(                # PROFILE BLOCK START
-             'select bucket_template.def from bucket_template
-                  where bucket_template.id = ?;' );                                     # PROFILE BLOCK STOP
-
-    $db_get_buckets_with_magnets = $db->prepare(                    # PROFILE BLOCK START
-             'select buckets.name from buckets, magnets
+                        bucket_params.btid = ?;' );
+    $db_set_bucket_parameter = $db->prepare(           'replace into bucket_params ( bucketid, btid, val ) values ( ?, ?, ? );' );
+    $db_get_bucket_parameter_default = $db->prepare(             'select bucket_template.def from bucket_template
+                  where bucket_template.id = ?;' );
+    $db_get_buckets_with_magnets = $db->prepare(             'select buckets.name from buckets, magnets
                   where buckets.userid = ? and
                         magnets.id != 0 and
                         magnets.bucketid = buckets.id group by buckets.name order by buckets.name;' );
-                                                                                        # PROFILE BLOCK STOP
-    $db_delete_zero_words = $db->prepare(                           # PROFILE BLOCK START
-             'delete from matrix
+    $db_delete_zero_words = $db->prepare(             'delete from matrix
                   where matrix.times = 0
-                    and matrix.bucketid = ?;' );                                        # PROFILE BLOCK STOP
-
+                    and matrix.bucketid = ?;' );
     # Get the mapping from parameter names to ids into a local hash
 
-    my $h = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'select name, id from bucket_template;' );    # PROFILE BLOCK STOP
-    while ( my $row = $h->fetchrow_arrayref ) {
+    my $h = $self->validate_sql_prepare_and_execute(        'select name, id from bucket_template;' );    while ( my $row = $h->fetchrow_arrayref ) {
         $db_parameterid->{$row->[0]} = $row->[1];
     }
     $h->finish;
@@ -1138,26 +1070,18 @@ method db_update_cache ($session, $updated_bucket = undef, $deleted_bucket = und
 
     my $updated = 0;
 
-    if ( defined( $updated_bucket ) &&                                    # PROFILE BLOCK START
-         defined( $db_bucketid->{$userid}{$updated_bucket} ) ) {  # PROFILE BLOCK STOP
-
+    if ( defined( $updated_bucket ) &&         defined( $db_bucketid->{$userid}{$updated_bucket} ) ) {
         # Update cache for specified bucket.
 
         my $bucketid = $db_bucketid->{$userid}{$updated_bucket}{id};
-        $self->validate_sql_prepare_and_execute(              # PROFILE BLOCK START
-            $db_get_bucket_word_count, $bucketid ); # PROFILE BLOCK STOP
-        my $row = $db_get_bucket_word_count->fetchrow_arrayref;
+        $self->validate_sql_prepare_and_execute(            $db_get_bucket_word_count, $bucketid );        my $row = $db_get_bucket_word_count->fetchrow_arrayref;
 
-        $db_bucketcount->{$userid}{$updated_bucket} =  # PROFILE BLOCK START
-            ( defined( $row->[0] ) ? $row->[0] : 0 );          # PROFILE BLOCK STOP
-        $db_bucketunique->{$userid}{$updated_bucket} = $row->[1];
+        $db_bucketcount->{$userid}{$updated_bucket} =            ( defined( $row->[0] ) ? $row->[0] : 0 );        $db_bucketunique->{$userid}{$updated_bucket} = $row->[1];
 
         $updated = 1;
     }
 
-    if ( defined( $deleted_bucket ) &&                                     # PROFILE BLOCK START
-         !defined( $db_bucketid->{$userid}{$deleted_bucket} ) ) {  # PROFILE BLOCK STOP
-
+    if ( defined( $deleted_bucket ) &&         !defined( $db_bucketid->{$userid}{$deleted_bucket} ) ) {
         # Delete cache for specified bucket.
 
         delete $db_bucketcount->{$userid}{$deleted_bucket};
@@ -1170,9 +1094,7 @@ method db_update_cache ($session, $updated_bucket = undef, $deleted_bucket = und
         delete $db_bucketcount->{$userid};
         delete $db_bucketunique->{$userid};
 
-        $self->validate_sql_prepare_and_execute(             # PROFILE BLOCK START
-            $db_get_bucket_word_counts, $userid ); # PROFILE BLOCK STOP
-
+        $self->validate_sql_prepare_and_execute(            $db_get_bucket_word_counts, $userid );
         for my $b (sort keys %{$db_bucketid->{$userid}}) {
             $db_bucketcount->{$userid}{$b} = 0;
             $db_bucketunique->{$userid}{$b} = 0;
@@ -1201,19 +1123,15 @@ method db_get_word_count ($session, $bucket, $word) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        $db_get_wordid, $word );    # PROFILE BLOCK STOP
-    my $result = $db_get_wordid->fetchrow_arrayref;
+    $self->validate_sql_prepare_and_execute(        $db_get_wordid, $word );    my $result = $db_get_wordid->fetchrow_arrayref;
     if ( !defined( $result ) ) {
         return undef;
     }
 
     my $wordid = $result->[0];
 
-    $self->validate_sql_prepare_and_execute(                     # PROFILE BLOCK START
-        $db_get_word_count,
-        $db_bucketid->{$userid}{$bucket}{id}, $wordid ); # PROFILE BLOCK STOP
-    $result = $db_get_word_count->fetchrow_arrayref;
+    $self->validate_sql_prepare_and_execute(        $db_get_word_count,
+        $db_bucketid->{$userid}{$bucket}{id}, $wordid );    $result = $db_get_word_count->fetchrow_arrayref;
     if ( defined( $result ) ) {
          return $result->[0];
     } else {
@@ -1240,22 +1158,14 @@ method db_put_word_count ($session, $bucket, $word, $count) {
     # word in the words table (if there's none then we need to add the
     # word), the bucket id in the buckets table (which must exist)
 
-    my $result = $self->validate_sql_prepare_and_execute(         # PROFILE BLOCK START
-            $db_get_wordid, $word )->fetchrow_arrayref; # PROFILE BLOCK STOP
-
+    my $result = $self->validate_sql_prepare_and_execute(            $db_get_wordid, $word )->fetchrow_arrayref;
     if ( !defined( $result ) ) {
-        $self->validate_sql_prepare_and_execute(                     # PROFILE BLOCK START
-                'insert into words ( word ) values ( ? );', $word ); # PROFILE BLOCK STOP
-        $result = $self->validate_sql_prepare_and_execute(            # PROFILE BLOCK START
-                $db_get_wordid, $word )->fetchrow_arrayref; # PROFILE BLOCK STOP
-    }
+        $self->validate_sql_prepare_and_execute(                'insert into words ( word ) values ( ? );', $word );        $result = $self->validate_sql_prepare_and_execute(                $db_get_wordid, $word )->fetchrow_arrayref;    }
 
     my $wordid = $result->[0];
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
 
-    $self->validate_sql_prepare_and_execute(                            # PROFILE BLOCK START
-            $db_put_word_count, $bucketid, $wordid, $count ); # PROFILE BLOCK STOP
-
+    $self->validate_sql_prepare_and_execute(            $db_put_word_count, $bucketid, $wordid, $count );
     return 1;
 }
 
@@ -1517,8 +1427,7 @@ method magnet_match_helper ($session, $match, $bucket, $type) {
     my @magnets;
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $h = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'select magnets.val, magnets.id from magnets, users, buckets, magnet_types
+    my $h = $self->validate_sql_prepare_and_execute(        'select magnets.val, magnets.id from magnets, users, buckets, magnet_types
                 where buckets.id         = ? and
                       magnets.id        != 0 and
                       users.id           = buckets.userid and
@@ -1526,8 +1435,7 @@ method magnet_match_helper ($session, $match, $bucket, $type) {
                       magnet_types.mtype = ? and
                       magnets.mtid       = magnet_types.id
                 order by magnets.val;',
-        $bucketid, $type );                           # PROFILE BLOCK STOP
-
+        $bucketid, $type );
     my ( $val, $id );
     $h->bind_columns( \$val, \$id );
     while ( my $row = $h->fetchrow_arrayref ) {
@@ -1645,10 +1553,8 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
 
     my $words;
     $words = join( ',', map( $db->quote( $_ ), (sort keys %{$parser->words()}) ) );
-    $get_wordids = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-             "select id, word from words
-                     where word in ( $words );" );                     # PROFILE BLOCK STOP
-
+    $get_wordids = $self->validate_sql_prepare_and_execute(             "select id, word from words
+                     where word in ( $words );" );
     my @id_list;
     my %wordmap;
     my ( $wordid, $word );
@@ -1664,12 +1570,10 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
 
     my $ids = join( ',', @id_list );
 
-    $db_getwords = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-            "select matrix.times, matrix.wordid from matrix
+    $db_getwords = $self->validate_sql_prepare_and_execute(            "select matrix.times, matrix.wordid from matrix
                     where matrix.wordid in ( $ids ) and
                           matrix.bucketid = ?;",
-            $db_bucketid->{$userid}{$bucket}{id} );            # PROFILE BLOCK STOP
-
+            $db_bucketid->{$userid}{$bucket}{id} );
     my %counts;
     my $count;
 
@@ -1690,13 +1594,11 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
         # set_value_ which would need to look up the wordid again
 
         if ( defined( $wordmap{$word} ) && defined( $counts{$wordmap{$word}} ) ) {
-            $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-                $db_put_word_count,
+            $self->validate_sql_prepare_and_execute(                $db_put_word_count,
                 $db_bucketid->{$userid}{$bucket}{id},
                 $wordmap{$word},
                 $counts{$wordmap{$word}} +
-                    $subtract * $parser->words()->{$word} ); # PROFILE BLOCK STOP
-        } else {
+                    $subtract * $parser->words()->{$word} );        } else {
             # If the word is not in the database and we are trying to
             # subtract then we do nothing because negative values are
             # meaningless
@@ -1712,10 +1614,8 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     # removed
 
     if ( $subtract == -1 ) {
-        $self->validate_sql_prepare_and_execute(            # PROFILE BLOCK START
-            $db_delete_zero_words,
-            $db_bucketid->{$userid}{$bucket}{id} ); # PROFILE BLOCK STOP
-    }
+        $self->validate_sql_prepare_and_execute(            $db_delete_zero_words,
+            $db_bucketid->{$userid}{$bucket}{id} );    }
 
     $db->commit;
 }
@@ -1819,10 +1719,8 @@ in the api_sessions__
 
 =cut
 method generate_unique_session_key {
-    my @chars = ( 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',   # PROFILE BLOCK START
-                  'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'U', 'V', 'W', 'X', 'Y',
-                  'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A' ); # PROFILE BLOCK STOP
-
+    my @chars = ( 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',                  'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'U', 'V', 'W', 'X', 'Y',
+                  'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A' );
     my $session;
 
     do {
@@ -1936,9 +1834,7 @@ method get_session_key ($user, $pwd) {
 
     my $hash = md5_hex( $user . '__popfile__' . $pwd );
 
-    $self->validate_sql_prepare_and_execute(      # PROFILE BLOCK START
-        $db_get_userid, $user, $hash ); # PROFILE BLOCK STOP
-    my $result = $db_get_userid->fetchrow_arrayref;
+    $self->validate_sql_prepare_and_execute(        $db_get_userid, $user, $hash );    my $result = $db_get_userid->fetchrow_arrayref;
     if ( !defined( $result ) ) {
         # The delay of one second here is to prevent people from trying out
         # username/password combinations at high speed to determine the
@@ -2038,9 +1934,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     if ( defined( $file ) ) {
         return undef if ( !-f $file );
 
-        $parser->parse_file( $file,                                           # PROFILE BLOCK START
-                                       $self->global_config_( 'message_cutoff'   ) );   # PROFILE BLOCK STOP
-    }
+        $parser->parse_file( $file,                                       $self->global_config_( 'message_cutoff'   ) );    }
 
     # Get the list of buckets
 
@@ -2142,12 +2036,10 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
 
     my $words;
     $words = join( ',', map( $db->quote( $_ ), (sort keys %{$parser->words()}) ) );
-    $get_wordids = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-             "select id, word
+    $get_wordids = $self->validate_sql_prepare_and_execute(             "select id, word
                   from words
                   where word in ( $words )
-                  order by id;" );                    # PROFILE BLOCK STOP
-
+                  order by id;" );
     my @id_list;
     my %temp_idmap;
     my ( $wordid, $word );
@@ -2167,13 +2059,11 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
 
     my $ids = join( ',', @id_list );
 
-    $db_classify = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-             "select matrix.times, matrix.wordid, buckets.name
+    $db_classify = $self->validate_sql_prepare_and_execute(             "select matrix.times, matrix.wordid, buckets.name
                   from matrix, buckets
                   where matrix.wordid in ( $ids )
                     and matrix.bucketid = buckets.id
-                    and buckets.userid = ?;", $userid );               # PROFILE BLOCK STOP
-
+                    and buckets.userid = ?;", $userid );
     # %matrix maps wordids and bucket names to counts
     # $matrix{$wordid}{$bucket} == $count
 
@@ -2724,10 +2614,8 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
             $last_timeout = time;
         }
 
-        last if ( ( $max_size > 0 ) &&               # PROFILE BLOCK START
-                  ( $message_size > $max_size ) &&
-                  ( !$getting_headers ) );           # PROFILE BLOCK STOP
-    }
+        last if ( ( $max_size > 0 ) &&                  ( $message_size > $max_size ) &&
+                  ( !$getting_headers ) );    }
 
     close $msg unless $nosave;
 
@@ -2754,8 +2642,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     my $original_msg_subject = $msg_subject;
 
     if ( $subject_modification ) {
-        if ( !defined( $msg_subject ) ) {   # PROFILE BLOCK START
-            $msg_subject = " $modification";
+        if ( !defined( $msg_subject ) ) {            $msg_subject = " $modification";
         } elsif ( $msg_subject !~ /\Q$modification\E/ ) {
             if ( $self->config_( 'subject_mod_pos' ) > 0 ) {
                 # Beginning
@@ -2764,8 +2651,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
                 # End
                 $msg_subject = "$msg_subject $modification";
             }
-        }                                   # PROFILE BLOCK STOP
-    }
+        }    }
 
     if ( $quarantine ) {
         if ( defined( $original_msg_subject ) ) {
@@ -2789,10 +2675,8 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # Add the XPL header
 
-    my $host = $self->module_config_( 'html', 'local' ) ?   # PROFILE BLOCK START
-            $self->config_( 'localhostname' ) || '127.0.0.1' :
-            $self->config_( 'hostname' );                   # PROFILE BLOCK STOP
-    my $port = $self->module_config_( 'html', 'port' );
+    my $host = $self->module_config_( 'html', 'local' ) ?            $self->config_( 'localhostname' ) || '127.0.0.1' :
+            $self->config_( 'hostname' );    my $port = $self->module_config_( 'html', 'port' );
 
     my $xpl = "http://$host:$port/jump_to_message?view=$slot";
 
@@ -2909,9 +2793,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
             # append any data we got to the actual temp file
 
-            if ( ( (-s "$msg_file.flush") > 0 ) &&        # PROFILE BLOCK START
-                   ( open FLUSH, "<$msg_file.flush" ) ) { # PROFILE BLOCK STOP
-                binmode FLUSH;
+            if ( ( (-s "$msg_file.flush") > 0 ) &&                   ( open FLUSH, "<$msg_file.flush" ) ) {                binmode FLUSH;
                 if ( open TEMP, ">>$msg_file" ) {
                     binmode TEMP;
 
@@ -3069,9 +2951,7 @@ method is_pseudo_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    return ( defined($db_bucketid->{$userid}{$bucket})   # PROFILE BLOCK START
-          && $db_bucketid->{$userid}{$bucket}{pseudo} ); # PROFILE BLOCK STOP
-}
+    return ( defined($db_bucketid->{$userid}{$bucket})          && $db_bucketid->{$userid}{$bucket}{pseudo} );}
 
 =head2 is_bucket
 
@@ -3085,9 +2965,7 @@ method is_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    return ( ( defined( $db_bucketid->{$userid}{$bucket} ) ) &&  # PROFILE BLOCK START
-             ( !$db_bucketid->{$userid}{$bucket}{pseudo} ) );    # PROFILE BLOCK STOP
-}
+    return ( ( defined( $db_bucketid->{$userid}{$bucket} ) ) &&             ( !$db_bucketid->{$userid}{$bucket}{pseudo} ) );}
 
 =head2 get_bucket_word_count
 
@@ -3126,12 +3004,10 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
     $prefix =~ s/\0//g;
     $prefix = $self->db_quote( "$prefix%" );
 
-    my $result = $db->selectcol_arrayref(    # PROFILE BLOCK START
-        "select words.word from matrix, words
+    my $result = $db->selectcol_arrayref(        "select words.word from matrix, words
                 where matrix.wordid   =    words.id and
                       matrix.bucketid =    $bucketid and
-                      words.word      like $prefix;"); # PROFILE BLOCK STOP
-
+                      words.word      like $prefix;");
     return @{$result};
 }
 
@@ -3150,11 +3026,9 @@ method get_bucket_word_prefixes ($session, $bucket) {
     my $prev = '';
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $result = $db->selectcol_arrayref(   # PROFILE BLOCK START
-        "select words.word from matrix, words
+    my $result = $db->selectcol_arrayref(        "select words.word from matrix, words
          where matrix.wordid  = words.id and
-               matrix.bucketid = $bucketid;");        # PROFILE BLOCK STOP
-
+               matrix.bucketid = $bucketid;");
     if ( $self->module_config_( 'html', 'language' ) eq 'Nihongo' ) {
         return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr_euc($_,0,1)} @{$result};
     } else {
@@ -3300,20 +3174,16 @@ method get_bucket_parameter ($session, $bucket, $parameter) {
 
     # If there is a non-default value for this parameter then return it.
 
-    $self->validate_sql_prepare_and_execute(     # PROFILE BLOCK START
-        $db_get_bucket_parameter,
+    $self->validate_sql_prepare_and_execute(        $db_get_bucket_parameter,
         $db_bucketid->{$userid}{$bucket}{id},
-        $db_parameterid->{$parameter} ); # PROFILE BLOCK STOP
-    my $result = $db_get_bucket_parameter->fetchrow_arrayref;
+        $db_parameterid->{$parameter} );    my $result = $db_get_bucket_parameter->fetchrow_arrayref;
 
     # If this parameter has not been defined for this specific bucket then
     # get the default value
 
     if ( !defined( $result ) ) {
-        $self->validate_sql_prepare_and_execute(     # PROFILE BLOCK START
-            $db_get_bucket_parameter_default,
-            $db_parameterid->{$parameter} ); # PROFILE BLOCK STOP
-        $result = $db_get_bucket_parameter_default->fetchrow_arrayref;
+        $self->validate_sql_prepare_and_execute(            $db_get_bucket_parameter_default,
+            $db_parameterid->{$parameter} );        $result = $db_get_bucket_parameter_default->fetchrow_arrayref;
     }
 
     if ( defined( $result ) ) {
@@ -3355,10 +3225,8 @@ method set_bucket_parameter ($session, $bucket, $parameter, $value) {
 
     # Exactly one row should be affected by this statement
 
-    $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        $db_set_bucket_parameter,
-        $bucketid, $btid, $value );           # PROFILE BLOCK STOP
-
+    $self->validate_sql_prepare_and_execute(        $db_set_bucket_parameter,
+        $bucketid, $btid, $value );
     if ( defined( $db_parameters->{$userid}{$bucket}{$parameter} ) ) {
         $db_parameters->{$userid}{$bucket}{$parameter} = $value;
     }
@@ -3384,9 +3252,7 @@ method get_html_colored_message ($session, $file) {
         return $self->get_color( $session, $word );
     });
 
-    my $result = $parser->parse_file( $file,   # PROFILE BLOCK START
-            $self->global_config_( 'message_cutoff' ) ); # PROFILE BLOCK STOP
-
+    my $result = $parser->parse_file( $file,            $self->global_config_( 'message_cutoff' ) );
     $parser->set_color_resolver(undef);
 
     return $result;
@@ -3427,9 +3293,7 @@ method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
         }
     });
 
-    my $result = $parser->parse_file( $file,   # PROFILE BLOCK START
-            $self->global_config_( 'message_cutoff' ) ); # PROFILE BLOCK STOP
-
+    my $result = $parser->parse_file( $file,            $self->global_config_( 'message_cutoff' ) );
     $parser->set_color_resolver(undef);
 
     return $result;
@@ -3447,18 +3311,14 @@ method create_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    if ( $self->is_bucket( $session, $bucket ) ||           # PROFILE BLOCK START
-         $self->is_pseudo_bucket( $session, $bucket ) ) {   # PROFILE BLOCK STOP
-        return 0;
+    if ( $self->is_bucket( $session, $bucket ) ||         $self->is_pseudo_bucket( $session, $bucket ) ) {        return 0;
     }
 
     return 0 if ( $bucket =~ /[^[:lower:]\-_0-9]/ );
 
-    $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'insert into buckets ( name, pseudo, userid )
+    $self->validate_sql_prepare_and_execute(        'insert into buckets ( name, pseudo, userid )
                       values (    ?,      0,      ? );',
-        $bucket, $userid );                   # PROFILE BLOCK STOP
-    $self->db_update_cache( $session, $bucket );
+        $bucket, $userid );    $self->db_update_cache( $session, $bucket );
 
     return 1;
 }
@@ -3481,13 +3341,11 @@ method delete_bucket ($session, $bucket) {
         return 0;
     }
 
-    $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'delete from buckets
+    $self->validate_sql_prepare_and_execute(        'delete from buckets
                 where buckets.userid = ? and
                       buckets.name   = ? and
                       buckets.pseudo = 0;',
-        $userid, $bucket );                   # PROFILE BLOCK STOP
-
+        $userid, $bucket );
     $self->db_update_cache( $session, undef, $bucket );
     $history->force_requery();
 
@@ -3525,10 +3383,8 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
 
     $self->log_( 1, "Rename bucket $old_bucket to $new_bucket" );
 
-    my $result = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'update buckets set name = ? where id = ?;',
-        $new_bucket, $id );                                # PROFILE BLOCK STOP
-
+    my $result = $self->validate_sql_prepare_and_execute(        'update buckets set name = ? where id = ?;',
+        $new_bucket, $id );
     if ( !defined( $result ) || ( $result == -1 ) ) {
         return 0;
     } else {
@@ -3563,8 +3419,7 @@ method add_messages_to_bucket ($session, $bucket, @files) {
     $parser->stop_parse();
 
     foreach my $file (@files) {
-        $parser->parse_file( $file,  # PROFILE BLOCK START
-            $self->global_config_( 'message_cutoff' ),
+        $parser->parse_file( $file,            $self->global_config_( 'message_cutoff' ),
             0 );  # PROFILE BLOCK STOP (Do not reset word list)
     }
 
@@ -3611,9 +3466,7 @@ method remove_message_from_bucket ($session, $bucket, $file) {
         return 0;
     }
 
-    $parser->parse_file( $file,            # PROFILE BLOCK START
-        $self->global_config_( 'message_cutoff' ) ); # PROFILE BLOCK STOP
-    $self->add_words_to_bucket( $session, $bucket, -1 );
+    $parser->parse_file( $file,        $self->global_config_( 'message_cutoff' ) );    $self->add_words_to_bucket( $session, $bucket, -1 );
 
     $self->db_update_cache( $session, $bucket );
 
@@ -3633,9 +3486,7 @@ method get_buckets_with_magnets ($session) {
 
     my @result;
 
-    $self->validate_sql_prepare_and_execute(               # PROFILE BLOCK START
-        $db_get_buckets_with_magnets, $userid ); # PROFILE BLOCK STOP
-    while ( my $row = $db_get_buckets_with_magnets->fetchrow_arrayref ) {
+    $self->validate_sql_prepare_and_execute(        $db_get_buckets_with_magnets, $userid );    while ( my $row = $db_get_buckets_with_magnets->fetchrow_arrayref ) {
         push @result, ($row->[0]);
     }
 
@@ -3661,15 +3512,13 @@ method get_magnet_types_in_bucket ($session, $bucket) {
     }
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $h = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'select magnet_types.mtype from magnet_types, magnets, buckets
+    my $h = $self->validate_sql_prepare_and_execute(        'select magnet_types.mtype from magnet_types, magnets, buckets
                 where magnet_types.id  = magnets.mtid and
                       magnets.bucketid = buckets.id and
                       buckets.id       = ?
                 group by magnet_types.mtype
                 order by magnet_types.mtype;',
-        $bucketid );                                  # PROFILE BLOCK STOP
-
+        $bucketid );
     while ( my $row = $h->fetchrow_arrayref ) {
         push @result, ($row->[0]);
     }
@@ -3696,10 +3545,8 @@ method clear_bucket ($session, $bucket) {
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
 
-    $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'delete from matrix where matrix.bucketid = ?;',
-        $bucketid );                          # PROFILE BLOCK STOP
-    $self->db_update_cache( $session, $bucket );
+    $self->validate_sql_prepare_and_execute(        'delete from matrix where matrix.bucketid = ?;',
+        $bucketid );    $self->db_update_cache( $session, $bucket );
 
     return 1;
 }
@@ -3717,18 +3564,14 @@ method clear_magnets ($session) {
 
     for my $bucket (keys %{$db_bucketid->{$userid}}) {
         my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-        $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-            'delete from magnets where magnets.bucketid = ?;',
-            $bucketid );                          # PROFILE BLOCK STOP
-
+        $self->validate_sql_prepare_and_execute(            'delete from magnets where magnets.bucketid = ?;',
+            $bucketid );
         # Change status of the magnetized message in this bucket
 
-        $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-            'update history set magnetid = 0
+        $self->validate_sql_prepare_and_execute(            'update history set magnetid = 0
                     where bucketid = ? and
                           userid   = ?;',
-            $bucketid, $userid );                 # PROFILE BLOCK STOP
-    }
+            $bucketid, $userid );    }
 
     return 1;
 }
@@ -3755,15 +3598,13 @@ method get_magnets ($session, $bucket, $type) {
     return 0 if ( !defined( $type ) );
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $h = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'select magnets.val from magnets, magnet_types
+    my $h = $self->validate_sql_prepare_and_execute(        'select magnets.val from magnets, magnet_types
                 where magnets.bucketid   = ? and
                       magnets.id        != 0 and
                       magnet_types.id    = magnets.mtid and
                       magnet_types.mtype = ?
                 order by magnets.val;',
-        $bucketid, $type );                           # PROFILE BLOCK STOP
-
+        $bucketid, $type );
     while ( my $row = $h->fetchrow_arrayref ) {
         push @result, ($row->[0]);
     }
@@ -3791,19 +3632,15 @@ method create_magnet ($session, $bucket, $type, $text) {
     }
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $result = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'select magnet_types.id from magnet_types
+    my $result = $self->validate_sql_prepare_and_execute(        'select magnet_types.id from magnet_types
                 where magnet_types.mtype = ?;',
-        $type )->fetchrow_arrayref;                        # PROFILE BLOCK STOP
-
+        $type )->fetchrow_arrayref;
     my $mtid = $result->[0];
     return 0 if ( !defined( $mtid ) );
 
-    $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'insert into magnets ( bucketid, mtid, val )
+    $self->validate_sql_prepare_and_execute(        'insert into magnets ( bucketid, mtid, val )
                       values (        ?,    ?,   ? );',
-        $bucketid, $mtid, $text );            # PROFILE BLOCK STOP
-
+        $bucketid, $mtid, $text );
     return 1;
 }
 
@@ -3820,10 +3657,8 @@ method get_magnet_types ($session) {
 
     my %result;
 
-    my $h = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'select magnet_types.mtype, magnet_types.header
-                from magnet_types order by mtype;' ); # PROFILE BLOCK STOP
-
+    my $h = $self->validate_sql_prepare_and_execute(        'select magnet_types.mtype, magnet_types.header
+                from magnet_types order by mtype;' );
     while ( my $row = $h->fetchrow_arrayref ) {
         $result{$row->[0]} = $row->[1];
     }
@@ -3852,32 +3687,26 @@ method delete_magnet ($session, $bucket, $type, $text) {
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
 
-    my $result = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'select magnets.id from magnets, magnet_types
+    my $result = $self->validate_sql_prepare_and_execute(        'select magnets.id from magnets, magnet_types
                 where magnets.mtid       = magnet_types.id and
                       magnets.bucketid   = ? and
                       magnets.val        = ? and
                       magnet_types.mtype = ?;',
-        $bucketid, $text, $type )->fetchrow_arrayref;      # PROFILE BLOCK STOP
-
+        $bucketid, $text, $type )->fetchrow_arrayref;
     return 0 if ( !defined( $result ) );
 
     my $magnetid = $result->[0];
 
     return 0 if ( !defined( $magnetid ) );
 
-    $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'delete from magnets where id = ?;',
-        $magnetid );                          # PROFILE BLOCK STOP
-
+    $self->validate_sql_prepare_and_execute(        'delete from magnets where id = ?;',
+        $magnetid );
     # Change status of the magnetized message by this magnet
 
-    $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'update history set magnetid = 0
+    $self->validate_sql_prepare_and_execute(        'update history set magnetid = 0
                 where magnetid = ? and
                       userid   = ?;',
-        $magnetid, $userid );                 # PROFILE BLOCK STOP
-
+        $magnetid, $userid );
     $history->force_requery();
 
     return 1;
@@ -3908,13 +3737,11 @@ method magnet_count ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    my $result = $self->validate_sql_prepare_and_execute(  # PROFILE BLOCK START
-        'select count(*) from magnets, buckets
+    my $result = $self->validate_sql_prepare_and_execute(        'select count(*) from magnets, buckets
                 where buckets.userid   = ? and
                       magnets.id      != 0 and
                       magnets.bucketid = buckets.id;',
-        $userid )->fetchrow_arrayref;                      # PROFILE BLOCK STOP
-
+        $userid )->fetchrow_arrayref;
     if ( defined( $result ) ) {
         return $result->[0];
     } else {
@@ -3939,9 +3766,7 @@ method add_stopword ($session, $stopword) {
 
     # Pass language parameter to add_stopword()
 
-    return $parser->mangle()->add_stopword(           # PROFILE BLOCK START
-        $stopword, $self->module_config_( 'html', 'language' ) ); # PROFILE BLOCK STOP
-}
+    return $parser->mangle()->add_stopword(        $stopword, $self->module_config_( 'html', 'language' ) );}
 
 method remove_stopword ($session, $stopword) {
     my $userid = $self->valid_session_key( $session );
@@ -3949,9 +3774,7 @@ method remove_stopword ($session, $stopword) {
 
     # Pass language parameter to remove_stopword()
 
-    return $parser->mangle()->remove_stopword(        # PROFILE BLOCK START
-        $stopword, $self->module_config_( 'html', 'language' ) ); # PROFILE BLOCK STOP
-}
+    return $parser->mangle()->remove_stopword(        $stopword, $self->module_config_( 'html', 'language' ) );}
 
 
 =head2 db_quote

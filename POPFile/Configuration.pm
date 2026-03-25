@@ -388,8 +388,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
         # config_ if accessed from the config module or through
         # module_config_ from outside
 
-        my %upgrades = ( # PROFILE BLOCK START
-
+        my %upgrades = (
                          # Parameters that are now handled by Classifier::Bayes
 
                          'corpus',                   'bayes_corpus',
@@ -451,8 +450,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
                          'html_update_check',        'GLOBAL_update_check',
                          'html_last_update_check',   'GLOBAL_last_update_check',
 
-        ); # PROFILE BLOCK STOP
-
+        );
         if ( defined( $upgrades{$parameter} ) ) {
             return $upgrades{$parameter};
         } else {
@@ -490,11 +488,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
                     # so that the Japanese users can use insert.pl
                     # etc. which rely on knowing the language
 
-                    if (defined($configuration_parameters{$parameter}) ||  # PROFILE BLOCK START
-                        ( $parameter eq 'html_language' ) ) {             # PROFILE BLOCK STOP
-                        $configuration_parameters{$parameter}{value} =   # PROFILE BLOCK START
-                            $value;                                       # PROFILE BLOCK STOP
-                    } else {
+                    if (defined($configuration_parameters{$parameter}) ||                        ( $parameter eq 'html_language' ) ) {                        $configuration_parameters{$parameter}{value} =                            $value;                    } else {
                         $deprecated_parameters{$parameter} = $value;
                     }
                 }
@@ -579,10 +573,8 @@ class POPFile::Configuration :isa(POPFile::Module) {
     method path_join__ ($left, $right, $sandbox = undef) {
         $sandbox = 1 if ( !defined( $sandbox ) );
 
-        if ( ( $right =~ /^\// ) ||               # PROFILE BLOCK START
-             ( $right =~ /^[A-Za-z]:[\/\\]/ ) ||
-             ( $right =~ /\\\\/ ) ) {             # PROFILE BLOCK STOP
-            if ( $sandbox ) {
+        if ( ( $right =~ /^\// ) ||             ( $right =~ /^[A-Za-z]:[\/\\]/ ) ||
+             ( $right =~ /\\\\/ ) ) {            if ( $sandbox ) {
                 $self->log_( 0, "Attempt to access path $right outside sandbox" );
                 return undef;
             } else {
@@ -643,9 +635,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method is_default ($name) {
-        return ( $configuration_parameters{$name}{value} eq   # PROFILE BLOCK START
-                 $configuration_parameters{$name}{default} ); # PROFILE BLOCK STOP
-    }
+        return ( $configuration_parameters{$name}{value} eq                 $configuration_parameters{$name}{default} );    }
 
     # GETTERS / SETTERS
 

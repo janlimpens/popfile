@@ -133,9 +133,7 @@ delivers pending messages to registered waiters.
                  $self->log_( 2, "Message $type ($flat) ready for delivery" );
 
                  for my $waiter (@{$waiters{$type}}) {
-                    $self->log_( 2, "Delivering message $type ($flat) to " . # PROFILE BLOCK START
-                        $waiter->name() );                                   # PROFILE BLOCK STOP
-
+                    $self->log_( 2, "Delivering message $type ($flat) to " .                        $waiter->name() );
                     $waiter->deliver( $type, @message );
                 }
             }
