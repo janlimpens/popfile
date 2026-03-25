@@ -56,9 +56,9 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
     method initialize {
         $self->config_( 'enabled', 1 );
         $self->config_( 'force_fork', 1 );
-        $self->config_( 'port', 110 );
+        $self->config_( 'port', 1110 );
         $self->config_( 'secure_server', '' );
-        $self->config_( 'secure_port', 110 );
+        $self->config_( 'secure_port', 995 );
         $self->config_( 'local', 1 );
         $self->config_( 'toptoo', 0 );
         $self->config_( 'separator', ':' );
