@@ -539,7 +539,7 @@ method commit_history__ {
 
         foreach my $h (@sortable) {
             $sort_headers{$h} =           # PROFILE BLOCK START
-                 $classifier->parser__()->decode_string(
+                 $classifier->parser()->decode_string(
                      ${$header{$h}}[0] ); # PROFILE BLOCK STOP
             $sort_headers{$h} = lc($sort_headers{$h} || '');
             $sort_headers{$h} =~ s/[\"<>]//g;
@@ -554,7 +554,7 @@ method commit_history__ {
 
         foreach my $h (@required) {
             ${$header{$h}}[0] =           # PROFILE BLOCK START
-                 $classifier->parser__()->decode_string(
+                 $classifier->parser()->decode_string(
                      ${$header{$h}}[0] ); # PROFILE BLOCK STOP
 
             if ( !defined ${$header{$h}}[0] || ${$header{$h}}[0] =~ /^\s*$/ ) {

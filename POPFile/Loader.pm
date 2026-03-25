@@ -404,7 +404,7 @@ class POPFile::Loader {
         $components{classifier}{bayes}->history(
             $components{core}{history} );
 
-        $components{classifier}{bayes}->parser__()->set_mangle(
+        $components{classifier}{bayes}->parser()->set_mangle(
             $components{classifier}{wordmangle} );
     }
 
