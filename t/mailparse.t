@@ -8,10 +8,10 @@ use Test2::V0;
 use TestHelper;
 use FindBin qw($Bin);
 
-my ($config, $logger, $mq, $tmpdir) = TestHelper::setup();
+my ($config, $mq, $tmpdir) = TestHelper::setup();
 
 # MailParse requires WordMangle to be injected via mangle()
-my $wm = TestHelper::make_module('Classifier::WordMangle', $config, $logger, $mq);
+my $wm = TestHelper::make_module('Classifier::WordMangle', $config, $mq);
 $wm->start();
 
 # MailParse itself does not extend POPFile::Module and has no configuration

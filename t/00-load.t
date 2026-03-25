@@ -24,7 +24,6 @@ my @modules = qw(
     Proxy::POP3
     Proxy::SMTP
     Proxy::NNTP
-    UI::HTTP
     UI::Mojo
     Services::Classifier
     POPFile::Loader

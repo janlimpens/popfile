@@ -7,11 +7,11 @@ use lib "$Bin/lib", "$Bin/..";
 use Test2::V0;
 use TestHelper;
 
-my ($config, $logger, $mq, $tmpdir) = TestHelper::setup();
+my ($config, $mq, $tmpdir) = TestHelper::setup();
 
 # WordMangle::start() only calls load_stopwords() which gracefully
 # fails if the stopwords file is absent; no PID or DB setup needed.
-my $wm = TestHelper::make_module('Classifier::WordMangle', $config, $logger, $mq);
+my $wm = TestHelper::make_module('Classifier::WordMangle', $config, $mq);
 $wm->start();
 
 subtest 'basic normalisation' => sub {

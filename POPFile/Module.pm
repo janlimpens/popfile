@@ -16,17 +16,17 @@ package POPFile::Module;
 
 use Object::Pad;
 use IO::Select;
+use POPFile::Role::Logging;
 
 # Class-wide slurp buffer — keyed by filehandle stringification so that
 # handles can be shared between objects without losing buffered data.
 
 my %slurp_data;
 
-class POPFile::Module :repr(HASH) {
+class POPFile::Module :repr(HASH) :does(POPFile::Role::Logging) {
 
     # References to core infrastructure (injected by Loader::CORE_link_components)
     field $configuration = 0;
-    field $logger        = 0;
     field $mq            = 0;
 
     # Module identity
@@ -103,22 +103,6 @@ Fork-lifecycle and message-queue hooks — see individual subclass docs.
     method deliver ($type, @message) {}
 
 =head1 PROTECTED HELPERS
-
-=head2 log_
-
-Log a message through the logger.
-
-    $self->log_( $level, $message );
-
-C<$level> is 0 (critical), 1 (verbose), or 2 (maximum verbosity).
-
-=cut
-
-    method log_ ($level, $message) {
-        return unless ref $logger;
-        my ( undef, undef, $line ) = caller;
-        $logger->debug( $level, "$name: $line: $message" );
-    }
 
 =head2 config_
 
@@ -345,7 +329,7 @@ Returns C<undef> on timeout or closed connection.
 
 =head1 ACCESSORS
 
-=head2 configuration / logger / mq / name / alive / forker / pipeready / version
+=head2 configuration / mq / name / alive / forker / pipeready / version
 
 Standard getter/setters injected by C<POPFile::Loader>.
 Call with no argument to get; call with a value to set.
@@ -360,11 +344,6 @@ Call with no argument to get; call with a value to set.
     method configuration ($val = undef) {
         $configuration = $val if defined $val;
         return $configuration;
-    }
-
-    method logger ($val = undef) {
-        $logger = $val if defined $val;
-        return $logger;
     }
 
     method name ($val = undef) {
@@ -397,9 +376,6 @@ Call with no argument to get; call with a value to set.
         return $version;
     }
 
-    method last_ten_log_entries {
-        return $logger->last_ten();
-    }
 }
 
 1;

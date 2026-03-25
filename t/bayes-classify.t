@@ -8,14 +8,14 @@ use Test2::V0;
 use TestHelper;
 use FindBin qw($Bin);
 
-my ($config, $logger, $mq, $tmpdir) = TestHelper::setup();
+my ($config, $mq, $tmpdir) = TestHelper::setup();
 
 # Wire up WordMangle
-my $wm = TestHelper::make_module('Classifier::WordMangle', $config, $logger, $mq);
+my $wm = TestHelper::make_module('Classifier::WordMangle', $config, $mq);
 $wm->start();
 
 # Wire up Bayes (which creates MailParse internally)
-my $bayes = TestHelper::make_module('Classifier::Bayes', $config, $logger, $mq);
+my $bayes = TestHelper::make_module('Classifier::Bayes', $config, $mq);
 
 # Bayes uses get_root_path_() to find popfile.sql, so POPFILE_ROOT
 # (via Configuration) must point to the repo root – TestHelper sets this.

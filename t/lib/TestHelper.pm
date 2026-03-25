@@ -3,8 +3,9 @@ package TestHelper;
 # ---------------------------------------------------------------------------
 # Lightweight test harness for POPFile modules.
 #
-# Provides a minimal wired environment (Configuration + stub Logger/MQ)
+# Provides a minimal wired environment (Configuration + stub MQ)
 # so individual modules can be unit-tested without the full Loader stack.
+# Logging goes through Log::Any (Null adapter by default in tests).
 # ---------------------------------------------------------------------------
 
 use strict;
@@ -28,9 +29,6 @@ our $REPO_ROOT = abs_path("$Bin/..");
 # Returns ($config, $logger, $mq, $tmpdir)
 # ---------------------------------------------------------------------------
 sub setup {
-    # Stub logger – silences all log output during tests
-    my $logger = bless { messages => [] }, 'TestHelper::Logger';
-
     # Stub MQ – records posted messages but does nothing
     my $mq = bless { posted => [], registered => {} }, 'TestHelper::MQ';
 
@@ -38,7 +36,6 @@ sub setup {
     require POPFile::Configuration;
     my $config = POPFile::Configuration->new();
     $config->configuration($config);   # Config points to itself
-    $config->logger($logger);
     $config->mq($mq);
 
     # Temp dir for user files (DB, stopwords, pid, cfg)
@@ -51,7 +48,7 @@ sub setup {
     $config->initialize();
     $config->started(1);
 
-    return ($config, $logger, $mq, $tmpdir);
+    return ($config, $mq, $tmpdir);
 }
 
 # ---------------------------------------------------------------------------
@@ -61,9 +58,8 @@ sub setup {
 # subclass, mirroring what Loader::CORE_link_components() does.
 # ---------------------------------------------------------------------------
 sub wire {
-    my ($mod, $config, $logger, $mq) = @_;
+    my ($mod, $config, $mq) = @_;
     $mod->configuration($config);
-    $mod->logger($logger);
     $mod->mq($mq);
     return $mod;
 }
@@ -75,11 +71,11 @@ sub wire {
 # Does NOT call start() – call that yourself if needed.
 # ---------------------------------------------------------------------------
 sub make_module {
-    my ($class, $config, $logger, $mq) = @_;
+    my ($class, $config, $mq) = @_;
     (my $file = $class) =~ s{::}{/}g;
     require "$file.pm";
     my $mod = $class->new();
-    wire($mod, $config, $logger, $mq);
+    wire($mod, $config, $mq);
     $mod->initialize();
     return $mod;
 }
@@ -87,15 +83,6 @@ sub make_module {
 # ---------------------------------------------------------------------------
 # Stub Logger
 # ---------------------------------------------------------------------------
-package TestHelper::Logger;
-
-sub debug {
-    my ($self, $level, $message) = @_;
-    push @{ $self->{messages} }, $message;
-}
-
-sub last_ten { return () }
-
 # ---------------------------------------------------------------------------
 # Stub MQ
 # ---------------------------------------------------------------------------

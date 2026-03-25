@@ -37,6 +37,7 @@ use locale;
 
 use Getopt::Long qw(:config pass_through);
 use IO::Handle;
+use Log::Any ();
 
 class POPFile::Loader {
 
@@ -228,9 +229,8 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_warning (@message) {
 
-        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0
-             && ref $components{core}{logger} ) {
-            $components{core}{logger}->debug( 0, "Perl warning: @message" );
+        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0 ) {
+            Log::Any->get_logger(category => 'POPFile')->warning("Perl warning: @message");
             warn @message;
         }
     }
@@ -246,9 +246,8 @@ class POPFile::Loader {
 
         print STDERR @message;
 
-        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0
-             && ref $components{core}{logger} ) {
-            $components{core}{logger}->debug( 0, "Perl fatal error : @message" );
+        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0 ) {
+            Log::Any->get_logger(category => 'POPFile')->error("Perl fatal error: @message");
         }
 
         $self->CORE_stop();
@@ -372,7 +371,7 @@ class POPFile::Loader {
 
         print "\n\nPOPFile Engine $version_string starting" if $debug;
 
-        # Give every module access to configuration, logger, version, and MQ.
+        # Give every module access to configuration, version, and MQ.
 
         foreach my $type (sort keys %components) {
             foreach my $name (sort keys %{$components{$type}}) {
@@ -380,9 +379,6 @@ class POPFile::Loader {
                     scalar($self->CORE_version()) );
                 $components{$type}{$name}->configuration(
                     $components{core}{config} );
-                $components{$type}{$name}->logger(
-                    $components{core}{logger} )
-                    if $name ne 'logger';
                 $components{$type}{$name}->mq(
                     $components{core}{mq} );
             }

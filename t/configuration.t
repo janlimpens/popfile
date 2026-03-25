@@ -8,7 +8,7 @@ use Test2::V0;
 use TestHelper;
 use File::Temp qw(tempfile tempdir);
 
-my ($config, $logger, $mq, $tmpdir) = TestHelper::setup();
+my ($config, $mq, $tmpdir) = TestHelper::setup();
 
 subtest 'parameter get/set' => sub {
     # Register a new parameter with a default value

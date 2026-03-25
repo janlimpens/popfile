@@ -13,6 +13,7 @@ requires 'HTML::Tagset',      '0';
 requires 'HTML::Template',    '0';
 requires 'MIME::Base64',      '0';
 requires 'MIME::QuotedPrint', '0';
+requires 'Log::Any',          '1.7';
 requires 'Object::Pad',       '0.800';
 requires 'Sort::Key::Natural','0';
 requires 'Mojolicious',       '9.0';
