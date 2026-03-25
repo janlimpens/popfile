@@ -14,7 +14,6 @@ use File::Temp qw(tempdir);
 use FindBin    qw($Bin);
 use Cwd        qw(abs_path);
 
-# The repo root is the directory containing t/
 our $REPO_ROOT = abs_path("$Bin/..");
 
 # ---------------------------------------------------------------------------
@@ -22,29 +21,23 @@ our $REPO_ROOT = abs_path("$Bin/..");
 #
 # Creates a minimal POPFile environment:
 #   - A real POPFile::Configuration wired to itself (bootstrapped)
-#   - A stub Logger with no-op debug()
 #   - A stub MQ with no-op post() and register()
 #   - A temporary user directory (cleaned up after the test)
 #
-# Returns ($config, $logger, $mq, $tmpdir)
+# Returns ($config, $mq, $tmpdir)
 # ---------------------------------------------------------------------------
 sub setup {
-    # Stub MQ – records posted messages but does nothing
     my $mq = bless { posted => [], registered => {} }, 'TestHelper::MQ';
 
-    # Real Configuration, bootstrapped to itself
     require POPFile::Configuration;
     my $config = POPFile::Configuration->new();
-    $config->set_configuration($config);   # Config points to itself
+    $config->set_configuration($config);
     $config->set_mq($mq);
 
-    # Temp dir for user files (DB, stopwords, pid, cfg)
     my $tmpdir = tempdir( CLEANUP => 1 );
     $config->set_popfile_root($REPO_ROOT);
     $config->set_popfile_user($tmpdir);
 
-    # Initialize registers default params; mark started so further
-    # calls to parameter() don't reset defaults
     $config->initialize();
     $config->set_started(1);
 
@@ -52,10 +45,7 @@ sub setup {
 }
 
 # ---------------------------------------------------------------------------
-# wire($module, $config, $logger, $mq)
-#
-# Injects the three infrastructure references into any POPFile::Module
-# subclass, mirroring what Loader::CORE_link_components() does.
+# wire($module, $config, $mq)
 # ---------------------------------------------------------------------------
 sub wire {
     my ($mod, $config, $mq) = @_;
@@ -65,10 +55,30 @@ sub wire {
 }
 
 # ---------------------------------------------------------------------------
-# make_module($class, $config, $logger, $mq)
+# configure_db($config)
+#
+# Overrides the Bayes DB connection to use an in-memory SQLite database,
+# or a real DB if TEST_DBCONNECT is set in the environment.
+# Must be called after Classifier::Bayes->initialize() and before start().
+# ---------------------------------------------------------------------------
+sub configure_db {
+    my ($config) = @_;
+    if ( defined $ENV{TEST_DBCONNECT} ) {
+        $config->parameter('bayes_dbconnect', $ENV{TEST_DBCONNECT});
+        $config->parameter('bayes_dbuser',    $ENV{TEST_DBUSER}   // '');
+        $config->parameter('bayes_dbauth',    $ENV{TEST_DBAUTH}   // '');
+        $config->parameter('bayes_database',  $ENV{TEST_DATABASE} // 'popfile_test');
+    } else {
+        $config->parameter('bayes_dbconnect', 'dbi:SQLite:dbname=:memory:');
+    }
+}
+
+# ---------------------------------------------------------------------------
+# make_module($class, $config, $mq)
 #
 # Convenience: require $class, construct, wire, initialize.
-# Does NOT call start() – call that yourself if needed.
+# For Classifier::Bayes, also injects a stub history and configures the DB.
+# Does NOT call start() — call that yourself if needed.
 # ---------------------------------------------------------------------------
 sub make_module {
     my ($class, $config, $mq) = @_;
@@ -77,18 +87,90 @@ sub make_module {
     my $mod = $class->new();
     wire($mod, $config, $mq);
     $mod->initialize();
-    return $mod;
+    if ( $class eq 'Classifier::Bayes' ) {
+        $mod->set_history( bless {}, 'TestHelper::History' );
+        configure_db($config);
+    }
+    return $mod
 }
 
 # ---------------------------------------------------------------------------
-# Stub Logger
+# setup_bayes($config, $mq)
+#
+# Convenience: create and start a WordMangle + Bayes pair.
+# Returns ($wm, $bayes).
 # ---------------------------------------------------------------------------
+sub setup_bayes {
+    my ($config, $mq) = @_;
+    my $wm = make_module('Classifier::WordMangle', $config, $mq);
+    $wm->start();
+    my $bayes = make_module('Classifier::Bayes', $config, $mq);
+    $bayes->parser()->set_mangle($wm);
+    $bayes->start();
+    return ($wm, $bayes)
+}
+
+# ---------------------------------------------------------------------------
+# reset_db($bayes, $config)
+#
+# Truncates all user-generated data from the test database, leaving only
+# the schema seed rows (admin user, pseudo-buckets, magnet sentinel, etc.).
+# Returns a fresh session key.
+# ---------------------------------------------------------------------------
+sub reset_db {
+    my ($bayes, $config) = @_;
+    my $db = $bayes->db();
+    $db->do('delete from history');
+    $db->do('delete from matrix');
+    $db->do('delete from words');
+    $db->do('delete from bucket_params');
+    $db->do('delete from user_params');
+    $db->do('delete from magnets where id != 0');
+    $db->do('delete from buckets where pseudo = 0');
+    my $session = $bayes->get_session_key('admin', '');
+    $bayes->db_update_cache($session);
+    return $session
+}
+
+# ---------------------------------------------------------------------------
+# load_fixture($bayes, $session, $fixture)
+#
+# $fixture may be:
+#   - a string: path relative to t/fixtures/, without .pl extension
+#   - a hashref: { buckets => [...], train => { bucket => [\@files] } }
+#
+# File paths in train lists are resolved relative to t/fixtures/.
+# ---------------------------------------------------------------------------
+sub load_fixture {
+    my ($bayes, $session, $fixture) = @_;
+    if ( !ref $fixture ) {
+        my $path = "$REPO_ROOT/t/fixtures/$fixture.pl";
+        $fixture = do $path
+            or die "Cannot load fixture '$fixture': " . ($@ || $!);
+    }
+    my $fixture_dir = "$REPO_ROOT/t/fixtures";
+    for my $bucket ( @{ $fixture->{buckets} // [] } ) {
+        $bayes->create_bucket($session, $bucket);
+    }
+    for my $bucket ( keys %{ $fixture->{train} // {} } ) {
+        for my $filename ( @{ $fixture->{train}{$bucket} } ) {
+            $bayes->add_message_to_bucket($session, $bucket, "$fixture_dir/$filename");
+        }
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Stub History
+# ---------------------------------------------------------------------------
+package TestHelper::History;
+
+sub force_requery {}
+
 # ---------------------------------------------------------------------------
 # Stub MQ
 # ---------------------------------------------------------------------------
 package TestHelper::MQ;
 
-# Synchronous MQ: deliver immediately to all registered waiters.
 sub post {
     my ($self, $type, @msg) = @_;
     push @{ $self->{posted} }, { type => $type, msg => \@msg };

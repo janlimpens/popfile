@@ -354,7 +354,12 @@ Called when POPFile is terminating
 =cut
 method stop {
     $self->db_disconnect();
-    $parser = undef;
+    $db_bucketid     = {};
+    $db_parameters   = {};
+    $db_parameterid  = {};
+    $db_bucketcount  = {};
+    $db_bucketunique = {};
+    $parser = Classifier::MailParse->new();
 }
 
 =head2 classified
@@ -3935,8 +3940,8 @@ method check_for_nullbytes ($string) {
 #|       |_____| |       |       __|__ |_____ |______   |     | |       __|__
 #
 
-method set_history ($history) {
-    $history = $history;
+method set_history ($h) {
+    $history = $h;
 }
 
 method parser {
