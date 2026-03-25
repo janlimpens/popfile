@@ -175,21 +175,24 @@ return $value    # no semicolon
   - methods
 
 ### General
+- use qw()
+- NEVER align vertically.
+- Avoid multiple commands on a line. as a general rule, use on ; per line olny.
+- fix `@{$bla}` (and similar) to `$bla->@*` (and so on)
 - make use of fat comma, where it makes sense 
-
-```perl
-$self->apply(username => $email);
-```
+  ```perl
+  $self->apply(username => $email);
+  ```
 - user reader/writer abstractions
 - use roles rather than inheritance, where this is possible
 
 ### Example
 ```perl
-use Init qw(:class :signatures :bool);
+use Init qw(:class :signatures :bool); # put feature selection in a module
 
 class MyClass; # no {brackets} unless required
 
-use Another::Module;
+use Another::Module; # sorted alphabetically
 use Other::Module;
 
 ADJUST {
@@ -199,18 +202,18 @@ ADJUST {
 field $foo :param=123 :reader;
 field $bar :param=true :reader :writer;
 
-method first_method($param, %args) {
+method first_method($param, %args) { # I like greedy %args
     return $self->second_method()
-        if $args{condition};
+        if $args{condition}; # break and ident
     my $result = $self->process($arg);
-    return $result
+    return $result # no semicolon on tailing returns
 }
 
 method second_method() {
     my $multi = 2;
     my $transform = sub($x) { $x * $multi };
     my @items = map { $transform->($_) } @source;
-    return \@items
+    return $self->first_method(\@items) # always return, even nothing, avoid returning undef
 }
 
 my %hash = (
@@ -220,4 +223,4 @@ my %hash = (
         and => 'there' } );
 ```
 
-don't be overly chatty or explain too much, don't jump ahead, but go one step at a time, unless told otherwise. don't execute db queries unless allowed.
+don't be overly chatty or explain too much, don't jump ahead, but go one step at a time, unless told otherwise. don't execute db queries unless allowed. in test setting, you may.
