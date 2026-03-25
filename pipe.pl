@@ -53,15 +53,15 @@ if ( $#ARGV == -1 ) {
     # we are not loading the UI, they are not defined at this point
 
     my $c = $POPFile->get_module('POPFile::Config');
-    $c->module_config_( 'html', 'local', 1 );
-    $c->module_config_( 'html', 'port',  8080 );
+    $c->module_config('html', 'local', 1 );
+    $c->module_config('html', 'port',  8080 );
 
     if ( $POPFile->CORE_config() ) {
 
         # Prevent the tool from finding another copy of POPFile running
 
-        my $current_piddir = $c->config_( 'piddir' );
-        $c->config_( 'piddir', $c->config_( 'piddir' ) . 'pipe.pl.' );
+        my $current_piddir = $c->config('piddir' );
+        $c->config('piddir', $c->config('piddir' ) . 'pipe.pl.' );
 
         $POPFile->CORE_start();
 
@@ -70,7 +70,7 @@ if ( $#ARGV == -1 ) {
 
         $b->classify_and_modify( $session, \*STDIN, \*STDOUT, 1, '', 0, 1, "\n" );
 
-        $c->config_( 'piddir', $current_piddir );
+        $c->config('piddir', $current_piddir );
 
         # Reload configuration file ( to avoid updating configurations )
 

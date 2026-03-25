@@ -136,14 +136,14 @@ sub handle_message
     # Convert the two files into streams that can be passed to the
     # classifier
 
-    open IN, "<$in" or return undef;
-    open OUT, ">$out" or return undef;
+    open my $in_fh,  '<', $in  or return undef;
+    open my $out_fh, '>', $out or return undef;
 
     my @result = $self->{c}->classify_and_modify(
-        $session, \*IN, \*OUT, undef );
+        $session, $in_fh, $out_fh, undef );
 
-    close OUT;
-    close IN;
+    close $out_fh;
+    close $in_fh;
 
     return @result;
 }

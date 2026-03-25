@@ -1,8 +1,6 @@
-# POPFILE LOADABLE MODULE
 package Classifier::WordMangle;
 
-use POPFile::Module;
-@ISA = ("POPFile::Module");
+use Object::Pad;
 
 # ----------------------------------------------------------------------------
 #
@@ -27,215 +25,142 @@ use POPFile::Module;
 #
 # ----------------------------------------------------------------------------
 
-use strict;
-use warnings;
 use locale;
 
 # These are used for Japanese support
 
-my $ascii = '[\x00-\x7F]'; # ASCII chars
-my $two_bytes_euc_jp = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])'; # 2bytes EUC-JP chars
-my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])'; # 3bytes EUC-JP chars
-my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)"; # EUC-JP chars
+my $ascii             = '[\x00-\x7F]';
+my $two_bytes_euc_jp  = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';
+my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';
+my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)";
 
-#----------------------------------------------------------------------------
-# new
-#
-#   Class new() function
-#----------------------------------------------------------------------------
+class Classifier::WordMangle :isa(POPFile::Module) {
+    field %stop__;
 
-sub new
-{
-    my $type = shift;
-    my $self = POPFile::Module->new();
-
-    $self->{stop__} = {};
-
-    bless $self, $type;
-
-    $self->name( 'wordmangle' );
-
-    return $self;
-}
-
-sub start
-{
-    my ( $self ) = @_;
-
-    $self->load_stopwords();
-
-    return 1;
-}
-
-# ----------------------------------------------------------------------------
-#
-# load_stopwords, save_stopwords - load and save the stop word list in the stopwords file
-#
-# ----------------------------------------------------------------------------
-sub load_stopwords
-{
-    my ($self) = @_;
-
-    if ( open STOPS, '<' . $self->get_user_path_( 'stopwords' ) ) {
-        delete $self->{stop__};
-        while ( <STOPS> ) {
-            s/[\r\n]//g;
-            $self->{stop__}{$_} = 1;
-        }
-
-        close STOPS;
-    } else { 
-        $self->log_( 0, "Failed to open stopwords file" );
-    }
-}
-
-sub save_stopwords
-{
-    my ($self) = @_;
-
-    if ( open STOPS, '>' . $self->get_user_path_( 'stopwords' ) ) {
-        for my $word (keys %{$self->{stop__}}) {
-            print STOPS "$word\n";
-        }
-
-        close STOPS;
-    }
-}
-
-# ----------------------------------------------------------------------------
-#
-# mangle
-#
-# Mangles a word into either the empty string to indicate that the word should be ignored
-# or the canonical form
-#
-# $word         The word to either mangle into a nice form, or return empty string if this word
-#               is to be ignored
-# $allow_colon  Set to any value allows : inside a word, this is used when mangle is used
-#               while loading the corpus in Bayes.pm but is not used anywhere else, the colon
-#               is used as a separator to indicate special words found in certain lines
-#               of the mail header
-#
-# $ignore_stops If defined ignores the stop word list
-#
-# ----------------------------------------------------------------------------
-sub mangle
-{
-    my ($self, $word, $allow_colon, $ignore_stops) = @_;
-
-    # All words are treated as lowercase
-
-    my $lcword = lc($word);
-
-    return '' unless $lcword;
-
-    # Stop words are ignored
-
-    return '' if ( ( ( $self->{stop__}{$lcword} ) ||   # PROFILE BLOCK START
-                     ( $self->{stop__}{$word} ) ) &&
-                   ( !defined( $ignore_stops ) ) );    # PROFILE BLOCK STOP
-
-    # Remove characters that would mess up a Perl regexp and replace with .
-
-    $lcword =~ s/(\+|\/|\?|\*|\||\(|\)|\[|\]|\{|\}|\^|\$|\.|\\)/\./g;
-
-    # Long words are ignored also
-
-    return '' if ( length($lcword) > 45 );
-
-    # Ditch long hex numbers
-
-    return '' if ( $lcword =~ /^[A-F0-9]{8,}$/i );
-
-    # Colons are forbidden inside words, we should never get passed a word
-    # with a colon in it here, but if we do then we strip the colon.  The colon
-    # is used as a separator between a special identifier and a word, see MailParse.pm
-    # for more details
-
-    $lcword =~ s/://g if ( !defined( $allow_colon ) );
-
-    return ($lcword =~ /:/ )?$word:$lcword;
-}
-
-# ----------------------------------------------------------------------------
-#
-# add_stopword, remove_stopword
-#
-# Adds or removes a stop word
-#
-# $stopword    The word to add or remove
-# $lang        The current language
-#
-# Returns 1 if successful, or 0 for a bad stop word
-# ----------------------------------------------------------------------------
-
-sub add_stopword
-{
-    my ( $self, $stopword, $lang ) = @_;
-
-    # In Japanese mode, reject non EUC Japanese characters.
-
-    if ( $lang eq 'Nihongo') {
-        if ( $stopword !~ /^($euc_jp)+$/o ) {
-            return 0;
-        }
-    } else {
-        if ( ( $stopword !~ /:/ ) && ( $stopword =~ /[^[:alpha:]\-_\.\@0-9]/i ) ) {
-            return 0;
-        }
+    BUILD {
+        $self->set_name('wordmangle');
     }
 
-    $stopword = $self->mangle( $stopword, 1, 1 );
-
-    if ( $stopword ne '' ) {
-        $self->{stop__}{$stopword} = 1;
-        $self->save_stopwords();
-
-       return 1;
-    }
-
-    return 0;
-}
-
-sub remove_stopword
-{
-    my ( $self, $stopword, $lang ) = @_;
-
-    # In Japanese mode, reject non EUC Japanese characters.
-
-    if ( $lang eq 'Nihongo') {
-        if ( $stopword !~ /^($euc_jp)+$/o ) {
-            return 0;
-        }
-    } else {
-        if ( ( $stopword !~ /:/ ) && ( $stopword =~ /[^[:alpha:]\-_\.\@0-9]/i ) ) {
-            return 0;
-        }
-    }
-
-    $stopword = $self->mangle( $stopword, 1, 1 );
-
-    if ( $stopword ne '' ) {
-        delete $self->{stop__}{$stopword};
-        $self->save_stopwords();
-
+    method start {
+        $self->load_stopwords();
         return 1;
     }
 
-    return 0;
-}
-
-# GETTER/SETTERS
-
-sub stopwords
-{
-    my ( $self, $value ) = @_;
-
-    if ( defined( $value ) ) {
-        %{$self->{stop__}} = %{$value};
+    # -------------------------------------------------------------------------
+    #
+    # load_stopwords, save_stopwords
+    #
+    # Load and save the stop word list from/to the stopwords file.
+    #
+    # -------------------------------------------------------------------------
+    method load_stopwords {
+        if ( open my $stops, '<', $self->get_user_path('stopwords') ) {
+            %stop__ = ();
+            while ( <$stops> ) {
+                s/[\r\n]//g;
+                $stop__{$_} = 1;
+            }
+            close $stops;
+        } else {
+            $self->log_msg(0, 'Failed to open stopwords file' );
+        }
     }
 
-    return keys %{$self->{stop__}};
+    method save_stopwords {
+        if ( open my $stops, '>', $self->get_user_path('stopwords') ) {
+            for my $word ( keys %stop__ ) {
+                print $stops "$word\n";
+            }
+            close $stops;
+        }
+    }
+
+    # -------------------------------------------------------------------------
+    #
+    # mangle
+    #
+    # Mangles a word into its canonical form or returns '' to indicate the
+    # word should be ignored.
+    #
+    # $word           The word to mangle
+    # $allow_colon    If set, allows ':' inside a word (for header pseudowords)
+    # $ignore_stops   If set, ignores the stop word list
+    #
+    # -------------------------------------------------------------------------
+    method mangle ($word, $allow_colon = undef, $ignore_stops = undef) {
+        my $lcword = lc($word);
+
+        return '' unless $lcword;
+
+        return '' if ( ( $stop__{$lcword} || $stop__{$word} )
+                       && !defined($ignore_stops) );
+
+        $lcword =~ s/(\+|\/|\?|\*|\||\(|\)|\[|\]|\{|\}|\^|\$|\.|\\)/\./g;
+
+        return '' if length($lcword) > 45;
+
+        return '' if $lcword =~ /^[A-F0-9]{8,}$/i;
+
+        $lcword =~ s/://g if !defined($allow_colon);
+
+        return ( $lcword =~ /:/ ) ? $word : $lcword;
+    }
+
+    # -------------------------------------------------------------------------
+    #
+    # add_stopword, remove_stopword
+    #
+    # Add or remove a stop word.  Returns 1 on success, 0 for invalid input.
+    #
+    # $stopword    The word to add or remove
+    # $lang        The current language
+    #
+    # -------------------------------------------------------------------------
+    method add_stopword ($stopword, $lang = '') {
+        if ( $lang eq 'Nihongo' ) {
+            return 0 if $stopword !~ /^($euc_jp)+$/o;
+        } else {
+            return 0 if ( $stopword !~ /:/ )
+                     && ( $stopword =~ /[^[:alpha:]\-_\.\@0-9]/i );
+        }
+
+        $stopword = $self->mangle( $stopword, 1, 1 );
+
+        if ( $stopword ne '' ) {
+            $stop__{$stopword} = 1;
+            $self->save_stopwords();
+            return 1;
+        }
+
+        return 0;
+    }
+
+    method remove_stopword ($stopword, $lang = '') {
+        if ( $lang eq 'Nihongo' ) {
+            return 0 if $stopword !~ /^($euc_jp)+$/o;
+        } else {
+            return 0 if ( $stopword !~ /:/ )
+                     && ( $stopword =~ /[^[:alpha:]\-_\.\@0-9]/i );
+        }
+
+        $stopword = $self->mangle( $stopword, 1, 1 );
+
+        if ( $stopword ne '' ) {
+            delete $stop__{$stopword};
+            $self->save_stopwords();
+            return 1;
+        }
+
+        return 0;
+    }
+
+    # -------------------------------------------------------------------------
+    # stopwords accessor — returns list of current stopwords
+    # -------------------------------------------------------------------------
+    method stopwords ($value = undef) {
+        %stop__ = %{$value} if defined $value;
+        return keys %stop__;
+    }
 }
 
 1;

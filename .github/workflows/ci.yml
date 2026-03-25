@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, 'feat/**' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        perl-version: ['5.38', '5.40']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Perl ${{ matrix.perl-version }}
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl-version }}
+
+      - name: Install dependencies
+        run: cpanm --notest --installdeps . && cpanm --notest Test2::V0 Test::MockObject
+
+      - name: Run tests
+        run: perl -I. -MApp::Prove -e 'App::Prove->new->run' -- -lr t/
+
+      - name: Syntax check all modules
+        run: |
+          find . -name '*.pm' -not -path './lib/*' -not -path './local/*' -print0 \
+            | xargs -0 -I{} perl -I. -c {} 2>&1

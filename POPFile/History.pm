@@ -1,8 +1,4 @@
-# POPFILE LOADABLE MODULE
 package POPFile::History;
-
-use POPFile::Module;
-@ISA = ("POPFile::Module");
 
 #----------------------------------------------------------------------------
 #
@@ -28,83 +24,64 @@ use POPFile::Module;
 #
 #----------------------------------------------------------------------------
 
-use strict;
-use warnings;
+use Object::Pad;
 use locale;
 
 use Date::Parse;
 use Digest::MD5 qw( md5_hex );
 
-my $fields_slot =                                              # PROFILE BLOCK START
-'history.id, hdr_from, hdr_to, hdr_cc, hdr_subject, hdr_date, hash, inserted,
- buckets.name, usedtobe, history.bucketid, magnets.val, size'; # PROFILE BLOCK STOP
-
-#----------------------------------------------------------------------------
-# new
-#
-#   Class new() function
-#----------------------------------------------------------------------------
-sub new
-{
-    my $proto = shift;
-    my $class = ref($proto) || $proto;
-    my $self = POPFile::Module->new();
-
+my $fields_slot ='history.id, hdr_from, hdr_to, hdr_cc, hdr_subject, hdr_date, hash, inserted,
+ buckets.name, usedtobe, history.bucketid, magnets.val, size';
+class POPFile::History :isa(POPFile::Module) {
     # List of committed history items waiting to be committed
     # into the database, it consists of lists containing three
     # elements: the slot id, the bucket classified to and the
     # magnet if used
-
-    $self->{commit_list__} = ();
+    field $commit_list = undef;
 
     # Contains queries started with start_query and consists
     # of a mapping between unique IDs and quadruples containing
     # a reference to the SELECT and a cache of already fetched
     # rows and a total row count.  These quadruples are implemented
     # as a sub-hash with keys query, count, cache, fields
+    field %queries;
 
-    $self->{queries__} = ();
-
-    $self->{firsttime__} = 1;
+    field $firsttime = 1;
 
     # Will contain the database handle retrieved from
     # Classifier::Bayes
+    field $db = undef;
 
-    $self->{db__} = undef;
+    field $classifier :writer(set_classifier) = 0;
 
-    $self->{classifier__} = 0;
+    BUILD {
+        $self->set_name('history');
+    }
 
-    bless($self, $class);
+=head2 initialize
 
-    $self->name( 'history' );
+Called to initialize the history module. Registers default config values for
+C<history_days>, C<archive>, C<archive_dir>, and C<archive_classes>, and
+subscribes to the C<TICKD> and C<COMIT> message queue events.
 
-    return $self;
-}
+Returns 1 on success.
 
-#----------------------------------------------------------------------------
-#
-# initialize
-#
-# Called to initialize the history module
-#
-#----------------------------------------------------------------------------
-sub initialize
-{
-    my ( $self ) = @_;
+=cut
 
+method initialize {
     # Keep the history for two days
 
-    $self->config_( 'history_days', 2 );
+    $self->config('history_days', 2 );
 
     # If 1, Messages are saved to an archive when they are removed or expired
     # from the history cache
 
-    $self->config_( 'archive', 0 );
+    $self->config('archive', 0 );
 
     # The directory where messages will be archived to, in sub-directories for
     # each bucket
 
-    $self->config_( 'archive_dir', 'archive' );
+    $self->config('archive_dir', 'archive' );
 
     # This is an advanced setting which will save archived files to a
     # randomly numbered sub-directory, if set to greater than zero, otherwise
@@ -112,76 +89,67 @@ sub initialize
     #
     # 0 <= directory name < archive_classes
 
-    $self->config_( 'archive_classes', 0 );
+    $self->config('archive_classes', 0 );
 
     # Need TICKD message for history clean up, COMIT when a message
     # is committed to the history
 
-    $self->mq_register_( 'TICKD', $self );
-    $self->mq_register_( 'COMIT', $self );
+    $self->mq_register('TICKD', $self );
+    $self->mq_register('COMIT', $self );
 
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# stop
-#
-# Called to stop the history module
-#
-#----------------------------------------------------------------------------
-sub stop
-{
-    my ( $self ) = @_;
+=head2 stop
 
+Called to stop the history module. Flushes any pending commit queue entries
+and disconnects the cloned database handle.
+
+=cut
+
+method stop {
     # Commit any remaining history items.  This is needed because it's
     # possible that we get called with a stop after things have been
     # added to the queue and before service() is called
 
-    $self->commit_history__();
+    $self->commit_history();
 
-    if ( defined( $self->{db__} ) ) {
-        $self->{db__}->disconnect;
-        $self->{db__} = undef;
+    if ( defined( $db ) ) {
+        $db->disconnect;
+        $db = undef;
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# db__
+# ---------------------------------------------------------------------------
+# db__ (private)
 #
 # Since we don't know the order in which the start() methods of PLMs
 # is called we cannot be sure that Classifier::Bayes will have started
 # and connected to the database before us, hence we can't set our
 # database handle at start time.  So instead we access the db handle
-# through this method
-#
-#----------------------------------------------------------------------------
-sub db__
-{
-    my ( $self ) = @_;
-
-    if ( !defined( $self->{db__} ) ) {
-        $self->{db__} = $self->{classifier__}->db()->clone;
+# through this method.
+# ---------------------------------------------------------------------------
+method db {
+    if ( !defined( $db ) ) {
+        $db = $classifier->db()->clone;
     }
 
-    return $self->{db__};
+    return $db;
 }
 
-#----------------------------------------------------------------------------
-#
-# service
-#
-# Called periodically so that the module can do its work
-#
-#----------------------------------------------------------------------------
-sub service
-{
-    my ( $self ) = @_;
+=head2 service
 
-    if ( $self->{firsttime__} ) {
-        $self->upgrade_history_files__();
-        $self->{firsttime__} = 0;
+Called periodically so that the module can do its work. On the first call
+triggers the legacy history file upgrade, then flushes the commit queue.
+
+Returns 1.
+
+=cut
+
+method service {
+    if ( $firsttime ) {
+        $self->upgrade_history_files();
+        $firsttime = 0;
     }
 
     # Note when we go to multiuser POPFile we'll need to change this call
@@ -189,24 +157,21 @@ sub service
     # valid.  The easiest way will be to call it in deliver() when we get
     # a COMIT message.
 
-    $self->commit_history__();
+    $self->commit_history();
 
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# deliver
-#
-# Called by the message queue to deliver a message
-#
-# There is no return value from this method
-#
-#----------------------------------------------------------------------------
-sub deliver
-{
-    my ( $self, $type, @message ) = @_;
+=head2 deliver
 
+Called by the message queue to deliver a message. Handles C<TICKD> (triggers
+C<cleanup_history>) and C<COMIT> (enqueues the message for database commit).
+
+There is no return value from this method.
+
+=cut
+
+method deliver ($type, @message) {
     # If a day has passed then clean up the history
 
     if ( $type eq 'TICKD' ) {
@@ -214,7 +179,7 @@ sub deliver
     }
 
     if ( $type eq 'COMIT' ) {
-        push ( @{$self->{commit_list__}}, \@message );
+        push ( @{$commit_list}, \@message );
     }
 }
 
@@ -226,11 +191,8 @@ sub deliver
 # child needs access to the database we open it
 #
 # ---------------------------------------------------------------------------
-sub forked
-{
-    my ( $self ) = @_;
-
-    $self->{db__} = undef;
+method forked ($writer = undef) {
+    $db = undef;
 }
 
 #----------------------------------------------------------------------------
@@ -266,38 +228,35 @@ sub forked
 #
 #----------------------------------------------------------------------------
 
-#----------------------------------------------------------------------------
-#
-# reserve_slot
-#
-# Called to reserve a place in the history for a message that is in the
-# process of being received.  It returns a unique ID for this slot and
-# the full path to the file where the message should be stored.  The
-# caller is expected to later call either release_slot (if the slot is not
-# going to be used) or commit_slot (if the file has been written and the
-# entry should be added to the history).
-#
-# The only parameter is optional and exists for the sake of the test-
-# suite: you can pass in the time at which the message was inserted,
-# ie. the time at which the message arrived.
-#----------------------------------------------------------------------------
-sub reserve_slot
-{
-    my $self = shift;
-    my $inserted_time = shift || time;
+=head2 reserve_slot
 
-    my $insert_sth = $self->db__()->prepare(                          # PROFILE BLOCK START
-            'insert into history ( userid, committed, inserted )
-                         values  (      ?,         ?,        ? );' ); # PROFILE BLOCK STOP
-    my $is_sqlite2 = ( $self->db__()->{Driver}->{Name} =~ /SQLite2?/ ) &&  # PROFILE BLOCK START
-                     ( $self->db__()->{sqlite_version} =~ /^2\./ );        # PROFILE BLOCK STOP
+Called to reserve a place in the history for a message that is in the
+process of being received. Returns a unique slot ID and the full path to
+the file where the message should be stored.
 
+The caller is expected to later call either C<release_slot> (if the slot is
+not going to be used) or C<commit_slot> (if the file has been written and
+the entry should be added to the history).
+
+The optional C<$inserted_time> parameter exists for the test-suite and lets
+the caller specify the insertion timestamp (defaults to C<time()>).
+
+=cut
+
+method reserve_slot ($inserted_time = undef) {
+    $inserted_time //= time;
+
+    my $insert_sth = $self->db()->prepare(
+        'insert into history ( userid, committed, inserted )
+         values  (      ?,         ?,        ? );' );
+    my $is_sqlite2 = ( $self->db()->{Driver}->{Name} =~ /SQLite2?/ ) &&
+                     ( $self->db()->{sqlite_version} =~ /^2\./ );
     my $slot;
 
     while ( !defined($slot) || $slot == 0 ) {
         my $r = int(rand( 1000000000 )+2);
 
-        $self->log_( 2, "reserve_slot selected random number $r" );
+        $self->log_msg(2, "reserve_slot selected random number $r" );
 
         # Get the date/time now which will be stored in the database
         # so that we can sort on the Date: header in the message and
@@ -307,39 +266,35 @@ sub reserve_slot
         next if ( !defined( $result ) );
 
         if ( $is_sqlite2 ) {
-            $slot = $self->db__()->func( 'last_insert_rowid' );
+            $slot = $self->db()->func( 'last_insert_rowid' );
         } else {
-            $slot = $self->db__()->last_insert_id( undef, undef, 'history', 'id' );
+            $slot = $self->db()->last_insert_id( undef, undef, 'history', 'id' );
         }
     }
 
     $insert_sth->finish;
 
-    $self->log_( 2, "reserve_slot returning slot id $slot" );
+    $self->log_msg(2, "reserve_slot returning slot id $slot" );
 
     return ( $slot, $self->get_slot_file( $slot ) );
 }
 
-#----------------------------------------------------------------------------
-#
-# release_slot
-#
-# See description with reserve_slot; release_slot releases a history slot
-# previously allocated with reserve_slot and discards it.
-#
-# id              Unique ID returned by reserve_slot
-#
-#----------------------------------------------------------------------------
-sub release_slot
-{
-    my ( $self, $slot ) = @_;
+=head2 release_slot
 
+Releases a history slot previously allocated with C<reserve_slot> and
+discards it (removes the database row and the file from disk).
+
+C<$slot> is the unique ID returned by C<reserve_slot>.
+
+=cut
+
+method release_slot ($slot) {
     # Remove the entry from the database and delete the file
     # if present
 
     my $delete = 'delete from history where history.id = ?;';
 
-    my $h = $self->db__()->prepare( $delete );
+    my $h = $self->db()->prepare( $delete );
     $h->execute( $slot );
 
     my $file = $self->get_slot_file( $slot );
@@ -368,27 +323,23 @@ sub release_slot
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# commit_slot
-#
-# See description with reserve_slot; commit_slot commits a history
-# slot to the database and makes it part of the history.  Before this
-# is called the full message should have been written to the file
-# returned by reserve_slot.  Note that commit_slot queues the message
-# for insertion and does not commit it until some (short) time later
-#
-# session         User session with Classifier::Bayes API
-# slot            Unique ID returned by reserve_slot
-# bucket          Bucket classified to
-# magnet          Magnet if used
-#
-#----------------------------------------------------------------------------
-sub commit_slot
-{
-    my ( $self, $session, $slot, $bucket, $magnet ) = @_;
+=head2 commit_slot
 
-    $self->mq_post_( 'COMIT', $session, $slot, $bucket, $magnet );
+Commits a history slot to the database and makes it part of the history.
+Before calling this the full message must have been written to the file
+returned by C<reserve_slot>.
+
+Note: the message is queued for insertion and is not written to the database
+until shortly afterwards (when C<service()> next runs).
+
+C<$session> is a valid Classifier::Bayes API session; C<$slot> is the ID
+from C<reserve_slot>; C<$bucket> is the bucket classified to; C<$magnet>
+is the magnet used (or C<undef>).
+
+=cut
+
+method commit_slot ($session, $slot, $bucket, $magnet) {
+    $self->mq_post('COMIT', $session, $slot, $bucket, $magnet );
 }
 
 #----------------------------------------------------------------------------
@@ -404,29 +355,24 @@ sub commit_slot
 # undo         If set to 1 then indicates an undo operation
 #
 #----------------------------------------------------------------------------
-sub change_slot_classification
-{
-    my ( $self, $slot, $class, $session, $undo ) = @_;
-
-    $self->log_( 0, "Change slot classification of $slot to $class" );
+method change_slot_classification ($slot, $class, $session, $undo) {
+    $self->log_msg(0, "Change slot classification of $slot to $class" );
 
     # Get the bucket ID associated with the new classification
     # then retrieve the current classification for this slot
     # and update the database
 
-    my $bucketid = $self->{classifier__}->get_bucket_id(  # PROFILE BLOCK START
-                           $session, $class );            # PROFILE BLOCK STOP
-
+    my $bucketid = $classifier->get_bucket_id( $session, $class );
     my $oldbucketid = 0;
     if ( !$undo ) {
         my @fields = $self->get_slot_fields( $slot );
         $oldbucketid = $fields[10];
     }
 
-    my $h = $self->db__()->prepare(  # PROFILE BLOCK START
+    my $h = $self->db()->prepare(
         'update history set bucketid = ?,
                             usedtobe = ?
-                where id = ?;' );    # PROFILE BLOCK STOP
+                where id = ?;' );
     $h->execute( $bucketid, $oldbucketid, $slot );
     $self->force_requery();
 }
@@ -441,22 +387,19 @@ sub change_slot_classification
 # slot         The slot to update
 #
 #----------------------------------------------------------------------------
-sub revert_slot_classification
-{
-    my ( $self, $slot ) = @_;
-
+method revert_slot_classification ($slot) {
     my @fields = $self->get_slot_fields( $slot );
     my $oldbucketid = $fields[9];
 
-    my $h = $self->db__()->prepare(  # PROFILE BLOCK START
+    my $h = $self->db()->prepare(
         'update history set bucketid = ?,
                             usedtobe = ?
-                where id = ?;' );    # PROFILE BLOCK STOP
+                where id = ?;' );
     $h->execute( $oldbucketid, 0, $slot );
     $self->force_requery();
 }
 
-#---------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 #
 # get_slot_fields
 #
@@ -465,25 +408,22 @@ sub revert_slot_classification
 #
 # slot           The slot id
 #
-#---------------------------------------------------------------------------
-sub get_slot_fields
-{
-    my ( $self, $slot ) = @_;
-
+#----------------------------------------------------------------------------
+method get_slot_fields ($slot) {
     return undef if ( !defined( $slot ) || $slot !~ /^\d+$/ );
 
-    my $h = $self->db__()->prepare(           # PROFILE BLOCK START
+    my $h = $self->db()->prepare(
         "select $fields_slot from history, buckets, magnets
              where history.id        = ? and
                    buckets.id        = history.bucketid and
                    magnets.id        = magnetid and
-                   history.committed = 1;" ); # PROFILE BLOCK STOP
+                   history.committed = 1;" );
     $h->execute( $slot );
     my @result = $h->fetchrow_array;
     return @result;
 }
 
-#---------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 #
 # is_valid_slot
 #
@@ -491,24 +431,21 @@ sub get_slot_fields
 #
 # slot           The slot id
 #
-#---------------------------------------------------------------------------
-sub is_valid_slot
-{
-    my ( $self, $slot ) = @_;
-
+#----------------------------------------------------------------------------
+method is_valid_slot ($slot) {
     return undef if ( !defined( $slot ) || $slot !~ /^\d+$/ );
 
-    my $h = $self->db__()->prepare(           # PROFILE BLOCK START
+    my $h = $self->db()->prepare(
         'select id from history
              where history.id        = ? and
-                   history.committed = 1;' ); # PROFILE BLOCK STOP
+                   history.committed = 1;' );
     $h->execute( $slot );
     my @row = $h->fetchrow_array;
 
     return ( ( @row ) && ( $row[0] == $slot ) );
 }
 
-#---------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 #
 # commit_history__
 #
@@ -516,33 +453,29 @@ sub is_valid_slot
 # with a call to commit_slot to the database
 #
 #----------------------------------------------------------------------------
-sub commit_history__
-{
-    my ( $self ) = @_;
-
-    if ( $#{$self->{commit_list__}} == -1 ) {
+method commit_history {
+    if ( $#{$commit_list} == -1 ) {
         return;
     }
 
-    my $update_history = $self->db__()->prepare(         # PROFILE BLOCK START
-                'update history set hdr_from    = ?,
-                                    hdr_to      = ?,
-                                    hdr_date    = ?,
-                                    hdr_cc      = ?,
-                                    hdr_subject = ?,
-                                    sort_from   = ?,
-                                    sort_to     = ?,
-                                    sort_cc     = ?,
-                                    committed   = ?,
-                                    bucketid    = ?,
-                                    usedtobe    = ?,
-                                    magnetid    = ?,
-                                    hash        = ?,
-                                    size        = ?
-                                    where id    = ?;' ); # PROFILE BLOCK STOP
-
-    $self->db__()->begin_work;
-    foreach my $entry (@{$self->{commit_list__}}) {
+    my $update_history = $self->db()->prepare(
+        'update history set hdr_from    = ?,
+                            hdr_to      = ?,
+                            hdr_date    = ?,
+                            hdr_cc      = ?,
+                            hdr_subject = ?,
+                            sort_from   = ?,
+                            sort_to     = ?,
+                            sort_cc     = ?,
+                            committed   = ?,
+                            bucketid    = ?,
+                            usedtobe    = ?,
+                            magnetid    = ?,
+                            hash        = ?,
+                            size        = ?
+                            where id    = ?;' );
+    $self->db()->begin_work;
+    foreach my $entry (@{$commit_list}) {
         my ( $session, $slot, $bucket, $magnet ) = @{$entry};
 
         my $file = $self->get_slot_file( $slot );
@@ -556,9 +489,9 @@ sub commit_history__
 
         my %header;
 
-        if ( open FILE, "<$file" ) {
+        if ( open my $file_fh, '<', $file ) {
             my $last;
-            while ( <FILE> ) {
+            while ( <$file_fh> ) {
                 s/[\r\n]//g;
 
                 if ( /^$/ ) {
@@ -575,10 +508,10 @@ sub commit_history__
                     }
                 }
             }
-            close FILE;
+            close $file_fh;
         }
         else {
-            $self->log_( 0, "Could not open history message file $file for reading." );
+            $self->log_msg(0, "Could not open history message file $file for reading." );
         }
 
         my $hash = $self->get_message_hash( ${$header{'message-id'}}[0],
@@ -594,13 +527,12 @@ sub commit_history__
         # "John Graham-Cumming" <spam@jgc.org> maps to
         #     john graham-cumming spam@jgc.org
 
-        my @sortable = ( 'from', 'to', 'cc' );
+        my @sortable = qw(from to cc);
         my %sort_headers;
 
         foreach my $h (@sortable) {
-            $sort_headers{$h} =           # PROFILE BLOCK START
-                 $self->{classifier__}->{parser__}->decode_string(
-                     ${$header{$h}}[0] ); # PROFILE BLOCK STOP
+            $sort_headers{$h} = $classifier->parser()->decode_string(
+                ${$header{$h}}[0] );
             $sort_headers{$h} = lc($sort_headers{$h} || '');
             $sort_headers{$h} =~ s/[\"<>]//g;
             $sort_headers{$h} =~ s/^[ \t]+//g;
@@ -610,13 +542,11 @@ sub commit_history__
         # Make sure that the headers we are going to insert into
         # the database have been defined and are suitably quoted
 
-        my @required = ( 'from', 'to', 'cc', 'subject' );
+        my @required = qw(from to cc subject);
 
         foreach my $h (@required) {
-            ${$header{$h}}[0] =           # PROFILE BLOCK START
-                 $self->{classifier__}->{parser__}->decode_string(
-                     ${$header{$h}}[0] ); # PROFILE BLOCK STOP
-
+            ${$header{$h}}[0] = $classifier->parser()->decode_string(
+                ${$header{$h}}[0] );
             if ( !defined ${$header{$h}}[0] || ${$header{$h}}[0] =~ /^\s*$/ ) {
                 if ( $h ne 'cc' ) {
                     ${$header{$h}}[0] = "<$h header missing>";
@@ -643,9 +573,7 @@ sub commit_history__
         # classified into (and the same for the magnet if it is
         # defined)
 
-        my $bucketid = $self->{classifier__}->get_bucket_id(  # PROFILE BLOCK START
-                           $session, $bucket );               # PROFILE BLOCK STOP
-
+        my $bucketid = $classifier->get_bucket_id( $session, $bucket );
         my $msg_size = -s $file;
 
         # If we can't get the bucket ID because the bucket doesn't exist
@@ -654,7 +582,7 @@ sub commit_history__
         # history and log the failure
 
         if ( defined( $bucketid ) ) {
-            my $result = $update_history->execute(  # PROFILE BLOCK START
+            my $result = $update_history->execute(
                     ${$header{from}}[0],    # hdr_from
                     ${$header{to}}[0],      # hdr_to
                     ${$header{date}}[0],    # hdr_date
@@ -670,16 +598,16 @@ sub commit_history__
                     $hash,                  # hash
                     $msg_size,              # size
                     $slot                   # id
-            );                                      # PROFILE BLOCK STOP
+            );
         } else {
-            $self->log_( 0, "Couldn't find bucket ID for bucket $bucket when committing $slot" );
+            $self->log_msg(0, "Couldn't find bucket ID for bucket $bucket when committing $slot" );
             $self->release_slot( $slot );
         }
     }
-    $self->db__()->commit;
+    $self->db()->commit;
     $update_history->finish;
 
-    $self->{commit_list__} = ();
+    $commit_list = ();
     $self->force_requery();
 }
 
@@ -694,38 +622,31 @@ sub commit_history__
 # $archive           1 if it's OK to archive this entry
 #
 # ---------------------------------------------------------------------------
-sub delete_slot
-{
-    my ( $self, $slot, $archive ) = @_;
-
+method delete_slot ($slot, $archive) {
     my $file = $self->get_slot_file( $slot );
-    $self->log_( 2, "delete_slot called for slot $slot, file $file" );
+    $self->log_msg(2, "delete_slot called for slot $slot, file $file" );
 
-    if ( $archive && $self->config_( 'archive' ) ) {
-        my $path = $self->get_user_path_( $self->config_( 'archive_dir' ), 0 );
+    if ( $archive && $self->config('archive' ) ) {
+        my $path = $self->get_user_path($self->config('archive_dir' ), 0 );
 
-        $self->make_directory__( $path );
+        $self->make_directory( $path );
 
-        my $b = $self->db__()->selectrow_arrayref(
+        my $b = $self->db()->selectrow_arrayref(
             "select buckets.name from history, buckets
                  where history.bucketid = buckets.id and
                        history.id = $slot;" );
 
         my $bucket = $b->[0];
 
-        if ( ( $bucket ne 'unclassified' ) &&   # PROFILE BLOCK START
-             ( $bucket ne 'unknown class' ) ) { # PROFILE BLOCK STOP
+        if ( ( $bucket ne 'unclassified' ) &&
+             ( $bucket ne 'unknown class' ) ) {
             $path .= "\/" . $bucket;
-            $self->make_directory__( $path );
+            $self->make_directory( $path );
 
-            if ( $self->config_( 'archive_classes' ) > 0) {
-
-                # Archive to a random sub-directory of the bucket archive
-
-                my $subdirectory = int( rand(                # PROFILE BLOCK START
-                    $self->config_( 'archive_classes' ) ) ); # PROFILE BLOCK STOP
+            if ( $self->config('archive_classes' ) > 0) {
+                my $subdirectory = int( rand( $self->config('archive_classes' ) ) );
                 $path .= "\/" . $subdirectory;
-                $self->make_directory__( $path );
+                $self->make_directory( $path );
             }
 
             # Previous comment about this potentially being unsafe
@@ -734,7 +655,7 @@ sub delete_slot
             # placed in the user directory, in the archive_dir
             # subdirectory
 
-            $self->copy_file__( $file, $path, "popfile$slot.msg" );
+            $self->copy_file( $file, $path, "popfile$slot.msg" );
         }
     }
 
@@ -755,12 +676,9 @@ sub delete_slot
 # make this quick.
 #
 #----------------------------------------------------------------------------
-sub start_deleting
-{
-    my ( $self ) = @_;
-
-#    $self->{classifier__}->tweak_sqlite( 1, 1, $self->db__() );
-    $self->db__()->begin_work;
+method start_deleting {
+#    $classifier->tweak_sqlite( 1, 1, $self->db() );
+    $self->db()->begin_work;
 }
 
 #----------------------------------------------------------------------------
@@ -771,12 +689,9 @@ sub start_deleting
 # back into the Classifier::Bayes to untweak the database performance.
 #
 #----------------------------------------------------------------------------
-sub stop_deleting
-{
-    my ( $self ) = @_;
-
-    $self->db__()->commit;
-#    $self->{classifier__}->tweak_sqlite( 1, 0, $self->db__() );
+method stop_deleting {
+    $self->db()->commit;
+#    $classifier->tweak_sqlite( 1, 0, $self->db() );
 }
 
 #----------------------------------------------------------------------------
@@ -787,10 +702,7 @@ sub stop_deleting
 # the message associated with the slot
 #
 #----------------------------------------------------------------------------
-sub get_slot_file
-{
-    my ( $self, $slot ) = @_;
-
+method get_slot_file ($slot) {
     # The mapping between the slot and the file goes as follows:
     #
     # 1. Convert the file to an 8 digit hex number (with leading
@@ -804,19 +716,16 @@ sub get_slot_file
     # Hence each directory can have up to 256 entries
 
     my $hex_slot = sprintf( '%8.8x', $slot );
-    my $path = $self->get_user_path_(                        # PROFILE BLOCK START
-                   $self->global_config_( 'msgdir' ) .
-                       substr( $hex_slot, 0, 2 ) . '/', 0 ); # PROFILE BLOCK STOP
-
-    $self->make_directory__( $path );
+    my $path = $self->get_user_path(
+        $self->global_config('msgdir' ) .
+        substr( $hex_slot, 0, 2 ) . '/', 0 );
+    $self->make_directory( $path );
     $path .= substr( $hex_slot, 2, 2 ) . '/';
-    $self->make_directory__( $path );
+    $self->make_directory( $path );
     $path .= substr( $hex_slot, 4, 2 ) . '/';
-    $self->make_directory__( $path );
+    $self->make_directory( $path );
 
-    my $file = 'popfile' .                         # PROFILE BLOCK START
-               substr( $hex_slot, 6, 2 ) . '.msg'; # PROFILE BLOCK STOP
-
+    my $file = 'popfile' . substr( $hex_slot, 6, 2 ) . '.msg';
     return $path . $file;
 }
 
@@ -838,10 +747,7 @@ sub get_slot_file
 # then pass in the empty string
 #
 #----------------------------------------------------------------------------
-sub get_message_hash
-{
-    my ( $self, $messageid, $date, $subject, $received ) = @_;
-
+method get_message_hash ($messageid, $date, $subject, $received) {
     $messageid = '' if ( !defined( $messageid ) );
     $date      = '' if ( !defined( $date      ) );
     $subject   = '' if ( !defined( $subject   ) );
@@ -862,12 +768,8 @@ sub get_message_hash
 # hash                 The hash value
 #
 #----------------------------------------------------------------------------
-sub get_slot_from_hash
-{
-    my ( $self, $hash ) = @_;
-
-    my $h = $self->db__()->prepare(                         # PROFILE BLOCK START
-        'select id from history where hash = ? limit 1;' ); # PROFILE BLOCK STOP
+method get_slot_from_hash ($hash) {
+    my $h = $self->db()->prepare( 'select id from history where hash = ? limit 1;' );
     $h->execute( $hash );
     my $result = $h->fetchrow_arrayref;
 
@@ -902,20 +804,17 @@ sub get_slot_from_hash
 # stop_query.
 #
 #----------------------------------------------------------------------------
-sub start_query
-{
-    my ( $self ) = @_;
-
+method start_query {
     # Think of a large random number, make sure that it hasn't
     # been used and then return it
 
     while (1) {
         my $id = sprintf( '%8.8x', int(rand(4294967295)) );
 
-        if ( !defined( $self->{queries__}{$id} ) ) {
-            $self->{queries__}{$id}{query} = 0;
-            $self->{queries__}{$id}{count} = 0;
-            $self->{queries__}{$id}{cache} = ();
+        if ( !defined( $queries{$id} ) ) {
+            $queries{$id}{query} = 0;
+            $queries{$id}{count} = 0;
+            $queries{$id}{cache} = ();
             return $id
         }
     }
@@ -930,25 +829,22 @@ sub start_query
 # id                The ID returned by start_query
 #
 #----------------------------------------------------------------------------
-sub stop_query
-{
-    my ( $self, $id ) = @_;
-
+method stop_query ($id) {
     # If the cache size hasn't grown to the row
     # count then we didn't fetch everything and so
     # we fill call finish to clean up
 
-    my $q = $self->{queries__}{$id}{query};
+    my $q = $queries{$id}{query};
 
     if ( ( defined $q ) && ( $q != 0 ) ) {
-        if ( $#{$self->{queries__}{$id}{cache}} !=  # PROFILE BLOCK START
-             $self->{queries__}{$id}{count} ) {     # PROFILE BLOCK STOP
-            $q->finish;
-            undef $self->{queries__}{$id}{query};
+        if ( $#{$queries{$id}{cache}} !=
+             $queries{$id}{count} ) {
+        $q->finish;
+            undef $queries{$id}{query};
         }
     }
 
-    delete $self->{queries__}{$id};
+    delete $queries{$id};
 }
 
 #----------------------------------------------------------------------------
@@ -965,35 +861,30 @@ sub stop_query
 # not           If set to 1 negates the search
 #
 #----------------------------------------------------------------------------
-sub set_query
-{
-    my ( $self, $id, $filter, $search, $sort, $not ) = @_;
-
+method set_query ($id, $filter, $search, $sort, $not) {
     $search =~ s/\0//g;
     $sort = '' if ( $sort !~ /^(\-)?(inserted|from|to|cc|subject|bucket|date|size)$/ );
 
     # If this query has already been done and is in the cache
     # then do no work here
 
-    if ( defined( $self->{queries__}{$id}{fields} ) &&  # PROFILE BLOCK START
-         ( $self->{queries__}{$id}{fields} eq
-             "$filter:$search:$sort:$not" ) ) {         # PROFILE BLOCK STOP
+    if ( defined( $queries{$id}{fields} ) &&
+         ( $queries{$id}{fields} eq "$filter:$search:$sort:$not" ) ) {
         return;
     }
 
-    $self->{queries__}{$id}{fields} = "$filter:$search:$sort:$not";
+    $queries{$id}{fields} = "$filter:$search:$sort:$not";
 
     # We do two queries, the first to get the total number of rows that
     # would be returned and then we start the real query.  This is done
     # so that we know the size of the resulting data without having
     # to retrieve it all
 
-    $self->{queries__}{$id}{base} =                          # PROFILE BLOCK START
+    $queries{$id}{base} =
         'select XXX from history, buckets, magnets
-                where history.userid = 1 and committed = 1'; # PROFILE BLOCK STOP
-
-    $self->{queries__}{$id}{base} .= ' and history.bucketid = buckets.id';
-    $self->{queries__}{$id}{base} .= ' and magnets.id = magnetid';
+                where history.userid = 1 and committed = 1';
+    $queries{$id}{base} .= ' and history.bucketid = buckets.id';
+    $queries{$id}{base} .= ' and magnets.id = magnetid';
 
     # If there's a search portion then add the appropriate clause
     # to find the from/subject header
@@ -1003,8 +894,8 @@ sub set_query
     my $equal     = $not ? '='   : '!=';
 
     if ( $search ne '' ) {
-        $search = $self->db__()->quote( '%' . $search . '%' );
-        $self->{queries__}{$id}{base} .= " and $not_word ( hdr_from like $search or hdr_subject like $search )";
+        $search = $self->db()->quote( '%' . $search . '%' );
+        $queries{$id}{base} .= " and $not_word ( hdr_from like $search or hdr_subject like $search )";
     }
 
     # If there's a filter option then we'll need to get the bucket
@@ -1012,15 +903,13 @@ sub set_query
 
     if ( $filter ne '' ) {
         if ( $filter eq '__filter__magnet' ) {
-            $self->{queries__}{$id}{base} .=      # PROFILE BLOCK START
-                " and history.magnetid $equal 0"; # PROFILE BLOCK STOP
+            $queries{$id}{base} .= " and history.magnetid $equal 0";
         } else {
             if ( $filter eq '__filter__reclassified' ) {
-                $self->{queries__}{$id}{base} .=      # PROFILE BLOCK START
-                    " and history.usedtobe $equal 0"; # PROFILE BLOCK STOP
+                $queries{$id}{base} .= " and history.usedtobe $equal 0";
             } else {
-                my $bucket = $self->db__()->quote( $filter );
-                $self->{queries__}{$id}{base} .=
+                my $bucket = $self->db()->quote( $filter );
+                $queries{$id}{base} .=
                         " and buckets.name $not_equal $bucket";
             }
         }
@@ -1042,24 +931,24 @@ sub set_query
                 }
             }
         }
-        $self->{queries__}{$id}{base} .= " order by $sort $direction;";
+        $queries{$id}{base} .= " order by $sort $direction;";
     } else {
-        $self->{queries__}{$id}{base} .= ' order by inserted desc;';
+        $queries{$id}{base} .= ' order by inserted desc;';
     }
 
-    my $count = $self->{queries__}{$id}{base};
-    $self->log_( 2, "Base query is $count" );
+    my $count = $queries{$id}{base};
+    $self->log_msg(2, "Base query is $count" );
     $count =~ s/XXX/COUNT(*)/;
 
-    my $h = $self->db__()->prepare( $count );
+    my $h = $self->db()->prepare( $count );
     $h->execute;
-    $self->{queries__}{$id}{count} = $h->fetchrow_arrayref->[0];
+    $queries{$id}{count} = $h->fetchrow_arrayref->[0];
     $h->finish;
 
-    my $select = $self->{queries__}{$id}{base};
+    my $select = $queries{$id}{base};
     $select =~ s/XXX/$fields_slot/;
-    $self->{queries__}{$id}{query} = $self->db__()->prepare( $select );
-    $self->{queries__}{$id}{cache} = ();
+    $queries{$id}{query} = $self->db()->prepare( $select );
+    $queries{$id}{cache} = ();
 }
 
 #----------------------------------------------------------------------------
@@ -1071,15 +960,12 @@ sub set_query
 # id            The ID returned by start_query
 #
 #----------------------------------------------------------------------------
-sub delete_query
-{
-    my ( $self, $id ) = @_;
-
+method delete_query ($id) {
     $self->start_deleting();
 
-    my $delete = $self->{queries__}{$id}{base};
+    my $delete = $queries{$id}{base};
     $delete =~ s/XXX/history.id/;
-    my $d = $self->db__()->prepare( $delete );
+    my $d = $self->db()->prepare( $delete );
     $d->execute;
     my $history_id;
     my @row;
@@ -1105,11 +991,8 @@ sub delete_query
 # id            The ID returned by start_query
 #
 #----------------------------------------------------------------------------
-sub get_query_size
-{
-    my ( $self, $id ) = @_;
-
-    return $self->{queries__}{$id}{count};
+method get_query_size ($id) {
+    return $queries{$id}{count};
 }
 
 #----------------------------------------------------------------------------
@@ -1129,33 +1012,29 @@ sub get_query_size
 #    inserted date (7), bucket name (8), reclassified id (9), bucket id (10),
 #    magnet value (11), size (12)
 #----------------------------------------------------------------------------
-sub get_query_rows
-{
-    my ( $self, $id, $start, $count ) = @_;
-
+method get_query_rows ($id, $start, $count) {
     # First see if we have already retrieved these rows from the query
     # if we have then we can just return them from the cache.  Otherwise
     # fetch the rows from the database and then return them
 
-    my $size = $#{$self->{queries__}{$id}{cache}}+1;
+    my $size = $#{$queries{$id}{cache}}+1;
 
-    $self->log_( 2, "Request for rows $start ($count), current size $size" );
+    $self->log_msg(2, "Request for rows $start ($count), current size $size" );
 
     if ( ( $size < ( $start + $count - 1 ) ) ) {
         my $rows = $start + $count - $size;
-        $self->log_( 2, "Getting $rows rows from database" );
-        $self->{queries__}{$id}{query}->execute;
-        $self->{queries__}{$id}{cache} =      # PROFILE BLOCK START
-            $self->{queries__}{$id}{query}->fetchall_arrayref(
-                undef, $start + $count - 1 ); # PROFILE BLOCK STOP
-        $self->{queries__}{$id}{query}->finish;
+        $self->log_msg(2, "Getting $rows rows from database" );
+        $queries{$id}{query}->execute;
+        $queries{$id}{cache} = $queries{$id}{query}->fetchall_arrayref(
+            undef, $start + $count - 1 );
+        $queries{$id}{query}->finish;
     }
 
     my ( $from, $to ) = ( $start-1, $start+$count-2 );
 
-    $self->log_( 2, "Returning $from..$to" );
+    $self->log_msg(2, "Returning $from..$to" );
 
-    return @{$self->{queries__}{$id}{cache}}[$from..$to];
+    return @{$queries{$id}{cache}}[$from..$to];
 }
 
 # ---------------------------------------------------------------------------
@@ -1170,10 +1049,7 @@ sub get_query_rows
 # Returns whatever mkdir returns
 #
 # ---------------------------------------------------------------------------
-sub make_directory__
-{
-    my ( $self, $path ) = @_;
-
+method make_directory ($path) {
     $path =~ s/[\\\/]$//;
 
     return 1 if ( -d $path );
@@ -1209,27 +1085,23 @@ sub compare_mf__
 # Looks for old .MSG/.CLS history entries and sticks them in the database
 #
 # ---------------------------------------------------------------------------
-sub upgrade_history_files__
-{
-    my ( $self ) = @_;
-
+method upgrade_history_files {
     # See if there are any .MSG files in the msgdir, and if there are
     # upgrade them by placing them in the database
 
-    my @msgs = sort compare_mf__ glob $self->get_user_path_(     # PROFILE BLOCK START
-        $self->global_config_( 'msgdir' ) . 'popfile*.msg', 0 ); # PROFILE BLOCK STOP
-
+    my @msgs = sort compare_mf__ glob $self->get_user_path(
+        $self->global_config('msgdir' ) . 'popfile*.msg', 0 );
     if ( $#msgs != -1 ) {
-        my $session = $self->{classifier__}->get_session_key( 'admin', '' );
+        my $session = $classifier->get_session_key( 'admin', '' );
 
         print "\nFound old history files, moving them into database\n    ";
 
         my $i = 0;
-        $self->db__()->begin_work;
+        $self->db()->begin_work;
         foreach my $msg (@msgs) {
             if ( ( ++$i % 100 ) == 0 ) {
                 print "[$i]";
-                flush STDOUT;
+                STDOUT->flush();
             }
 
             # NOTE.  We drop the information in $usedtobe, so that
@@ -1237,25 +1109,24 @@ sub upgrade_history_files__
             # in upgraded history.  Also the $magnet is ignored so
             # upgraded history will have no magnet information.
 
-            my ( $reclassified, $bucket, $usedtobe, $magnet ) =  # PROFILE BLOCK START
-                $self->history_read_class__( $msg );             # PROFILE BLOCK STOP
-
+            my ( $reclassified, $bucket, $usedtobe, $magnet ) =
+                $self->history_read_class( $msg );
             if ( $bucket ne 'unknown_class' ) {
                 my ( $slot, $file ) = $self->reserve_slot();
                 rename $msg, $file;
                 my @message = ( $session, $slot, $bucket, 0 );
-                push ( @{$self->{commit_list__}}, \@message );
+                push ( @{$commit_list}, \@message );
             }
         }
-        $self->db__()->commit;
+        $self->db()->commit;
 
         print "\nDone upgrading history\n";
 
-        $self->commit_history__();
-        $self->{classifier__}->release_session_key( $session );
+        $self->commit_history();
+        $classifier->release_session_key( $session );
 
-        unlink $self->get_user_path_(                                 # PROFILE BLOCK START
-            $self->global_config_( 'msgdir' ) . 'history_cache', 0 ); # PROFILE BLOCK STOP
+        unlink $self->get_user_path(
+            $self->global_config('msgdir' ) . 'history_cache', 0 );
     }
 }
 
@@ -1275,10 +1146,7 @@ sub upgrade_history_files__
 # $filename     The name of the message to load the class for
 #
 # ---------------------------------------------------------------------------
-sub history_read_class__
-{
-    my ( $self, $filename ) = @_;
-
+method history_read_class ($filename) {
     $filename =~ s/msg$/cls/;
 
     my $reclassified = 0;
@@ -1286,22 +1154,22 @@ sub history_read_class__
     my $usedtobe;
     my $magnet = '';
 
-    if ( open CLASS, "<$filename" ) {
-        $bucket = <CLASS>;
-        if ( defined( $bucket ) &&                        # PROFILE BLOCK START
-           ( $bucket =~ /([^ ]+) MAGNET ([^\r\n]+)/ ) ) { # PROFILE BLOCK STOP
+    if ( open my $class_fh, '<', $filename ) {
+        $bucket = <$class_fh>;
+        if ( defined( $bucket ) &&
+             ( $bucket =~ /([^ ]+) MAGNET ([^\r\n]+)/ ) ) {
             $bucket = $1;
             $magnet = $2;
         }
 
         $reclassified = 0;
         if ( defined( $bucket ) && ( $bucket =~ /RECLASSIFIED/ ) ) {
-            $bucket       = <CLASS>;
-            $usedtobe = <CLASS>;
+            $bucket       = <$class_fh>;
+            $usedtobe = <$class_fh>;
             $reclassified = 1;
             $usedtobe =~ s/[\r\n]//g;
         }
-        close CLASS;
+        close $class_fh;
         $bucket =~ s/[\r\n]//g if defined( $bucket );
         unlink $filename;
     } else {
@@ -1321,16 +1189,12 @@ sub history_read_class__
 # configured as history_days.
 #
 #----------------------------------------------------------------------------
-sub cleanup_history
-{
-    my ( $self ) = @_;
-
+method cleanup_history {
     my $seconds_per_day = 24 * 60 * 60;
-    my $old = time - $self->config_( 'history_days' ) * $seconds_per_day;
+    my $old = time - $self->config('history_days' ) * $seconds_per_day;
     my @ids;
-    my $d = $self->db__()->prepare(     # PROFILE BLOCK START
-        'select id from history
-                where inserted < ?;' ); # PROFILE BLOCK STOP
+    my $d = $self->db()->prepare(
+        'select id from history where inserted < ?;' );
     $d->execute( $old );
     my $id;
     $d->bind_columns( \$id );
@@ -1355,10 +1219,7 @@ sub cleanup_history
 # $to_name            The name of the destination (without the directory)
 #
 # ---------------------------------------------------------------------------
-sub copy_file__
-{
-    my ( $self, $from, $to_dir, $to_name ) = @_;
-
+method copy_file ($from, $to_dir, $to_name) {
     if ( open( FROM, "<$from") ) {
         if ( open( TO, ">$to_dir\/$to_name") ) {
             binmode FROM;
@@ -1381,23 +1242,17 @@ sub copy_file__
 # open so that cached data is not returned and the database is requeried
 #
 # ---------------------------------------------------------------------------
-sub force_requery
-{
-    my ( $self ) = @_;
+method force_requery {
     # Force requery since the messages have changed
 
-    foreach my $id (keys %{$self->{queries__}}) {
-        $self->{queries__}{$id}{fields} = '';
+    foreach my $id (keys %queries) {
+        $queries{$id}{fields} = '';
     }
 }
 
 # SETTER
 
-sub classifier
-{
-    my ( $self, $classifier ) = @_;
-
-    $self->{classifier__} = $classifier;
-}
+} # end class POPFile::History
 
 1;
+#----------------------------------------------------------------------------

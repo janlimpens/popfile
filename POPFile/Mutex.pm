@@ -2,8 +2,8 @@ package POPFile::Mutex;
 
 #----------------------------------------------------------------------------
 #
-# This is a mutex object that uses mkdir() to provide exclusive access
-# to a region on a per thread or per process basis.
+# Mutex object that uses mkdir() to provide exclusive access on a per-thread
+# or per-process basis.
 #
 # Copyright (c) 2001-2011 John Graham-Cumming
 #
@@ -13,92 +13,62 @@ package POPFile::Mutex;
 #   under the terms of version 2 of the GNU General Public License as
 #   published by the Free Software Foundation.
 #
-#   POPFile is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with POPFile; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-#
 #----------------------------------------------------------------------------
 
-use strict;
+use Object::Pad;
 
-#----------------------------------------------------------------------------
-# new
-#
-#   Create a new Mutex object (which may refer to a file referred to by
-#   other mutexes) with a specific name generated from the name passed
-#   in.
-#
-#----------------------------------------------------------------------------
-sub new
-{
-    my ( $type, $name ) = @_;
-    my $self;
+class POPFile::Mutex {
 
-    $self->{name__} = "popfile_mutex_${name}.mtx";
-    release( $self );
+    # Full filesystem path used as the lock directory
+    field $lock_path;
 
-    return bless $self, $type;
-}
+    # Truthy while this object holds the lock
+    field $locked = undef;
 
-#----------------------------------------------------------------------------
-#
-# acquire
-#
-#   Returns 1 if it manages to grab the mutex (and will block if necessary)
-#   and 0 if it fails.
-#
-#   $self                     Reference to this object
-#   $timeout                  Timeout in seconds to wait (undef = infinite)
-#
-#----------------------------------------------------------------------------
-sub acquire
-{
-    my ( $self, $timeout ) = @_;
+    BUILD ($mutex_name) {
+        $lock_path = "popfile_mutex_${mutex_name}.mtx";
+        $self->release();
+    }
 
-    # If acquire() has been called without a matching release() then
-    # fail at once
+=head1 METHODS
 
-    if ( defined( $self->{locked__} ) ) {
+=head2 acquire
+
+Attempts to grab the mutex. Blocks until the lock is obtained or the optional
+timeout (in seconds) expires. Returns 1 on success, 0 on failure.
+
+    $mutex->acquire();           # block indefinitely
+    $mutex->acquire( $timeout ); # timeout in seconds
+
+=cut
+
+    method acquire ($timeout = undef) {
+        return 0 if defined $locked;
+
+        $timeout = 0xFFFFFFFF if !defined $timeout;
+        my $now = time;
+
+        do {
+            if ( mkdir( $lock_path, 0755 ) ) {
+                $locked = 1;
+                return 1;
+            }
+            select( undef, undef, undef, 0.01 );
+        } while ( time < ( $now + $timeout ) );
+
         return 0;
     }
 
-    # Wait a very long time if no timeout is specified
+=head2 release
 
-    $timeout = 0xFFFFFFFF if ( !defined( $timeout ) );
-    my $now = time;
+Releases the lock if it was previously acquired with L</acquire>.
 
-    # Try to create a directory during the timeout period
+=cut
 
-    do {
-        if ( mkdir( $self->{name__}, 0755 ) ) { # Create a directory
-            $self->{locked__} = 1;
-            return 1;
-        }
-        select( undef, undef, undef, 0.01 );
-    } while ( time < ( $now + $timeout ) );
-
-    # Timed out so return 0
-    return 0;
-}
-
-#----------------------------------------------------------------------------
-#
-# release
-#
-#   Release the lock if we acquired it with a call to acquire()
-#
-#----------------------------------------------------------------------------
-sub release
-{
-    my ( $self ) = @_;
-
-    rmdir( $self->{name__} ); # Delete the Mutex directory
-    $self->{locked__} = undef;
+    method release {
+        rmdir $lock_path;
+        $locked = undef;
+    }
 }
 
 1;

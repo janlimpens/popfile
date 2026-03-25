@@ -1,22 +1,67 @@
-# popfile
+# POPFile
 
-POPFile is an automatic mail classification tool. Once properly set up and
-trained, it will scan all email as it arrives and classify it based on your
-training. You can give it a simple job, like separating out junk e-mail, or a
-complicated one like filing mail into a dozen folders. Think of it as a personal
-assistant for your inbox.
+Bayesian email classifier written in Perl. Acts as a proxy between mail clients
+and mail servers (POP3, SMTP, NNTP), inserting an `X-Text-Classification:` header
+with the predicted category. Users correct misclassifications through the web UI,
+which trains the classifier over time.
 
-This GPL-licensed project has not seen any updates since 2011. There still is
-the website https://getpopfile.org, but it became stale years ago. Links don't
-work anymore, etc.
+## Prerequisites
 
-Firstly, this is to keep the sources available. Secondly, I am thinking about
-maintaining the project, slimming it down, and developing it further. Let me
-know (star it, create an issue to say hi, etc), if you are interested!
+- [Docker](https://docs.docker.com/get-docker/) + [Compose](https://docs.docker.com/compose/)
 
-I have been a user of POPFile for ages, and it serves me well until today. It
-became a bit old-fashioned, but I still haven't found anything that fits my
-needs as well.
+## Run
 
-There are currently two branchen, *maintainance*, where I fix bugs and *main*, the
-devlopment branch. So you probably use the former.
+```sh
+docker compose up
+```
+
+### Local (with perlbrew + Carton)
+
+```sh
+carton install
+carton exec perl popfile.pl
+```
+
+The web UI is available at <http://localhost:8080> by default.
+
+`POPFILE_ROOT` overrides the root directory for config, database, and message
+cache (default: `./`).
+
+## CLI utilities
+
+```sh
+# Classify a message and show word scores
+carton exec perl bayes.pl <message-file>
+
+# Train a message into a bucket
+carton exec perl insert.pl <bucket-name> <message-file>
+```
+
+## Svelte UI
+
+The frontend lives in `ui/` and builds to `public/`.
+
+```sh
+cd ui && npm install
+
+# Development (hot-reload, proxies /api to localhost:8080)
+npm run dev
+
+# Production build → public/
+npm run build
+```
+
+## Tests
+
+```sh
+carton exec perl -I. t/mailparse.t
+```
+
+## Runtime files (gitignored)
+
+| Path | Description |
+|------|-------------|
+| `popfile.cfg` | Generated configuration |
+| `popfile.db` | SQLite database (corpus + history) |
+| `messages/` | Cached message files |
+| `*.pid`, `*.log` | Runtime state |

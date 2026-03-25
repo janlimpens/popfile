@@ -5,3 +5,14 @@ popfile.cfg
 popfile.db
 *.tmp
 messages/*
+
+# Build artifacts
+Makefile
+blib/
+_build/
+MYMETA.*
+MANIFEST.bak
+*.bs
+*.o
+pm_to_blib
+legacy/

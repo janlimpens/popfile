@@ -62,8 +62,8 @@ if ( $#ARGV > 0 ) {
         # Prevent the tool from finding another copy of POPFile running
 
         my $c = $POPFile->get_module( 'POPFile::Config' );
-        my $current_piddir = $c->config_( 'piddir' );
-        $c->config_( 'piddir', $c->config_( 'piddir' ) . 'insert.pl.' );
+        my $current_piddir = $c->config('piddir' );
+        $c->config('piddir', $c->config('piddir' ) . 'insert.pl.' );
 
         $POPFile->CORE_start();
 
@@ -91,7 +91,7 @@ if ( $#ARGV > 0 ) {
             }
         }
 
-        $c->config_( 'piddir', $current_piddir );
+        $c->config('piddir', $current_piddir );
 
         # Reload configuration file ( to avoid updating configurations )
 
