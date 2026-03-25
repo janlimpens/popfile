@@ -228,7 +228,8 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_warning (@message) {
 
-        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0 ) {
+        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0
+             && ref $components{core}{logger} ) {
             $components{core}{logger}->debug( 0, "Perl warning: @message" );
             warn @message;
         }
@@ -245,7 +246,8 @@ class POPFile::Loader {
 
         print STDERR @message;
 
-        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0 ) {
+        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0
+             && ref $components{core}{logger} ) {
             $components{core}{logger}->debug( 0, "Perl fatal error : @message" );
         }
 

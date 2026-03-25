@@ -115,6 +115,7 @@ C<$level> is 0 (critical), 1 (verbose), or 2 (maximum verbosity).
 =cut
 
     method log_ ($level, $message) {
+        return unless ref $logger;
         my ( undef, undef, $line ) = caller;
         $logger->debug( $level, "$name: $line: $message" );
     }
