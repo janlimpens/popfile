@@ -495,7 +495,8 @@ class POPFile::Loader {
 
         print "\n    Starting...     " if $debug;
 
-        my @c = ( 'core', grep { !/^core$/ } sort keys %components );
+        my @c = ( 'core', 'classifier', 'services',
+                  grep { !/^(core|classifier|services)$/ } sort keys %components );
 
         foreach my $type (@c) {
             print "\n         {$type:" if $debug;
