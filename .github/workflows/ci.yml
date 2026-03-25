@@ -26,9 +26,9 @@ jobs:
         run: cpanm --notest --installdeps . && cpanm --notest Test2::V0 Test::MockObject
 
       - name: Run tests
-        run: perl -I. prove -lr t/
+        run: perl -I. -MApp::Prove -e 'App::Prove->new->run' -- -lr t/
 
       - name: Syntax check all modules
         run: |
           find . -name '*.pm' -not -path './lib/*' -not -path './local/*' -print0 \
-            | xargs -0 -I{} perl -c {} 2>&1
+            | xargs -0 -I{} perl -I. -c {} 2>&1
