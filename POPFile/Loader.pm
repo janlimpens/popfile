@@ -40,7 +40,6 @@ use IO::Handle;
 use Log::Any ();
 
 class POPFile::Loader {
-
     # The POPFile classes are stored by reference in the components hash;
     # the top level key is the component type, the second key is its name.
     field %components;
@@ -55,18 +54,18 @@ class POPFile::Loader {
     field $shutdown = 0;
 
     # Callback refs populated in CORE_loader_init.
-    field $aborting  = '';
+    field $aborting = '';
     field $pipeready = '';
-    field $forker    = '';
-    field $reaper    = '';
+    field $forker = '';
+    field $reaper = '';
     field $childexit = '';
-    field $warning   = '';
-    field $die_cb    = '';
+    field $warning = '';
+    field $die_cb = '';
 
     # POPFile version
-    field $major_version  = '?';
-    field $minor_version  = '?';
-    field $build_version  = '?';
+    field $major_version = '?';
+    field $minor_version = '?';
+    field $build_version = '?';
     field $version_string = '';
 
     # Where POPFile is installed
@@ -78,7 +77,6 @@ class POPFile::Loader {
     # Initialize things only needed in CORE
     #------------------------------------------------------------------------
     method CORE_loader_init {
-
         if ( defined $ENV{POPFILE_ROOT} ) {
             $popfile_root = $ENV{POPFILE_ROOT};
         }
@@ -118,7 +116,6 @@ class POPFile::Loader {
     # abort at the next convenient moment.
     #------------------------------------------------------------------------
     method CORE_aborting {
-
         $alive = 0;
         foreach my $type (sort keys %components) {
             foreach my $name (sort keys %{$components{$type}}) {
@@ -133,7 +130,6 @@ class POPFile::Loader {
     # Returns 1 if data is available to be read on the passed-in pipe handle.
     #------------------------------------------------------------------------
     method pipeready ($pipe) {
-
         return 0 if !defined $pipe;
 
         my $rin = '';
@@ -148,7 +144,6 @@ class POPFile::Loader {
     # Called on SIGCHLD; asks each module to do whatever reaping is needed.
     #------------------------------------------------------------------------
     method CORE_reaper {
-
         foreach my $type (sort keys %components) {
             foreach my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->reaper();
@@ -165,7 +160,6 @@ class POPFile::Loader {
     # other modules in the same process and then exits.
     #------------------------------------------------------------------------
     method CORE_childexit ($code) {
-
         foreach my $type (sort keys %components) {
             foreach my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->childexit();
@@ -183,7 +177,6 @@ class POPFile::Loader {
     # writer), non-zero pid in parent (with reader).
     #------------------------------------------------------------------------
     method CORE_forker {
-
         my @types = sort keys %components;
 
         foreach my $type (@types) {
@@ -228,7 +221,6 @@ class POPFile::Loader {
     # Called on a Perl warning; logs it if debug level > 0.
     #------------------------------------------------------------------------
     method CORE_warning (@message) {
-
         if ( $self->module_config( 'GLOBAL', 'debug' ) > 0 ) {
             Log::Any->get_logger(category => 'POPFile')->warning("Perl warning: @message");
             warn @message;
@@ -241,7 +233,6 @@ class POPFile::Loader {
     # Called on a fatal Perl error; logs and tries to stop cleanly.
     #------------------------------------------------------------------------
     method CORE_die (@message) {
-
         return if $^S;    # inside an eval — do nothing
 
         print STDERR @message;
@@ -260,7 +251,6 @@ class POPFile::Loader {
     # Loads all POPFile Loadable Modules found in a directory.
     #------------------------------------------------------------------------
     method CORE_load_directory_modules ($directory, $type) {
-
         print "\n         {$type:" if $debug;
 
         opendir my $dh, $self->root_path__($directory);
@@ -283,7 +273,6 @@ class POPFile::Loader {
     # Returns the module handle (undef on failure).
     #------------------------------------------------------------------------
     method CORE_load_module ($module, $type) {
-
         my $mod = $self->load_module_($module);
 
         if ( defined $mod ) {
@@ -301,7 +290,6 @@ class POPFile::Loader {
     # Returns the module handle (undef if not a loadable module).
     #------------------------------------------------------------------------
     method load_module_ ($module) {
-
         my $mod;
 
         if ( open my $fh, '<', $self->root_path__($module) ) {
@@ -326,7 +314,6 @@ class POPFile::Loader {
     # Sets signal handlers so POPFile handles OS and IPC events gracefully.
     #------------------------------------------------------------------------
     method CORE_signals {
-
         $SIG{QUIT}     = $aborting;
         $SIG{ABRT}     = $aborting;
         $SIG{KILL}     = $aborting;
@@ -349,7 +336,6 @@ class POPFile::Loader {
     # $noserver — if 1, skip UI, Proxy, and Services.
     #------------------------------------------------------------------------
     method CORE_load ($noserver = 0) {
-
         print "\n    Loading... " if $debug;
 
         $self->CORE_load_directory_modules( 'POPFile',    'core'       );
@@ -368,7 +354,6 @@ class POPFile::Loader {
     # Links POPFile's modules together so they can use each other as objects.
     #------------------------------------------------------------------------
     method CORE_link_components {
-
         print "\n\nPOPFile Engine $version_string starting" if $debug;
 
         # Give every module access to configuration, version, and MQ.
@@ -429,7 +414,6 @@ class POPFile::Loader {
     # Loops across POPFile's modules and initializes them.
     #------------------------------------------------------------------------
     method CORE_initialize {
-
         print "\n\n    Initializing... " if $debug;
 
         # Core must be initialized first.
@@ -466,7 +450,6 @@ class POPFile::Loader {
     # Loads POPFile's configuration and applies command-line overrides.
     #------------------------------------------------------------------------
     method CORE_config {
-
         $components{core}{config}->load_configuration();
         return $components{core}{config}->parse_command_line();
     }
@@ -477,7 +460,6 @@ class POPFile::Loader {
     # Loops across POPFile's modules and starts them.
     #------------------------------------------------------------------------
     method CORE_start {
-
         print "\n    Starting...     " if $debug;
 
         my @c = ( 'core', 'classifier', 'services',
@@ -514,7 +496,6 @@ class POPFile::Loader {
     # $nowait — if 1, run once without sleeping and return.
     #------------------------------------------------------------------------
     method CORE_service ($nowait = 0) {
-
         while ( $alive == 1 ) {
             foreach my $type (sort keys %components) {
                 foreach my $name (sort keys %{$components{$type}}) {
@@ -543,7 +524,6 @@ class POPFile::Loader {
     # Loops across POPFile's modules and stops them.
     #------------------------------------------------------------------------
     method CORE_stop {
-
         if ( $debug ) {
             print "\n\nPOPFile Engine $version_string stopping\n";
             STDOUT->flush();
@@ -583,7 +563,6 @@ class POPFile::Loader {
     # Returns string in scalar context, or (major, minor, build) in list.
     #------------------------------------------------------------------------
     method CORE_version ($major_version = undef, $minor_version = undef, $build_version = undef) {
-
         if ( !defined $major_version ) {
             return wantarray
                 ? ($major_version, $minor_version, $build_version)
@@ -604,7 +583,6 @@ class POPFile::Loader {
     #                   get_module($name, $type).
     #------------------------------------------------------------------------
     method get_module ($name, $type = undef) {
-
         if ( !defined($type) && $name =~ /^(.*)::(.*)$/ ) {
             $type = lc $1;
             $name = lc $2;
@@ -621,7 +599,6 @@ class POPFile::Loader {
     # Inserts a module into the components hash.
     #------------------------------------------------------------------------
     method set_module ($type, $name, $module) {
-
         $components{$type}{$name} = $module;
     }
 
@@ -631,7 +608,6 @@ class POPFile::Loader {
     # Stops and removes a module from the components hash.
     #------------------------------------------------------------------------
     method remove_module ($type, $name) {
-
         $components{$type}{$name}->stop();
         delete $components{$type}{$name};
     }
@@ -642,7 +618,6 @@ class POPFile::Loader {
     # Joins the given path with the POPFile root directory.
     #------------------------------------------------------------------------
     method root_path__ ($path) {
-
         $popfile_root =~ s/[\/\\]$//;
         $path                   =~ s/^[\/\\]//;
 

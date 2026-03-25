@@ -33,7 +33,6 @@ use locale;
 my $eol = "\015\012";
 
 class Proxy::NNTP :isa(Proxy::Proxy) {
-
     BUILD {
         $self->set_name( 'nntp' );
         $self->set_child( \&child__ );
@@ -197,7 +196,6 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                          ( $file = $history->get_slot_file(
                                $downloaded{$message_id}{slot} ) ) &&
                          ( open my $retrfile, '<', $file ) ) {
-
                         binmode $retrfile;
                         $self->log_( 1, "Printing message from cache" );
                         $self->tee_( $client, "220 0 $message_id$eol" );
@@ -290,7 +288,6 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                          ( $file = $history->get_slot_file(
                                $downloaded{$message_id}{slot} ) ) &&
                          ( open my $retrfile, '<', $file ) ) {
-
                         binmode $retrfile;
                         $self->log_( 1, "Printing message from cache" );
                         $self->tee_( $client, "222 0 $message_id$eol" );

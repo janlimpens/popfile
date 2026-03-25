@@ -6,12 +6,11 @@ use IO::Select;
 use Socket ();
 
 class Services::IMAP::Client :isa(POPFile::Module) {
-
-    field $socket        = undef;
-    field $folder        = undef;
-    field $tag           = 0;
+    field $socket = undef;
+    field $folder = undef;
+    field $tag = 0;
     field $last_response = '';
-    field $last_command  = '';
+    field $last_command = '';
 
     my $eol           = "\015\012";
     my $cfg_separator = "-->";

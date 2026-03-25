@@ -29,8 +29,7 @@ use POSIX ':sys_wait_h';
 use Scalar::Util qw(looks_like_number);
 
 class UI::Mojo :isa(POPFile::Module) {
-
-    field $service   = undef;
+    field $service = undef;
     field $child_pid = undef;
 
     BUILD {

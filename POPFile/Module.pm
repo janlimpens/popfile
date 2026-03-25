@@ -24,10 +24,9 @@ use POPFile::Role::Logging;
 my %slurp_data;
 
 class POPFile::Module :repr(HASH) :does(POPFile::Role::Logging) {
-
     # References to core infrastructure (injected by Loader::CORE_link_components)
     field $configuration :reader :writer = 0;
-    field $mq            :reader :writer = 0;
+    field $mq :reader :writer = 0;
 
     # Module identity
     field $name :reader :writer = '';
@@ -37,9 +36,9 @@ class POPFile::Module :repr(HASH) :does(POPFile::Role::Logging) {
 
     # Loader callbacks
     field $pipeready :reader :writer = 0;
-    field $forker    :reader :writer = 0;
-    field $childexit                 = 0;
-    field $version   :reader :writer = '';
+    field $forker :reader :writer = 0;
+    field $childexit = 0;
+    field $version :reader :writer = '';
 
 =head1 NAME
 
@@ -342,7 +341,6 @@ C<setchildexit> is a combined getter/setter for the loader's child-exit callback
         $childexit = $val if defined $val;
         return $childexit;
     }
-
 }
 
 1;

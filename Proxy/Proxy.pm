@@ -36,7 +36,6 @@ use IO::Select;
 my $eol = "\015\012";
 
 class Proxy::Proxy :isa(POPFile::Module) {
-
     # Reference to the classifier service facade
     field $service = undef;
 
@@ -45,15 +44,15 @@ class Proxy::Proxy :isa(POPFile::Module) {
 
     # Error messages for subclasses to set
     field $connection_timeout_error :reader :writer = '';
-    field $connection_failed_error  :reader :writer = '';
-    field $good_response            :reader :writer = '';
-    field $ssl_not_supported_error  :reader         = '-ERR SSL connection is not supported since required modules are not installed';
+    field $connection_failed_error :reader :writer = '';
+    field $good_response :reader :writer = '';
+    field $ssl_not_supported_error :reader = '-ERR SSL connection is not supported since required modules are not installed';
 
     # Connect banner returned by the real server
     field $connect_banner :reader :writer = '';
 
     # Listening socket and its selector
-    field $server   = undef;
+    field $server = undef;
     field $selector = undef;
 
     # ----------------------------------------------------------------------------
@@ -121,12 +120,10 @@ class Proxy::Proxy :isa(POPFile::Module) {
         if ( ( defined( $selector->can_read(0) ) ) &&
              ( $self->alive() ) ) {
             if ( my $client = $server->accept() ) {
-
                 my ( $remote_port, $remote_host ) = sockaddr_in( $client->peername() );
 
                 if ( ( ( $self->config_( 'local' ) || 0 ) == 0 ) ||
                        ( $remote_host eq inet_aton( "127.0.0.1" ) ) ) {
-
                     binmode( $client );
 
                     if ( $self->config_( 'force_fork' ) ) {

@@ -36,7 +36,6 @@ my $fields_slot =                                              # PROFILE BLOCK S
  buckets.name, usedtobe, history.bucketid, magnets.val, size'; # PROFILE BLOCK STOP
 
 class POPFile::History :isa(POPFile::Module) {
-
     # List of committed history items waiting to be committed
     # into the database, it consists of lists containing three
     # elements: the slot id, the bucket classified to and the
@@ -73,7 +72,6 @@ Returns 1 on success.
 =cut
 
 method initialize {
-
     # Keep the history for two days
 
     $self->config_( 'history_days', 2 );
@@ -135,7 +133,6 @@ method stop {
 # through this method.
 # ---------------------------------------------------------------------------
 method db__ {
-
     if ( !defined( $db ) ) {
         $db = $classifier->db()->clone;
     }
@@ -296,7 +293,6 @@ C<$slot> is the unique ID returned by C<reserve_slot>.
 =cut
 
 method release_slot ($slot) {
-
     # Remove the entry from the database and delete the file
     # if present
 
@@ -347,7 +343,6 @@ is the magnet used (or C<undef>).
 =cut
 
 method commit_slot ($session, $slot, $bucket, $magnet) {
-
     $self->mq_post_( 'COMIT', $session, $slot, $bucket, $magnet );
 }
 
@@ -365,7 +360,6 @@ method commit_slot ($session, $slot, $bucket, $magnet) {
 #
 #----------------------------------------------------------------------------
 method change_slot_classification ($slot, $class, $session, $undo) {
-
     $self->log_( 0, "Change slot classification of $slot to $class" );
 
     # Get the bucket ID associated with the new classification
@@ -400,7 +394,6 @@ method change_slot_classification ($slot, $class, $session, $undo) {
 #
 #----------------------------------------------------------------------------
 method revert_slot_classification ($slot) {
-
     my @fields = $self->get_slot_fields( $slot );
     my $oldbucketid = $fields[9];
 
@@ -412,7 +405,7 @@ method revert_slot_classification ($slot) {
     $self->force_requery();
 }
 
-#---------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 #
 # get_slot_fields
 #
@@ -421,9 +414,8 @@ method revert_slot_classification ($slot) {
 #
 # slot           The slot id
 #
-#---------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 method get_slot_fields ($slot) {
-
     return undef if ( !defined( $slot ) || $slot !~ /^\d+$/ );
 
     my $h = $self->db__()->prepare(           # PROFILE BLOCK START
@@ -437,7 +429,7 @@ method get_slot_fields ($slot) {
     return @result;
 }
 
-#---------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 #
 # is_valid_slot
 #
@@ -445,9 +437,8 @@ method get_slot_fields ($slot) {
 #
 # slot           The slot id
 #
-#---------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 method is_valid_slot ($slot) {
-
     return undef if ( !defined( $slot ) || $slot !~ /^\d+$/ );
 
     my $h = $self->db__()->prepare(           # PROFILE BLOCK START
@@ -460,7 +451,7 @@ method is_valid_slot ($slot) {
     return ( ( @row ) && ( $row[0] == $slot ) );
 }
 
-#---------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 #
 # commit_history__
 #
@@ -469,7 +460,6 @@ method is_valid_slot ($slot) {
 #
 #----------------------------------------------------------------------------
 method commit_history__ {
-
     if ( $#{$commit_list} == -1 ) {
         return;
     }
@@ -645,7 +635,6 @@ method commit_history__ {
 #
 # ---------------------------------------------------------------------------
 method delete_slot ($slot, $archive) {
-
     my $file = $self->get_slot_file( $slot );
     $self->log_( 2, "delete_slot called for slot $slot, file $file" );
 
@@ -667,7 +656,6 @@ method delete_slot ($slot, $archive) {
             $self->make_directory__( $path );
 
             if ( $self->config_( 'archive_classes' ) > 0) {
-
                 # Archive to a random sub-directory of the bucket archive
 
                 my $subdirectory = int( rand(                # PROFILE BLOCK START
@@ -704,7 +692,6 @@ method delete_slot ($slot, $archive) {
 #
 #----------------------------------------------------------------------------
 method start_deleting {
-
 #    $classifier->tweak_sqlite( 1, 1, $self->db__() );
     $self->db__()->begin_work;
 }
@@ -718,7 +705,6 @@ method start_deleting {
 #
 #----------------------------------------------------------------------------
 method stop_deleting {
-
     $self->db__()->commit;
 #    $classifier->tweak_sqlite( 1, 0, $self->db__() );
 }
@@ -732,7 +718,6 @@ method stop_deleting {
 #
 #----------------------------------------------------------------------------
 method get_slot_file ($slot) {
-
     # The mapping between the slot and the file goes as follows:
     #
     # 1. Convert the file to an 8 digit hex number (with leading
@@ -781,7 +766,6 @@ method get_slot_file ($slot) {
 #
 #----------------------------------------------------------------------------
 method get_message_hash ($messageid, $date, $subject, $received) {
-
     $messageid = '' if ( !defined( $messageid ) );
     $date      = '' if ( !defined( $date      ) );
     $subject   = '' if ( !defined( $subject   ) );
@@ -803,7 +787,6 @@ method get_message_hash ($messageid, $date, $subject, $received) {
 #
 #----------------------------------------------------------------------------
 method get_slot_from_hash ($hash) {
-
     my $h = $self->db__()->prepare(                         # PROFILE BLOCK START
         'select id from history where hash = ? limit 1;' ); # PROFILE BLOCK STOP
     $h->execute( $hash );
@@ -841,7 +824,6 @@ method get_slot_from_hash ($hash) {
 #
 #----------------------------------------------------------------------------
 method start_query {
-
     # Think of a large random number, make sure that it hasn't
     # been used and then return it
 
@@ -867,7 +849,6 @@ method start_query {
 #
 #----------------------------------------------------------------------------
 method stop_query ($id) {
-
     # If the cache size hasn't grown to the row
     # count then we didn't fetch everything and so
     # we fill call finish to clean up
@@ -900,7 +881,6 @@ method stop_query ($id) {
 #
 #----------------------------------------------------------------------------
 method set_query ($id, $filter, $search, $sort, $not) {
-
     $search =~ s/\0//g;
     $sort = '' if ( $sort !~ /^(\-)?(inserted|from|to|cc|subject|bucket|date|size)$/ );
 
@@ -1004,7 +984,6 @@ method set_query ($id, $filter, $search, $sort, $not) {
 #
 #----------------------------------------------------------------------------
 method delete_query ($id) {
-
     $self->start_deleting();
 
     my $delete = $queries{$id}{base};
@@ -1036,7 +1015,6 @@ method delete_query ($id) {
 #
 #----------------------------------------------------------------------------
 method get_query_size ($id) {
-
     return $queries{$id}{count};
 }
 
@@ -1058,7 +1036,6 @@ method get_query_size ($id) {
 #    magnet value (11), size (12)
 #----------------------------------------------------------------------------
 method get_query_rows ($id, $start, $count) {
-
     # First see if we have already retrieved these rows from the query
     # if we have then we can just return them from the cache.  Otherwise
     # fetch the rows from the database and then return them
@@ -1097,7 +1074,6 @@ method get_query_rows ($id, $start, $count) {
 #
 # ---------------------------------------------------------------------------
 method make_directory__ ($path) {
-
     $path =~ s/[\\\/]$//;
 
     return 1 if ( -d $path );
@@ -1134,7 +1110,6 @@ sub compare_mf__
 #
 # ---------------------------------------------------------------------------
 method upgrade_history_files__ {
-
     # See if there are any .MSG files in the msgdir, and if there are
     # upgrade them by placing them in the database
 
@@ -1198,7 +1173,6 @@ method upgrade_history_files__ {
 #
 # ---------------------------------------------------------------------------
 method history_read_class__ ($filename) {
-
     $filename =~ s/msg$/cls/;
 
     my $reclassified = 0;
@@ -1242,7 +1216,6 @@ method history_read_class__ ($filename) {
 #
 #----------------------------------------------------------------------------
 method cleanup_history {
-
     my $seconds_per_day = 24 * 60 * 60;
     my $old = time - $self->config_( 'history_days' ) * $seconds_per_day;
     my @ids;
@@ -1274,7 +1247,6 @@ method cleanup_history {
 #
 # ---------------------------------------------------------------------------
 method copy_file__ ($from, $to_dir, $to_name) {
-
     if ( open( FROM, "<$from") ) {
         if ( open( TO, ">$to_dir\/$to_name") ) {
             binmode FROM;
@@ -1310,3 +1282,4 @@ method force_requery {
 } # end class POPFile::History
 
 1;
+#----------------------------------------------------------------------------

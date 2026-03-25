@@ -22,10 +22,9 @@ use Object::Pad;
 use locale;
 
 class Services::Classifier :isa(POPFile::Module) {
-
     field $classifier :writer(set_classifier) = undef;
-    field $history    :writer(set_history)    = undef;
-    field $session    = '';
+    field $history :writer(set_history) = undef;
+    field $session = '';
 
     BUILD {
         $self->set_name('classifier_service');

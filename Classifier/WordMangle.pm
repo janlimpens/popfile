@@ -36,7 +36,6 @@ my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';
 my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)";
 
 class Classifier::WordMangle :isa(POPFile::Module) {
-
     field %stop__;
 
     BUILD {

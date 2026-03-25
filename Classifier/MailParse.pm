@@ -215,71 +215,70 @@ my %color_map = ( # PROFILE BLOCK START
 ); # PROFILE BLOCK STOP
 
 class Classifier::MailParse {
-
     # Hash of word frequencies
     field %words;
-    field $msg_total       = 0;
+    field $msg_total = 0;
 
     # Internal buffer for colorized output
-    field $ut              = '';
+    field $ut = '';
 
     # Optional callback sub($word)->$color set by Bayes when colorized output is needed
     field $color_resolver :reader :writer = undef;
 
     # From/To/Cc/Subject values captured during parsing
-    field $from            = '';
-    field $to              = '';
-    field $cc              = '';
-    field $subject         = '';
+    field $from = '';
+    field $to = '';
+    field $cc = '';
+    field $subject = '';
 
     # Pairs of magnet-type => magnet-string extracted from headers
     field %quickmagnets;
 
     # CSS tag names that set the current foreground/background color
-    field $cssfontcolortag  = '';
-    field $cssbackcolortag  = '';
+    field $cssfontcolortag = '';
+    field $cssbackcolortag = '';
 
     # RGB distance between back and font color (for invisible-ink detection)
     field $htmlcolordistance = 0;
 
     # Current HTML color state (defaults: white background, black font)
-    field $htmlbackcolor    = 'ffffff';
-    field $htmlbodycolor    = 'ffffff';
-    field $htmlfontcolor    = '000000';
+    field $htmlbackcolor = 'ffffff';
+    field $htmlbodycolor = 'ffffff';
+    field $htmlfontcolor = '000000';
 
-    field $content_type     = '';
-    field $base64           = '';
-    field $in_html_tag      = 0;
-    field $html_tag         = '';
-    field $html_arg         = '';
-    field $html_end         = 0;
-    field $in_headers       = 0;
+    field $content_type = '';
+    field $base64 = '';
+    field $in_html_tag = 0;
+    field $html_tag = '';
+    field $html_arg = '';
+    field $html_end = 0;
+    field $in_headers = 0;
 
-    field $lang             :reader :writer = '';
-    field $first20          = '';
-    field $first20count     = 0;
+    field $lang :reader :writer = '';
+    field $first20 = '';
+    field $first20count = 0;
 
     # Accumulates soft-wrapped quoted-printable lines
-    field $prev             = '';
+    field $prev = '';
 
     # Dispatch table for the active Nihongo (Japanese) parser
     field %nihongo_parser;
 
     # Parsing state: current MIME boundary list, encoding, header name, header value
-    field $cur_mime         = '';
-    field $cur_encoding     = '';
-    field $cur_header       = '';
-    field $cur_argument     = '';
+    field $cur_mime = '';
+    field $cur_encoding = '';
+    field $cur_header = '';
+    field $cur_argument = '';
 
     # WordMangle instance injected by Bayes
-    field $mangle           :reader :writer = undef;
-    field $date             = '';
+    field $mangle :reader :writer = undef;
+    field $date = '';
 
-    field $colorized        = '';
-    field $charset          = '';
-    field $debug            = 0;
+    field $colorized = '';
+    field $charset = '';
+    field $debug = 0;
     field $need_kakasi_mutex = 0;
-    field $kakasi_mutex     = undef;
+    field $kakasi_mutex = undef;
 
 =head2 get_color__
 
@@ -289,7 +288,6 @@ callback, or an empty string if no resolver is set.
 =cut
 
 method get_color__ ($word) {
-
     return '' unless defined $color_resolver;
     return $color_resolver->($word);
 }
@@ -302,7 +300,6 @@ treated as points in 3-D RGB space. Returns an integer distance.
 =cut
 
 method compute_rgb_distance ($left, $right) {
-
     # TODO: store front/back colors in a RGB hash/array
     #       converting to a hh hh hh format and back
     #       is a waste as is repeatedly decoding
@@ -335,7 +332,6 @@ C<$htmlfontcolor> fields via C<compute_rgb_distance>.
 =cut
 
 method compute_html_color_distance {
-
     # TODO: store front/back colors in a RGB hash/array
     #       converting to a hh hh hh format and back
     #       is a waste as is repeatedly decoding
@@ -355,7 +351,6 @@ its canonical lowercase C<rrggbb> hexadecimal form.
 =cut
 
 method map_color ($color) {
-
     # The canonical form is lowercase hexadecimal, so start by
     # lowercasing and stripping any initial #
 
@@ -366,7 +361,6 @@ method map_color ($color) {
     if ( defined( $color_map{$color} ) ) {
         return $color_map{$color};
     } else {
-
         # Do this after checking the color map, as there is no "#blue" color
         # TODO: The #, however, is optional in IE.. Do we pseudo-word this?
 
@@ -441,7 +435,6 @@ Increments the raw frequency count for C<$word> without mangling or colorization
 =cut
 
 method increment_word ($word) {
-
     $words{$word} += 1;
     $msg_total    += 1;
 
@@ -457,7 +450,6 @@ pseudoword was accepted, 0 if filtered by a stopword.
 =cut
 
 method update_pseudoword ($prefix, $word, $encoded, $literal) {
-
     my $mword = $mangle->mangle( "$prefix:$word", 1 );
 
     if ( $mword ne '' ) {
@@ -488,7 +480,6 @@ colorization anchoring, and C<$prefix> is prepended to the mangled word
 =cut
 
 method update_word ($word, $encoded, $before, $after, $prefix) {
-
     my $mword = $mangle->mangle( $word );
 
     if ( $mword ne '' ) {
@@ -538,7 +529,6 @@ method add_line ($bigline, $encoded, $prefix) {
     # about to add words that are hidden inside invisible ink
 
     if ( $htmlfontcolor ne $htmlbackcolor ) {
-
         # If we are adding a line and the colors are different then we
         # will add a count for the color difference to make sure that
         # we catch camouflage attacks using similar colors, if the
@@ -568,7 +558,6 @@ method add_line ($bigline, $encoded, $prefix) {
                 my $to   = $entityhash{$2};
 
                 if ( defined( $to ) ) {
-
                     # HTML entities confilict with DBCS and EUC-JP
                     # chars. Replace entities with blanks.
 
@@ -584,7 +573,6 @@ method add_line ($bigline, $encoded, $prefix) {
             }
 
             while ( $line =~ m/(&#([\d]{1,3});)/g ) {
-
                 # Don't decode odd (nonprintable) characters or < >'s.
 
                 if ( ( ( $2 < 255 ) && ( $2 > 63 ) ) ||  # PROFILE BLOCK START
@@ -692,7 +680,6 @@ method add_line ($bigline, $encoded, $prefix) {
             }
 
             if ( $lang eq 'Nihongo' ) {
-
                 # In Japanese mode, non-symbol EUC-JP characters should be
                 # matched.
                 #
@@ -723,7 +710,6 @@ method add_line ($bigline, $encoded, $prefix) {
                 }
             } else {
                 if ( $lang eq 'Korean' ) {
-
                     # In Korean mode, [[:alpha:]] in regular
                     # expression is changed to 2bytes chars to support
                     # 2 byte characters.
@@ -746,7 +732,6 @@ method add_line ($bigline, $encoded, $prefix) {
                                             $prefix ) if ( length $1 >= 2 ); # PROFILE BLOCK STOP
                     }
                 } else {
-
                     # Only care about words between 3 and 45
                     # characters since short words like an, or, if are
                     # too common and the longest word in English
@@ -788,7 +773,6 @@ Updates word frequencies and HTML color state.
 =cut
 
 method update_tag ($tag, $arg, $end_tag, $encoded) {
-
     # TODO: Make sure $tag only ever gets alphanumeric input (in some
     #       cases it has been demonstrated that things like ()| etc can
     #       end up in $tag
@@ -895,7 +879,6 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             # appear to be hostnames, may or may not be beneficial
 
             if ( $value =~ /^(cid)\:/i ) {
-
                 # Add a pseudo-word when CID source links are detected
 
                 $self->update_pseudoword( 'html', 'cidsrc',      # PROFILE BLOCK START
@@ -905,7 +888,6 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
 
             } else {
-
                 my $host = $self->add_url( $value, $encoded,         # PROFILE BLOCK START
                                            $quote, $end_quote, '' ); # PROFILE BLOCK STOP
 
@@ -954,7 +936,6 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                         ( $3 ? '[\\\&\?\:\/]' : $end_quote ), '' ); # PROFILE BLOCK STOP
                 }
             } else {
-
                 # Anything that isn't a mailto is probably an URL
 
                 $self->add_url( $value, $encoded, $quote, $end_quote, '' );
@@ -1019,7 +1000,6 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
         # Font sizes
 
         if ( ( $attribute =~ /^size$/i ) && ( $tag =~ /^font$/i ) ) {
-
             # TODO: unify font size scaling to use the same scale
             #       across size specifiers
 
@@ -1072,7 +1052,6 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
             # CSS font sizing
             if ( defined( $style->{'font-size'} ) ) {
-
                 my $size = $style->{'font-size'};
 
                 # TODO: unify font size scaling to use the same scale
@@ -1129,7 +1108,6 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             # CSS background coloring
 
             if ( defined( $style->{'background-color'} ) ) {
-
                 my $background_color = $style->{'background-color'};
 
                 $background_color =                              # PROFILE BLOCK START
@@ -1159,7 +1137,6 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                 # Take the possibly multi-expression "background" property
 
                 while ( $background =~ s/^([^ \t\r\n\f]+)( |$)// ) {
-
                     # and examine each expression individually
 
                     $expression = $1;
@@ -1239,7 +1216,6 @@ updating word frequencies.
 =cut
 
 method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
-
     my $temp_url = $url;
     my $temp_before;
     my $temp_after;
@@ -1290,7 +1266,6 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
         $hostform = "name";
     } else {
         if ( $url =~ /(([^:\/])+)/ ) {
-
             # Some other hostname format found, maybe
             # Read here for reference: http://www.pc-help.org/obscure.htm
             # Go here for comparison: http://www.samspade.org/t/url
@@ -1321,7 +1296,6 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
                 my $more_dots      = $3;
 
                 if ( defined $hex ) {
-
                     # hex number
                     # trim arbitrary octets that are greater than most
                     # significant bit
@@ -1330,12 +1304,10 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
                     $number = hex( $quad_candidate );
                 } else {
                     if ( $quad_candidate =~ /^0([0-7]+)/ ) {
-
                         # octal number
 
                         $number = oct( $1 );
                     } else {
-
                         # assume decimal number
                         # deviates from the obscure.htm document here,
                         # no current browsers overflow
@@ -1347,7 +1319,6 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
                 # No more IP dots?
 
                 if ( !defined( $more_dots ) ) {
-
                     # Expand final decimal/octal/hex to extra quads
 
                     while ( $quad <= 4 ) {
@@ -1358,7 +1329,6 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
                         $quad += 1;
                     }
                 } else {
-
                     # Just plug the quad in, no overflow allowed
 
                     $quads{$quad} = $number if ( $number < 256 );
@@ -1419,11 +1389,9 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
         # their sub-tld's if desired
 
         if ( $hostform eq 'name' ) {
-
             # recursively add the roots of the domain
 
             while ( $host =~ s/^([^\.]+\.)?(([^\.]+\.?)*)(\.[^\.]+)$/$2$4/ ) {
-
                 if ( !defined( $1 ) ) {
                     $self->update_word(                                # PROFILE BLOCK START
                         $4, $encoded,
@@ -1454,7 +1422,6 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
 #
 # ----------------------------------------------------------------------------
 method parse_html ($line, $encoded) {
-
     my $found = 1;
 
     $line =~ s/[\r\n]+/ /gm;
@@ -1571,7 +1538,6 @@ method parse_html ($line, $encoded) {
 #
 # ----------------------------------------------------------------------------
 method parse_file ($file, $max_size = undef, $reset = undef) {
-
     $reset    = 1 if ( !defined( $reset    ) );
     $max_size = 0 if ( !defined( $max_size ) || ( $max_size =~ /\D/ ) );
 
@@ -1626,7 +1592,6 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
 #
 # ----------------------------------------------------------------------------
 method start_parse ($reset = undef) {
-
     $reset = 1 if ( !defined( $reset ) );
 
     # This will contain the mime boundary information in a mime message
@@ -1690,7 +1655,6 @@ method start_parse ($reset = undef) {
     $charset = '';
 
     if ( $lang eq 'Nihongo' ) {
-
         # Since Text::Kakasi is not thread-safe, we use it under the
         # control of a Mutex to avoid a crash if we are running on
         # Windows.
@@ -1714,7 +1678,6 @@ method start_parse ($reset = undef) {
 #
 # ----------------------------------------------------------------------------
 method stop_parse {
-
     $colorized .= $self->clear_out_base64();
 
     $self->clear_out_qp();
@@ -1743,7 +1706,6 @@ method stop_parse {
     $in_html_tag = 0;
 
     if ( $lang eq 'Nihongo' ) {
-
         # Close Nihongo (Japanese) parser
         $nihongo_parser{close}( $self );
 
@@ -1766,9 +1728,7 @@ method stop_parse {
 #
 # ----------------------------------------------------------------------------
 method parse_line ($read) {
-
     if ( $read ne '' ) {
-
         # For the Mac we do further splitting of the line at the CR
         # characters
 
@@ -1784,7 +1744,6 @@ method parse_line ($read) {
             if ( !$in_headers &&                           # PROFILE BLOCK START
                  ( $cur_encoding =~ /quoted\-printable/i ) ) { # PROFILE BLOCK STOP
                 if ( $line =~ s/=\r\n$// ) {
-
                     # Encoded in multiple lines
 
                     $prev .= $line;
@@ -1811,7 +1770,6 @@ method parse_line ($read) {
             }
 
             if ( defined( $color_resolver ) ) {
-
                 if ( !$in_html_tag ) {
                     $colorized .= $ut;
                     $ut = '';
@@ -1822,7 +1780,6 @@ method parse_line ($read) {
             }
 
             if ( $in_headers ) {
-
                 # temporary colorization while in headers is handled
                 # within parse_header
 
@@ -1831,7 +1788,6 @@ method parse_line ($read) {
                 # Check for blank line signifying end of headers
 
                 if ( $line =~ /^(\r\n|\r|\n)/ ) {
-
                     # Parse the last header
                     ( $cur_mime, $cur_encoding ) =      # PROFILE BLOCK START
                         $self->parse_header(
@@ -1863,7 +1819,6 @@ method parse_line ($read) {
                 # header and its argument
 
                 if ( $line =~ /^([A-Za-z\-]+):[ \t]*([^\n\r]*)/ ) {
-
                     # Parse the last header
 
                     ( $cur_mime, $cur_encoding ) =   # PROFILE BLOCK START
@@ -1892,7 +1847,6 @@ method parse_line ($read) {
                 $cur_encoding = '';
 
                 if ( !defined( $2 ) ) {
-
                     # This means there was no trailing -- on the mime
                     # boundary (which would have indicated the end of
                     # a boundary, so now we have a new part of the
@@ -1907,7 +1861,6 @@ method parse_line ($read) {
 
                     $in_headers = 1;
                 } else {
-
                     # A boundary was just terminated
 
                     $in_headers = 0;
@@ -1974,7 +1927,6 @@ method parse_line ($read) {
 #
 # ----------------------------------------------------------------------------
 method clear_out_base64 {
-
     my $colorized = '';
 
     if ( $base64 ne '' ) {
@@ -2023,7 +1975,6 @@ method clear_out_base64 {
 #
 # ----------------------------------------------------------------------------
 method clear_out_qp {
-
     if ( ( $cur_encoding =~ /quoted\-printable/i ) &&
          ( $prev ne '' ) ) {
         my $line = decode_qp( $prev );
@@ -2129,7 +2080,6 @@ method decode_string ($mystring, $lang = undef) {
 #
 # ----------------------------------------------------------------------------
 method get_header ($header) {
-
     return $from    if $header eq 'from';
     return $to      if $header eq 'to';
     return $cc      if $header eq 'cc';
@@ -2148,7 +2098,6 @@ method get_header ($header) {
 #
 # ----------------------------------------------------------------------------
 method parse_header ($header, $argument, $mime, $encoding) {
-
     print "Header ($header) ($argument)\n" if $debug;
 
     # After a discussion with Tim Peters and some looking at emails
@@ -2196,7 +2145,6 @@ method parse_header ($header, $argument, $mime, $encoding) {
     my $prefix = '';
 
     if ( $header =~ /^(From|To|Cc|Reply\-To)$/i ) {
-
         # These headers at least can be decoded
 
         $argument = $self->decode_string( $argument, $lang );
@@ -2240,11 +2188,9 @@ method parse_header ($header, $argument, $mime, $encoding) {
     }
 
     if ( $header =~ /^Subject$/i ) {
-
         $prefix = 'subject';
         $argument = $self->decode_string( $argument, $lang );
         if ( $subject eq '' ) {
-
             # In Japanese mode, parse subject with Nihongo (Japanese) parser
 
             $argument = $nihongo_parser{parse}( $self, $argument )    # PROFILE BLOCK START
@@ -2258,7 +2204,6 @@ method parse_header ($header, $argument, $mime, $encoding) {
     $date = $argument if ( $header =~ /^Date$/i );
 
     if ( $header =~ /^X-Spam-Status$/i ) {
-
         # We have found a header added by SpamAssassin. We expect to
         # find keywords in here that will help us classify our
         # messages
@@ -2280,7 +2225,6 @@ method parse_header ($header, $argument, $mime, $encoding) {
     }
 
     if ( $header =~ /^X-SpamViper-Score$/ ) {
-
         # This is a header that was added by SpamViper. Works just
         # like the SpamAssassin header.
 
@@ -2332,7 +2276,6 @@ method parse_header ($header, $argument, $mime, $encoding) {
                 $boundary =~ s/(.*)/\Q$1\E/g;
 
                 if ( $mime ne '' ) {
-
                     # Fortunately the pipe character isn't a valid
                     # mime boundary character!
 
@@ -2400,7 +2343,6 @@ method parse_header ($header, $argument, $mime, $encoding) {
 # ----------------------------------------------------------------------------
 
 method parse_css_style ($line, $braces) {
-
     # http://www.w3.org/TR/CSS2/grammar.html
 
     $braces = 0 if ( !defined( $braces ) );
@@ -2434,7 +2376,6 @@ method parse_css_style ($line, $braces) {
 # ----------------------------------------------------------------------------
 
 method parse_css_color ($color) {
-
     # CSS colors can be in a rgb(r,g,b), #hhh, #hhhhhh or a named color form
 
     # http://www.w3.org/TR/CSS2/syndata.html#color-units
@@ -2442,7 +2383,6 @@ method parse_css_color ($color) {
     my ( $r, $g, $b, $error, $found ) = ( 0, 0, 0, 0, 0 );
 
     if ( $color =~ /^rgb\( ?(.*?) ?\, ?(.*?) ?\, ?(.*?) ?\)$/ ) {
-
         # rgb(r,g,b) can be expressed as values 0-255 or percentages 0%-100%,
         # numbers outside this range are allowed and should be clipped into
         # this range
@@ -2499,7 +2439,6 @@ method parse_css_color ($color) {
         }
 
         if ( !$found ) {
-
             # here we have a combination of percentages and integers
             # or some other oddity
             $ispercent = 0;
@@ -2509,14 +2448,12 @@ method parse_css_color ($color) {
         print "        CSS rgb($r, $g, $b) percent: $ispercent\n" if $debug;
     }
     if ( $color =~ /^#(([0-9a-f]{3})|([0-9a-f]{6}))$/i ) {
-
         # #rgb or #rrggbb
         print "        CSS numeric form: $color\n" if $debug;
 
         $color = $2 || $3;
 
         if ( defined( $2 ) ) {
-
             # in 3 value form, the value is computed by doubling each digit
 
             ( $r, $g, $b ) = ( hex( $1 x 2 ), hex( $2 x 2 ), hex( $3 x 2 ) )  # PROFILE BLOCK START
@@ -2526,7 +2463,6 @@ method parse_css_color ($color) {
                 if ( $color =~ /^(..)(..)(..)$/ );                # PROFILE BLOCK STOP
         }
         $found = 1;
-
     }
     if ( $color =~ /^(aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|  # PROFILE BLOCK START
                       olive|purple|red|silver|teal|white|yellow)$/i ) {     # PROFILE BLOCK STOP
@@ -2577,7 +2513,6 @@ method parse_css_color ($color) {
 #
 # ----------------------------------------------------------------------------
 method match_attachment_filename ($line) {
-
     $line =~ /\s*(.*);\s*filename=\"(.*)\"/;
 
     return ( $1, $2 );
@@ -2593,7 +2528,6 @@ method match_attachment_filename ($line) {
 #
 # ----------------------------------------------------------------------------
 method file_extension ($filename) {
-
     if ( $filename =~ m/(.*)\.(.*)$/ ) {
         return ( $1, $2 );
     } else {
@@ -2610,7 +2544,6 @@ method file_extension ($filename) {
 #
 # ----------------------------------------------------------------------------
 method add_attachment_filename ($filename) {
-
     if ( defined( $filename ) && ( $filename ne '' ) ) {
         print "Add filename $filename\n" if $debug;
 
@@ -2639,7 +2572,6 @@ method add_attachment_filename ($filename) {
 #
 # ----------------------------------------------------------------------------
 method handle_disposition ($params) {
-
     my ( $attachment, $filename ) = $self->match_attachment_filename( $params );
 
     if ( defined( $attachment ) && ( $attachment eq 'attachment' ) ) {
@@ -2657,7 +2589,6 @@ method handle_disposition ($params) {
 #
 # ----------------------------------------------------------------------------
 method splitline ($line, $encoding) {
-
     $line =~ s/([^\r\n]{100,120} )/$1\r\n/g;
     $line =~ s/([^ \r\n]{120})/$1\r\n/g;
 
@@ -2677,7 +2608,6 @@ method splitline ($line, $encoding) {
 # GETTERS/SETTERS
 
 method first20 {
-
     return $first20;
 }
 
@@ -2719,11 +2649,9 @@ sub convert_encoding
     if ( ref $enc ) {
         $from = $enc->name;
     } else {
-
         # If guess does not work, check whether $from is valid.
 
         if ( !( Encode::resolve_alias( $from ) ) ) {
-
             # Use $default as $from when $from is invalid.
 
             $from = $default;
@@ -2761,7 +2689,6 @@ sub convert_encoding
 #
 # ----------------------------------------------------------------------------
 method parse_line_with_kakasi ($line) {
-
     # If the line does not contain Japanese characters, do nothing
     return $line if ( $line =~ /^[\x00-\x7F]*$/ );
 
@@ -2784,7 +2711,6 @@ method parse_line_with_kakasi ($line) {
 #
 # ----------------------------------------------------------------------------
 method parse_line_with_mecab ($line) {
-
     # If the line does not contain Japanese characters, do nothing
     return $line if ( $line =~ /^[\x00-\x7F]*$/ );
 
@@ -2809,7 +2735,6 @@ method parse_line_with_mecab ($line) {
 #
 # ----------------------------------------------------------------------------
 method parse_line_with_internal_parser ($line) {
-
     # If the line does not contain Japanese characters, do nothing
     return $line if ( $line =~ /^[\x00-\x7F]*$/ );
 
@@ -2843,7 +2768,6 @@ sub init_kakasi
 #
 # ----------------------------------------------------------------------------
 method init_mecab {
-
     # Initialize MeCab (-F %M\s -U %M\s -E \n is passed to MeCab as argument).
     # Insert white spaces after words.
 
@@ -2871,7 +2795,6 @@ sub close_kakasi
 #
 # ----------------------------------------------------------------------------
 method close_mecab {
-
     $nihongo_parser{obj_mecab} = undef;
 }
 
@@ -2886,7 +2809,6 @@ method close_mecab {
 #
 # ----------------------------------------------------------------------------
 method setup_nihongo_parser ($nihongo_parser) {
-
     # If MeCab is installed, use MeCab.
     if ( $nihongo_parser eq 'mecab' ) {
         my $has_mecab = 0;
@@ -2921,7 +2843,6 @@ method setup_nihongo_parser ($nihongo_parser) {
 
     # Setup perser's subroutines
     if ( $nihongo_parser eq 'mecab' ) {
-
         # Import MeCab module
         require MeCab;
         MeCab->import();
@@ -2930,7 +2851,6 @@ method setup_nihongo_parser ($nihongo_parser) {
         $nihongo_parser{parse} = \&parse_line_with_mecab;
         $nihongo_parser{close} = \&close_mecab;
     } elsif ( $nihongo_parser eq 'kakasi' ) {
-
         # Import Text::Kakasi module
         require Text::Kakasi;
         Text::Kakasi->import();
@@ -2939,7 +2859,6 @@ method setup_nihongo_parser ($nihongo_parser) {
         $nihongo_parser{parse} = \&parse_line_with_kakasi;
         $nihongo_parser{close} = \&close_kakasi;
     } else {
-
         # Require no external modules
         $nihongo_parser{init}  = sub { }; # Needs no initialization
         $nihongo_parser{parse} = \&parse_line_with_internal_parser;

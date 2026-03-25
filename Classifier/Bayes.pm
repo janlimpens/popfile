@@ -55,56 +55,55 @@ my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
 my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
 class Classifier::Bayes :isa(POPFile::Module) {
-
     # Set this to 1 to get scores for individual words in message detail
     field $wordscores__ :reader :writer = 0;
 
     # Choice for the format of the "word matrix" display.
-    field $wmformat__   :reader :writer = '';
+    field $wmformat__ :reader :writer = '';
 
-    field $hostname__   = '';
+    field $hostname__ = '';
 
     # DBI database handle
-    field $db__         :reader(db) = undef;
+    field $db__ :reader(db) = undef;
 
-    field $history__    = 0;
+    field $history__ = 0;
 
     # Cached prepared SQL statements (set in db_connect__, released in db_disconnect__)
-    field $db_get_buckets__                 = 0;
-    field $db_get_wordid__                  = 0;
-    field $db_get_word_count__              = 0;
-    field $db_put_word_count__              = 0;
-    field $db_get_unique_word_count__       = 0;
-    field $db_get_bucket_word_counts__      = 0;
-    field $db_get_bucket_word_count__       = 0;
-    field $db_get_full_total__              = 0;
-    field $db_get_bucket_parameter__        = 0;
-    field $db_set_bucket_parameter__        = 0;
+    field $db_get_buckets__ = 0;
+    field $db_get_wordid__ = 0;
+    field $db_get_word_count__ = 0;
+    field $db_put_word_count__ = 0;
+    field $db_get_unique_word_count__ = 0;
+    field $db_get_bucket_word_counts__ = 0;
+    field $db_get_bucket_word_count__ = 0;
+    field $db_get_full_total__ = 0;
+    field $db_get_bucket_parameter__ = 0;
+    field $db_set_bucket_parameter__ = 0;
     field $db_get_bucket_parameter_default__ = 0;
-    field $db_get_buckets_with_magnets__    = 0;
-    field $db_delete_zero_words__           = 0;
-    field $db_get_userid__                  = 0;
+    field $db_get_buckets_with_magnets__ = 0;
+    field $db_delete_zero_words__ = 0;
+    field $db_get_userid__ = 0;
 
     # Temporary per-call prepared statements (undef'd after use)
-    field $db_getwords__    = undef;
-    field $db_classify__    = undef;
-    field $get_wordids__    = undef;
+    field $db_getwords__ = undef;
+    field $db_classify__ = undef;
+    field $get_wordids__ = undef;
 
     # Caches the name of each bucket — subkeys: id, pseudo
-    field $db_bucketid__    = {};
+    field $db_bucketid__ = {};
 
     # Caches the IDs that map to parameter types
     field $db_parameterid__ = {};
 
     # Caches looked up parameter values on a per bucket basis
-    field $db_parameters__  = {};
+    field $db_parameters__ = {};
 
     # Per-userid word-count caches
-    field $db_bucketcount__  = {};
+    field $db_bucketcount__ = {};
     field $db_bucketunique__ = {};
 
     # Used to parse mail messages
-    field $parser__         = Classifier::MailParse->new();
+    field $parser__ = Classifier::MailParse->new();
 
     # The possible colors for buckets
     field $possible_colors__ = [ 'red',       'green',      'blue',       'brown', # PROFILE BLOCK START
@@ -115,64 +114,57 @@ class Classifier::Bayes :isa(POPFile::Module) {
                                  'black' ];                                          # PROFILE BLOCK STOP
 
     # Precomputed per-bucket log-probabilities
-    field $bucket_start__   = {};
+    field $bucket_start__ = {};
 
     # A very unlikely word
-    field $not_likely__     = {};
+    field $not_likely__ = {};
 
     # DEPRECATED: only used when upgrading old flat-file corpus files
     field $corpus_version__ = 1;
 
     # Unclassified cutoff: top probability must be this many times greater
     # than the second probability (default 100×)
-    field $unclassified__   = log(100);
+    field $unclassified__ = log(100);
 
     # Whether a magnet was used in the last classification
-    field $magnet_used__    = 0;
-    field $magnet_detail__  = 0;
+    field $magnet_used__ = 0;
+    field $magnet_detail__ = 0;
 
     # Maps session keys to user ids (see get_session_key / release_session_key)
-    field $api_sessions__   = {};
+    field $api_sessions__ = {};
 
-    field $db_is_sqlite__   = 0;
-    field $db_name__        = '';
+    field $db_is_sqlite__ = 0;
+    field $db_name__ = '';
 
     BUILD {
         $self->set_name('bayes');
     }
 
-#----------------------------------------------------------------------------
-#
-# forked
-#
-# This is called inside a child process that has just forked, since
-# the child needs access to the database we open it
-#
-#----------------------------------------------------------------------------
+=head2 forked
+
+This is called inside a child process that has just forked, since
+the child needs access to the database we open it
+
+=cut
 method forked ($writer = undef) {
     $self->db_connect__();
 }
 
-#----------------------------------------------------------------------------
-#
-# childexit
-#
-# This is called inside a child process that is about to finish, since
-# the child does not need access to the database we close it
-#
-#----------------------------------------------------------------------------
-method childexit {
+=head2 childexit
 
+This is called inside a child process that is about to finish, since
+the child does not need access to the database we close it
+
+=cut
+method childexit {
     $self->db_disconnect__();
 }
 
-#----------------------------------------------------------------------------
-#
-# initialize
-#
-# Called to set up the Bayes module's parameters
-#
-#----------------------------------------------------------------------------
+=head2 initialize
+
+Called to set up the Bayes module's parameters
+
+=cut
 method initialize {
     # This is the name for the database
 
@@ -286,17 +278,14 @@ method initialize {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# deliver
-#
-# Called by the message queue to deliver a message
-#
-# There is no return value from this method
-#
-#----------------------------------------------------------------------------
-method deliver ($type, @message) {
+=head2 deliver
 
+Called by the message queue to deliver a message
+
+There is no return value from this method
+
+=cut
+method deliver ($type, @message) {
     if ( $type eq 'COMIT' ) {
         $self->classified( $message[0], $message[2] );
     }
@@ -310,13 +299,11 @@ method deliver ($type, @message) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# start
-#
-# Called to start the Bayes module running
-#
-#----------------------------------------------------------------------------
+=head2 start
+
+Called to start the Bayes module running
+
+=cut
 method start {
     # In Japanese or Korean or Chinese mode, explicitly set LC_COLLATE and
     # LC_CTYPE to C.
@@ -356,7 +343,6 @@ method start {
 
         $self->log_( 2, "Use Nihongo (Japanese) parser : $nihongo_parser" );
         $self->config_( 'nihongo_parser', $nihongo_parser );
-
     }
 
     $self->upgrade_predatabase_data__();
@@ -364,44 +350,35 @@ method start {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# stop
-#
-# Called when POPFile is terminating
-#
-#----------------------------------------------------------------------------
-method stop {
+=head2 stop
 
+Called when POPFile is terminating
+
+=cut
+method stop {
     $self->db_disconnect__();
     $parser__ = undef;
 }
 
-#----------------------------------------------------------------------------
-#
-# classified
-#
-# Called to inform the module about a classification event
-#
-# There is no return value from this method
-#
-#----------------------------------------------------------------------------
-method classified ($session, $class) {
+=head2 classified
 
+Called to inform the module about a classification event
+
+There is no return value from this method
+
+=cut
+method classified ($session, $class) {
     $self->set_bucket_parameter( $session, $class, 'count',             # PROFILE BLOCK START
         $self->get_bucket_parameter( $session, $class, 'count' ) + 1 ); # PROFILE BLOCK STOP
 }
 
-#----------------------------------------------------------------------------
-#
-# backup_database__
-#
-# Called when the TICKD message is received each hour and if we are using
-# the default SQLite database will make a copy with the .backup extension
-#
-#----------------------------------------------------------------------------
-method backup_database__ {
+=head2 backup_database__
 
+Called when the TICKD message is received each hour and if we are using
+the default SQLite database will make a copy with the .backup extension
+
+=cut
+method backup_database__ {
     # If database backup is turned on and we are using SQLite then
     # backup the database by copying it
 
@@ -413,22 +390,18 @@ method backup_database__ {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# tweak_sqlite
-#
-# Called when a module wants is to tweak access to the SQLite database.
-#
-# $tweak    The tweak to apply (a bit in the sqlite_tweaks mask)
-# $state    1 to enable the tweak, 0 to disable
-# $db       The db handle to tweak
-#
-#----------------------------------------------------------------------------
-method tweak_sqlite ($tweak, $state, $db) {
+=head2 tweak_sqlite
 
+Called when a module wants is to tweak access to the SQLite database.
+
+C<$tweak> The tweak to apply (a bit in the sqlite_tweaks mask)
+C<$state> 1 to enable the tweak, 0 to disable
+C<$db> The db handle to tweak
+
+=cut
+method tweak_sqlite ($tweak, $state, $db) {
     if ( $db_is_sqlite__ &&
          ( $self->config_( 'sqlite_tweaks' ) & $tweak ) ) {
-
         $self->log_( 1, "Performing tweak $tweak to $state" );
 
         if ( $tweak == 1 ) {
@@ -438,23 +411,21 @@ method tweak_sqlite ($tweak, $state, $db) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# reclassified
-#
-# Called to inform the module about a reclassification from one bucket
-# to another
-#
-# session            Valid API session
-# bucket             The old bucket name
-# newbucket          The new bucket name
-# undo               1 if this is an undo operation
-#
-# There is no return value from this method
-#
-#----------------------------------------------------------------------------
-method reclassified ($session, $bucket, $newbucket, $undo) {
+=head2 reclassified
 
+Called to inform the module about a reclassification from one bucket
+to another
+
+
+There is no return value from this method
+
+C<session> Valid API session
+C<bucket> The old bucket name
+C<newbucket> The new bucket name
+C<undo> 1 if this is an undo operation
+
+=cut
+method reclassified ($session, $bucket, $newbucket, $undo) {
     $self->log_( 0, "Reclassification from $bucket to $newbucket" );
 
     my $c = $undo?-1:1;
@@ -490,18 +461,15 @@ method reclassified ($session, $bucket, $newbucket, $undo) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# get_color
-#
-# Retrieves the color for a specific word, color is the most likely bucket
-#
-# $session  Session key returned by get_session_key
-# $word     Word to get the color of
-#
-#----------------------------------------------------------------------------
-method get_color ($session, $word) {
+=head2 get_color
 
+Retrieves the color for a specific word, color is the most likely bucket
+
+C<$session> Session key returned by get_session_key
+C<$word> Word to get the color of
+
+=cut
+method get_color ($session, $word) {
     my $max   = -10000;
     my $color = 'black';
 
@@ -520,36 +488,29 @@ method get_color ($session, $word) {
     return $color;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_not_likely_
-#
-# Returns the probability of a word that doesn't appear
-#
-#----------------------------------------------------------------------------
-method get_not_likely_ ($session) {
+=head2 get_not_likely_
 
+Returns the probability of a word that doesn't appear
+
+=cut
+method get_not_likely_ ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
     return $not_likely__->{$userid};
 }
 
-#----------------------------------------------------------------------------
-#
-# get_value_
-#
-# Returns the value for a specific word in a bucket.  The word is
-# converted to the log value of the probability before return to get
-# the raw value just hit the hash directly or call get_base_value_
-#
-#----------------------------------------------------------------------------
-method get_value_ ($session, $bucket, $word) {
+=head2 get_value_
 
+Returns the value for a specific word in a bucket.  The word is
+converted to the log value of the probability before return to get
+the raw value just hit the hash directly or call get_base_value_
+
+=cut
+method get_value_ ($session, $bucket, $word) {
     my $value = $self->db_get_word_count__( $session, $bucket, $word );
 
     if ( defined( $value ) && ( $value > 0 ) ) {
-
         # Profiling notes:
         #
         # I tried caching the log of the total value and then doing
@@ -564,7 +525,6 @@ method get_value_ ($session, $bucket, $word) {
 }
 
 method get_base_value_ ($session, $bucket, $word) {
-
     my $value = $self->db_get_word_count__( $session, $bucket, $word );
 
     if ( defined( $value ) ) {
@@ -574,16 +534,13 @@ method get_base_value_ ($session, $bucket, $word) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# set_value_
-#
-# Sets the value for a word in a bucket and updates the total word
-# counts for the bucket and globally
-#
-#----------------------------------------------------------------------------
-method set_value_ ($session, $bucket, $word, $value) {
+=head2 set_value_
 
+Sets the value for a word in a bucket and updates the total word
+counts for the bucket and globally
+
+=cut
+method set_value_ ($session, $bucket, $word, $value) {
     if ( $self->db_put_word_count__( $session, $bucket, # PROFILE BLOCK START
              $word, $value ) == 1 ) {                   # PROFILE BLOCK STOP
 
@@ -601,19 +558,16 @@ method set_value_ ($session, $bucket, $word, $value) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# get_sort_value_ behaves the same as get_value_, except that it
-# returns not_likely__ rather than 0 if the word is not found.  This
-# makes its result more suitable as a sort key for bucket ranking.
-#
-#----------------------------------------------------------------------------
-method get_sort_value_ ($session, $bucket, $word) {
+=head2 get_sort_value_ behaves the same as get_value_, except that it
 
+returns not_likely__ rather than 0 if the word is not found.  This
+makes its result more suitable as a sort key for bucket ranking.
+
+=cut
+method get_sort_value_ ($session, $bucket, $word) {
     my $v = $self->get_value_( $session, $bucket, $word );
 
     if ( $v == 0 ) {
-
         my $userid = $self->valid_session_key__( $session );
         return undef if ( !defined( $userid ) );
 
@@ -623,15 +577,12 @@ method get_sort_value_ ($session, $bucket, $word) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# update_constants__
-#
-# Updates not_likely and bucket_start
-#
-#----------------------------------------------------------------------------
-method update_constants__ ($session) {
+=head2 update_constants__
 
+Updates not_likely and bucket_start
+
+=cut
+method update_constants__ ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -655,15 +606,12 @@ method update_constants__ ($session) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# db_connect__
-#
-# Connects to the POPFile database and returns 1 if successful
-#
-#----------------------------------------------------------------------------
-method db_connect__ {
+=head2 db_connect__
 
+Connects to the POPFile database and returns 1 if successful
+
+=cut
+method db_connect__ {
     # Connect to the database, note that the database must exist for
     # this to work, to make this easy for people POPFile we will
     # create the database automatically here using the file
@@ -689,7 +637,6 @@ method db_connect__ {
         $dbpresent = 1;
 
         if ( $mysql ) {
-
             # Turn on auto_reconnect
 
             $connection_options{mysql_auto_reconnect} = 1;
@@ -716,7 +663,6 @@ method db_connect__ {
     my $old_dbh;
 
     if ( $sqlite && $dbpresent ) {
-
         # Check if the database is SQLite2 format
 
         open my $dbfile, '<', $dbname;
@@ -764,7 +710,6 @@ method db_connect__ {
                 $need_convert = 1;
             }
         } else {
-
             # Update the config file
 
             $dbconnect = $self->config_( 'dbconnect' );
@@ -857,7 +802,6 @@ method db_connect__ {
     }
 
     if ( $need_upgrade ) {
-
         print "\n\nDatabase schema is outdated, performing automatic upgrade\n";
 
         # The database needs upgrading
@@ -952,17 +896,14 @@ method db_connect__ {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# insert_schema__
-#
-# Insert the POPFile schema in a database
-#
-# $sqlite          Set to 1 if this is a SQLite database
-#
-#----------------------------------------------------------------------------
-method insert_schema__ ($sqlite) {
+=head2 insert_schema__
 
+Insert the POPFile schema in a database
+
+C<$sqlite> Set to 1 if this is a SQLite database
+
+=cut
+method insert_schema__ ($sqlite) {
     if ( -e $self->get_root_path_( 'Classifier/popfile.sql' ) ) {
         my $schema = '';
 
@@ -996,18 +937,15 @@ method insert_schema__ ($sqlite) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# db_upgrade__
-#
-# Upgrade the POPFile schema / Convert the database
-#
-# $db_from         Database handle convert from
-#                  undef if upgrade POPFile schema
-#
-#----------------------------------------------------------------------------
-method db_upgrade__ ($db_from) {
+=head2 db_upgrade__
 
+Upgrade the POPFile schema / Convert the database
+
+C<$db_from> Database handle convert from
+                 undef if upgrade POPFile schema
+
+=cut
+method db_upgrade__ ($db_from) {
     my $drop_table;
 
     if ( !defined( $db_from ) ) {
@@ -1132,15 +1070,12 @@ method db_upgrade__ ($db_from) {
     unlink $ins_file;
 }
 
-#----------------------------------------------------------------------------
-#
-# db_disconnect__
-#
-# Disconnect from the POPFile database
-#
-#----------------------------------------------------------------------------
-method db_disconnect__ {
+=head2 db_disconnect__
 
+Disconnect from the POPFile database
+
+=cut
+method db_disconnect__ {
     $db_get_buckets__->finish;
     $db_get_wordid__->finish;
     $db_get_userid__->finish;
@@ -1179,20 +1114,17 @@ method db_disconnect__ {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# db_update_cache__
-#
-# Updates our local cache of user and bucket ids.
-#
-# $session           Must be a valid session
-# $updated_bucket    Bucket to update cache
-# $deleted_bucket    Bucket to delete cache
-#                    If none of them is specified, update whole cache.
-#
-#----------------------------------------------------------------------------
-method db_update_cache__ ($session, $updated_bucket = undef, $deleted_bucket = undef) {
+=head2 db_update_cache__
 
+Updates our local cache of user and bucket ids.
+
+C<$session> Must be a valid session
+C<$updated_bucket> Bucket to update cache
+C<$deleted_bucket> Bucket to delete cache
+                   If none of them is specified, update whole cache.
+
+=cut
+method db_update_cache__ ($session, $updated_bucket = undef, $deleted_bucket = undef) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -1255,20 +1187,17 @@ method db_update_cache__ ($session, $updated_bucket = undef, $deleted_bucket = u
     $self->update_constants__( $session );
 }
 
-#----------------------------------------------------------------------------
-#
-# db_get_word_count__
-#
-# Return the 'count' value for a word in a bucket.  If the word is not
-# found in that bucket then returns undef.
-#
-# $session          Valid session ID from get_session_key
-# $bucket           bucket word is in
-# $word             word to lookup
-#
-#----------------------------------------------------------------------------
-method db_get_word_count__ ($session, $bucket, $word) {
+=head2 db_get_word_count__
 
+Return the 'count' value for a word in a bucket.  If the word is not
+found in that bucket then returns undef.
+
+C<$session> Valid session ID from get_session_key
+C<$bucket> bucket word is in
+C<$word> word to lookup
+
+=cut
+method db_get_word_count__ ($session, $bucket, $word) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -1292,21 +1221,18 @@ method db_get_word_count__ ($session, $bucket, $word) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# db_put_word_count__
-#
-# Update 'count' value for a word in a bucket, if the update fails
-# then returns 0 otherwise is returns 1
-#
-# $session          Valid session ID from get_session_key
-# $bucket           bucket word is in
-# $word             word to update
-# $count            new count value
-#
-#----------------------------------------------------------------------------
-method db_put_word_count__ ($session, $bucket, $word, $count) {
+=head2 db_put_word_count__
 
+Update 'count' value for a word in a bucket, if the update fails
+then returns 0 otherwise is returns 1
+
+C<$session> Valid session ID from get_session_key
+C<$bucket> bucket word is in
+C<$word> word to update
+C<$count> new count value
+
+=cut
+method db_put_word_count__ ($session, $bucket, $word, $count) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -1333,14 +1259,12 @@ method db_put_word_count__ ($session, $bucket, $word, $count) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# upgrade_predatabase_data__
-#
-# Looks for old POPFile data (in flat files or BerkeleyDB tables) and
-# upgrades it to the SQL database.  Data upgraded is removed.
-#
-#----------------------------------------------------------------------------
+=head2 upgrade_predatabase_data__
+
+Looks for old POPFile data (in flat files or BerkeleyDB tables) and
+upgrades it to the SQL database.  Data upgraded is removed.
+
+=cut
 method upgrade_predatabase_data__ {
     my $c      = 0;
 
@@ -1358,7 +1282,6 @@ method upgrade_predatabase_data__ {
     my @buckets = glob $self->get_user_path_( $self->config_( 'corpus' ) . '/*' );
 
     foreach my $bucket (@buckets) {
-
         # A bucket directory must be a directory
 
         next unless ( -d $bucket );
@@ -1401,18 +1324,15 @@ method upgrade_predatabase_data__ {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# upgrade_bucket__
-#
-# Loads an individual bucket
-#
-# $session           Valid session key from get_session_key
-# $bucket            The bucket name
-#
-#----------------------------------------------------------------------------
-method upgrade_bucket__ ($session, $bucket) {
+=head2 upgrade_bucket__
 
+Loads an individual bucket
+
+C<$session> Valid session key from get_session_key
+C<$bucket> The bucket name
+
+=cut
+method upgrade_bucket__ ($session, $bucket) {
     $bucket =~ /([[:alpha:]0-9-_]+)$/;
     $bucket =  $1;
 
@@ -1468,7 +1388,6 @@ method upgrade_bucket__ ($session, $bucket) {
                 $value =~ s/\\(\?|\*|\||\(|\)|\[|\]|\{|\}|\^|\$|\.)/$1/g;
                 $self->create_magnet( $session, $bucket, $type, $value );
             } else {
-
                 # This branch is used to catch the original magnets in an
                 # old version of POPFile that were just there for from
                 # addresses only
@@ -1494,7 +1413,6 @@ method upgrade_bucket__ ($session, $bucket) {
         $db__->begin_work;
 
         if ( open WORDS, '<' . $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/table" ) )  {
-
             my $wc = 1;
 
             my $first = <WORDS>;
@@ -1581,21 +1499,18 @@ method upgrade_bucket__ ($session, $bucket) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# magnet_match_helper__
-#
-# Helper the determines if a specific string matches a certain magnet
-# type in a bucket, used by magnet_match_
-#
-# $session         Valid session from get_session_key
-# $match           The string to match
-# $bucket          The bucket to check
-# $type            The magnet type to check
-#
-#----------------------------------------------------------------------------
-method magnet_match_helper__ ($session, $match, $bucket, $type) {
+=head2 magnet_match_helper__
 
+Helper the determines if a specific string matches a certain magnet
+type in a bucket, used by magnet_match_
+
+C<$session> Valid session from get_session_key
+C<$match> The string to match
+C<$bucket> The bucket to check
+C<$type> The magnet type to check
+
+=cut
+method magnet_match_helper__ ($session, $match, $bucket, $type) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -1634,17 +1549,15 @@ method magnet_match_helper__ ($session, $match, $bucket, $type) {
     return 0;
 }
 
-#----------------------------------------------------------------------------
-#
-# single_magnet_match
-#
-# Helper the determines if a specific string matches a specific magnet
-#
-# $magnet          The magnet string
-# $match           The string to match
-# $type            The magnet type to check
-#
-#----------------------------------------------------------------------------
+=head2 single_magnet_match
+
+Helper the determines if a specific string matches a specific magnet
+
+C<$magnet> The magnet string
+C<$match> The string to match
+C<$type> The magnet type to check
+
+=cut
 method single_magnet_match ($magnet, $match, $type) {
     my $matched = 0;
 
@@ -1672,38 +1585,32 @@ method single_magnet_match ($magnet, $match, $type) {
     return $matched;
 }
 
-#----------------------------------------------------------------------------
-#
-# magnet_match__
-#
-# Helper the determines if a specific string matches a certain magnet
-# type in a bucket
-#
-# $session         Valid session from get_session_key
-# $match           The string to match
-# $bucket          The bucket to check
-# $type            The magnet type to check
-#
-#----------------------------------------------------------------------------
-method magnet_match__ ($session, $match, $bucket, $type) {
+=head2 magnet_match__
 
+Helper the determines if a specific string matches a certain magnet
+type in a bucket
+
+C<$session> Valid session from get_session_key
+C<$match> The string to match
+C<$bucket> The bucket to check
+C<$type> The magnet type to check
+
+=cut
+method magnet_match__ ($session, $match, $bucket, $type) {
     return $self->magnet_match_helper__( $session, $match, $bucket, $type );
 }
 
-#----------------------------------------------------------------------------
-#
-# write_line__
-#
-# Writes a line to a file and parses it unless the classification is
-# already known
-#
-# $file         File handle for file to write line to
-# $line         The line to write
-# $class        (optional) The current classification
-#
-#----------------------------------------------------------------------------
-method write_line__ ($file, $line, $class) {
+=head2 write_line__
 
+Writes a line to a file and parses it unless the classification is
+already known
+
+C<$file> File handle for file to write line to
+C<$line> The line to write
+C<$class> (optional) The current classification
+
+=cut
+method write_line__ ($file, $line, $class) {
     if ( defined( $file ) && ( ref $file eq 'GLOB' ) ) {
         if ( defined( fileno $file ) ) {
             print $file $line;
@@ -1718,21 +1625,18 @@ method write_line__ ($file, $line, $class) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# add_words_to_bucket__
-#
-# Takes words previously parsed by the mail parser and adds/subtracts
-# them to/from a bucket, this is a helper used by
-# add_messages_to_bucket, remove_message_from_bucket
-#
-# $session        Valid session from get_session_key
-# $bucket         Bucket to add to
-# $subtract       Set to -1 means subtract the words, set to 1 means add
-#
-#----------------------------------------------------------------------------
-method add_words_to_bucket__ ($session, $bucket, $subtract) {
+=head2 add_words_to_bucket__
 
+Takes words previously parsed by the mail parser and adds/subtracts
+them to/from a bucket, this is a helper used by
+add_messages_to_bucket, remove_message_from_bucket
+
+C<$session> Valid session from get_session_key
+C<$bucket> Bucket to add to
+C<$subtract> Set to -1 means subtract the words, set to 1 means add
+
+=cut
+method add_words_to_bucket__ ($session, $bucket, $subtract) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -1779,7 +1683,6 @@ method add_words_to_bucket__ ($session, $bucket, $subtract) {
 
     $db__->begin_work;
     foreach my $word (keys %{$parser__->words()}) {
-
         # If there's already a count then it means that the word is
         # already in the database and we have its id in
         # $wordmap{$word} so for speed we execute the
@@ -1794,7 +1697,6 @@ method add_words_to_bucket__ ($session, $bucket, $subtract) {
                 $counts{$wordmap{$word}} +
                     $subtract * $parser__->words()->{$word} ); # PROFILE BLOCK STOP
         } else {
-
             # If the word is not in the database and we are trying to
             # subtract then we do nothing because negative values are
             # meaningless
@@ -1818,35 +1720,31 @@ method add_words_to_bucket__ ($session, $bucket, $subtract) {
     $db__->commit;
 }
 
-#----------------------------------------------------------------------------
-#
-# echo_to_dot_
-#
-# $mail The stream (created with IO::) to send the message to (the
-# remote mail server)
-# $client (optional) The local mail client (created with IO::) that
-# needs the response
-# $file (optional) A file to print the response to, caller specifies
-# open style
-# $before (optional) String to send to client before the dot is sent
-#
-# echo all information from the $mail server until a single line with
-# a . is seen
-#
-# NOTE Also echoes the line with . to $client but not to $file
-#
-# Returns 1 if there was a . or 0 if reached EOF before we hit the .
-#
-#----------------------------------------------------------------------------
-method echo_to_dot_ ($mail, $client, $file, $before) {
+=head2 echo_to_dot_
 
+$mail The stream (created with IO::) to send the message to (the
+remote mail server)
+$client (optional) The local mail client (created with IO::) that
+needs the response
+$file (optional) A file to print the response to, caller specifies
+open style
+$before (optional) String to send to client before the dot is sent
+
+echo all information from the $mail server until a single line with
+a . is seen
+
+NOTE Also echoes the line with . to $client but not to $file
+
+Returns 1 if there was a . or 0 if reached EOF before we hit the .
+
+=cut
+method echo_to_dot_ ($mail, $client, $file, $before) {
     my $hit_dot = 0;
 
     my $isopen = open FILE, "$file" if ( defined( $file ) );
     binmode FILE if ($isopen);
 
     while ( my $line = $self->slurp_( $mail ) ) {
-
         # Check for an abort
 
         last if ( $self->alive() == 0 );
@@ -1874,7 +1772,6 @@ method echo_to_dot_ ($mail, $client, $file, $before) {
 
         print $client $line if ( defined( $client ) );
         print FILE    $line if ( defined( $isopen ) );
-
     }
 
     close FILE if ( $isopen );
@@ -1882,16 +1779,14 @@ method echo_to_dot_ ($mail, $client, $file, $before) {
     return $hit_dot;
 }
 
-#----------------------------------------------------------------------------
-#
-# substr_euc__
-#
-# "substr" function which supports EUC Japanese charset
-#
-# $pos      Start position
-# $len      Word length
-#
-#----------------------------------------------------------------------------
+=head2 substr_euc__
+
+"substr" function which supports EUC Japanese charset
+
+C<$pos> Start position
+C<$len> Word length
+
+=cut
 sub substr_euc__
 {
     my ( $str, $pos, $len ) = @_;
@@ -1917,16 +1812,13 @@ sub substr_euc__
     return $result_str;
 }
 
-#----------------------------------------------------------------------------
-#
-# generate_unique_session_key__
-#
-# Returns a unique string based session key that can be used as a key
-# in the api_sessions__
-#
-#----------------------------------------------------------------------------
-method generate_unique_session_key__ {
+=head2 generate_unique_session_key__
 
+Returns a unique string based session key that can be used as a key
+in the api_sessions__
+
+=cut
+method generate_unique_session_key__ {
     my @chars = ( 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',   # PROFILE BLOCK START
                   'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'U', 'V', 'W', 'X', 'Y',
                   'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A' ); # PROFILE BLOCK STOP
@@ -1953,42 +1845,38 @@ method generate_unique_session_key__ {
     return $session;
 }
 
-#----------------------------------------------------------------------------
-#
-# release_session_key_private__
-#
-# $session        A session key previously returned by get_session_key
-#
-# Releases and invalidates the session key. Worker function that does
-# the work of release_session_key.
-#
-#                   **** DO NOT CALL DIRECTLY ****
-#
-# unless you want your session key released immediately, possibly
-# preventing asynchronous tasks from completing
-#
-#----------------------------------------------------------------------------
-method release_session_key_private__ ($session) {
+=head2 release_session_key_private__
 
+
+Releases and invalidates the session key. Worker function that does
+the work of release_session_key.
+
+                  **** DO NOT CALL DIRECTLY ****
+
+unless you want your session key released immediately, possibly
+preventing asynchronous tasks from completing
+
+C<$session> A session key previously returned by get_session_key
+
+=cut
+method release_session_key_private__ ($session) {
     if ( defined( $api_sessions__->{$session} ) ) {
         $self->log_( 1, "release_session_key releasing key $session for user $api_sessions__->{$session}" );
         delete $api_sessions__->{$session};
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# valid_session_key__
-#
-# $session                Session key returned by call to get_session_key
-#
-# Returns undef is the session key is not valid, or returns the user
-# ID associated with the session key which can be used in database
-# accesses
-#
-#----------------------------------------------------------------------------
-method valid_session_key__ ($session) {
+=head2 valid_session_key__
 
+
+Returns undef is the session key is not valid, or returns the user
+ID associated with the session key which can be used in database
+accesses
+
+C<$session> Session key returned by call to get_session_key
+
+=cut
+method valid_session_key__ ($session) {
     # This provides protection against someone using the XML-RPC
     # interface and calling this API directly to fish for session
     # keys, this must be called from within this module
@@ -2031,19 +1919,17 @@ method valid_session_key__ ($session) {
 #----------------------------------------------------------------------------
 #----------------------------------------------------------------------------
 
-#----------------------------------------------------------------------------
-#
-# get_session_key
-#
-# $user           The name of an existing user
-# $pwd            The user's password
-#
-# Returns a string based session key if the username and password
-# match, or undef if not
-#
-#----------------------------------------------------------------------------
-method get_session_key ($user, $pwd) {
+=head2 get_session_key
 
+
+Returns a string based session key if the username and password
+match, or undef if not
+
+C<$user> The name of an existing user
+C<$pwd> The user's password
+
+=cut
+method get_session_key ($user, $pwd) {
     # The password is stored in the database as an MD5 hash of the
     # username and password concatenated and separated by the string
     # __popfile__, so compute the hash here
@@ -2054,7 +1940,6 @@ method get_session_key ($user, $pwd) {
         $db_get_userid__, $user, $hash ); # PROFILE BLOCK STOP
     my $result = $db_get_userid__->fetchrow_arrayref;
     if ( !defined( $result ) ) {
-
         # The delay of one second here is to prevent people from trying out
         # username/password combinations at high speed to determine the
         # credentials of a valid user
@@ -2075,39 +1960,35 @@ method get_session_key ($user, $pwd) {
     return $session;
 }
 
-#----------------------------------------------------------------------------
-#
-# release_session_key
-#
-# $session        A session key previously returned by get_session_key
-#
-# Releases and invalidates the session key
-#
-#----------------------------------------------------------------------------
-method release_session_key ($session) {
+=head2 release_session_key
 
+
+Releases and invalidates the session key
+
+C<$session> A session key previously returned by get_session_key
+
+=cut
+method release_session_key ($session) {
     $self->mq_post_( "RELSE", $session );
 }
 
 
-#----------------------------------------------------------------------------
-#
-# get_top_bucket__
-#
-# Helper function used by classify to get the bucket with the highest
-# score from data stored in a matrix of information (see definition of
-# %matrix in classify for details) and a list of potential buckets
-#
-# $userid         User ID for database access
-# $id             ID of a word in $matrix
-# $matrix         Reference to the %matrix hash in classify
-# $buckets        Reference to a list of buckets
-#
-# Returns the bucket in $buckets with the highest score
-#
-#----------------------------------------------------------------------------
-method get_top_bucket__ ($userid, $id, $matrix, $buckets) {
+=head2 get_top_bucket__
 
+Helper function used by classify to get the bucket with the highest
+score from data stored in a matrix of information (see definition of
+%matrix in classify for details) and a list of potential buckets
+
+
+Returns the bucket in $buckets with the highest score
+
+C<$userid> User ID for database access
+C<$id> ID of a word in $matrix
+C<$matrix> Reference to the %matrix hash in classify
+C<$buckets> Reference to a list of buckets
+
+=cut
+method get_top_bucket__ ($userid, $id, $matrix, $buckets) {
     my $best_probability = 0;
     my $top_bucket       = 'unclassified';
 
@@ -2126,24 +2007,23 @@ method get_top_bucket__ ($userid, $id, $matrix, $buckets) {
     return $top_bucket;
 }
 
-#----------------------------------------------------------------------------
-#
-# classify
-#
-# $session   A valid session key returned by a call to get_session_key
-# $file The name of the file containing the text to classify (or undef
-# to use the data already in the parser)
-# $templ     Reference to the UI template used for word score display
-# $matrix (optional) Reference to a hash that will be filled with the
-# word matrix used in classification
-# $idmap (optional) Reference to a hash that will map word ids in the
-# $matrix to actual words
-#
-# Splits the mail message into valid words, then runs the Bayes
-# algorithm to figure out which bucket it belongs in.  Returns the
-# bucket name
-#
-#----------------------------------------------------------------------------
+=head2 classify
+
+
+Splits the mail message into valid words, then runs the Bayes
+algorithm to figure out which bucket it belongs in.  Returns the
+bucket name
+
+C<$session> A valid session key returned by a call to get_session_key
+$file The name of the file containing the text to classify (or undef
+to use the data already in the parser)
+C<$templ> Reference to the UI template used for word score display
+$matrix (optional) Reference to a hash that will be filled with the
+word matrix used in classification
+$idmap (optional) Reference to a hash that will map word ids in the
+$matrix to actual words
+
+=cut
 method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = undef) {
     my $msg_total = 0;
 
@@ -2653,35 +2533,33 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     return $class;
 }
 
-#----------------------------------------------------------------------------
-#
-# classify_and_modify
-#
-# This method reads an email terminated by . on a line by itself (or
-# the end of stream) from a handle and creates an entry in the
-# history, outputting the same email on another handle with the
-# appropriate header modifications and insertions
-#
-# $session  - A valid session key returned by a call to get_session_key
-# $mail     - an open stream to read the email from
-# $client   - an open stream to write the modified email to
-# $nosave   - set to 1 indicates that this should not save to history
-# $class    - if we already know the classification
-# $slot     - Must be defined if $class is set
-# $echo     - 1 to echo to the client, 0 to supress, defaults to 1
-# $crlf     - The sequence to use at the end of a line in the output,
-#   normally this is left undefined and this method uses $eol (the
-#   normal network end of line), but if this method is being used with
-#   real files you may wish to pass in \n instead
-#
-# Returns a classification if it worked and the slot ID of the history
-# item related to this classification
-#
-# IMPORTANT NOTE: $mail and $client should be binmode
-#
-#----------------------------------------------------------------------------
-method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $echo, $crlf) {
+=head2 classify_and_modify
 
+This method reads an email terminated by . on a line by itself (or
+the end of stream) from a handle and creates an entry in the
+history, outputting the same email on another handle with the
+appropriate header modifications and insertions
+
+
+Returns a classification if it worked and the slot ID of the history
+item related to this classification
+
+IMPORTANT NOTE: $mail and $client should be binmode
+
+C<$session> - A valid session key returned by a call to get_session_key
+C<$mail> - an open stream to read the email from
+C<$client> - an open stream to write the modified email to
+C<$nosave> - set to 1 indicates that this should not save to history
+C<$class> - if we already know the classification
+C<$slot> - Must be defined if $class is set
+C<$echo> - 1 to echo to the client, 0 to supress, defaults to 1
+C<$crlf> - The sequence to use at the end of a line in the output,
+  normally this is left undefined and this method uses $eol (the
+  normal network end of line), but if this method is being used with
+  real files you may wish to pass in \n instead
+
+=cut
+method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $echo, $crlf) {
     $echo = 1    unless (defined $echo);
     $crlf = $eol unless (defined $crlf);
 
@@ -2769,7 +2647,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
         }
 
         if ( $getting_headers )  {
-
             # Kill header lines containing only whitespace (Exim does this)
 
             next if ( $line =~ /^[ \t]+(\r\n|\r|\n)$/i );
@@ -2821,7 +2698,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
                         }
                         $msg_head_q = '';
                     } else {
-
                         # Gather up any header lines that are questionable
 
                         $self->log_( 1, "Found odd email header: $line" );
@@ -2932,7 +2808,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     # Echo the text of the message to the client
 
     if ( $echo ) {
-
         # If the bucket is quarantined then we'll treat it specially
         # by changing the message header to contain information from
         # POPFile and wrapping the original message in a MIME encoding
@@ -3019,7 +2894,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     # file if not echoing and saving
 
     if ( !($nosave || $echo) ) {
-
         # if we're saving (not nosave) and not echoing, we can safely
         # unload this into the temp file
 
@@ -3059,7 +2933,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
             unlink("$msg_file.flush");
         }
     } else {
-
         # if we are echoing, the client can make sure we have no data
         # loss otherwise, the data can be discarded (not saved and not
         # echoed)
@@ -3078,18 +2951,15 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     return ( $classification, $slot, $magnet_used__ );
 }
 
-#----------------------------------------------------------------------------
-#
-# get_buckets
-#
-# Returns a list containing all the real bucket names sorted into
-# alphabetic order
-#
-# $session   A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method get_buckets ($session) {
+=head2 get_buckets
 
+Returns a list containing all the real bucket names sorted into
+alphabetic order
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method get_buckets ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3106,18 +2976,15 @@ method get_buckets ($session) {
     return @buckets;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_bucket_id
-#
-# Returns the internal ID for a bucket for database calls
-#
-# $session   A valid session key returned by a call to get_session_key
-# $bucket    The bucket name
-#
-#----------------------------------------------------------------------------
-method get_bucket_id ($session, $bucket) {
+=head2 get_bucket_id
 
+Returns the internal ID for a bucket for database calls
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The bucket name
+
+=cut
+method get_bucket_id ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
     return undef if ( !defined( $db_bucketid__->{$userid}{$bucket} ) );
@@ -3125,18 +2992,15 @@ method get_bucket_id ($session, $bucket) {
     return $db_bucketid__->{$userid}{$bucket}{id};
 }
 
-#----------------------------------------------------------------------------
-#
-# get_bucket_name
-#
-# Returns the name of a bucket from an internal ID
-#
-# $session   A valid session key returned by a call to get_session_key
-# $id        The bucket id
-#
-#----------------------------------------------------------------------------
-method get_bucket_name ($session, $id) {
+=head2 get_bucket_name
 
+Returns the name of a bucket from an internal ID
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$id> The bucket id
+
+=cut
+method get_bucket_name ($session, $id) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3149,18 +3013,15 @@ method get_bucket_name ($session, $id) {
     return '';
 }
 
-#----------------------------------------------------------------------------
-#
-# get_pseudo_buckets
-#
-# Returns a list containing all the pseudo bucket names sorted into
-# alphabetic order
-#
-# $session   A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method get_pseudo_buckets ($session) {
+=head2 get_pseudo_buckets
 
+Returns a list containing all the pseudo bucket names sorted into
+alphabetic order
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method get_pseudo_buckets ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3175,18 +3036,15 @@ method get_pseudo_buckets ($session) {
     return @buckets;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_all_buckets
-#
-# Returns a list containing all the bucket names sorted into
-# alphabetic order
-#
-# $session   A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method get_all_buckets ($session) {
+=head2 get_all_buckets
 
+Returns a list containing all the bucket names sorted into
+alphabetic order
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method get_all_buckets ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3199,18 +3057,15 @@ method get_all_buckets ($session) {
     return @buckets;
 }
 
-#----------------------------------------------------------------------------
-#
-# is_pseudo_bucket
-#
-# Returns 1 if the named bucket is pseudo
-#
-# $session   A valid session key returned by a call to get_session_key
-# $bucket    The bucket to check
-#
-#----------------------------------------------------------------------------
-method is_pseudo_bucket ($session, $bucket) {
+=head2 is_pseudo_bucket
 
+Returns 1 if the named bucket is pseudo
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The bucket to check
+
+=cut
+method is_pseudo_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3218,18 +3073,15 @@ method is_pseudo_bucket ($session, $bucket) {
           && $db_bucketid__->{$userid}{$bucket}{pseudo} ); # PROFILE BLOCK STOP
 }
 
-#----------------------------------------------------------------------------
-#
-# is_bucket
-#
-# Returns 1 if the named bucket is a bucket
-#
-# $session   A valid session key returned by a call to get_session_key
-# $bucket    The bucket to check
-#
-#----------------------------------------------------------------------------
-method is_bucket ($session, $bucket) {
+=head2 is_bucket
 
+Returns 1 if the named bucket is a bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The bucket to check
+
+=cut
+method is_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3237,18 +3089,15 @@ method is_bucket ($session, $bucket) {
              ( !$db_bucketid__->{$userid}{$bucket}{pseudo} ) );    # PROFILE BLOCK STOP
 }
 
-#----------------------------------------------------------------------------
-#
-# get_bucket_word_count
-#
-# Returns the total word count (including duplicates) for the passed in bucket
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      The name of the bucket for which the word count is desired
-#
-#----------------------------------------------------------------------------
-method get_bucket_word_count ($session, $bucket) {
+=head2 get_bucket_word_count
 
+Returns the total word count (including duplicates) for the passed in bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The name of the bucket for which the word count is desired
+
+=cut
+method get_bucket_word_count ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3257,19 +3106,16 @@ method get_bucket_word_count ($session, $bucket) {
     return defined($c)?$c:0;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_bucket_word_list
-#
-# Returns a list of words all with the same first character
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      The name of the bucket for which the word count is desired
-# $prefix      The first character of the words
-#
-#----------------------------------------------------------------------------
-method get_bucket_word_list ($session, $bucket, $prefix) {
+=head2 get_bucket_word_list
 
+Returns a list of words all with the same first character
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The name of the bucket for which the word count is desired
+C<$prefix> The first character of the words
+
+=cut
+method get_bucket_word_list ($session, $bucket, $prefix) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3289,18 +3135,15 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
     return @{$result};
 }
 
-#----------------------------------------------------------------------------
-#
-# get_bucket_word_prefixes
-#
-# Returns a list of all the initial letters of words in a bucket
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      The name of the bucket for which the word count is desired
-#
-#----------------------------------------------------------------------------
-method get_bucket_word_prefixes ($session, $bucket) {
+=head2 get_bucket_word_prefixes
 
+Returns a list of all the initial letters of words in a bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The name of the bucket for which the word count is desired
+
+=cut
+method get_bucket_word_prefixes ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3323,17 +3166,14 @@ method get_bucket_word_prefixes ($session, $bucket) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# get_word_count
-#
-# Returns the total word count (including duplicates)
-#
-# $session   A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method get_word_count ($session) {
+=head2 get_word_count
 
+Returns the total word count (including duplicates)
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method get_word_count ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3345,38 +3185,32 @@ method get_word_count ($session) {
     return $word_count;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_count_for_word
-#
-# Returns the number of times the word occurs in a bucket
-#
-# $session         A valid session key returned by a call to get_session_key
-# $bucket          The bucket we are asking about
-# $word            The word we are asking about
-#
-#----------------------------------------------------------------------------
-method get_count_for_word ($session, $bucket, $word) {
+=head2 get_count_for_word
 
+Returns the number of times the word occurs in a bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The bucket we are asking about
+C<$word> The word we are asking about
+
+=cut
+method get_count_for_word ($session, $bucket, $word) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
     return $self->get_base_value_( $session, $bucket, $word );
 }
 
-#----------------------------------------------------------------------------
-#
-# get_bucket_unique_count
-#
-# Returns the unique word count (excluding duplicates) for the passed
-# in bucket
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      The name of the bucket for which the word count is desired
-#
-#----------------------------------------------------------------------------
-method get_bucket_unique_count ($session, $bucket) {
+=head2 get_bucket_unique_count
 
+Returns the unique word count (excluding duplicates) for the passed
+in bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The name of the bucket for which the word count is desired
+
+=cut
+method get_bucket_unique_count ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3385,17 +3219,14 @@ method get_bucket_unique_count ($session, $bucket) {
     return defined($c)?$c:0;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_unique_word_count
-#
-# Returns the unique word count (excluding duplicates) for all buckets
-#
-# $session   A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method get_unique_word_count ($session) {
+=head2 get_unique_word_count
 
+Returns the unique word count (excluding duplicates) for all buckets
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method get_unique_word_count ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3407,54 +3238,45 @@ method get_unique_word_count ($session) {
     return $unique_word_count;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_bucket_color
-#
-# Returns the color associated with a bucket
-#
-# $session   A valid session key returned by a call to get_session_key
-# $bucket      The name of the bucket for which the color is requested
-#
-# NOTE  This API is DEPRECATED in favor of calling get_bucket_parameter for
-#       the parameter named 'color'
-#----------------------------------------------------------------------------
-method get_bucket_color ($session, $bucket) {
+=head2 get_bucket_color
 
+Returns the color associated with a bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The name of the bucket for which the color is requested
+C<NOTE> This API is DEPRECATED in favor of calling get_bucket_parameter for
+      the parameter named 'color'
+
+=cut
+method get_bucket_color ($session, $bucket) {
     return $self->get_bucket_parameter( $session, $bucket, 'color' );
 }
 
-#----------------------------------------------------------------------------
-#
-# set_bucket_color
-#
-# Returns the color associated with a bucket
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      The name of the bucket for which the color is requested
-# $color       The new color
-#
-# NOTE  This API is DEPRECATED in favor of calling set_bucket_parameter for
-#       the parameter named 'color'
-#----------------------------------------------------------------------------
-method set_bucket_color ($session, $bucket, $color) {
+=head2 set_bucket_color
 
+Returns the color associated with a bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The name of the bucket for which the color is requested
+C<$color> The new color
+C<NOTE> This API is DEPRECATED in favor of calling set_bucket_parameter for
+      the parameter named 'color'
+
+=cut
+method set_bucket_color ($session, $bucket, $color) {
     return $self->set_bucket_parameter( $session, $bucket, 'color', $color );
 }
 
-#----------------------------------------------------------------------------
-#
-# get_bucket_parameter
-#
-# Returns the value of a per bucket parameter
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      The name of the bucket
-# $parameter   The name of the parameter
-#
-#----------------------------------------------------------------------------
-method get_bucket_parameter ($session, $bucket, $parameter) {
+=head2 get_bucket_parameter
 
+Returns the value of a per bucket parameter
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The name of the bucket
+C<$parameter> The name of the parameter
+
+=cut
+method get_bucket_parameter ($session, $bucket, $parameter) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3502,20 +3324,17 @@ method get_bucket_parameter ($session, $bucket, $parameter) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# set_bucket_parameter
-#
-# Sets the value associated with a bucket specific parameter
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      The name of the bucket
-# $parameter   The name of the parameter
-# $value       The new value
-#
-#----------------------------------------------------------------------------
-method set_bucket_parameter ($session, $bucket, $parameter, $value) {
+=head2 set_bucket_parameter
 
+Sets the value associated with a bucket specific parameter
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The name of the bucket
+C<$parameter> The name of the parameter
+C<$value> The new value
+
+=cut
+method set_bucket_parameter ($session, $bucket, $parameter, $value) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3547,19 +3366,16 @@ method set_bucket_parameter ($session, $bucket, $parameter, $value) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_html_colored_message
-#
-# Parser a mail message stored in a file and returns HTML representing
-# the message with coloring of the words
-#
-# $session        A valid session key returned by a call to get_session_key
-# $file           The file to parse
-#
-#----------------------------------------------------------------------------
-method get_html_colored_message ($session, $file) {
+=head2 get_html_colored_message
 
+Parser a mail message stored in a file and returns HTML representing
+the message with coloring of the words
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$file> The file to parse
+
+=cut
+method get_html_colored_message ($session, $file) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3576,21 +3392,18 @@ method get_html_colored_message ($session, $file) {
     return $result;
 }
 
-#----------------------------------------------------------------------------
-#
-# fast_get_html_colored_message
-#
-# Parser a mail message stored in a file and returns HTML representing
-# the message with coloring of the words
-#
-# $session        A valid session key returned by a call to get_session_key
-# $file           The file to colorize
-# $matrix         Reference to the matrix hash from a call to classify
-# $idmap          Reference to the idmap hash from a call to classify
-#
-#----------------------------------------------------------------------------
-method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
+=head2 fast_get_html_colored_message
 
+Parser a mail message stored in a file and returns HTML representing
+the message with coloring of the words
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$file> The file to colorize
+C<$matrix> Reference to the matrix hash from a call to classify
+C<$idmap> Reference to the idmap hash from a call to classify
+
+=cut
+method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3622,18 +3435,15 @@ method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
     return $result;
 }
 
-#----------------------------------------------------------------------------
-#
-# create_bucket
-#
-# Creates a new bucket, returns 1 if the creation succeeded
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      Name for the new bucket
-#
-#----------------------------------------------------------------------------
-method create_bucket ($session, $bucket) {
+=head2 create_bucket
 
+Creates a new bucket, returns 1 if the creation succeeded
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> Name for the new bucket
+
+=cut
+method create_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3653,18 +3463,15 @@ method create_bucket ($session, $bucket) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# delete_bucket
-#
-# Deletes a bucket, returns 1 if the delete succeeded
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      Name of the bucket to delete
-#
-#----------------------------------------------------------------------------
-method delete_bucket ($session, $bucket) {
+=head2 delete_bucket
 
+Deletes a bucket, returns 1 if the delete succeeded
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> Name of the bucket to delete
+
+=cut
+method delete_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3687,19 +3494,16 @@ method delete_bucket ($session, $bucket) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# rename_bucket
-#
-# Renames a bucket, returns 1 if the rename succeeded
-#
-# $session             A valid session key returned by a call to get_session_key
-# $old_bucket          The old name of the bucket
-# $new_bucket          The new name of the bucket
-#
-#----------------------------------------------------------------------------
-method rename_bucket ($session, $old_bucket, $new_bucket) {
+=head2 rename_bucket
 
+Renames a bucket, returns 1 if the rename succeeded
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$old_bucket> The old name of the bucket
+C<$new_bucket> The new name of the bucket
+
+=cut
+method rename_bucket ($session, $old_bucket, $new_bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3735,19 +3539,16 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# add_messages_to_bucket
-#
-# Parses mail messages and updates the statistics in the specified bucket
-#
-# $session         A valid session key returned by a call to get_session_key
-# $bucket          Name of the bucket to be updated
-# @files           List of file names to parse
-#
-#----------------------------------------------------------------------------
-method add_messages_to_bucket ($session, $bucket, @files) {
+=head2 add_messages_to_bucket
 
+Parses mail messages and updates the statistics in the specified bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> Name of the bucket to be updated
+@files           List of file names to parse
+
+=cut
+method add_messages_to_bucket ($session, $bucket, @files) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3773,19 +3574,16 @@ method add_messages_to_bucket ($session, $bucket, @files) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# add_message_to_bucket
-#
-# Parses a mail message and updates the statistics in the specified bucket
-#
-# $session         A valid session key returned by a call to get_session_key
-# $bucket          Name of the bucket to be updated
-# $file            Name of file containing mail message to parse
-#
-#----------------------------------------------------------------------------
-method add_message_to_bucket ($session, $bucket, $file) {
+=head2 add_message_to_bucket
 
+Parses a mail message and updates the statistics in the specified bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> Name of the bucket to be updated
+C<$file> Name of file containing mail message to parse
+
+=cut
+method add_message_to_bucket ($session, $bucket, $file) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3796,19 +3594,16 @@ method add_message_to_bucket ($session, $bucket, $file) {
     return $self->add_messages_to_bucket( $session, $bucket, $file );
 }
 
-#----------------------------------------------------------------------------
-#
-# remove_message_from_bucket
-#
-# Parses a mail message and updates the statistics in the specified bucket
-#
-# $session         A valid session key returned by a call to get_session_key
-# $bucket          Name of the bucket to be updated
-# $file            Name of file containing mail message to parse
-#
-#----------------------------------------------------------------------------
-method remove_message_from_bucket ($session, $bucket, $file) {
+=head2 remove_message_from_bucket
 
+Parses a mail message and updates the statistics in the specified bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> Name of the bucket to be updated
+C<$file> Name of file containing mail message to parse
+
+=cut
+method remove_message_from_bucket ($session, $bucket, $file) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3825,17 +3620,14 @@ method remove_message_from_bucket ($session, $bucket, $file) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_buckets_with_magnets
-#
-# Returns the names of the buckets for which magnets are defined
-#
-# $session     A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method get_buckets_with_magnets ($session) {
+=head2 get_buckets_with_magnets
 
+Returns the names of the buckets for which magnets are defined
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method get_buckets_with_magnets ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3850,18 +3642,15 @@ method get_buckets_with_magnets ($session) {
     return @result;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_magnet_types_in_bucket
-#
-# Returns the types of the magnets in a specific bucket
-#
-# $session     A valid session key returned by a call to get_session_key
-# $bucket      The bucket to search for magnets
-#
-#----------------------------------------------------------------------------
-method get_magnet_types_in_bucket ($session, $bucket) {
+=head2 get_magnet_types_in_bucket
 
+Returns the types of the magnets in a specific bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The bucket to search for magnets
+
+=cut
+method get_magnet_types_in_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3889,18 +3678,15 @@ method get_magnet_types_in_bucket ($session, $bucket) {
     return @result;
 }
 
-#----------------------------------------------------------------------------
-#
-# clear_bucket
-#
-# Removes all words from a bucket
-#
-# $session        A valid session key returned by a call to get_session_key
-# $bucket         The bucket to clear
-#
-#----------------------------------------------------------------------------
-method clear_bucket ($session, $bucket) {
+=head2 clear_bucket
 
+Removes all words from a bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The bucket to clear
+
+=cut
+method clear_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3918,17 +3704,14 @@ method clear_bucket ($session, $bucket) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# clear_magnets
-#
-# Removes every magnet currently defined
-#
-# $session     A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method clear_magnets ($session) {
+=head2 clear_magnets
 
+Removes every magnet currently defined
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method clear_magnets ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3950,19 +3733,16 @@ method clear_magnets ($session) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_magnets
-#
-# Returns the magnets of a certain type in a bucket
-#
-# $session         A valid session key returned by a call to get_session_key
-# $bucket          The bucket to search for magnets
-# $type            The magnet type (e.g. from, to or subject)
-#
-#----------------------------------------------------------------------------
-method get_magnets ($session, $bucket, $type) {
+=head2 get_magnets
 
+Returns the magnets of a certain type in a bucket
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The bucket to search for magnets
+C<$type> The magnet type (e.g. from, to or subject)
+
+=cut
+method get_magnets ($session, $bucket, $type) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -3992,20 +3772,17 @@ method get_magnets ($session, $bucket, $type) {
     return @result;
 }
 
-#----------------------------------------------------------------------------
-#
-# create_magnet
-#
-# Make a new magnet
-#
-# $session         A valid session key returned by a call to get_session_key
-# $bucket          The bucket the magnet belongs in
-# $type            The magnet type (e.g. from, to or subject)
-# $text            The text of the magnet
-#
-#----------------------------------------------------------------------------
-method create_magnet ($session, $bucket, $type, $text) {
+=head2 create_magnet
 
+Make a new magnet
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The bucket the magnet belongs in
+C<$type> The magnet type (e.g. from, to or subject)
+C<$text> The text of the magnet
+
+=cut
+method create_magnet ($session, $bucket, $type, $text) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -4030,17 +3807,14 @@ method create_magnet ($session, $bucket, $type, $text) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_magnet_types
-#
-# Get a hash mapping magnet types (e.g. from) to magnet names (e.g. From);
-#
-# $session     A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method get_magnet_types ($session) {
+=head2 get_magnet_types
 
+Get a hash mapping magnet types (e.g. from) to magnet names (e.g. From);
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method get_magnet_types ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -4058,20 +3832,17 @@ method get_magnet_types ($session) {
     return %result;
 }
 
-#----------------------------------------------------------------------------
-#
-# delete_magnet
-#
-# Remove a magnet
-#
-# $session         A valid session key returned by a call to get_session_key
-# $bucket          The bucket the magnet belongs in
-# $type            The magnet type (e.g. from, to or subject)
-# $text            The text of the magnet
-#
-#----------------------------------------------------------------------------
-method delete_magnet ($session, $bucket, $type, $text) {
+=head2 delete_magnet
 
+Remove a magnet
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$bucket> The bucket the magnet belongs in
+C<$type> The magnet type (e.g. from, to or subject)
+C<$text> The text of the magnet
+
+=cut
+method delete_magnet ($session, $bucket, $type, $text) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -4112,34 +3883,28 @@ method delete_magnet ($session, $bucket, $type, $text) {
     return 1;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_stopword_list
-#
-# Gets the complete list of stop words
-#
-# $session     A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method get_stopword_list ($session) {
+=head2 get_stopword_list
 
+Gets the complete list of stop words
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method get_stopword_list ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
     return $parser__->mangle()->stopwords();
 }
 
-#----------------------------------------------------------------------------
-#
-# magnet_count
-#
-# Gets the number of magnets that are defined
-#
-# $session     A valid session key returned by a call to get_session_key
-#
-#----------------------------------------------------------------------------
-method magnet_count ($session) {
+=head2 magnet_count
 
+Gets the number of magnets that are defined
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+method magnet_count ($session) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -4157,20 +3922,18 @@ method magnet_count ($session) {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# add_stopword, remove_stopword
-#
-# Adds or removes a stop word
-#
-# $session     A valid session key returned by a call to get_session_key
-# $stopword    The word to add or remove
-#
-# Return 0 for a bad stop word, and 1 otherwise
-#
-#----------------------------------------------------------------------------
-method add_stopword ($session, $stopword) {
+=head2 add_stopword, remove_stopword
 
+Adds or removes a stop word
+
+
+Return 0 for a bad stop word, and 1 otherwise
+
+C<$session> A valid session key returned by a call to get_session_key
+C<$stopword> The word to add or remove
+
+=cut
+method add_stopword ($session, $stopword) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -4181,7 +3944,6 @@ method add_stopword ($session, $stopword) {
 }
 
 method remove_stopword ($session, $stopword) {
-
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
@@ -4192,19 +3954,18 @@ method remove_stopword ($session, $stopword) {
 }
 
 
-#----------------------------------------------------------------------------
-#
-# db_quote
-#
-# Quote a string for use in a sql statement. Before calling DBI::quote on the
-# string the string is also checked for any null-bytes.
-#
-# $string   The string that should be quoted.
-#
-# returns the quoted string without any possible null-bytes
-#----------------------------------------------------------------------------
-method db_quote ($string) {
+=head2 db_quote
 
+Quote a string for use in a sql statement. Before calling DBI::quote on the
+string the string is also checked for any null-bytes.
+
+
+returns the quoted string without any possible null-bytes
+
+C<$string> The string that should be quoted.
+
+=cut
+method db_quote ($string) {
     my $backup = $string;
     if ( $string =~ s/\x00//g ) {
         my ( $package, $file, $line ) = caller;
@@ -4215,23 +3976,22 @@ method db_quote ($string) {
 }
 
 
-#----------------------------------------------------------------------------
-#
-# validate_sql_prepare_and_execute
-#
-# This method will prepare sql statements and execute them.
-# The statement itself and any binding parameters are also
-# tested for possible null-characters (\x00).
-# If you pass in a handle to a prepared statement, the statement
-# will be executed and possible binding-parameters are checked.
-#
-# $statement  The sql statement to prepare or the prepared statement handle
-# @args       The (optional) list of binding parameters
-#
-# Returns the result of prepare()
-#----------------------------------------------------------------------------
-method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
+=head2 validate_sql_prepare_and_execute
 
+This method will prepare sql statements and execute them.
+The statement itself and any binding parameters are also
+tested for possible null-characters (\x00).
+If you pass in a handle to a prepared statement, the statement
+will be executed and possible binding-parameters are checked.
+
+
+Returns the result of prepare()
+
+C<$statement> The sql statement to prepare or the prepared statement handle
+@args       The (optional) list of binding parameters
+
+=cut
+method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
     my $dbh = $db__;
     my $sth = undef;
 
@@ -4267,17 +4027,15 @@ method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
 }
 
 
-#----------------------------------------------------------------------------
-#
-# check_for_nullbytes
-#
-# Will check a passed-in string for possible null-bytes and log and error
-# message in case a null-byte is found.
-#
-# Will return the string with any null-bytes removed.
-#----------------------------------------------------------------------------
-method check_for_nullbytes ($string) {
+=head2 check_for_nullbytes
 
+Will check a passed-in string for possible null-bytes and log and error
+message in case a null-byte is found.
+
+Will return the string with any null-bytes removed.
+
+=cut
+method check_for_nullbytes ($string) {
     if ( defined $string ) {
         my $backup = $string;
 
@@ -4296,8 +4054,6 @@ method check_for_nullbytes ($string) {
 #|_____] |     | |_____] |______   |   |      |______   |_____| |_____]   |
 #|       |_____| |       |       __|__ |_____ |______   |     | |       __|__
 #
-#----------------------------------------------------------------------------
-#----------------------------------------------------------------------------
 
 method set_history ($history) {
     $history__ = $history;

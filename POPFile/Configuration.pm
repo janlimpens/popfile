@@ -33,7 +33,6 @@ use locale;
 use Getopt::Long;
 
 class POPFile::Configuration :isa(POPFile::Module) {
-
     # This hash is indexed by parameter name and has two sub-keys:
     #   value    — the current value
     #   default  — the default value
@@ -162,7 +161,6 @@ class POPFile::Configuration :isa(POPFile::Module) {
 
         if ( $self->config_( 'pidcheck_interval' ) > 0 ) {
             if ( $pid_check <= ( $time - $self->config_( 'pidcheck_interval' ))) {
-
                 $pid_check = $time;
 
                 if ( !$self->check_pid_() ) {
@@ -211,7 +209,6 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # ----------------------------------------------------------------------------
     method live_check_ {
         if ( $self->check_pid_() ) {
-
             my $oldpid = $self->get_pid_();
             my $wait_time = $self->config_( 'pidcheck_interval' ) * 2;
 
@@ -659,7 +656,6 @@ class POPFile::Configuration :isa(POPFile::Module) {
     method deprecated_parameter ($name) {
         return $deprecated_parameters{$name};
     }
-
 }
 
 1;

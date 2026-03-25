@@ -35,9 +35,8 @@ use Digest::MD5;
 my $eol = "\015\012";
 
 class Proxy::POP3 :isa(Proxy::Proxy) {
-
-    field $use_apop    = 0;
-    field $apop_user   = '';
+    field $use_apop = 0;
+    field $apop_user = '';
     field $apop_banner = undef;
 
     BUILD {
@@ -340,7 +339,6 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                 if ( defined( $downloaded{$count} ) &&
                      ( $file = $history->get_slot_file( $downloaded{$count}{slot} ) ) &&
                      ( open my $retrfile, '<', $file ) ) {
-
                     binmode $retrfile;
                     $self->log_( 1, "Printing message from cache" );
                     $self->tee_( $client,

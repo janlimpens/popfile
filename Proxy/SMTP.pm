@@ -31,7 +31,6 @@ use locale;
 my $eol = "\015\012";
 
 class Proxy::SMTP :isa(Proxy::Proxy) {
-
     BUILD {
         $self->set_name( 'smtp' );
         $self->set_child( \&child__ );

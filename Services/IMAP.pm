@@ -4,16 +4,15 @@ use Fcntl ();
 use Services::IMAP::Client;
 
 class Services::IMAP :isa(POPFile::Module) {
-
     field $classifier :writer(set_classifier) = 0;
-    field $history    :writer(set_history)    = 0;
+    field $history :writer(set_history) = 0;
     field %folders;
     field @mailboxes;
     field $folder_change_flag = 0;
     field %hash_values;
-    field $api_session        = '';
-    field $imap_error         = '';
-    field $last_update        = 0;
+    field $api_session = '';
+    field $imap_error = '';
+    field $last_update = 0;
 
     my $cfg_separator = "-->";
 
