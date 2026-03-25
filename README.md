@@ -38,6 +38,20 @@ perl -Ilocal/lib/perl5 bayes.pl <message-file>
 perl -Ilocal/lib/perl5 insert.pl <bucket-name> <message-file>
 ```
 
+## Svelte UI
+
+The frontend lives in `ui/` and builds to `public/`.
+
+```sh
+cd ui && npm install
+
+# Development (hot-reload, proxies /api to localhost:8080)
+npm run dev
+
+# Production build → public/
+npm run build
+```
+
 ## Tests
 
 ```sh
