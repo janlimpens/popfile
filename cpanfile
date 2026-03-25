@@ -16,16 +16,18 @@ requires 'MIME::QuotedPrint', '0';
 requires 'Object::Pad',       '0.800';
 requires 'Sort::Key::Natural','0';
 requires 'Mojolicious',       '9.0';
-requires 'JSON::MaybeXS',     '0';
+requires 'Cpanel::JSON::XS',  '0';
+requires 'JSON',              '0';
+requires 'JSON::XS',          '0';
+requires 'IO::Socket::SSL',    '0';
+requires 'Net::SSLeay',        '0';
+requires 'IO::Socket::Socks',  '0';
+requires 'Net::DNS::Native',   '0';
+requires 'EV',                 '0';
 
 # Optional: alternative database backends
 recommends 'DBD::mysql', '0';
 recommends 'DBD::Pg',    '0';
-
-# Optional: SSL/SOCKS proxy support
-recommends 'IO::Socket::SSL',  '0';
-recommends 'IO::Socket::Socks','0';
-recommends 'Net::SSLeay',      '0';
 
 # Optional: XML-RPC interface
 recommends 'SOAP::Lite', '0';

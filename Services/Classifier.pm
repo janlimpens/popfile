@@ -1,5 +1,5 @@
-package Services::Classifier;
 # POPFILE LOADABLE MODULE
+package Services::Classifier;
 
 #----------------------------------------------------------------------------
 #

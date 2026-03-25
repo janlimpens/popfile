@@ -39,6 +39,10 @@ class POPFile::Logger :isa(POPFile::Module) {
     field $last_tickd        = 0;
     field $today             = 0;
 
+    BUILD {
+        $self->name('logger');
+    }
+
 =head2 initialize
 
 Called to initialize the logger. Sets default configuration values for

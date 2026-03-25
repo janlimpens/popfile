@@ -128,7 +128,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
 
         my $svc    = $service;
         my $port   = $self->config_( 'port' );
-        my $static = $self->get_root_path_() . $self->config_( 'static_dir' );
+        my $static = $self->get_root_path_( $self->config_( 'static_dir' ) );
 
         # Reset DB connections inherited from the parent (force lazy re-clone)
         if ( defined $svc ) {
