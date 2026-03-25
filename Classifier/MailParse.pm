@@ -577,16 +577,19 @@ method add_line ($bigline, $encoded, $prefix) {
             # Grab domain names (gTLD)
             # http://en.wikipedia.org/wiki/List_of_Internet_top-level_domains
 
-            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)                               (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
+            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)
+                               (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
                                 int|jobs|mil|mobi|museum|name|net|org|pro|tel|
                                 travel|xxx)
-                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {                $self->add_url( "$1$3", $encoded, '', '', $prefix );
+                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {
+                $self->add_url( "$1$3", $encoded, '', '', $prefix );
             }
 
             # Grab country domain names (ccTLD)
             # http://en.wikipedia.org/wiki/List_of_Internet_top-level_domains
 
-            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)                               (a[cdefgilmnoqrstuwxz]|
+            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)
+                               (a[cdefgilmnoqrstuwxz]|
                                 b[abdefghijmnorstvwyz]|
                                 c[acdfghiklmnorsuvxyz]|
                                 d[ejkmoz]|
@@ -611,26 +614,33 @@ method add_line ($bigline, $encoded, $prefix) {
                                 w[fs]|
                                 y[et]|
                                 z[amw])
-                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix )  {                $self->add_url( "$1$3", $encoded, '', '', $prefix );
+                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {
+                $self->add_url( "$1$3", $encoded, '', '', $prefix );
             }
 
             # Grab IP addresses
 
-            while ( $line =~ s/(?<![[:alpha:]\d.])                               (([12]?\d{1,2}\.){3}[12]?\d{1,2})
-                               (?![[:alpha:]\d])//x ) {                $self->update_word( $1, $encoded, '', '', $prefix );
+            while ( $line =~ s/(?<![[:alpha:]\d.])
+                               (([12]?\d{1,2}\.){3}[12]?\d{1,2})
+                               (?![[:alpha:]\d])//x ) {
+                $self->update_word( $1, $encoded, '', '', $prefix );
             }
 
             # Deal with runs of alternating spaces and letters
 
-            while ( $line =~ s/([ ]|^)                               ([A-Za-z]([\'\*^`&\. ]|[ ][ ])
+            while ( $line =~ s/([ ]|^)
+                               ([A-Za-z]([\'\*^`&\. ]|[ ][ ])
                                 (?:[A-Za-z]\3){1,14}[A-Za-z])
-                               ([ ]|\3|[!\?,]|$)/ /x ) {                my $original = "$1$2$4";
+                               ([ ]|\3|[!\?,]|$)/ /x ) {
+                my $original = "$1$2$4";
                 my $word     = $2;
                 print "$word ->" if $debug;
                 $word =~ s/[^A-Z]//gi;
                 print "$word\n" if $debug;
                 $self->update_word( $word, $encoded, ' ', ' ', $prefix );
-                $self->update_pseudoword( 'trick', 'spacedout',                                          $encoded, $original );            }
+                $self->update_pseudoword( 'trick', 'spacedout',
+                                          $encoded, $original );
+            }
 
             # Deal with random insertion of . inside words
 
@@ -669,14 +679,20 @@ method add_line ($bigline, $encoded, $prefix) {
                     # In Korean, care about words between 2 and 45
                     # characters.
 
-                    while ( $line =~ s/(([A-Za-z]|$eksc)                                        ([A-Za-z\']|$eksc){1,44})
+                    while ( $line =~ s/(([A-Za-z]|$eksc)
+                                        ([A-Za-z\']|$eksc){1,44})
                                         ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
-                                      //x ) {                        if ( ( $in_headers == 0 ) &&                             ( $first20count < 20 ) ) {                            $first20count += 1;
+                                      //x ) {
+                        if ( ( $in_headers == 0 ) &&
+                             ( $first20count < 20 ) ) {
+                            $first20count += 1;
                             $first20 .= " $1";
                         }
 
-                        $self->update_word( $1, $encoded, '',                                            '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
-                                            $prefix ) if ( length $1 >= 2 );                    }
+                        $self->update_word( $1, $encoded, '',
+                                            '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
+                                            $prefix ) if ( length $1 >= 2 );
+                    }
                 } else {
                     # Only care about words between 3 and 45
                     # characters since short words like an, or, if are
@@ -684,13 +700,19 @@ method add_line ($bigline, $encoded, $prefix) {
                     # (according to the OED) is
                     # pneumonoultramicroscopicsilicovolcanoconiosis
 
-                    while ( $line =~ s/([[:alpha:]][[:alpha:]\']{1,44})                                       ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
-                                      //x ) {                        if ( ( $in_headers == 0 ) &&                             ( $first20count < 20 ) ) {                            $first20count += 1;
+                    while ( $line =~ s/([[:alpha:]][[:alpha:]\']{1,44})
+                                       ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
+                                      //x ) {
+                        if ( ( $in_headers == 0 ) &&
+                             ( $first20count < 20 ) ) {
+                            $first20count += 1;
                             $first20 .= " $1";
                         }
 
-                        $self->update_word( $1, $encoded, '',                                            '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
-                                            $prefix ) if ( length $1 >= 3 );                    }
+                        $self->update_word( $1, $encoded, '',
+                                            '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
+                                            $prefix ) if ( length $1 >= 3 );
+                    }
                 }
             }
 
@@ -940,11 +962,14 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # CSS handling
 
-        if ( !exists( $HTML::Tagset::emptyElement->{ lc( $tag ) } ) &&             ( $attribute =~ /^style$/i ) ) {            print "      Inline style tag found in $tag: $attribute=$value\n" if $debug;
+        if ( !exists( $HTML::Tagset::emptyElement->{ lc( $tag ) } ) &&
+             ( $attribute =~ /^style$/i ) ) {
+            print "      Inline style tag found in $tag: $attribute=$value\n" if $debug;
 
             my $style = $self->parse_css_style( $value );
 
-            if ( $debug ) {                print "      CSS properties: ";
+            if ( $debug ) {
+                print "      CSS properties: ";
                 foreach my $key ( keys( %{$style} ) ) {
                     print "$key($style->{$key}), ";
                 }
@@ -958,9 +983,13 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                 #       across size specifiers approximate font sizes here:
                 # http://www.dejeu.com/web/tools/tech/css/variablefontsizes.asp
 
-                if ( $size =~ /(((\+|\-)?\d?\.?\d+)                                (em|ex|px|%|pt|in|cm|mm|pt|pc))|
+                if ( $size =~ /(((\+|\-)?\d?\.?\d+)
+                               (em|ex|px|%|pt|in|cm|mm|pt|pc))|
                                (xx-small|x-small|small|medium|large|x-large|
-                                xx-large)/x ) {                    $self->update_pseudoword( 'html', "cssfontsize$size",                                              $encoded, $original );                    print "     CSS font-size set to: $size\n" if $debug;
+                                xx-large)/x ) {
+                    $self->update_pseudoword( 'html', "cssfontsize$size",
+                                              $encoded, $original );
+                    print "     CSS font-size set to: $size\n" if $debug;
                 }
             }
 
@@ -1006,10 +1035,14 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                     $self->compute_html_color_distance();
                     print "       CSS set html back color to $htmlbackcolor\n" if $debug;
 
-                    $htmlbodycolor = $background_color                        if ( $tag =~ /^body$/i );                    $cssbackcolortag = lc( $tag );
+                    $htmlbodycolor = $background_color
+                        if ( $tag =~ /^body$/i );
+                    $cssbackcolortag = lc( $tag );
 
-                    $self->update_pseudoword(                        'html', "cssbackcolor$htmlbackcolor",
-                        $encoded, $original );                }
+                    $self->update_pseudoword(
+                        'html', "cssbackcolor$htmlbackcolor",
+                        $encoded, $original );
+                }
             }
 
             # CSS all-in one background declaration (ugh)
@@ -1052,7 +1085,11 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
         # background style may not be in a predictable location
         # (search the entire value)
 
-        if ( ( $attribute =~ /^style$/i ) &&             ( $tag =~ /^(body|td|tr|table|span|div|p)$/i ) ) {            $self->add_url( $1, $encoded, '[\']', '[\']', '' )                if ( $value =~ /background\-image:[ \t]?url\([ \t]?\'(.*)\'[ \t]?\)/i );            next;
+        if ( ( $attribute =~ /^style$/i ) &&
+             ( $tag =~ /^(body|td|tr|table|span|div|p)$/i ) ) {
+            $self->add_url( $1, $encoded, '[\']', '[\']', '' )
+                if ( $value =~ /background\-image:[ \t]?url\([ \t]?\'(.*)\'[ \t]?\)/i );
+            next;
         }
 
         # Tags with action attributes
@@ -1127,10 +1164,12 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
         }
     }
 
-    if ( $url =~ s/^(([[:alpha:]0-9\-_]+\.)+)                    (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
+    if ( $url =~ s/^(([[:alpha:]0-9\-_]+\.)+)
+                    (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
                      int|jobs|mil|mobi|museum|name|net|org|pro|tel|
                      travel|xxx|[a-z]{2})
-                    ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {        $host     = "$1$3";
+                    ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {
+        $host     = "$1$3";
         $hostform = "name";
     } else {
         if ( $url =~ /(([^:\/])+)/ ) {
@@ -1607,8 +1646,10 @@ method parse_line ($read) {
                 # Decode \x??
                 $line =~ s/\\x([8-9A-F][A-F0-9])/pack("C", hex($1))/eig;
 
-                $line = convert_encoding(                    $line, $charset, 'euc-jp', '7bit-jis',
-                    @{ $encoding_candidates{ $lang } } );                $line = $nihongo_parser{parse}( $self, $line );
+                $line = convert_encoding(
+                    $line, $charset, 'euc-jp', '7bit-jis',
+                    @{ $encoding_candidates{ $lang } } );
+                $line = $nihongo_parser{parse}( $self, $line );
             }
 
             if ( defined( $color_resolver ) ) {
@@ -1617,7 +1658,8 @@ method parse_line ($read) {
                     $ut = '';
                 }
 
-                $ut .= $self->splitline( $line,                                                   $cur_encoding );            }
+                $ut .= $self->splitline( $line, $cur_encoding );
+            }
 
             if ( $in_headers ) {
                 # temporary colorization while in headers is handled
@@ -1772,8 +1814,10 @@ method clear_out_base64 {
         $decoded = decode_base64( $base64 );
 
         if ( $lang eq 'Nihongo' ) {
-            $decoded = convert_encoding(                $decoded, $charset, 'euc-jp', '7bit-jis',
-                @{ $encoding_candidates{ $lang } } );            $decoded = $nihongo_parser{parse}( $self, $decoded );
+            $decoded = convert_encoding(
+                $decoded, $charset, 'euc-jp', '7bit-jis',
+                @{ $encoding_candidates{ $lang } } );
+            $decoded = $nihongo_parser{parse}( $self, $decoded );
         }
 
         $self->parse_html( $decoded, 1 );
@@ -2018,7 +2062,8 @@ method parse_header ($header, $argument, $mime, $encoding) {
         if ( $subject eq '' ) {
             # In Japanese mode, parse subject with Nihongo (Japanese) parser
 
-            $argument = $nihongo_parser{parse}( $self, $argument )                if ( ( $lang eq 'Nihongo' ) && ( $argument ne '' ) );
+            $argument = $nihongo_parser{parse}( $self, $argument )
+                if ( ( $lang eq 'Nihongo' ) && ( $argument ne '' ) );
             $subject = $argument;
             $subject =~ s/[\t\r\n]//g;
         }
@@ -2036,7 +2081,8 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
         ( my $sa_keywords = $argument ) =~ s/[\r\n ]//sg;
         $sa_keywords =~ s/^.+tests=(.+)/$1/;
-        $sa_keywords =~ s/(.+)autolearn.+$/$1/ or            $sa_keywords =~ s/(.+)version.+$/$1/;
+        $sa_keywords =~ s/(.+)autolearn.+$/$1/ or
+            $sa_keywords =~ s/(.+)version.+$/$1/;
         # remove all spaces that may still be present:
         $sa_keywords =~ s/[\t ]//g;
 
@@ -2126,11 +2172,13 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
     # Some headers to discard
 
-    return ( $mime, $encoding )        if ( $header =~ /^(Thread-Index|X-UIDL|Message-ID|
+    return ( $mime, $encoding )
+        if ( $header =~ /^(Thread-Index|X-UIDL|Message-ID|
                            X-Text-Classification|X-Mime-Key)$/ix );
     # Some headers should never be RFC 2047 decoded
 
-    $argument = $self->decode_string( $argument, $lang )        if ( $header !~ /^(Received|Content\-Type|Content\-Disposition)$/i );
+    $argument = $self->decode_string( $argument, $lang )
+        if ( $header !~ /^(Received|Content\-Type|Content\-Disposition)$/i );
     if ( $header =~ /^Content-Disposition$/i ) {
         $self->handle_disposition( $argument );
         return ( $mime, $encoding );
@@ -2261,8 +2309,12 @@ method parse_css_color ($color) {
         if ( defined( $2 ) ) {
             # in 3 value form, the value is computed by doubling each digit
 
-            ( $r, $g, $b ) = ( hex( $1 x 2 ), hex( $2 x 2 ), hex( $3 x 2 ) )                if ( $color =~ /^(.)(.)(.)$/ );        } else {
-            ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )                if ( $color =~ /^(..)(..)(..)$/ );        }
+            ( $r, $g, $b ) = ( hex( $1 x 2 ), hex( $2 x 2 ), hex( $3 x 2 ) )
+                if ( $color =~ /^(.)(.)(.)$/ );
+        } else {
+            ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )
+                if ( $color =~ /^(..)(..)(..)$/ );
+        }
         $found = 1;
     }
     if ( $color =~ /^(aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|                      olive|purple|red|silver|teal|white|yellow)$/i ) {
@@ -2275,14 +2327,18 @@ method parse_css_color ($color) {
         # our color map may have failed
 
         $error = 1 if ( $new_color eq $color );
-        ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )            if ( $new_color =~ /^(..)(..)(..)$/ );        $found = 1;
+        ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )
+            if ( $new_color =~ /^(..)(..)(..)$/ );
+        $found = 1;
     }
 
     $found = 0 if ( $error );
 
-    if ( $found &&         defined( $r ) && ( 0 <= $r ) && ( $r <= 255 ) &&
+    if ( $found &&
+         defined( $r ) && ( 0 <= $r ) && ( $r <= 255 ) &&
          defined( $g ) && ( 0 <= $g ) && ( $g <= 255 ) &&
-         defined( $b ) && ( 0 <= $b ) && ( $b <= 255 ) ) {        if ( wantarray ) {
+         defined( $b ) && ( 0 <= $b ) && ( $b <= 255 ) ) {
+        if ( wantarray ) {
             return ( $r, $g, $b );
         } else {
             $color = sprintf( '%1$02x%2$02x%3$02x', $r, $g, $b );

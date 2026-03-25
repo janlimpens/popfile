@@ -227,7 +227,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
                 return $pid;
             } else {
                 print STDERR "\nThe other POPFile ($oldpid) failed to signal back, starting new copy ($$)\n";
-	    }
+            }
         }
         return undef;
     }
@@ -325,10 +325,10 @@ class POPFile::Configuration :isa(POPFile::Module) {
         for my $i (0..$#set_options) {
             $set_options[$i] =~ /-?(.+)=(.+)/;
 
-	    if ( !defined( $1 ) ) {
+            if ( !defined( $1 ) ) {
                 print STDERR "\nBad option: $set_options[$i]\n";
                 return 0;
-	    }
+            }
 
             push @options, ("-$1");
             if ( defined( $2 ) ) {
@@ -388,67 +388,47 @@ class POPFile::Configuration :isa(POPFile::Module) {
         # module_config_ from outside
 
         my %upgrades = (
-                         # Parameters that are now handled by Classifier::Bayes
+                         corpus                   => 'bayes_corpus',
+                         unclassified_probability => 'bayes_unclassified_probability',
 
-                         'corpus',                   'bayes_corpus',
-                         'unclassified_probability', 'bayes_unclassified_probability',
+                         piddir                   => 'config_piddir',
 
-                         # Parameters that are now handled by
-                         # POPFile::Configuration
+                         debug                    => 'GLOBAL_debug',
+                         msgdir                   => 'GLOBAL_msgdir',
+                         timeout                  => 'GLOBAL_timeout',
 
-                         'piddir',                   'config_piddir',
+                         logdir                   => 'logger_logdir',
 
-                         # Parameters that are now global to POPFile
+                         localpop                 => 'pop3_local',
+                         port                     => 'pop3_port',
+                         sport                    => 'pop3_secure_port',
+                         server                   => 'pop3_secure_server',
+                         separator                => 'pop3_separator',
+                         toptoo                   => 'pop3_toptoo',
 
-                         'debug',                    'GLOBAL_debug',
-                         'msgdir',                   'GLOBAL_msgdir',
-                         'timeout',                  'GLOBAL_timeout',
+                         language                 => 'html_language',
+                         last_reset               => 'html_last_reset',
+                         last_update_check        => 'html_last_update_check',
+                         localui                  => 'html_local',
+                         page_size                => 'html_page_size',
+                         password                 => 'html_password',
+                         send_stats               => 'html_send_stats',
+                         skin                     => 'html_skin',
+                         test_language            => 'html_test_language',
+                         update_check             => 'html_update_check',
+                         ui_port                  => 'html_port',
 
-                         # Parameters that are now handled by POPFile::Logger
+                         archive                  => 'history_archive',
+                         archive_classes          => 'history_archive_classes',
+                         archive_dir              => 'history_archive_dir',
+                         history_days             => 'history_history_days',
+                         html_archive             => 'history_archive',
+                         html_archive_classes     => 'history_archive_classes',
+                         html_archive_dir         => 'history_archive_dir',
+                         html_history_days        => 'history_history_days',
 
-                         'logdir',                   'logger_logdir',
-
-                         # Parameters that are now handled by Proxy::POP3
-
-                         'localpop',                 'pop3_local',
-                         'port',                     'pop3_port',
-                         'sport',                    'pop3_secure_port',
-                         'server',                   'pop3_secure_server',
-                         'separator',                'pop3_separator',
-                         'toptoo',                   'pop3_toptoo',
-
-                         # Parameters that are now handled by UI::HTML
-
-                         'language',                 'html_language',
-                         'last_reset',               'html_last_reset',
-                         'last_update_check',        'html_last_update_check',
-                         'localui',                  'html_local',
-                         'page_size',                'html_page_size',
-                         'password',                 'html_password',
-                         'send_stats',               'html_send_stats',
-                         'skin',                     'html_skin',
-                         'test_language',            'html_test_language',
-                         'update_check',             'html_update_check',
-                         'ui_port',                  'html_port',
-
-                         # Parameters that have moved from the UI::HTML to
-                         # POPFile::History
-
-                         'archive',                  'history_archive',
-                         'archive_classes',          'history_archive_classes',
-                         'archive_dir',              'history_archive_dir',
-                         'history_days',             'history_history_days',
-                         'html_archive',             'history_archive',
-                         'html_archive_classes',     'history_archive_classes',
-                         'html_archive_dir',         'history_archive_dir',
-                         'html_history_days',        'history_history_days',
-
-                         # Parameters that have moved from UI::HTML to
-                         # global to POPFile
-
-                         'html_update_check',        'GLOBAL_update_check',
-                         'html_last_update_check',   'GLOBAL_last_update_check',
-
+                         html_update_check        => 'GLOBAL_update_check',
+                         html_last_update_check   => 'GLOBAL_last_update_check',
         );
         if ( defined( $upgrades{$parameter} ) ) {
             return $upgrades{$parameter};
@@ -487,7 +467,10 @@ class POPFile::Configuration :isa(POPFile::Module) {
                     # so that the Japanese users can use insert.pl
                     # etc. which rely on knowing the language
 
-                    if (defined($configuration_parameters{$parameter}) ||                        ( $parameter eq 'html_language' ) ) {                        $configuration_parameters{$parameter}{value} =                            $value;                    } else {
+                    if (defined($configuration_parameters{$parameter}) ||
+                        ( $parameter eq 'html_language' ) ) {
+                        $configuration_parameters{$parameter}{value} = $value;
+                    } else {
                         $deprecated_parameters{$parameter} = $value;
                     }
                 }
@@ -572,8 +555,10 @@ class POPFile::Configuration :isa(POPFile::Module) {
     method path_join ($left, $right, $sandbox = undef) {
         $sandbox = 1 if ( !defined( $sandbox ) );
 
-        if ( ( $right =~ /^\// ) ||             ( $right =~ /^[A-Za-z]:[\/\\]/ ) ||
-             ( $right =~ /\\\\/ ) ) {            if ( $sandbox ) {
+        if ( ( $right =~ /^\// ) ||
+             ( $right =~ /^[A-Za-z]:[\/\\]/ ) ||
+             ( $right =~ /\\\\/ ) ) {
+            if ( $sandbox ) {
                 $self->log_msg(0, "Attempt to access path $right outside sandbox" );
                 return undef;
             } else {
@@ -634,7 +619,9 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method is_default ($name) {
-        return ( $configuration_parameters{$name}{value} eq                 $configuration_parameters{$name}{default} );    }
+        return ( $configuration_parameters{$name}{value} eq
+                 $configuration_parameters{$name}{default} );
+    }
 
     # GETTERS / SETTERS
 

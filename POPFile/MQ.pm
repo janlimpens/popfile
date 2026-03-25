@@ -132,7 +132,8 @@ delivers pending messages to registered waiters.
                  $self->log_msg(2, "Message $type ($flat) ready for delivery" );
 
                  for my $waiter (@{$waiters{$type}}) {
-                    $self->log_msg(2, "Delivering message $type ($flat) to " .                        $waiter->name() );
+                    $self->log_msg(2, "Delivering message $type ($flat) to " .
+                        $waiter->name() );
                     $waiter->deliver( $type, @message );
                 }
             }

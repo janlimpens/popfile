@@ -424,18 +424,23 @@ method reclassified ($session, $bucket, $newbucket, $undo) {
     my $c = $undo?-1:1;
 
     if ( $bucket ne $newbucket ) {
-        my $count = $self->get_bucket_parameter(                $session, $newbucket, 'count' );        my $newcount = $count + $c;
+        my $count = $self->get_bucket_parameter( $session, $newbucket, 'count' );
+        my $newcount = $count + $c;
         $newcount = 0 if ( $newcount < 0 );
-        $self->set_bucket_parameter(                $session, $newbucket, 'count', $newcount );
-        $count = $self->get_bucket_parameter(                $session, $bucket, 'count' );        $newcount = $count - $c;
+        $self->set_bucket_parameter( $session, $newbucket, 'count', $newcount );
+        $count = $self->get_bucket_parameter( $session, $bucket, 'count' );
+        $newcount = $count - $c;
         $newcount = 0 if ( $newcount < 0 );
-        $self->set_bucket_parameter(                $session, $bucket, 'count', $newcount );
-        my $fncount = $self->get_bucket_parameter(                $session, $newbucket, 'fncount' );        my $newfncount = $fncount + $c;
+        $self->set_bucket_parameter( $session, $bucket, 'count', $newcount );
+        my $fncount = $self->get_bucket_parameter( $session, $newbucket, 'fncount' );
+        my $newfncount = $fncount + $c;
         $newfncount = 0 if ( $newfncount < 0 );
-        $self->set_bucket_parameter(                $session, $newbucket, 'fncount', $newfncount );
-        my $fpcount = $self->get_bucket_parameter(                $session, $bucket, 'fpcount' );        my $newfpcount = $fpcount + $c;
+        $self->set_bucket_parameter( $session, $newbucket, 'fncount', $newfncount );
+        my $fpcount = $self->get_bucket_parameter( $session, $bucket, 'fpcount' );
+        my $newfpcount = $fpcount + $c;
         $newfpcount = 0 if ( $newfpcount < 0 );
-        $self->set_bucket_parameter(                $session, $bucket, 'fpcount', $newfpcount );    }
+        $self->set_bucket_parameter( $session, $bucket, 'fpcount', $newfpcount );
+    }
 }
 
 =head2 get_color
@@ -456,7 +461,8 @@ method get_color ($session, $word) {
         if ( $prob != 0 )  {
             if ( $prob > $max )  {
                 $max   = $prob;
-                $color = $self->get_bucket_parameter( $session, $bucket,                             'color' );            }
+                $color = $self->get_bucket_parameter( $session, $bucket, 'color' );
+            }
         }
     }
 
@@ -492,7 +498,9 @@ method get_value ($session, $bucket, $word) {
         # log( $value ) - $cached and this turned out to be
         # much slower than this single log with a division in it
 
-        return log( $value /                    $self->get_bucket_word_count( $session, $bucket ) );    } else {
+        return log( $value /
+                    $self->get_bucket_word_count( $session, $bucket ) );
+    } else {
         return 0;
     }
 }
@@ -514,13 +522,11 @@ counts for the bucket and globally
 
 =cut
 method set_value ($session, $bucket, $word, $value) {
-    if ( $self->db_put_word_count( $session, $bucket,             $word, $value ) == 1 ) {
-        # If we set the word count to zero then clean it up by deleting the
-        # entry
-
+    if ( $self->db_put_word_count( $session, $bucket, $word, $value ) == 1 ) {
         my $userid = $self->valid_session_key( $session );
         my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-        $self->validate_sql_prepare_and_execute(            $db_delete_zero_words, $bucketid );
+        $self->validate_sql_prepare_and_execute(
+            $db_delete_zero_words, $bucketid );
         return 1;
     } else {
         return 0;
@@ -564,7 +570,8 @@ method update_constants ($session) {
             my $total = $self->get_bucket_word_count( $session, $bucket );
 
             if ( $total != 0 ) {
-                $bucket_start->{$userid}{$bucket} =                    log( $total / $wc );            } else {
+                $bucket_start->{$userid}{$bucket} = log( $total / $wc );
+            } else {
                 $bucket_start->{$userid}{$bucket} = 0;
             }
         }
@@ -755,7 +762,7 @@ method db_connect {
 
     foreach my $table (@tables) {
         if ( $table =~ /\.?popfile$/ ) {
-            my @row = $db->selectrow_array(               'select version from popfile;' );
+            my @row = $db->selectrow_array( 'select version from popfile;' );
             if ( $#row == 0 ) {
                 $need_upgrade = ( $row[0] != $version );
             }
@@ -819,7 +826,9 @@ method db_connect {
                     and matrix.bucketid = ?;' );
     # Get the mapping from parameter names to ids into a local hash
 
-    my $h = $self->validate_sql_prepare_and_execute(        'select name, id from bucket_template;' );    while ( my $row = $h->fetchrow_arrayref ) {
+    my $h = $self->validate_sql_prepare_and_execute(
+        'select name, id from bucket_template;' );
+    while ( my $row = $h->fetchrow_arrayref ) {
         $db_parameterid->{$row->[0]} = $row->[1];
     }
     $h->finish;
@@ -1069,18 +1078,22 @@ method db_update_cache ($session, $updated_bucket = undef, $deleted_bucket = und
 
     my $updated = 0;
 
-    if ( defined( $updated_bucket ) &&         defined( $db_bucketid->{$userid}{$updated_bucket} ) ) {
-        # Update cache for specified bucket.
-
+    if ( defined( $updated_bucket ) &&
+         defined( $db_bucketid->{$userid}{$updated_bucket} ) ) {
         my $bucketid = $db_bucketid->{$userid}{$updated_bucket}{id};
-        $self->validate_sql_prepare_and_execute(            $db_get_bucket_word_count, $bucketid );        my $row = $db_get_bucket_word_count->fetchrow_arrayref;
+        $self->validate_sql_prepare_and_execute(
+            $db_get_bucket_word_count, $bucketid );
+        my $row = $db_get_bucket_word_count->fetchrow_arrayref;
 
-        $db_bucketcount->{$userid}{$updated_bucket} =            ( defined( $row->[0] ) ? $row->[0] : 0 );        $db_bucketunique->{$userid}{$updated_bucket} = $row->[1];
+        $db_bucketcount->{$userid}{$updated_bucket} =
+            ( defined( $row->[0] ) ? $row->[0] : 0 );
+        $db_bucketunique->{$userid}{$updated_bucket} = $row->[1];
 
         $updated = 1;
     }
 
-    if ( defined( $deleted_bucket ) &&         !defined( $db_bucketid->{$userid}{$deleted_bucket} ) ) {
+    if ( defined( $deleted_bucket ) &&
+         !defined( $db_bucketid->{$userid}{$deleted_bucket} ) ) {
         # Delete cache for specified bucket.
 
         delete $db_bucketcount->{$userid}{$deleted_bucket};
@@ -1093,7 +1106,8 @@ method db_update_cache ($session, $updated_bucket = undef, $deleted_bucket = und
         delete $db_bucketcount->{$userid};
         delete $db_bucketunique->{$userid};
 
-        $self->validate_sql_prepare_and_execute(            $db_get_bucket_word_counts, $userid );
+        $self->validate_sql_prepare_and_execute(
+            $db_get_bucket_word_counts, $userid );
         for my $b (sort keys %{$db_bucketid->{$userid}}) {
             $db_bucketcount->{$userid}{$b} = 0;
             $db_bucketunique->{$userid}{$b} = 0;
@@ -1122,15 +1136,18 @@ method db_get_word_count ($session, $bucket, $word) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    $self->validate_sql_prepare_and_execute(        $db_get_wordid, $word );    my $result = $db_get_wordid->fetchrow_arrayref;
+    $self->validate_sql_prepare_and_execute( $db_get_wordid, $word );
+    my $result = $db_get_wordid->fetchrow_arrayref;
     if ( !defined( $result ) ) {
         return undef;
     }
 
     my $wordid = $result->[0];
 
-    $self->validate_sql_prepare_and_execute(        $db_get_word_count,
-        $db_bucketid->{$userid}{$bucket}{id}, $wordid );    $result = $db_get_word_count->fetchrow_arrayref;
+    $self->validate_sql_prepare_and_execute(
+        $db_get_word_count,
+        $db_bucketid->{$userid}{$bucket}{id}, $wordid );
+    $result = $db_get_word_count->fetchrow_arrayref;
     if ( defined( $result ) ) {
          return $result->[0];
     } else {
@@ -1157,14 +1174,20 @@ method db_put_word_count ($session, $bucket, $word, $count) {
     # word in the words table (if there's none then we need to add the
     # word), the bucket id in the buckets table (which must exist)
 
-    my $result = $self->validate_sql_prepare_and_execute(            $db_get_wordid, $word )->fetchrow_arrayref;
+    my $result = $self->validate_sql_prepare_and_execute(
+        $db_get_wordid, $word )->fetchrow_arrayref;
     if ( !defined( $result ) ) {
-        $self->validate_sql_prepare_and_execute(                'insert into words ( word ) values ( ? );', $word );        $result = $self->validate_sql_prepare_and_execute(                $db_get_wordid, $word )->fetchrow_arrayref;    }
+        $self->validate_sql_prepare_and_execute(
+            'insert into words ( word ) values ( ? );', $word );
+        $result = $self->validate_sql_prepare_and_execute(
+            $db_get_wordid, $word )->fetchrow_arrayref;
+    }
 
     my $wordid = $result->[0];
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
 
-    $self->validate_sql_prepare_and_execute(            $db_put_word_count, $bucketid, $wordid, $count );
+    $self->validate_sql_prepare_and_execute(
+        $db_put_word_count, $bucketid, $wordid, $count );
     return 1;
 }
 
@@ -1593,11 +1616,13 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
         # set_value_ which would need to look up the wordid again
 
         if ( defined( $wordmap{$word} ) && defined( $counts{$wordmap{$word}} ) ) {
-            $self->validate_sql_prepare_and_execute(                $db_put_word_count,
+            $self->validate_sql_prepare_and_execute(
+                $db_put_word_count,
                 $db_bucketid->{$userid}{$bucket}{id},
                 $wordmap{$word},
                 $counts{$wordmap{$word}} +
-                    $subtract * $parser->words()->{$word} );        } else {
+                    $subtract * $parser->words()->{$word} );
+        } else {
             # If the word is not in the database and we are trying to
             # subtract then we do nothing because negative values are
             # meaningless
@@ -1613,8 +1638,10 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     # removed
 
     if ( $subtract == -1 ) {
-        $self->validate_sql_prepare_and_execute(            $db_delete_zero_words,
-            $db_bucketid->{$userid}{$bucket}{id} );    }
+        $self->validate_sql_prepare_and_execute(
+            $db_delete_zero_words,
+            $db_bucketid->{$userid}{$bucket}{id} );
+    }
 
     $db->commit;
 }
@@ -1833,7 +1860,8 @@ method get_session_key ($user, $pwd) {
 
     my $hash = md5_hex( $user . '__popfile__' . $pwd );
 
-    $self->validate_sql_prepare_and_execute(        $db_get_userid, $user, $hash );    my $result = $db_get_userid->fetchrow_arrayref;
+    $self->validate_sql_prepare_and_execute( $db_get_userid, $user, $hash );
+    my $result = $db_get_userid->fetchrow_arrayref;
     if ( !defined( $result ) ) {
         # The delay of one second here is to prevent people from trying out
         # username/password combinations at high speed to determine the
@@ -1933,7 +1961,9 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     if ( defined( $file ) ) {
         return undef if ( !-f $file );
 
-        $parser->parse_file( $file,                                       $self->global_config('message_cutoff'   ) );    }
+        $parser->parse_file( $file,
+            $self->global_config('message_cutoff' ) );
+    }
 
     # Get the list of buckets
 
@@ -2613,8 +2643,10 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
             $last_timeout = time;
         }
 
-        last if ( ( $max_size > 0 ) &&                  ( $message_size > $max_size ) &&
-                  ( !$getting_headers ) );    }
+        last if ( ( $max_size > 0 ) &&
+                  ( $message_size > $max_size ) &&
+                  ( !$getting_headers ) );
+    }
 
     close $msg unless $nosave;
 
@@ -2641,16 +2673,16 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     my $original_msg_subject = $msg_subject;
 
     if ( $subject_modification ) {
-        if ( !defined( $msg_subject ) ) {            $msg_subject = " $modification";
+        if ( !defined( $msg_subject ) ) {
+            $msg_subject = " $modification";
         } elsif ( $msg_subject !~ /\Q$modification\E/ ) {
             if ( $self->config('subject_mod_pos' ) > 0 ) {
-                # Beginning
                 $msg_subject = " $modification$msg_subject";
             } else {
-                # End
                 $msg_subject = "$msg_subject $modification";
             }
-        }    }
+        }
+    }
 
     if ( $quarantine ) {
         if ( defined( $original_msg_subject ) ) {
@@ -2674,8 +2706,10 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # Add the XPL header
 
-    my $host = $self->module_config('html', 'local' ) ?            $self->config('localhostname' ) || '127.0.0.1' :
-            $self->config('hostname' );    my $port = $self->module_config('html', 'port' );
+    my $host = $self->module_config('html', 'local' )
+        ? $self->config('localhostname' ) || '127.0.0.1'
+        : $self->config('hostname' );
+    my $port = $self->module_config('html', 'port' );
 
     my $xpl = "http://$host:$port/jump_to_message?view=$slot";
 
@@ -2950,7 +2984,9 @@ method is_pseudo_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    return ( defined($db_bucketid->{$userid}{$bucket})          && $db_bucketid->{$userid}{$bucket}{pseudo} );}
+    return ( defined($db_bucketid->{$userid}{$bucket}) &&
+             $db_bucketid->{$userid}{$bucket}{pseudo} );
+}
 
 =head2 is_bucket
 
@@ -2964,7 +3000,9 @@ method is_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    return ( ( defined( $db_bucketid->{$userid}{$bucket} ) ) &&             ( !$db_bucketid->{$userid}{$bucket}{pseudo} ) );}
+    return ( ( defined( $db_bucketid->{$userid}{$bucket} ) ) &&
+             ( !$db_bucketid->{$userid}{$bucket}{pseudo} ) );
+}
 
 =head2 get_bucket_word_count
 
@@ -3003,7 +3041,8 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
     $prefix =~ s/\0//g;
     $prefix = $self->db_quote( "$prefix%" );
 
-    my $result = $db->selectcol_arrayref(        "select words.word from matrix, words
+    my $result = $db->selectcol_arrayref(
+        "select words.word from matrix, words
                 where matrix.wordid   =    words.id and
                       matrix.bucketid =    $bucketid and
                       words.word      like $prefix;");
@@ -3173,16 +3212,20 @@ method get_bucket_parameter ($session, $bucket, $parameter) {
 
     # If there is a non-default value for this parameter then return it.
 
-    $self->validate_sql_prepare_and_execute(        $db_get_bucket_parameter,
+    $self->validate_sql_prepare_and_execute(
+        $db_get_bucket_parameter,
         $db_bucketid->{$userid}{$bucket}{id},
-        $db_parameterid->{$parameter} );    my $result = $db_get_bucket_parameter->fetchrow_arrayref;
+        $db_parameterid->{$parameter} );
+    my $result = $db_get_bucket_parameter->fetchrow_arrayref;
 
     # If this parameter has not been defined for this specific bucket then
     # get the default value
 
     if ( !defined( $result ) ) {
-        $self->validate_sql_prepare_and_execute(            $db_get_bucket_parameter_default,
-            $db_parameterid->{$parameter} );        $result = $db_get_bucket_parameter_default->fetchrow_arrayref;
+        $self->validate_sql_prepare_and_execute(
+            $db_get_bucket_parameter_default,
+            $db_parameterid->{$parameter} );
+        $result = $db_get_bucket_parameter_default->fetchrow_arrayref;
     }
 
     if ( defined( $result ) ) {
@@ -3310,14 +3353,18 @@ method create_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    if ( $self->is_bucket( $session, $bucket ) ||         $self->is_pseudo_bucket( $session, $bucket ) ) {        return 0;
+    if ( $self->is_bucket( $session, $bucket ) ||
+         $self->is_pseudo_bucket( $session, $bucket ) ) {
+        return 0;
     }
 
     return 0 if ( $bucket =~ /[^[:lower:]\-_0-9]/ );
 
-    $self->validate_sql_prepare_and_execute(        'insert into buckets ( name, pseudo, userid )
+    $self->validate_sql_prepare_and_execute(
+        'insert into buckets ( name, pseudo, userid )
                       values (    ?,      0,      ? );',
-        $bucket, $userid );    $self->db_update_cache( $session, $bucket );
+        $bucket, $userid );
+    $self->db_update_cache( $session, $bucket );
 
     return 1;
 }
@@ -3465,7 +3512,9 @@ method remove_message_from_bucket ($session, $bucket, $file) {
         return 0;
     }
 
-    $parser->parse_file( $file,        $self->global_config('message_cutoff' ) );    $self->add_words_to_bucket( $session, $bucket, -1 );
+    $parser->parse_file( $file,
+        $self->global_config('message_cutoff' ) );
+    $self->add_words_to_bucket( $session, $bucket, -1 );
 
     $self->db_update_cache( $session, $bucket );
 
@@ -3485,7 +3534,9 @@ method get_buckets_with_magnets ($session) {
 
     my @result;
 
-    $self->validate_sql_prepare_and_execute(        $db_get_buckets_with_magnets, $userid );    while ( my $row = $db_get_buckets_with_magnets->fetchrow_arrayref ) {
+    $self->validate_sql_prepare_and_execute(
+        $db_get_buckets_with_magnets, $userid );
+    while ( my $row = $db_get_buckets_with_magnets->fetchrow_arrayref ) {
         push @result, ($row->[0]);
     }
 
@@ -3544,8 +3595,10 @@ method clear_bucket ($session, $bucket) {
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
 
-    $self->validate_sql_prepare_and_execute(        'delete from matrix where matrix.bucketid = ?;',
-        $bucketid );    $self->db_update_cache( $session, $bucket );
+    $self->validate_sql_prepare_and_execute(
+        'delete from matrix where matrix.bucketid = ?;',
+        $bucketid );
+    $self->db_update_cache( $session, $bucket );
 
     return 1;
 }
@@ -3563,14 +3616,15 @@ method clear_magnets ($session) {
 
     for my $bucket (keys %{$db_bucketid->{$userid}}) {
         my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-        $self->validate_sql_prepare_and_execute(            'delete from magnets where magnets.bucketid = ?;',
+        $self->validate_sql_prepare_and_execute(
+            'delete from magnets where magnets.bucketid = ?;',
             $bucketid );
-        # Change status of the magnetized message in this bucket
-
-        $self->validate_sql_prepare_and_execute(            'update history set magnetid = 0
+        $self->validate_sql_prepare_and_execute(
+            'update history set magnetid = 0
                     where bucketid = ? and
                           userid   = ?;',
-            $bucketid, $userid );    }
+            $bucketid, $userid );
+    }
 
     return 1;
 }
@@ -3765,7 +3819,9 @@ method add_stopword ($session, $stopword) {
 
     # Pass language parameter to add_stopword()
 
-    return $parser->mangle()->add_stopword(        $stopword, $self->module_config('html', 'language' ) );}
+    return $parser->mangle()->add_stopword(
+        $stopword, $self->module_config('html', 'language' ) );
+}
 
 method remove_stopword ($session, $stopword) {
     my $userid = $self->valid_session_key( $session );
@@ -3773,7 +3829,9 @@ method remove_stopword ($session, $stopword) {
 
     # Pass language parameter to remove_stopword()
 
-    return $parser->mangle()->remove_stopword(        $stopword, $self->module_config('html', 'language' ) );}
+    return $parser->mangle()->remove_stopword(
+        $stopword, $self->module_config('html', 'language' ) );
+}
 
 
 =head2 db_quote
