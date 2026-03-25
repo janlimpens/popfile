@@ -34,7 +34,7 @@ class UI::Mojo :isa(POPFile::Module) {
     field $child_pid = undef;
 
     BUILD {
-        $self->name('mojo_ui');
+        $self->set_name('mojo_ui');
     }
 
 =head2 initialize
@@ -115,9 +115,6 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         $service = $svc;
     }
 
-    # Legacy no-ops; Loader still calls these on all interface modules
-    method classifier ( $c = undef ) {}
-    method history    ( $h = undef ) {}
 
     #========================================================================
     # PRIVATE: child process — build Mojolicious app and run daemon

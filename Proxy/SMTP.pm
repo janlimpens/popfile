@@ -33,11 +33,11 @@ my $eol = "\015\012";
 class Proxy::SMTP :isa(Proxy::Proxy) {
 
     BUILD {
-        $self->name( 'smtp' );
-        $self->child( \&child__ );
-        $self->connection_timeout_error( '554 Transaction failed' );
-        $self->connection_failed_error(  '554 Transaction failed, can\'t connect to' );
-        $self->good_response( '^[23]' );
+        $self->set_name( 'smtp' );
+        $self->set_child( \&child__ );
+        $self->set_connection_timeout_error( '554 Transaction failed' );
+        $self->set_connection_failed_error(  '554 Transaction failed, can\'t connect to' );
+        $self->set_good_response( '^[23]' );
     }
 
     # ----------------------------------------------------------------------------

@@ -35,18 +35,18 @@ sub setup {
     # Real Configuration, bootstrapped to itself
     require POPFile::Configuration;
     my $config = POPFile::Configuration->new();
-    $config->configuration($config);   # Config points to itself
-    $config->mq($mq);
+    $config->set_configuration($config);   # Config points to itself
+    $config->set_mq($mq);
 
     # Temp dir for user files (DB, stopwords, pid, cfg)
     my $tmpdir = tempdir( CLEANUP => 1 );
-    $config->popfile_root($REPO_ROOT);
-    $config->popfile_user($tmpdir);
+    $config->set_popfile_root($REPO_ROOT);
+    $config->set_popfile_user($tmpdir);
 
     # Initialize registers default params; mark started so further
     # calls to parameter() don't reset defaults
     $config->initialize();
-    $config->started(1);
+    $config->set_started(1);
 
     return ($config, $mq, $tmpdir);
 }
@@ -59,8 +59,8 @@ sub setup {
 # ---------------------------------------------------------------------------
 sub wire {
     my ($mod, $config, $mq) = @_;
-    $mod->configuration($config);
-    $mod->mq($mq);
+    $mod->set_configuration($config);
+    $mod->set_mq($mq);
     return $mod;
 }
 

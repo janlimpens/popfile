@@ -35,11 +35,11 @@ my $eol = "\015\012";
 class Proxy::NNTP :isa(Proxy::Proxy) {
 
     BUILD {
-        $self->name( 'nntp' );
-        $self->child( \&child__ );
-        $self->connection_timeout_error( '500 no response from mail server' );
-        $self->connection_failed_error(  '500 can\'t connect to' );
-        $self->good_response( '^(1|2|3)\d\d' );
+        $self->set_name( 'nntp' );
+        $self->set_child( \&child__ );
+        $self->set_connection_timeout_error( '500 no response from mail server' );
+        $self->set_connection_failed_error(  '500 can\'t connect to' );
+        $self->set_good_response( '^(1|2|3)\d\d' );
     }
 
     # ----------------------------------------------------------------------------

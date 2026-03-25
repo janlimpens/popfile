@@ -15,7 +15,7 @@ class POPFile::Logger :isa(POPFile::Module) {
     field $today          = 0;
 
     BUILD {
-        $self->name('logger');
+        $self->set_name('logger');
     }
 
     method initialize {

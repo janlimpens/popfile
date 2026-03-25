@@ -18,7 +18,7 @@ $wm->start();
 # dependency – it's a plain object with parse_file() as entry point.
 require Classifier::MailParse;
 my $mp = Classifier::MailParse->new();
-$mp->mangle($wm);
+$mp->set_mangle($wm);
 
 my $fixture_dir = "$Bin/fixtures";
 

@@ -5,8 +5,8 @@ use Services::IMAP::Client;
 
 class Services::IMAP :isa(POPFile::Module) {
 
-    field $classifier         = 0;
-    field $history            = 0;
+    field $classifier :writer(set_classifier) = 0;
+    field $history    :writer(set_history)    = 0;
     field %folders;
     field @mailboxes;
     field $folder_change_flag = 0;
@@ -18,7 +18,7 @@ class Services::IMAP :isa(POPFile::Module) {
     my $cfg_separator = "-->";
 
     BUILD {
-        $self->name('imap');
+        $self->set_name('imap');
     }
 
     method initialize {
@@ -82,16 +82,6 @@ class Services::IMAP :isa(POPFile::Module) {
         return 1
     }
 
-    method classifier ($val = undef) {
-        $classifier = $val if defined $val;
-        return $classifier
-    }
-
-    method history ($val = undef) {
-        $history = $val if defined $val;
-        return $history
-    }
-
     method api_session {
         $api_session = $classifier->get_session_key('admin', '') unless $api_session;
         return $api_session
@@ -99,9 +89,9 @@ class Services::IMAP :isa(POPFile::Module) {
 
     method new_imap_client {
         my $client = Services::IMAP::Client->new();
-        $client->configuration($self->configuration());
-        $client->mq($self->mq());
-        $client->name($self->name());
+        $client->set_configuration($self->configuration());
+        $client->set_mq($self->mq());
+        $client->set_name($self->name());
         if ( $client->connect() ) {
             if ( $client->login() ) {
                 return $client

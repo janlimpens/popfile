@@ -104,7 +104,7 @@ class POPFile::MQ :isa(POPFile::Module) {
     field $writer = undef;
 
     BUILD {
-        $self->name('mq');
+        $self->set_name('mq');
     }
 
 =head1 METHODS

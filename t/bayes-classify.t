@@ -21,7 +21,7 @@ my $bayes = TestHelper::make_module('Classifier::Bayes', $config, $mq);
 # (via Configuration) must point to the repo root – TestHelper sets this.
 
 # Inject WordMangle into the parser Bayes created internally
-$bayes->{parser__}->mangle($wm);
+$bayes->{parser__}->set_mangle($wm);
 
 my $started = $bayes->start();
 is( $started, 1, 'Bayes started successfully (DB created)' );

@@ -46,22 +46,22 @@ class POPFile::Configuration :isa(POPFile::Module) {
     field $pid_check = 0;
 
     # Used to tell whether we need to save the configuration
-    field $save_needed = 0;
+    field $save_needed :reader :writer = 0;
 
     # We track when start() is called so that we know when the modules
     # are done setting the default values
-    field $started = 0;
+    field $started :reader :writer = 0;
 
     # Local copies of POPFILE_ROOT and POPFILE_USER
-    field $popfile_root = $ENV{POPFILE_ROOT} || './';
-    field $popfile_user = $ENV{POPFILE_USER} || './';
+    field $popfile_root :reader :writer = $ENV{POPFILE_ROOT} || './';
+    field $popfile_user :reader :writer = $ENV{POPFILE_USER} || './';
 
     # Parameters from config file that no longer have a registered owner
     field %deprecated_parameters;
 
     BUILD {
         $pid_check = time;
-        $self->name('config');
+        $self->set_name('config');
     }
 
     # ----------------------------------------------------------------------------
@@ -660,25 +660,6 @@ class POPFile::Configuration :isa(POPFile::Module) {
         return $deprecated_parameters{$name};
     }
 
-    method popfile_root ($val = undef) {
-        $popfile_root = $val if defined $val;
-        return $popfile_root;
-    }
-
-    method popfile_user ($val = undef) {
-        $popfile_user = $val if defined $val;
-        return $popfile_user;
-    }
-
-    method started ($val = undef) {
-        $started = $val if defined $val;
-        return $started;
-    }
-
-    method save_needed ($val = undef) {
-        $save_needed = $val if defined $val;
-        return $save_needed;
-    }
 }
 
 1;

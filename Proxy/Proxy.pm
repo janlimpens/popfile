@@ -41,16 +41,16 @@ class Proxy::Proxy :isa(POPFile::Module) {
     field $service = undef;
 
     # Code reference called to handle each proxy connection
-    field $child = 0;
+    field $child :reader :writer = 0;
 
     # Error messages for subclasses to set
-    field $connection_timeout_error = '';
-    field $connection_failed_error  = '';
-    field $good_response            = '';
-    field $ssl_not_supported_error  = '-ERR SSL connection is not supported since required modules are not installed';
+    field $connection_timeout_error :reader :writer = '';
+    field $connection_failed_error  :reader :writer = '';
+    field $good_response            :reader :writer = '';
+    field $ssl_not_supported_error  :reader         = '-ERR SSL connection is not supported since required modules are not installed';
 
     # Connect banner returned by the real server
-    field $connect_banner = '';
+    field $connect_banner :reader :writer = '';
 
     # Listening socket and its selector
     field $server   = undef;
@@ -409,47 +409,9 @@ class Proxy::Proxy :isa(POPFile::Module) {
         }
     }
 
-    # SETTERS
-
     method set_service ($svc = undef) {
         $service = $svc if defined $svc;
-        return $service;
-    }
-
-    # Legacy setter kept for compatibility during transition
-    method classifier ($c = undef) {
-        # no-op: use service() instead
-    }
-
-    method history ($h = undef) {
-        # no-op: accessed via service->history_obj()
-    }
-
-    # Protected accessors for subclass initialization
-
-    method child ($val = undef) {
-        $child = $val if defined $val;
-        return $child;
-    }
-
-    method connection_timeout_error ($val = undef) {
-        $connection_timeout_error = $val if defined $val;
-        return $connection_timeout_error;
-    }
-
-    method connection_failed_error ($val = undef) {
-        $connection_failed_error = $val if defined $val;
-        return $connection_failed_error;
-    }
-
-    method good_response ($val = undef) {
-        $good_response = $val if defined $val;
-        return $good_response;
-    }
-
-    method connect_banner ($val = undef) {
-        $connect_banner = $val if defined $val;
-        return $connect_banner;
+        return $service
     }
 
 } # end class Proxy::Proxy

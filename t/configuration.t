@@ -12,9 +12,9 @@ my ($config, $mq, $tmpdir) = TestHelper::setup();
 
 subtest 'parameter get/set' => sub {
     # Register a new parameter with a default value
-    $config->started(0);
+    $config->set_started(0);
     $config->parameter('test_mymodule_port', 8080);
-    $config->started(1);
+    $config->set_started(1);
 
     is( $config->parameter('test_mymodule_port'), 8080, 'reads back registered param' );
 
@@ -25,9 +25,9 @@ subtest 'parameter get/set' => sub {
 };
 
 subtest 'is_default' => sub {
-    $config->started(0);
+    $config->set_started(0);
     $config->parameter('test_default_check', 'initial');
-    $config->started(1);
+    $config->set_started(1);
 
     ok(  $config->is_default('test_default_check'), 'param at default' );
     $config->parameter('test_default_check', 'changed');
@@ -36,11 +36,11 @@ subtest 'is_default' => sub {
 
 subtest 'save and load configuration' => sub {
     # Set a value and save
-    $config->started(0);
+    $config->set_started(0);
     $config->parameter('savetest_module_key', 'original_value');
-    $config->started(1);
+    $config->set_started(1);
     $config->parameter('savetest_module_key', 'saved_value');
-    $config->save_needed(1);
+    $config->set_save_needed(1);
     $config->save_configuration();
 
     my $cfg_file = "$tmpdir/popfile.cfg";
@@ -62,11 +62,11 @@ subtest 'save and load configuration' => sub {
 };
 
 subtest 'dirty flag' => sub {
-    $config->save_needed(0);
+    $config->set_save_needed(0);
     $config->parameter('savetest_module_key', 'trigger_dirty');
     is( $config->save_needed(), 1, 'dirty flag set after parameter change' );
 
-    $config->save_needed(1);
+    $config->set_save_needed(1);
     $config->save_configuration();
     is( $config->save_needed(), 0, 'dirty flag cleared after save' );
 };

@@ -56,10 +56,10 @@ class POPFile::History :isa(POPFile::Module) {
     # Classifier::Bayes
     field $db = undef;
 
-    field $classifier = 0;
+    field $classifier :writer(set_classifier) = 0;
 
     BUILD {
-        $self->name('history');
+        $self->set_name('history');
     }
 
 =head2 initialize
@@ -1306,17 +1306,6 @@ method force_requery {
 }
 
 # SETTER
-
-=head2 classifier
-
-Setter for the classifier object (C<Classifier::Bayes> instance).
-
-=cut
-
-method classifier ($val = undef) {
-
-    $classifier = $val;
-}
 
 } # end class POPFile::History
 

@@ -41,11 +41,11 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
     field $apop_banner = undef;
 
     BUILD {
-        $self->name( 'pop3' );
-        $self->child( \&child__ );
-        $self->connection_timeout_error( '-ERR no response from mail server' );
-        $self->connection_failed_error(  '-ERR can\'t connect to' );
-        $self->good_response( '^\+OK' );
+        $self->set_name( 'pop3' );
+        $self->set_child( \&child__ );
+        $self->set_connection_timeout_error( '-ERR no response from mail server' );
+        $self->set_connection_failed_error(  '-ERR can\'t connect to' );
+        $self->set_good_response( '^\+OK' );
     }
 
     # ----------------------------------------------------------------------------

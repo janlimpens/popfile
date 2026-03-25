@@ -122,7 +122,7 @@ class POPFile::Loader {
         $alive = 0;
         foreach my $type (sort keys %components) {
             foreach my $name (sort keys %{$components{$type}}) {
-                $components{$type}{$name}->alive(0);
+                $components{$type}{$name}->set_alive(0);
             }
         }
     }
@@ -375,36 +375,25 @@ class POPFile::Loader {
 
         foreach my $type (sort keys %components) {
             foreach my $name (sort keys %{$components{$type}}) {
-                $components{$type}{$name}->version(
+                $components{$type}{$name}->set_version(
                     scalar($self->CORE_version()) );
-                $components{$type}{$name}->configuration(
+                $components{$type}{$name}->set_configuration(
                     $components{core}{config} );
-                $components{$type}{$name}->mq(
+                $components{$type}{$name}->set_mq(
                     $components{core}{mq} );
             }
         }
 
-        # All interface components need access to the classifier and history.
+        # Inject classifier and history into modules that declare set_classifier / set_history.
 
-        foreach my $name (sort keys %{$components{interface}}) {
-            $components{interface}{$name}->classifier(
-                $components{classifier}{bayes} );
-            $components{interface}{$name}->history(
-                $components{core}{history} );
-        }
-
-        foreach my $name (sort keys %{$components{proxy}}) {
-            $components{proxy}{$name}->classifier(
-                $components{classifier}{bayes} );
-            $components{proxy}{$name}->history(
-                $components{core}{history} );
-        }
-
-        foreach my $name (sort keys %{$components{services}}) {
-            $components{services}{$name}->classifier(
-                $components{classifier}{bayes} );
-            $components{services}{$name}->history(
-                $components{core}{history} );
+        foreach my $type (sort keys %components) {
+            foreach my $name (sort keys %{$components{$type}}) {
+                my $mod = $components{$type}{$name};
+                $mod->set_classifier( $components{classifier}{bayes} )
+                    if $mod->can('set_classifier');
+                $mod->set_history( $components{core}{history} )
+                    if $mod->can('set_history');
+            }
         }
 
         # Wire the classifier service to proxy and interface modules so they
@@ -430,7 +419,7 @@ class POPFile::Loader {
         $components{classifier}{bayes}->history(
             $components{core}{history} );
 
-        $components{classifier}{bayes}->{parser__}->mangle(
+        $components{classifier}{bayes}->{parser__}->set_mangle(
             $components{classifier}{wordmangle} );
     }
 
@@ -460,10 +449,10 @@ class POPFile::Loader {
                 }
 
                 if ( $code == 1 ) {
-                    $mod->alive(1);
-                    $mod->forker(       $forker    );
-                    $mod->setchildexit( $childexit );
-                    $mod->pipeready(    $pipeready );
+                    $mod->set_alive(1);
+                    $mod->set_forker(       $forker    );
+                    $mod->setchildexit(     $childexit );
+                    $mod->set_pipeready(    $pipeready );
                 }
             }
             print '} ' if $debug;
@@ -564,9 +553,9 @@ class POPFile::Loader {
         # Shut down MQ first so it can flush remaining messages to other
         # modules before they stop.
 
-        $components{core}{mq}->alive(0);
+        $components{core}{mq}->set_alive(0);
         $components{core}{mq}->stop();
-        $components{core}{history}->alive(0);
+        $components{core}{history}->set_alive(0);
         $components{core}{history}->stop();
 
         foreach my $type (sort keys %components) {
@@ -577,7 +566,7 @@ class POPFile::Loader {
 
                 next if $name eq 'mq';
                 next if $name eq 'history';
-                $components{$type}{$name}->alive(0);
+                $components{$type}{$name}->set_alive(0);
                 $components{$type}{$name}->stop();
             }
             print '} ' if $debug;

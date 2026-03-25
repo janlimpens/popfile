@@ -163,7 +163,7 @@ class Classifier::Bayes :isa(POPFile::Module) {
     $self->{db_is_sqlite__}      = 0;
     $self->{db_name__}           = '';
 
-        $self->name('bayes');
+        $self->set_name('bayes');
     }
 
 #----------------------------------------------------------------------------
@@ -365,7 +365,7 @@ method start {
 
     # Pass in the current interface language for language specific parsing
 
-    $self->{parser__}->lang( $language );
+    $self->{parser__}->set_lang( $language );
     $self->{unclassified__} = log( $self->config_( 'unclassified_weight' ) );
 
     if ( !$self->db_connect__() ) {
@@ -3588,7 +3588,7 @@ method get_html_colored_message ($session, $file) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
-    $self->{parser__}->color_resolver(sub {
+    $self->{parser__}->set_color_resolver(sub {
         my ($word) = @_;
         return $self->get_color( $session, $word );
     });
@@ -3596,7 +3596,7 @@ method get_html_colored_message ($session, $file) {
     my $result = $self->{parser__}->parse_file( $file,   # PROFILE BLOCK START
             $self->global_config_( 'message_cutoff' ) ); # PROFILE BLOCK STOP
 
-    $self->{parser__}->color_resolver(undef);
+    $self->{parser__}->set_color_resolver(undef);
 
     return $result;
 }
@@ -3619,7 +3619,7 @@ method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
     my $userid = $self->valid_session_key__( $session );
     return undef if ( !defined( $userid ) );
 
-    $self->{parser__}->color_resolver(sub {
+    $self->{parser__}->set_color_resolver(sub {
         my ($word) = @_;
         my $id;
         for my $i ( keys %$idmap ) {
@@ -3642,7 +3642,7 @@ method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
     my $result = $self->{parser__}->parse_file( $file,   # PROFILE BLOCK START
             $self->global_config_( 'message_cutoff' ) ); # PROFILE BLOCK STOP
 
-    $self->{parser__}->color_resolver(undef);
+    $self->{parser__}->set_color_resolver(undef);
 
     return $result;
 }
@@ -4340,7 +4340,7 @@ method db {
     return $self->{db__};
 }
 
-method history ($history = undef) {
+method set_history ($history = undef) {
     $self->{history__} = $history if defined $history;
 }
 

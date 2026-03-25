@@ -40,7 +40,7 @@ class Classifier::WordMangle :isa(POPFile::Module) {
     field %stop__;
 
     BUILD {
-        $self->name('wordmangle');
+        $self->set_name('wordmangle');
     }
 
     method start {

@@ -224,7 +224,7 @@ class Classifier::MailParse {
     field $ut              = '';
 
     # Optional callback sub($word)->$color set by Bayes when colorized output is needed
-    field $color_resolver  = undef;
+    field $color_resolver :reader :writer = undef;
 
     # From/To/Cc/Subject values captured during parsing
     field $from            = '';
@@ -255,7 +255,7 @@ class Classifier::MailParse {
     field $html_end         = 0;
     field $in_headers       = 0;
 
-    field $lang             = '';
+    field $lang             :reader :writer = '';
     field $first20          = '';
     field $first20count     = 0;
 
@@ -272,7 +272,7 @@ class Classifier::MailParse {
     field $cur_argument     = '';
 
     # WordMangle instance injected by Bayes
-    field $mangle           = undef;
+    field $mangle           :reader :writer = undef;
     field $date             = '';
 
     field $colorized        = '';
@@ -2685,23 +2685,8 @@ method quickmagnets {
     return \%quickmagnets;
 }
 
-method mangle ($value = undef) {
-    $mangle = $value if defined $value;
-    return $mangle;
-}
-
-method lang ($value = undef) {
-    $lang = $value if defined $value;
-    return $lang;
-}
-
 method words {
     return \%words;
-}
-
-method color_resolver ($value = undef) {
-    $color_resolver = $value if defined $value;
-    return $color_resolver;
 }
 
 # ----------------------------------------------------------------------------

@@ -26,20 +26,20 @@ my %slurp_data;
 class POPFile::Module :repr(HASH) :does(POPFile::Role::Logging) {
 
     # References to core infrastructure (injected by Loader::CORE_link_components)
-    field $configuration = 0;
-    field $mq            = 0;
+    field $configuration :reader :writer = 0;
+    field $mq            :reader :writer = 0;
 
     # Module identity
-    field $name = '';
+    field $name :reader :writer = '';
 
     # Set to 0 to terminate loops inside this module
-    field $alive = 1;
+    field $alive :reader :writer = 1;
 
     # Loader callbacks
-    field $pipeready = 0;
-    field $forker    = 0;
-    field $childexit = 0;
-    field $version   = '';
+    field $pipeready :reader :writer = 0;
+    field $forker    :reader :writer = 0;
+    field $childexit                 = 0;
+    field $version   :reader :writer = '';
 
 =head1 NAME
 
@@ -329,51 +329,18 @@ Returns C<undef> on timeout or closed connection.
 
 =head1 ACCESSORS
 
-=head2 configuration / mq / name / alive / forker / pipeready / version
+Fields C<configuration>, C<mq>, C<name>, C<alive>, C<forker>, C<pipeready>,
+and C<version> have C<:reader> and C<:writer> generated accessors.
+Getters use the field name; setters use the C<set_> prefix (e.g. C<set_name>).
 
-Standard getter/setters injected by C<POPFile::Loader>.
-Call with no argument to get; call with a value to set.
+C<setchildexit> is a combined getter/setter for the loader's child-exit callback
+(the name is kept to avoid a clash with the C<childexit> lifecycle hook).
 
 =cut
-
-    method mq ($val = undef) {
-        $mq = $val if defined $val;
-        return $mq;
-    }
-
-    method configuration ($val = undef) {
-        $configuration = $val if defined $val;
-        return $configuration;
-    }
-
-    method name ($val = undef) {
-        $name = $val if defined $val;
-        return $name;
-    }
-
-    method alive ($val = undef) {
-        $alive = $val if defined $val;
-        return $alive;
-    }
-
-    method forker ($val = undef) {
-        $forker = $val if defined $val;
-        return $forker;
-    }
-
-    method pipeready ($val = undef) {
-        $pipeready = $val if defined $val;
-        return $pipeready;
-    }
 
     method setchildexit ($val = undef) {
         $childexit = $val if defined $val;
         return $childexit;
-    }
-
-    method version ($val = undef) {
-        $version = $val if defined $val;
-        return $version;
     }
 
 }

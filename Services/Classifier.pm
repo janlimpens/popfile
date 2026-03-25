@@ -23,12 +23,12 @@ use locale;
 
 class Services::Classifier :isa(POPFile::Module) {
 
-    field $classifier = undef;
-    field $history    = undef;
+    field $classifier :writer(set_classifier) = undef;
+    field $history    :writer(set_history)    = undef;
     field $session    = '';
 
     BUILD {
-        $self->name('classifier_service');
+        $self->set_name('classifier_service');
     }
 
     method start {
@@ -135,13 +135,6 @@ Called by C<POPFile::Loader::CORE_link_components> to inject dependencies.
 
 =cut
 
-    method classifier ($val = undef) {
-        $classifier = $val if defined $val;
-    }
-
-    method history ($val = undef) {
-        $history = $val if defined $val;
-    }
 
 =head2 Accessors
 
