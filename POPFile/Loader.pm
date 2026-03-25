@@ -93,7 +93,7 @@ class POPFile::Loader {
         $warning   = sub { $self->CORE_warning(@_) };
         $die_cb       = sub { $self->CORE_die(@_) };
 
-        my $version_file = $self->root_path__( 'POPFile/popfile_version' );
+        my $version_file = $self->root_path( 'POPFile/popfile_version' );
 
         if ( -e $version_file ) {
             open my $ver, '<', $version_file;
@@ -253,7 +253,7 @@ class POPFile::Loader {
     method CORE_load_directory_modules ($directory, $type) {
         print "\n         {$type:" if $debug;
 
-        opendir my $dh, $self->root_path__($directory);
+        opendir my $dh, $self->root_path($directory);
 
         while ( my $entry = readdir $dh ) {
             if ( $entry =~ /\.pm$/ ) {
@@ -273,7 +273,7 @@ class POPFile::Loader {
     # Returns the module handle (undef on failure).
     #------------------------------------------------------------------------
     method CORE_load_module ($module, $type) {
-        my $mod = $self->load_module_($module);
+        my $mod = $self->load_module($module);
 
         if ( defined $mod ) {
             my $name = $mod->name();
@@ -289,8 +289,8 @@ class POPFile::Loader {
     # Loads a single POPFile Loadable Module.  No internal side-effects.
     # Returns the module handle (undef if not a loadable module).
     #------------------------------------------------------------------------
-    method load_module_ ($module) {
-        return undef unless -f $self->root_path__($module);
+    method load_module ($module) {
+        return undef unless -f $self->root_path($module);
         require $module;
         (my $class = $module) =~ s/\//::/g;
         $class =~ s/\.pm$//;
@@ -607,7 +607,7 @@ class POPFile::Loader {
     #
     # Joins the given path with the POPFile root directory.
     #------------------------------------------------------------------------
-    method root_path__ ($path) {
+    method root_path ($path) {
         $popfile_root =~ s/[\/\\]$//;
         $path                   =~ s/^[\/\\]//;
 
@@ -622,7 +622,7 @@ class POPFile::Loader {
     }
 
     method module_config ($module, $item, $value = undef) {
-        return $components{core}{config}->module_config_( $module, $item, $value );
+        return $components{core}{config}->module_config($module, $item, $value );
     }
 
 } # end class POPFile::Loader

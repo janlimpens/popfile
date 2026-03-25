@@ -42,8 +42,8 @@ Registers configuration defaults: C<port> (8080) and C<static_dir> (public).
 =cut
 
     method initialize {
-        $self->config_( 'port',       8080 );
-        $self->config_( 'static_dir', 'public' );
+        $self->config('port',       8080 );
+        $self->config('static_dir', 'public' );
         return 1;
     }
 
@@ -56,18 +56,18 @@ Forks a child process running the Mojolicious daemon. Returns 1 on success.
     method start {
         my $pid = fork();
         if ( !defined $pid ) {
-            $self->log_( 0, "UI::Mojo: fork failed: $!" );
+            $self->log_msg(0, "UI::Mojo: fork failed: $!" );
             return 0;
         }
         if ( $pid == 0 ) {
             # --- child ---
             eval { $self->run_server() };
-            $self->log_( 0, "UI::Mojo child error: $@" ) if $@;
+            $self->log_msg(0, "UI::Mojo child error: $@" ) if $@;
             exit 0;
         }
         # --- parent ---
         $child_pid = $pid;
-        $self->log_( 0, "UI::Mojo: started on port " . $self->config_('port') . " (pid $pid)" );
+        $self->log_msg(0, "UI::Mojo: started on port " . $self->config('port') . " (pid $pid)" );
         return 1;
     }
 
@@ -96,7 +96,7 @@ unexpectedly. Returns 1.
         if ( defined $child_pid ) {
             my $gone = waitpid( $child_pid, WNOHANG );
             if ( $gone == $child_pid ) {
-                $self->log_( 0, "UI::Mojo child exited unexpectedly" );
+                $self->log_msg(0, "UI::Mojo child exited unexpectedly" );
                 $child_pid = undef;
             }
         }
@@ -122,8 +122,8 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         require Mojo::Server::Daemon;
 
         my $svc    = $service;
-        my $port   = $self->config_( 'port' );
-        my $static = $self->get_root_path_( $self->config_( 'static_dir' ) );
+        my $port   = $self->config('port' );
+        my $static = $self->get_root_path($self->config('static_dir' ) );
 
         # Reset DB connections inherited from the parent (force lazy re-clone)
         if ( defined $svc ) {
@@ -368,7 +368,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             my %cfg;
             for my $key ( @config_keys ) {
                 # config keys are module__param formatted; try global first
-                my $val = $self->global_config_( $key );
+                my $val = $self->global_config($key );
                 $cfg{$key} = $val // '';
             }
             $c->render( json => \%cfg );
@@ -382,7 +382,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             my %allowed = map { $_ => 1 } @config_keys;
             for my $key ( keys %{$body} ) {
                 next unless $allowed{$key};
-                $self->global_config_( $key, $body->{$key} );
+                $self->global_config($key, $body->{$key} );
             }
             $c->render( json => { ok => \1 } );
         });

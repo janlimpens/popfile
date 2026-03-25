@@ -165,7 +165,7 @@ Called to set up the Bayes module's parameters
 method initialize {
     # This is the name for the database
 
-    $self->config_( 'database', 'popfile.db' );
+    $self->config('database', 'popfile.db' );
 
     # This is the 'connect' string used by DBI to connect to the
     # database, if you decide to change from using SQLite to some
@@ -178,38 +178,38 @@ method initialize {
     # $dbname can be used within it and it resolves to the full path
     # to the database named in the database parameter above.
 
-    $self->config_( 'dbconnect', 'dbi:SQLite:dbname=$dbname' );
-    $self->config_( 'dbuser', '' ); $self->config_( 'dbauth', '' );
+    $self->config('dbconnect', 'dbi:SQLite:dbname=$dbname' );
+    $self->config('dbuser', '' ); $self->config('dbauth', '' );
 
     # SQLite 1.05+ had some problems we've resolved.
     # This parameter is no longer used but we leave it for future use
 
-    $self->config_( 'bad_sqlite_version', '4.0.0' );
+    $self->config('bad_sqlite_version', '4.0.0' );
 
     # No default unclassified weight is the number of times more sure
     # POPFile must be of the top class vs the second class, default is
     # 100 times more
 
-    $self->config_( 'unclassified_weight', 100 );
+    $self->config('unclassified_weight', 100 );
 
     # The corpus is kept in the 'corpus' subfolder of POPFile
     #
     # DEPRECATED This is only used to find an old corpus that might
     # need to be upgraded
 
-    $self->config_( 'corpus', 'corpus' );
+    $self->config('corpus', 'corpus' );
 
     # The characters that appear before and after a subject
     # modification
 
-    $self->config_( 'subject_mod_left',  '[' );
-    $self->config_( 'subject_mod_right', ']' );
+    $self->config('subject_mod_left',  '[' );
+    $self->config('subject_mod_right', ']' );
 
     # The position to insert a subject modification
     #  1 : Beginning of the subject (default)
     # -1 : End of the subject
 
-    $self->config_( 'subject_mod_pos',  1 );
+    $self->config('subject_mod_pos',  1 );
 
     # Get the hostname for use in the X-POPFile-Link header
 
@@ -217,20 +217,20 @@ method initialize {
 
     # Allow the user to override the hostname
 
-    $self->config_( 'hostname', $hostname );
+    $self->config('hostname', $hostname );
 
     # If set to 1 then the X-POPFile-Link will have < > around the URL
     # (i.e. X-POPFile-Link: <http://foo.bar>) when set to 0 there are
     # none (i.e. X-POPFile-Link: http://foo.bar)
 
-    $self->config_( 'xpl_angle', 0 );
+    $self->config('xpl_angle', 0 );
 
     # This parameter is used when the UI is operating in Stealth Mode.
     # If left blank (the default setting) the X-POPFile-Link will use 127.0.0.1
     # otherwise it will use this string instead. The system's HOSTS file should
     # map the string to 127.0.0.1
 
-    $self->config_( 'localhostname', '' );
+    $self->config('localhostname', '' );
 
     # This is a bit mask used to control options when we are using the
     # default SQLite database.  By default all the options are on.
@@ -238,7 +238,7 @@ method initialize {
     # 1 = Asynchronous deletes
     # 2 = Backup database every hour
 
-    $self->config_( 'sqlite_tweaks', 0xFFFFFFFF );
+    $self->config('sqlite_tweaks', 0xFFFFFFFF );
 
     # SQLite Journal mode.
     # To use this option, DBD::SQLite v1.20 or later is required.
@@ -257,20 +257,20 @@ method initialize {
     # For more information about the journal mode, see:
     # http://www.sqlite.org/pragma.html#pragma_journal_mode
 
-    $self->config_( 'sqlite_journal_mode', 'delete' );
+    $self->config('sqlite_journal_mode', 'delete' );
 
     # Japanese wakachigaki parser ('kakasi' or 'mecab' or 'internal').
 
-    $self->config_( 'nihongo_parser', 'kakasi' );
+    $self->config('nihongo_parser', 'kakasi' );
 
-    $self->mq_register_( 'COMIT', $self );
-    $self->mq_register_( 'RELSE', $self );
+    $self->mq_register('COMIT', $self );
+    $self->mq_register('RELSE', $self );
 
     # Register for the TICKD message which is sent hourly by the
     # Logger module.  We use this to hourly save the database if bit 1
     # of the sqlite_tweaks is set and we are using SQLite
 
-    $self->mq_register_( 'TICKD', $self );
+    $self->mq_register('TICKD', $self );
 
     return 1;
 }
@@ -314,7 +314,7 @@ method start {
     # UTF-8 but POPFile uses EUC-JP encoding for Japanese. In this situation
     # lc() does not work correctly.
 
-    my $language = $self->module_config_( 'html', 'language' ) || '';
+    my $language = $self->module_config('html', 'language' ) || '';
 
     if ( $language =~ /^(Nihongo$|Korean$|Chinese)/ ) {
         use POSIX qw( locale_h );
@@ -325,7 +325,7 @@ method start {
     # Pass in the current interface language for language specific parsing
 
     $parser->set_lang( $language );
-    $unclassified = log( $self->config_( 'unclassified_weight' ) );
+    $unclassified = log( $self->config('unclassified_weight' ) );
 
     if ( !$self->db_connect() ) {
         return 0;
@@ -334,12 +334,12 @@ method start {
     if ( $language eq 'Nihongo' ) {
         # Setup Nihongo (Japanese) parser.
 
-        my $nihongo_parser = $self->config_( 'nihongo_parser' );
+        my $nihongo_parser = $self->config('nihongo_parser' );
 
         $nihongo_parser = $parser->setup_nihongo_parser( $nihongo_parser );
 
-        $self->log_( 2, "Use Nihongo (Japanese) parser : $nihongo_parser" );
-        $self->config_( 'nihongo_parser', $nihongo_parser );
+        $self->log_msg(2, "Use Nihongo (Japanese) parser : $nihongo_parser" );
+        $self->config('nihongo_parser', $nihongo_parser );
     }
 
     $self->upgrade_predatabase_data();
@@ -377,8 +377,8 @@ method backup_database {
     # If database backup is turned on and we are using SQLite then
     # backup the database by copying it
 
-    if ( ( $self->config_( 'sqlite_tweaks' ) & 2 ) &&         $db_is_sqlite ) {        if ( !copy( $db_name, $db_name . ".backup" ) ) {
-            $self->log_( 0, "Failed to backup database ".$db_name );
+    if ( ( $self->config('sqlite_tweaks' ) & 2 ) &&         $db_is_sqlite ) {        if ( !copy( $db_name, $db_name . ".backup" ) ) {
+            $self->log_msg(0, "Failed to backup database ".$db_name );
         }
     }
 }
@@ -394,8 +394,8 @@ C<$db> The db handle to tweak
 =cut
 method tweak_sqlite ($tweak, $state, $db) {
     if ( $db_is_sqlite &&
-         ( $self->config_( 'sqlite_tweaks' ) & $tweak ) ) {
-        $self->log_( 1, "Performing tweak $tweak to $state" );
+         ( $self->config('sqlite_tweaks' ) & $tweak ) ) {
+        $self->log_msg(1, "Performing tweak $tweak to $state" );
 
         if ( $tweak == 1 ) {
             my $sync = $state?'off':'normal';
@@ -419,7 +419,7 @@ C<undo> 1 if this is an undo operation
 
 =cut
 method reclassified ($session, $bucket, $newbucket, $undo) {
-    $self->log_( 0, "Reclassification from $bucket to $newbucket" );
+    $self->log_msg(0, "Reclassification from $bucket to $newbucket" );
 
     my $c = $undo?-1:1;
 
@@ -451,7 +451,7 @@ method get_color ($session, $word) {
     my $color = 'black';
 
     for my $bucket ($self->get_buckets( $session )) {
-        my $prob = $self->get_value_( $session, $bucket, $word );
+        my $prob = $self->get_value( $session, $bucket, $word );
 
         if ( $prob != 0 )  {
             if ( $prob > $max )  {
@@ -468,7 +468,7 @@ method get_color ($session, $word) {
 Returns the probability of a word that doesn't appear
 
 =cut
-method get_not_likely_ ($session) {
+method get_not_likely ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
@@ -482,7 +482,7 @@ converted to the log value of the probability before return to get
 the raw value just hit the hash directly or call get_base_value_
 
 =cut
-method get_value_ ($session, $bucket, $word) {
+method get_value ($session, $bucket, $word) {
     my $value = $self->db_get_word_count( $session, $bucket, $word );
 
     if ( defined( $value ) && ( $value > 0 ) ) {
@@ -497,7 +497,7 @@ method get_value_ ($session, $bucket, $word) {
     }
 }
 
-method get_base_value_ ($session, $bucket, $word) {
+method get_base_value ($session, $bucket, $word) {
     my $value = $self->db_get_word_count( $session, $bucket, $word );
 
     if ( defined( $value ) ) {
@@ -513,7 +513,7 @@ Sets the value for a word in a bucket and updates the total word
 counts for the bucket and globally
 
 =cut
-method set_value_ ($session, $bucket, $word, $value) {
+method set_value ($session, $bucket, $word, $value) {
     if ( $self->db_put_word_count( $session, $bucket,             $word, $value ) == 1 ) {
         # If we set the word count to zero then clean it up by deleting the
         # entry
@@ -533,8 +533,8 @@ returns not_likely__ rather than 0 if the word is not found.  This
 makes its result more suitable as a sort key for bucket ranking.
 
 =cut
-method get_sort_value_ ($session, $bucket, $word) {
-    my $v = $self->get_value_( $session, $bucket, $word );
+method get_sort_value ($session, $bucket, $word) {
+    my $v = $self->get_value( $session, $bucket, $word );
 
     if ( $v == 0 ) {
         my $userid = $self->valid_session_key( $session );
@@ -590,17 +590,17 @@ method db_connect {
     # alone
 
     my $dbname;
-    my $dbconnect = $self->config_( 'dbconnect' );
+    my $dbconnect = $self->config('dbconnect' );
     my $dbpresent;
     my $sqlite = ( $dbconnect =~ /sqlite/i );
     my $mysql  = ( $dbconnect =~ /mysql/i );
     my %connection_options = ();
 
     if ( $sqlite ) {
-        $dbname = $self->get_user_path_( $self->config_( 'database' ) );
+        $dbname = $self->get_user_path($self->config('database' ) );
         $dbpresent = ( -e $dbname ) || 0;
     } else {
-        $dbname = $self->config_( 'database' );
+        $dbname = $self->config('database' );
         $dbpresent = 1;
 
         if ( $mysql ) {
@@ -624,7 +624,7 @@ method db_connect {
 
     $dbconnect =~ s/\$dbname/$dbname/g;
 
-    $self->log_( 0, "Attempting to connect to $dbconnect ($dbpresent)" );
+    $self->log_msg(0, "Attempting to connect to $dbconnect ($dbpresent)" );
 
     my $need_convert = 0;
     my $old_dbh;
@@ -638,7 +638,7 @@ method db_connect {
         close $dbfile;
 
         if ( $buffer eq '** This file contains an SQLite 2.1 database **' ) {
-            $self->log_( 0, 'SQLite 2 database found. Try to upgrade' );
+            $self->log_msg(0, 'SQLite 2 database found. Try to upgrade' );
 
             # Test DBD::SQLite version
 
@@ -649,7 +649,7 @@ method db_connect {
             };
 
             if ( $ver ge '1.00' ) {
-                $self->log_( 0, "DBD::SQLite $ver found" );
+                $self->log_msg(0, "DBD::SQLite $ver found" );
 
                 # Backup SQLite2 database
 
@@ -659,17 +659,17 @@ method db_connect {
 
                 # Connect to SQLite2 database
 
-                my $old_dbconnect = $self->config_( 'dbconnect' );
+                my $old_dbconnect = $self->config('dbconnect' );
                 $old_dbconnect =~ s/SQLite:/SQLite2:/;
                 $old_dbconnect =~ s/\$dbname/$old_dbname/g;
 
-                $old_dbh = DBI->connect( $old_dbconnect,                                         $self->config_( 'dbuser' ),
-                                         $self->config_( 'dbauth' ) );
+                $old_dbh = DBI->connect( $old_dbconnect,                                         $self->config('dbuser' ),
+                                         $self->config('dbauth' ) );
                 # Update the config file
 
-                $dbconnect = $self->config_( 'dbconnect' );
+                $dbconnect = $self->config('dbconnect' );
                 $dbconnect =~ s/SQLite2:/SQLite:/;
-                $self->config_( 'dbconnect', $dbconnect );
+                $self->config('dbconnect', $dbconnect );
                 $dbconnect =~ s/\$dbname/$dbname/g;
 
                 $need_convert = 1;
@@ -677,32 +677,32 @@ method db_connect {
         } else {
             # Update the config file
 
-            $dbconnect = $self->config_( 'dbconnect' );
+            $dbconnect = $self->config('dbconnect' );
             $dbconnect =~ s/SQLite2:/SQLite:/;
-            $self->config_( 'dbconnect', $dbconnect );
+            $self->config('dbconnect', $dbconnect );
             $dbconnect =~ s/\$dbname/$dbname/g;
         }
     }
 
 
-    $db = DBI->connect( $dbconnect,                                  $self->config_( 'dbuser' ),
-                                  $self->config_( 'dbauth' ),
+    $db = DBI->connect( $dbconnect,                                  $self->config('dbuser' ),
+                                  $self->config('dbauth' ),
                                   \%connection_options );
     if ( !defined( $db ) ) {
-        $self->log_( 0, "Failed to connect to database and got error $DBI::errstr" );
+        $self->log_msg(0, "Failed to connect to database and got error $DBI::errstr" );
         return 0;
     }
 
     if ( $sqlite ) {
-        $self->log_( 0, "Using SQLite library version " . $db->{sqlite_version} );
+        $self->log_msg(0, "Using SQLite library version " . $db->{sqlite_version} );
 
         if ( $need_convert ) {
-            $self->log_( 0, 'Convert SQLite2 database to SQLite3 database' );
+            $self->log_msg(0, 'Convert SQLite2 database to SQLite3 database' );
 
             $self->db_upgrade( $old_dbh );
             $old_dbh->disconnect;
 
-            $self->log_( 0, 'Database convert completed' );
+            $self->log_msg(0, 'Database convert completed' );
         }
 
         # Set the synchronous mode to normal ( default of SQLite 2.x ).
@@ -718,7 +718,7 @@ method db_connect {
         if ( $db->{sqlite_version} ge '3.6.0' ) {
             # Configure journal mode
 
-            my $journal_mode = $self->config_( 'sqlite_journal_mode' );
+            my $journal_mode = $self->config('sqlite_journal_mode' );
 
             if ( $journal_mode =~ /^(delete|truncate|persist|memory|off)$/i ) {
                 $db->do( "pragma journal_mode=$journal_mode;" );
@@ -738,7 +738,7 @@ method db_connect {
     # version number.  If the version number doesn't match or is
     # missing then do the upgrade.
 
-    open my $schema_fh, '<', $self->get_root_path_( 'Classifier/popfile.sql' );
+    open my $schema_fh, '<', $self->get_root_path('Classifier/popfile.sql' );
     <$schema_fh> =~ /-- POPFILE SCHEMA (\d+)/;
     my $version = $1;
     close $schema_fh;
@@ -835,12 +835,12 @@ C<$sqlite> Set to 1 if this is a SQLite database
 
 =cut
 method insert_schema ($sqlite) {
-    if ( -e $self->get_root_path_( 'Classifier/popfile.sql' ) ) {
+    if ( -e $self->get_root_path('Classifier/popfile.sql' ) ) {
         my $schema = '';
 
-        $self->log_( 0, "Creating database schema" );
+        $self->log_msg(0, "Creating database schema" );
 
-        open my $schema_fh, '<', $self->get_root_path_( 'Classifier/popfile.sql' );
+        open my $schema_fh, '<', $self->get_root_path('Classifier/popfile.sql' );
         while ( <$schema_fh> ) {
             next if ( /^--/ );
             next if ( !/[a-z;]/ );
@@ -863,7 +863,7 @@ method insert_schema ($sqlite) {
         close $schema_fh;
         return 1;
     } else {
-        $self->log_( 0, "Can't find the database schema" );
+        $self->log_msg(0, "Can't find the database schema" );
         return 0;
     }
 }
@@ -898,7 +898,7 @@ method db_upgrade ($db_from) {
     # new schema and finally rerun the inserts.
 
     my $i = 0;
-    my $ins_file = $self->get_user_path_( 'insert.sql' );
+    my $ins_file = $self->get_user_path('insert.sql' );
     open INSERT, '>' . $ins_file;
 
     foreach my $table (@tables) {
@@ -1184,11 +1184,11 @@ method upgrade_predatabase_data {
     my $session = $self->get_session_key( 'admin', '' );
 
     if ( !defined( $session ) ) {
-        $self->log_( 0, "Tried to get the session key for user admin and failed; cannot upgrade old data" );
+        $self->log_msg(0, "Tried to get the session key for user admin and failed; cannot upgrade old data" );
         return;
     }
 
-    my @buckets = glob $self->get_user_path_( $self->config_( 'corpus' ) . '/*' );
+    my @buckets = glob $self->get_user_path($self->config('corpus' ) . '/*' );
 
     foreach my $bucket (@buckets) {
         # A bucket directory must be a directory
@@ -1247,7 +1247,7 @@ method upgrade_bucket ($session, $bucket) {
 
     $self->create_bucket( $session, $bucket );
 
-    if ( open PARAMS, '<' . $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/params" ) ) {
+    if ( open PARAMS, '<' . $self->get_user_path($self->config('corpus' ) . "/$bucket/params" ) ) {
         while ( <PARAMS> )  {
             s/[\r\n]//g;
             if ( /^([[:lower:]]+) ([^\r\n\t ]+)$/ )  {
@@ -1255,7 +1255,7 @@ method upgrade_bucket ($session, $bucket) {
             }
         }
         close PARAMS;
-        unlink $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/params" );
+        unlink $self->get_user_path($self->config('corpus' ) . "/$bucket/params" );
     }
 
     # Pre v0.21.0 POPFile had GLOBAL parameters for subject modification,
@@ -1264,16 +1264,16 @@ method upgrade_bucket ($session, $bucket) {
     # per bucket to off
 
     foreach my $gl ( 'subject', 'xtc', 'xpl' ) {
-        $self->log_( 1, "Checking deprecated parameter GLOBAL_$gl for $bucket\n" );
+        $self->log_msg(1, "Checking deprecated parameter GLOBAL_$gl for $bucket\n" );
         my $val = $self->configuration()->deprecated_parameter( "GLOBAL_$gl" );
         if ( defined( $val ) && ( $val == 0 ) ) {
-            $self->log_( 1, "GLOBAL_$gl is 0 for $bucket, overriding $gl\n" );
+            $self->log_msg(1, "GLOBAL_$gl is 0 for $bucket, overriding $gl\n" );
             $self->set_bucket_parameter( $session, $bucket, $gl, 0 );
         }
     }
 
     # See if there are magnets defined
-    if ( open MAGNETS, '<' . $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/magnets" ) ) {
+    if ( open MAGNETS, '<' . $self->get_user_path($self->config('corpus' ) . "/$bucket/magnets" ) ) {
         while ( <MAGNETS> )  {
             s/[\r\n]//g;
 
@@ -1309,19 +1309,19 @@ method upgrade_bucket ($session, $bucket) {
             }
         }
         close MAGNETS;
-        unlink $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/magnets" );
+        unlink $self->get_user_path($self->config('corpus' ) . "/$bucket/magnets" );
     }
 
     # If there is no existing table but there is a table file (the old style
     # flat file used by POPFile for corpus storage) then create the new
     # database from it thus performing an automatic upgrade.
 
-    if ( -e $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/table" ) ) {
-        $self->log_( 0, "Performing automatic upgrade of $bucket corpus from flat file to DBI" );
+    if ( -e $self->get_user_path($self->config('corpus' ) . "/$bucket/table" ) ) {
+        $self->log_msg(0, "Performing automatic upgrade of $bucket corpus from flat file to DBI" );
 
         $db->begin_work;
 
-        if ( open WORDS, '<' . $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/table" ) )  {
+        if ( open WORDS, '<' . $self->get_user_path($self->config('corpus' ) . "/$bucket/table" ) )  {
             my $wc = 1;
 
             my $first = <WORDS>;
@@ -1332,11 +1332,11 @@ method upgrade_bucket ($session, $bucket) {
                     $db->rollback;
                     return 0;
                 } else {
-                    $self->log_( 0, "Upgrading bucket $bucket..." );
+                    $self->log_msg(0, "Upgrading bucket $bucket..." );
 
                     while ( <WORDS> ) {
                         if ( $wc % 100 == 0 ) {
-                            $self->log_( 0, "$wc" );
+                            $self->log_msg(0, "$wc" );
                         }
                         $wc += 1;
                         s/[\r\n]//g;
@@ -1346,48 +1346,48 @@ method upgrade_bucket ($session, $bucket) {
                                 $self->db_put_word_count( $session, $bucket, $1, $2 );
                             }
                         } else {
-                            $self->log_( 0, "Found entry in corpus for $bucket that looks wrong: \"$_\" (ignoring)" );
+                            $self->log_msg(0, "Found entry in corpus for $bucket that looks wrong: \"$_\" (ignoring)" );
                         }
                     }
                 }
 
                 if ( $wc > 1 ) {
                     $wc -= 1;
-                    $self->log_( 0, "(completed $wc words)" );
+                    $self->log_msg(0, "(completed $wc words)" );
                 }
                 close WORDS;
             } else {
                 close WORDS;
                 $db->rollback;
-                unlink $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/table" );
+                unlink $self->get_user_path($self->config('corpus' ) . "/$bucket/table" );
                 return 0;
             }
 
             $db->commit;
-            unlink $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/table" );
+            unlink $self->get_user_path($self->config('corpus' ) . "/$bucket/table" );
         }
     }
 
     # Now check to see if there's a BerkeleyDB-style table
 
-    my $bdb_file = $self->get_user_path_( $self->config_( 'corpus' ) . "/$bucket/table.db" );
+    my $bdb_file = $self->get_user_path($self->config('corpus' ) . "/$bucket/table.db" );
 
     if ( -e $bdb_file ) {
-        $self->log_( 0, "Performing automatic upgrade of $bucket corpus from BerkeleyDB to DBI" );
+        $self->log_msg(0, "Performing automatic upgrade of $bucket corpus from BerkeleyDB to DBI" );
 
         require BerkeleyDB;
 
         my %h;
         tie %h, "BerkeleyDB::Hash", -Filename => $bdb_file;
 
-        $self->log_( 0, "Upgrading bucket $bucket..." );
+        $self->log_msg(0, "Upgrading bucket $bucket..." );
         $db->begin_work;
 
         my $wc = 1;
 
         for my $word (keys %h) {
             if ( $wc % 100 == 0 ) {
-                $self->log_( 0, "$wc" );
+                $self->log_msg(0, "$wc" );
             }
 
             next if ( $word =~ /__POPFILE__(LOG__TOTAL|TOTAL|UNIQUE)__/ );
@@ -1399,7 +1399,7 @@ method upgrade_bucket ($session, $bucket) {
         }
 
         $wc -= 1;
-        $self->log_( 0, "(completed $wc words)" );
+        $self->log_msg(0, "(completed $wc words)" );
         $db->commit;
         untie %h;
         unlink $bdb_file;
@@ -1523,7 +1523,7 @@ method write_line ($file, $line, $class) {
             print $file $line;
         } else {
             my ( $package, $filename, $line, $subroutine ) = caller;
-            $self->log_( 0, "Tried to write to a closed file. Called from $package line $line" );
+            $self->log_msg(0, "Tried to write to a closed file. Called from $package line $line" );
         }
     }
 
@@ -1637,13 +1637,13 @@ NOTE Also echoes the line with . to $client but not to $file
 Returns 1 if there was a . or 0 if reached EOF before we hit the .
 
 =cut
-method echo_to_dot_ ($mail, $client, $file, $before) {
+method echo_to_dot ($mail, $client, $file, $before) {
     my $hit_dot = 0;
 
     my $isopen = open FILE, "$file" if ( defined( $file ) );
     binmode FILE if ($isopen);
 
-    while ( my $line = $self->slurp_( $mail ) ) {
+    while ( my $line = $self->slurp($mail ) ) {
         # Check for an abort
 
         last if ( $self->alive() == 0 );
@@ -1758,7 +1758,7 @@ C<$session> A session key previously returned by get_session_key
 =cut
 method release_session_key_private ($session) {
     if ( defined( $api_sessions->{$session} ) ) {
-        $self->log_( 1, "release_session_key releasing key $session for user $api_sessions->{$session}" );
+        $self->log_msg(1, "release_session_key releasing key $session for user $api_sessions->{$session}" );
         delete $api_sessions->{$session};
     }
 }
@@ -1790,7 +1790,7 @@ method valid_session_key ($session) {
 
     if ( !defined( $api_sessions->{$session} ) ) {
         my ( $package, $filename, $line, $subroutine ) = caller;
-        $self->log_( 0, "Invalid session key $session provided in $package @ $line" );
+        $self->log_msg(0, "Invalid session key $session provided in $package @ $line" );
         select( undef, undef, undef, 1 );
     }
 
@@ -1839,7 +1839,7 @@ method get_session_key ($user, $pwd) {
         # username/password combinations at high speed to determine the
         # credentials of a valid user
 
-        $self->log_( 0, "Attempt to login with incorrect credentials for user $user" );
+        $self->log_msg(0, "Attempt to login with incorrect credentials for user $user" );
         select( undef, undef, undef, 1 );
         return undef;
     }
@@ -1850,7 +1850,7 @@ method get_session_key ($user, $pwd) {
 
     $self->db_update_cache( $session );
 
-    $self->log_( 1, "get_session_key returning key $session for user $api_sessions->{$session}" );
+    $self->log_msg(1, "get_session_key returning key $session for user $api_sessions->{$session}" );
 
     return $session;
 }
@@ -1864,7 +1864,7 @@ C<$session> A session key previously returned by get_session_key
 
 =cut
 method release_session_key ($session) {
-    $self->mq_post_( "RELSE", $session );
+    $self->mq_post("RELSE", $session );
 }
 
 
@@ -1925,7 +1925,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    $unclassified = log( $self->config_( 'unclassified_weight' ) );
+    $unclassified = log( $self->config('unclassified_weight' ) );
 
     $magnet_used   = 0;
     $magnet_detail = 0;
@@ -1933,7 +1933,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     if ( defined( $file ) ) {
         return undef if ( !-f $file );
 
-        $parser->parse_file( $file,                                       $self->global_config_( 'message_cutoff'   ) );    }
+        $parser->parse_file( $file,                                       $self->global_config('message_cutoff'   ) );    }
 
     # Get the list of buckets
 
@@ -2487,7 +2487,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # The maximum size of message to parse, or 0 for unlimited
 
-    my $max_size = $self->global_config_( 'message_cutoff' );
+    my $max_size = $self->global_config('message_cutoff' );
     $max_size = 0 if ( !defined( $max_size ) || ( $max_size =~ /\D/ ) );
 
     my $msg_file;
@@ -2508,10 +2508,10 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     my $msg;
     if ( !$nosave ) {
-        open $msg, '>', $msg_file or $self->log_( 0, "Could not open $msg_file : $!" );
+        open $msg, '>', $msg_file or $self->log_msg(0, "Could not open $msg_file : $!" );
     }
 
-    while ( my $line = $self->slurp_( $mail ) ) {
+    while ( my $line = $self->slurp($mail ) ) {
         my $fileline;
 
         # This is done so that we remove the network style end of line
@@ -2589,7 +2589,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
                     } else {
                         # Gather up any header lines that are questionable
 
-                        $self->log_( 1, "Found odd email header: $line" );
+                        $self->log_msg(1, "Found odd email header: $line" );
                         $msg_head_q .= $line;
                     }
                 }
@@ -2633,7 +2633,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     my $xpl_insertion        = $self->get_bucket_parameter( $session, $classification, 'xpl'        );
     my $quarantine           = $self->get_bucket_parameter( $session, $classification, 'quarantine' );
 
-    my $modification = $self->config_( 'subject_mod_left' ) . $classification . $self->config_( 'subject_mod_right' );
+    my $modification = $self->config('subject_mod_left' ) . $classification . $self->config('subject_mod_right' );
 
     # Add the Subject line modification or the original line back again
     # Don't add the classification unless it is not present
@@ -2643,7 +2643,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     if ( $subject_modification ) {
         if ( !defined( $msg_subject ) ) {            $msg_subject = " $modification";
         } elsif ( $msg_subject !~ /\Q$modification\E/ ) {
-            if ( $self->config_( 'subject_mod_pos' ) > 0 ) {
+            if ( $self->config('subject_mod_pos' ) > 0 ) {
                 # Beginning
                 $msg_subject = " $modification$msg_subject";
             } else {
@@ -2674,12 +2674,12 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # Add the XPL header
 
-    my $host = $self->module_config_( 'html', 'local' ) ?            $self->config_( 'localhostname' ) || '127.0.0.1' :
-            $self->config_( 'hostname' );    my $port = $self->module_config_( 'html', 'port' );
+    my $host = $self->module_config('html', 'local' ) ?            $self->config('localhostname' ) || '127.0.0.1' :
+            $self->config('hostname' );    my $port = $self->module_config('html', 'port' );
 
     my $xpl = "http://$host:$port/jump_to_message?view=$slot";
 
-    $xpl = "<$xpl>" if ( $self->config_( 'xpl_angle' ) );
+    $xpl = "<$xpl>" if ( $self->config('xpl_angle' ) );
 
     if ( ( $xpl_insertion ) && ( !$quarantine ) ) {
         $msg_head_after .= "X-POPFile-Link: $xpl$crlf";
@@ -2762,7 +2762,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     if ( $got_full_body ) {
         $need_dot = 1;
     } else {
-        $need_dot = !$self->echo_to_dot_( $mail, $echo?$client:undef, $nosave?undef:'>>' . $msg_file, $before_dot ) && !$nosave;
+        $need_dot = !$self->echo_to_dot( $mail, $echo?$client:undef, $nosave?undef:'>>' . $msg_file, $before_dot ) && !$nosave;
     }
 
     if ( $need_dot ) {
@@ -2787,7 +2787,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
             # file then copying to another) (perhaps a select on $mail
             # to predict if there is flushable data)
 
-            $self->flush_extra_( $mail, \*FLUSH, 0 );
+            $self->flush_extra($mail, \*FLUSH, 0 );
             close FLUSH;
 
             # append any data we got to the actual temp file
@@ -2818,7 +2818,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
         # loss otherwise, the data can be discarded (not saved and not
         # echoed)
 
-        $self->flush_extra_( $mail, $client, $echo?0:1);
+        $self->flush_extra($mail, $client, $echo?0:1);
     }
 
     if ( $class eq '' ) {
@@ -3028,10 +3028,10 @@ method get_bucket_word_prefixes ($session, $bucket) {
     my $result = $db->selectcol_arrayref(        "select words.word from matrix, words
          where matrix.wordid  = words.id and
                matrix.bucketid = $bucketid;");
-    if ( $self->module_config_( 'html', 'language' ) eq 'Nihongo' ) {
+    if ( $self->module_config('html', 'language' ) eq 'Nihongo' ) {
         return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr_euc($_,0,1)} @{$result};
     } else {
-        if  ( $self->module_config_( 'html', 'language' ) eq 'Korean' ) {
+        if  ( $self->module_config('html', 'language' ) eq 'Korean' ) {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {$_ =~ /([\x20-\x80]|$eksc)/} @{$result};
         } else {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr($_,0,1)}  @{$result};
@@ -3071,7 +3071,7 @@ method get_count_for_word ($session, $bucket, $word) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    return $self->get_base_value_( $session, $bucket, $word );
+    return $self->get_base_value( $session, $bucket, $word );
 }
 
 =head2 get_bucket_unique_count
@@ -3251,7 +3251,7 @@ method get_html_colored_message ($session, $file) {
         return $self->get_color( $session, $word );
     });
 
-    my $result = $parser->parse_file( $file,            $self->global_config_( 'message_cutoff' ) );
+    my $result = $parser->parse_file( $file,            $self->global_config('message_cutoff' ) );
     $parser->set_color_resolver(undef);
 
     return $result;
@@ -3292,7 +3292,7 @@ method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
         }
     });
 
-    my $result = $parser->parse_file( $file,            $self->global_config_( 'message_cutoff' ) );
+    my $result = $parser->parse_file( $file,            $self->global_config('message_cutoff' ) );
     $parser->set_color_resolver(undef);
 
     return $result;
@@ -3367,12 +3367,12 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
     # Make sure that the bucket passed in actually exists
 
     if ( !defined( $db_bucketid->{$userid}{$old_bucket} ) ) {
-        $self->log_( 0, "Bad bucket name $old_bucket to rename_bucket" );
+        $self->log_msg(0, "Bad bucket name $old_bucket to rename_bucket" );
         return 0;
     }
 
     if (  defined( $db_bucketid->{$userid}{$new_bucket} ) ) {
-        $self->log_( 0, "Bucket named $new_bucket already exists" );
+        $self->log_msg(0, "Bucket named $new_bucket already exists" );
         return 0;
     }
 
@@ -3380,7 +3380,7 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
 
     my $id = $db_bucketid->{$userid}{$old_bucket}{id};
 
-    $self->log_( 1, "Rename bucket $old_bucket to $new_bucket" );
+    $self->log_msg(1, "Rename bucket $old_bucket to $new_bucket" );
 
     my $result = $self->validate_sql_prepare_and_execute(        'update buckets set name = ? where id = ?;',
         $new_bucket, $id );
@@ -3418,7 +3418,7 @@ method add_messages_to_bucket ($session, $bucket, @files) {
     $parser->stop_parse();
 
     foreach my $file (@files) {
-        $parser->parse_file( $file,            $self->global_config_( 'message_cutoff' ),
+        $parser->parse_file( $file,            $self->global_config('message_cutoff' ),
             0 );  # PROFILE BLOCK STOP (Do not reset word list)
     }
 
@@ -3465,7 +3465,7 @@ method remove_message_from_bucket ($session, $bucket, $file) {
         return 0;
     }
 
-    $parser->parse_file( $file,        $self->global_config_( 'message_cutoff' ) );    $self->add_words_to_bucket( $session, $bucket, -1 );
+    $parser->parse_file( $file,        $self->global_config('message_cutoff' ) );    $self->add_words_to_bucket( $session, $bucket, -1 );
 
     $self->db_update_cache( $session, $bucket );
 
@@ -3765,7 +3765,7 @@ method add_stopword ($session, $stopword) {
 
     # Pass language parameter to add_stopword()
 
-    return $parser->mangle()->add_stopword(        $stopword, $self->module_config_( 'html', 'language' ) );}
+    return $parser->mangle()->add_stopword(        $stopword, $self->module_config('html', 'language' ) );}
 
 method remove_stopword ($session, $stopword) {
     my $userid = $self->valid_session_key( $session );
@@ -3773,7 +3773,7 @@ method remove_stopword ($session, $stopword) {
 
     # Pass language parameter to remove_stopword()
 
-    return $parser->mangle()->remove_stopword(        $stopword, $self->module_config_( 'html', 'language' ) );}
+    return $parser->mangle()->remove_stopword(        $stopword, $self->module_config('html', 'language' ) );}
 
 
 =head2 db_quote
@@ -3791,7 +3791,7 @@ method db_quote ($string) {
     my $backup = $string;
     if ( $string =~ s/\x00//g ) {
         my ( $package, $file, $line ) = caller;
-        $self->log_( 0, "Found null-byte in string '$backup'. Called from package '$package' ($file), line $line." );
+        $self->log_msg(0, "Found null-byte in string '$backup'. Called from package '$package' ($file), line $line." );
     }
 
     return $db->quote( $string );
@@ -3842,7 +3842,7 @@ method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
 
     unless ( $execute_result ) {
         my ( $package, $file, $line ) = caller;
-        $self->log_( 0, "DBI::execute failed.  Called from package '$package' ($file), line $line." );
+        $self->log_msg(0, "DBI::execute failed.  Called from package '$package' ($file), line $line." );
     }
 
     return $sth;
@@ -3863,7 +3863,7 @@ method check_for_nullbytes ($string) {
 
         if ( my $count = ( $string =~ s/\x00//g ) ) {
             my ( $package, $file, $line ) = caller( 1 );
-            $self->log_( 0, "Found $count null-character(s) in string '$backup'. Called from package '$package' ($file), line $line." );
+            $self->log_msg(0, "Found $count null-character(s) in string '$backup'. Called from package '$package' ($file), line $line." );
         }
     }
 

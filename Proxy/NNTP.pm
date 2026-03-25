@@ -42,41 +42,41 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
 
     # ----------------------------------------------------------------------------
     method initialize {
-        $self->config_( 'enabled',        0 );
-        $self->config_( 'force_fork',     1 );
-        $self->config_( 'port',           119 );
-        $self->config_( 'local',          1 );
-        $self->config_( 'headtoo',        0 );
-        $self->config_( 'separator',      ':' );
-        $self->config_( 'welcome_string',
+        $self->config('enabled',        0 );
+        $self->config('force_fork',     1 );
+        $self->config('port',           119 );
+        $self->config('local',          1 );
+        $self->config('headtoo',        0 );
+        $self->config('separator',      ':' );
+        $self->config('welcome_string',
             "NNTP POPFile ($self->version()) server ready" );
 
         if ( !$self->SUPER::initialize() ) {
             return 0;
         }
 
-        $self->config_( 'enabled', 0 );
+        $self->config('enabled', 0 );
         return 1;
     }
 
     # ----------------------------------------------------------------------------
     method start {
-        if ( $self->config_( 'enabled' ) == 0 ) {
+        if ( $self->config('enabled' ) == 0 ) {
             return 2;
         }
 
-        $self->register_configuration_item_( 'configuration', 'nntp_port',
+        $self->register_configuration_item('configuration', 'nntp_port',
                                              'nntp-port.thtml', $self );
-        $self->register_configuration_item_( 'configuration', 'nntp_force_fork',
+        $self->register_configuration_item('configuration', 'nntp_force_fork',
                                              'nntp-force-fork.thtml', $self );
-        $self->register_configuration_item_( 'configuration', 'nntp_separator',
+        $self->register_configuration_item('configuration', 'nntp_separator',
                                              'nntp-separator.thtml', $self );
-        $self->register_configuration_item_( 'security', 'nntp_local',
+        $self->register_configuration_item('security', 'nntp_local',
                                              'nntp-security-local.thtml', $self );
 
-        if ( $self->config_( 'welcome_string' ) =~
+        if ( $self->config('welcome_string' ) =~
              /^NNTP POPFile \(v\d+\.\d+\.\d+\) server ready$/ ) {
-            $self->config_( 'welcome_string',
+            $self->config('welcome_string',
                             "NNTP POPFile ($self->version()) server ready" );
         }
 
@@ -91,31 +91,31 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
     # $client - an open stream to an NNTP client
     #
     # ----------------------------------------------------------------------------
-    method child__ ($client) {
+    method child ($client) {
         my %downloaded;
         my $news;
         my $connection_state = 'username needed';
 
-        $self->tee_( $client, "201 " . $self->config_( 'welcome_string' ) . "$eol" );
+        $self->tee($client, "201 " . $self->config('welcome_string' ) . "$eol" );
 
         while ( <$client> ) {
             my $command = $_;
             my ( $response, $ok );
             $command =~ s/(\015|\012)//g;
-            $self->log_( 2, "Command: --$command--" );
+            $self->log_msg(2, "Command: --$command--" );
 
             if ( $command =~ /^ *QUIT/i ) {
                 if ( $news ) {
-                    last if ( $self->echo_response_( $news, $client, $command ) == 2 );
+                    last if ( $self->echo_response($news, $client, $command ) == 2 );
                     close $news;
                 } else {
-                    $self->tee_( $client, "205 goodbye$eol" );
+                    $self->tee($client, "205 goodbye$eol" );
                 }
                 last;
             }
 
             if ( $connection_state eq 'username needed' ) {
-                my $separator    = $self->config_( 'separator' );
+                my $separator    = $self->config('separator' );
                 my $user_command = "^ *AUTHINFO USER ([^:]+)(:([\\d]{1,5}))?(\\Q$separator\\E(.+))?";
 
                 if ( $command =~ /$user_command/i ) {
@@ -124,51 +124,51 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                     my $username = $5;
 
                     if ( $server ne '' ) {
-                        if ( $news = $self->verify_connected_( $news, $client,
+                        if ( $news = $self->verify_connected($news, $client,
                                                                $server,
                                                                $port || 119 ) ) {
                             if ( defined $username ) {
-                                $self->get_response_( $news, $client,
+                                $self->get_response($news, $client,
                                                       'AUTHINFO USER ' . $username );
                                 $connection_state = "password needed";
                             } else {
-                                $self->tee_( $client, "381 password$eol" );
+                                $self->tee($client, "381 password$eol" );
                                 $connection_state = "ignore password";
                             }
                         } else {
                             last;
                         }
                     } else {
-                        $self->tee_( $client,
+                        $self->tee($client,
                             "482 Authentication rejected server name not specified in AUTHINFO USER command$eol" );
                         last;
                     }
 
-                    $self->flush_extra_( $news, $client, 0 );
+                    $self->flush_extra($news, $client, 0 );
                 } else {
-                    $self->tee_( $client, "480 Authorization required for this command$eol" );
+                    $self->tee($client, "480 Authorization required for this command$eol" );
                 }
                 next;
             }
 
             if ( $connection_state eq "password needed" ) {
                 if ( $command =~ /^ *AUTHINFO PASS (.*)/i ) {
-                    ( $response, $ok ) = $self->get_response_( $news, $client, $command );
+                    ( $response, $ok ) = $self->get_response($news, $client, $command );
                     if ( $response =~ /^281 .*/ ) {
                         $connection_state = "connected";
                     }
                 } else {
-                    $self->tee_( $client, "381 more authentication required for this command$eol" );
+                    $self->tee($client, "381 more authentication required for this command$eol" );
                 }
                 next;
             }
 
             if ( $connection_state eq "ignore password" ) {
                 if ( $command =~ /^ *AUTHINFO PASS (.*)/i ) {
-                    $self->tee_( $client, "281 authentication accepted$eol" );
+                    $self->tee($client, "281 authentication accepted$eol" );
                     $connection_state = "connected";
                 } else {
-                    $self->tee_( $client, "381 more authentication required for this command$eol" );
+                    $self->tee($client, "381 more authentication required for this command$eol" );
                 }
                 next;
             }
@@ -182,9 +182,9 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
 
                     if ( $1 =~ /^\d*$/ ) {
                         ( $message_id, $response ) =
-                            $self->get_message_id_( $news, $client, $command );
+                            $self->get_message_id($news, $client, $command );
                         if ( !defined($message_id) ) {
-                            $self->tee_( $client, $response );
+                            $self->tee($client, $response );
                             next;
                         }
                     } else {
@@ -196,8 +196,8 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                                $downloaded{$message_id}{slot} ) ) &&
                          ( open my $retrfile, '<', $file ) ) {
                         binmode $retrfile;
-                        $self->log_( 1, "Printing message from cache" );
-                        $self->tee_( $client, "220 0 $message_id$eol" );
+                        $self->log_msg(1, "Printing message from cache" );
+                        $self->tee($client, "220 0 $message_id$eol" );
 
                         ( my $class, undef ) = $self->set_service()->classify_message(
                             $retrfile, $client, 1,
@@ -206,7 +206,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                         print $client ".$eol";
                         close $retrfile;
                     } else {
-                        ( $response, $ok ) = $self->get_response_( $news, $client, $command );
+                        ( $response, $ok ) = $self->get_response($news, $client, $command );
                         if ( $response =~ /^220 +(\d+) +([^ \015]+)/i ) {
                             $message_id = $2;
                             my ( $class, $history_file ) = $self->set_service()->classify_message(
@@ -221,16 +221,16 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                 if ( $command =~ /^ *HEAD ?(.*)?/i ) {
                     if ( $1 =~ /^\d*$/ ) {
                         ( $message_id, $response ) =
-                            $self->get_message_id_( $news, $client, $command );
+                            $self->get_message_id($news, $client, $command );
                         if ( !defined($message_id) ) {
-                            $self->tee_( $client, $response );
+                            $self->tee($client, $response );
                             next;
                         }
                     } else {
                         $message_id = $1;
                     }
 
-                    if ( $self->config_( 'headtoo' ) ) {
+                    if ( $self->config('headtoo' ) ) {
                         my ( $class, $history_file );
                         my $cached = 0;
 
@@ -241,24 +241,24 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                         } else {
                             my $article_command = $command;
                             $article_command =~ s/^ *HEAD/ARTICLE/i;
-                            ( $response, $ok ) = $self->get_response_( $news, $client,
+                            ( $response, $ok ) = $self->get_response($news, $client,
                                                                         $article_command, 0, 1 );
                             if ( $response =~ /^220 +(\d+) +([^ \015]+)/i ) {
                                 $message_id = $2;
                                 $response =~ s/^220/221/;
-                                $self->tee_( $client, "$response" );
+                                $self->tee($client, "$response" );
 
                                 ( $class, $history_file ) = $self->set_service()->classify_message(
                                     $news, undef, 0, '', 0, 0, $eol );
                                 $downloaded{$message_id}{slot}  = $history_file;
                                 $downloaded{$message_id}{class} = $class;
                             } else {
-                                $self->tee_( $client, "$response" );
+                                $self->tee($client, "$response" );
                                 next;
                             }
                         }
 
-                        ( $response, $ok ) = $self->get_response_( $news, $client,
+                        ( $response, $ok ) = $self->get_response($news, $client,
                                                                     $command, 0,
                                                                     ( $cached ? 0 : 1 ) );
                         if ( $response =~ /^221 +(\d+) +([^ ]+)/i ) {
@@ -274,9 +274,9 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
 
                     if ( $1 =~ /^\d*$/ ) {
                         ( $message_id, $response ) =
-                            $self->get_message_id_( $news, $client, $command );
+                            $self->get_message_id($news, $client, $command );
                         if ( !defined($message_id) ) {
-                            $self->tee_( $client, $response );
+                            $self->tee($client, $response );
                             next;
                         }
                     } else {
@@ -288,37 +288,37 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                                $downloaded{$message_id}{slot} ) ) &&
                          ( open my $retrfile, '<', $file ) ) {
                         binmode $retrfile;
-                        $self->log_( 1, "Printing message from cache" );
-                        $self->tee_( $client, "222 0 $message_id$eol" );
+                        $self->log_msg(1, "Printing message from cache" );
+                        $self->tee($client, "222 0 $message_id$eol" );
 
-                        while ( my $line = $self->slurp_( $retrfile ) ) {
+                        while ( my $line = $self->slurp($retrfile ) ) {
                             last if ( $line =~ /^[\015\012]+$/ );
                         }
-                        $self->echo_to_dot_( $retrfile, $client );
+                        $self->echo_to_dot($retrfile, $client );
                         print $client ".$eol";
                         close $retrfile;
                     } else {
                         my $article_command = $command;
                         $article_command =~ s/^ *BODY/ARTICLE/i;
-                        ( $response, $ok ) = $self->get_response_( $news, $client,
+                        ( $response, $ok ) = $self->get_response($news, $client,
                                                                     $article_command, 0, 1 );
                         if ( $response =~ /^220 +(\d+) +([^ \015]+)/i ) {
                             $message_id = $2;
                             $response =~ s/^220/222/;
-                            $self->tee_( $client, "$response" );
+                            $self->tee($client, "$response" );
 
                             my ( $class, $history_file ) = $self->set_service()->classify_message(
                                 $news, undef, 0, '', 0, 0, $eol );
                             $downloaded{$message_id}{slot}  = $history_file;
                             $downloaded{$message_id}{class} = $class;
 
-                            ( $response, $ok ) = $self->get_response_( $news, $client,
+                            ( $response, $ok ) = $self->get_response($news, $client,
                                                                         $command, 0, 1 );
                             if ( $response =~ /^222 +(\d+) +([^ ]+)/i ) {
-                                $self->echo_to_dot_( $news, $client, 0 );
+                                $self->echo_to_dot($news, $client, 0 );
                             }
                         } else {
-                            $self->tee_( $client, "$response" );
+                            $self->tee($client, "$response" );
                         }
                     }
                     next;
@@ -327,33 +327,33 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                 if ( $command =~
                     /^[ ]*(LIST|HEAD|NEWGROUPS|NEWNEWS|LISTGROUP|XGTITLE|XINDEX|XHDR|
                          XOVER|XPAT|XROVER|XTHREAD)/ix ) {
-                    ( $response, $ok ) = $self->get_response_( $news, $client, $command );
+                    ( $response, $ok ) = $self->get_response($news, $client, $command );
                     if ( $response =~ /^2\d\d/ ) {
-                        $self->echo_to_dot_( $news, $client, 0 );
+                        $self->echo_to_dot($news, $client, 0 );
                     }
                     next;
                 }
 
                 if ( $command =~ /^ *(HELP)/i ) {
-                    ( $response, $ok ) = $self->get_response_( $news, $client, $command );
+                    ( $response, $ok ) = $self->get_response($news, $client, $command );
                     if ( $response =~ /^1\d\d/ ) {
-                        $self->echo_to_dot_( $news, $client, 0 );
+                        $self->echo_to_dot($news, $client, 0 );
                     }
                     next;
                 }
 
                 if ( $command =~ /^ *(GROUP|STAT|IHAVE|LAST|NEXT|SLAVE|MODE|XPATH)/i ) {
-                    $self->get_response_( $news, $client, $command );
+                    $self->get_response($news, $client, $command );
                     next;
                 }
 
                 if ( $command =~ /^ *(IHAVE|POST|XRELPIC)/i ) {
-                    ( $response, $ok ) = $self->get_response_( $news, $client, $command );
+                    ( $response, $ok ) = $self->get_response($news, $client, $command );
                     if ( $response =~ /^3\d\d/ ) {
-                        $self->echo_to_dot_( $client, $news, 0 );
-                        $self->get_response_( $news, $client, "$eol" );
+                        $self->echo_to_dot($client, $news, 0 );
+                        $self->get_response($news, $client, "$eol" );
                     } else {
-                        $self->tee_( $client, $response );
+                        $self->tee($client, $response );
                     }
                     next;
                 }
@@ -361,33 +361,33 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
 
             if ( $command =~ /^ *$/ ) {
                 if ( $news && $news->connected ) {
-                    $self->get_response_( $news, $client, $command, 1 );
+                    $self->get_response($news, $client, $command, 1 );
                     next;
                 }
             }
 
             if ( $news && $news->connected ) {
-                $self->echo_response_( $news, $client, $command );
+                $self->echo_response($news, $client, $command );
                 next;
             } else {
-                $self->tee_( $client, "500 unknown command or bad syntax$eol" );
+                $self->tee($client, "500 unknown command or bad syntax$eol" );
                 last;
             }
         }
 
         if ( defined($news) ) {
-            $self->done_slurp_( $news );
+            $self->done_slurp($news );
             close $news;
         }
         close $client;
-        $self->mq_post_( 'CMPLT', $$ );
-        $self->log_( 0, "NNTP proxy done" );
+        $self->mq_post('CMPLT', $$ );
+        $self->log_msg(0, "NNTP proxy done" );
     }
 
     # ----------------------------------------------------------------------------
-    method get_message_id_ ($news, $client, $command) {
+    method get_message_id ($news, $client, $command) {
         $command =~ s/^ *(ARTICLE|HEAD|BODY)/STAT/i;
-        my ( $response, $ok ) = $self->get_response_( $news, $client, $command, 0, 1 );
+        my ( $response, $ok ) = $self->get_response($news, $client, $command, 0, 1 );
         if ( $response =~ /^223 +(\d+) +([^ \015]+)/i ) {
             return ( $2, $response );
         } else {
@@ -398,13 +398,13 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
     # ----------------------------------------------------------------------------
     method configure_item ($name, $templ, $language = undef) {
         if ( $name eq 'nntp_port' ) {
-            $templ->param( 'nntp_port' => $self->config_( 'port' ) );
+            $templ->param( 'nntp_port' => $self->config('port' ) );
         } elsif ( $name eq 'nntp_separator' ) {
-            $templ->param( 'nntp_separator' => $self->config_( 'separator' ) );
+            $templ->param( 'nntp_separator' => $self->config('separator' ) );
         } elsif ( $name eq 'nntp_local' ) {
-            $templ->param( 'nntp_if_local' => $self->config_( 'local' ) );
+            $templ->param( 'nntp_if_local' => $self->config('local' ) );
         } elsif ( $name eq 'nntp_force_fork' ) {
-            $templ->param( 'nntp_force_fork_on' => $self->config_( 'force_fork' ) );
+            $templ->param( 'nntp_force_fork_on' => $self->config('force_fork' ) );
         } else {
             $self->SUPER::configure_item( $name, $templ );
         }
@@ -417,9 +417,9 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
                 if ( ( $$form{nntp_port} =~ /^\d+$/ ) &&
                      ( $$form{nntp_port} >= 1 ) &&
                      ( $$form{nntp_port} <= 65535 ) ) {
-                    $self->config_( 'port', $$form{nntp_port} );
+                    $self->config('port', $$form{nntp_port} );
                     $templ->param( 'nntp_port_feedback' =>
-                        sprintf( $$language{Configuration_NNTPUpdate}, $self->config_( 'port' ) ) );
+                        sprintf( $$language{Configuration_NNTPUpdate}, $self->config('port' ) ) );
                 } else {
                     $templ->param( 'nntp_port_feedback' =>
                         "<div class=\"error01\">$$language{Configuration_Error3}</div>" );
@@ -431,9 +431,9 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
         if ( $name eq 'nntp_separator' ) {
             if ( defined $$form{nntp_separator} ) {
                 if ( length( $$form{nntp_separator} ) == 1 ) {
-                    $self->config_( 'separator', $$form{nntp_separator} );
+                    $self->config('separator', $$form{nntp_separator} );
                     $templ->param( 'nntp_separator_feedback' =>
-                        sprintf( $$language{Configuration_NNTPSepUpdate}, $self->config_( 'separator' ) ) );
+                        sprintf( $$language{Configuration_NNTPSepUpdate}, $self->config('separator' ) ) );
                 } else {
                     $templ->param( 'nntp_separator_feedback' =>
                         "<div class=\"error01\">\n$$language{Configuration_Error1}</div>\n" );
@@ -443,12 +443,12 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
         }
 
         if ( $name eq 'nntp_local' ) {
-            $self->config_( 'local', $$form{nntp_local} ) if defined $$form{nntp_local};
+            $self->config('local', $$form{nntp_local} ) if defined $$form{nntp_local};
             return;
         }
 
         if ( $name eq 'nntp_force_fork' ) {
-            $self->config_( 'force_fork', $$form{nntp_force_fork} )
+            $self->config('force_fork', $$form{nntp_force_fork} )
                 if defined $$form{nntp_force_fork};
             return;
         }

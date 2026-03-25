@@ -52,15 +52,15 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
     #
     # ----------------------------------------------------------------------------
     method initialize {
-        $self->config_( 'enabled', 1 );
-        $self->config_( 'force_fork', 1 );
-        $self->config_( 'port', 1110 );
-        $self->config_( 'secure_server', '' );
-        $self->config_( 'secure_port', 995 );
-        $self->config_( 'local', 1 );
-        $self->config_( 'toptoo', 0 );
-        $self->config_( 'separator', ':' );
-        $self->config_( 'welcome_string',
+        $self->config('enabled', 1 );
+        $self->config('force_fork', 1 );
+        $self->config('port', 1110 );
+        $self->config('secure_server', '' );
+        $self->config('secure_port', 995 );
+        $self->config('local', 1 );
+        $self->config('toptoo', 0 );
+        $self->config('separator', ':' );
+        $self->config('welcome_string',
             "POP3 POPFile ($self->version()) server ready" );
 
         return $self->SUPER::initialize();
@@ -72,28 +72,28 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
     #
     # ----------------------------------------------------------------------------
     method start {
-        if ( $self->config_( 'enabled' ) == 0 ) {
+        if ( $self->config('enabled' ) == 0 ) {
             return 2;
         }
 
-        $self->register_configuration_item_( 'configuration',
+        $self->register_configuration_item('configuration',
                                              'pop3_configuration',
                                              'pop3-configuration-panel.thtml',
                                              $self );
 
-        $self->register_configuration_item_( 'security',
+        $self->register_configuration_item('security',
                                              'pop3_security',
                                              'pop3-security-panel.thtml',
                                              $self );
 
-        $self->register_configuration_item_( 'chain',
+        $self->register_configuration_item('chain',
                                              'pop3_chain',
                                              'pop3-chain-panel.thtml',
                                              $self );
 
-        if ( $self->config_( 'welcome_string' ) =~
+        if ( $self->config('welcome_string' ) =~
              /^POP3 POPFile \(v\d+\.\d+\.\d+\) server ready$/ ) {
-            $self->config_( 'welcome_string',
+            $self->config('welcome_string',
                             "POP3 POPFile ($self->version()) server ready" );
         }
 
@@ -111,7 +111,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
     # $client - an open stream to a POP3 client
     #
     # ----------------------------------------------------------------------------
-    method child__ ($client) {
+    method child ($client) {
         my %downloaded;
         my $mail;
 
@@ -119,33 +119,33 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
         $use_apop    = 0;
         $apop_user   = '';
 
-        $self->tee_( $client, "+OK " . $self->config_( 'welcome_string' ) . "$eol" );
+        $self->tee($client, "+OK " . $self->config('welcome_string' ) . "$eol" );
 
-        my $s = $self->config_( 'separator' );
+        my $s = $self->config('separator' );
         $s =~ s/(\$|\@|\[|\]|\(|\)|\||\?|\*|\.|\^|\+)/\\$1/;
 
         my $transparent  = "^USER ([^$s]+)\$";
         my $user_command = "USER ([^$s]+)($s(\\d{1,5}))?$s([^$s]+)($s([^$s]+))?";
         my $apop_command = "APOP ([^$s]+)($s(\\d{1,5}))?$s([^$s]+) (.*?)";
 
-        $self->log_( 2, "Regexps: $transparent, $user_command, $apop_command" );
+        $self->log_msg(2, "Regexps: $transparent, $user_command, $apop_command" );
 
         while ( <$client> ) {
             my $command = $_;
             $command =~ s/(\015|\012)//g;
-            $self->log_( 2, "Command: --$command--" );
+            $self->log_msg(2, "Command: --$command--" );
 
             if ( $command =~ /$transparent/i ) {
-                if ( $self->config_( 'secure_server' ) ne '' ) {
-                    if ( $mail = $self->verify_connected_( $mail, $client,
-                            $self->config_( 'secure_server' ),
-                            $self->config_( 'secure_port' ) ) ) {
-                        last if ( $self->echo_response_( $mail, $client, $command ) == 2 );
+                if ( $self->config('secure_server' ) ne '' ) {
+                    if ( $mail = $self->verify_connected($mail, $client,
+                            $self->config('secure_server' ),
+                            $self->config('secure_port' ) ) ) {
+                        last if ( $self->echo_response($mail, $client, $command ) == 2 );
                     } else {
                         next;
                     }
                 } else {
-                    $self->tee_( $client,
+                    $self->tee($client,
                         "-ERR Transparent proxying not configured: set secure server/port ( command you sent: '$command' )$eol" );
                 }
                 next;
@@ -155,32 +155,32 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                 if ( $1 ne '' ) {
                     my ( $host, $port, $user, $options ) = ( $1, $3, $4, $6 );
 
-                    $self->mq_post_( 'LOGIN', $user );
+                    $self->mq_post('LOGIN', $user );
 
                     my $ssl = defined($options) && ( $options =~ /ssl/i );
                     $port = $ssl ? 995 : 110 if ( !defined($port) );
 
-                    if ( $mail = $self->verify_connected_( $mail, $client, $host, $port, $ssl ) ) {
+                    if ( $mail = $self->verify_connected($mail, $client, $host, $port, $ssl ) ) {
                         if ( defined($options) && ( $options =~ /apop/i ) ) {
                             $apop_banner = $1
                                 if $self->connect_banner() =~ /(<[^>]+>)/;
-                            $self->log_( 2, "banner=" . $apop_banner )
+                            $self->log_msg(2, "banner=" . $apop_banner )
                                 if defined( $apop_banner );
 
                             if ( defined( $apop_banner ) ) {
                                 $use_apop  = 1;
                                 $apop_user = $user;
-                                $self->tee_( $client, "+OK hello $user$eol" );
+                                $self->tee($client, "+OK hello $user$eol" );
                                 next;
                             } else {
                                 $use_apop = 0;
-                                $self->tee_( $client,
+                                $self->tee($client,
                                     "-ERR $host doesn't support APOP, aborting authentication$eol" );
                                 next;
                             }
                         } else {
                             $use_apop = 0;
-                            last if ( $self->echo_response_( $mail, $client, 'USER ' . $user ) == 2 );
+                            last if ( $self->echo_response($mail, $client, 'USER ' . $user ) == 2 );
                         }
                     } else {
                         next;
@@ -194,72 +194,72 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                     my $md5 = Digest::MD5->new;
                     $md5->add( $apop_banner, $1 );
                     my $md5hex = $md5->hexdigest;
-                    $self->log_( 2, "digest='$md5hex'" );
+                    $self->log_msg(2, "digest='$md5hex'" );
 
-                    my ( $response, $ok ) = $self->get_response_( $mail, $client,
+                    my ( $response, $ok ) = $self->get_response($mail, $client,
                         "APOP $apop_user $md5hex", 0, 1 );
                     if ( ( $ok == 1 ) && ( $response =~ /$self->good_response()/ ) ) {
-                        $self->tee_( $client, "+OK password ok$eol" );
+                        $self->tee($client, "+OK password ok$eol" );
                     } else {
-                        $self->tee_( $client, $response );
+                        $self->tee($client, $response );
                     }
                 } else {
-                    last if ( $self->echo_response_( $mail, $client, $command ) == 2 );
+                    last if ( $self->echo_response($mail, $client, $command ) == 2 );
                 }
                 next;
             }
 
             if ( $command =~ /$apop_command/io ) {
-                $self->tee_( $client,
+                $self->tee($client,
                     "-ERR APOP not supported between mail client and POPFile.$eol" );
                 next;
             }
 
             if ( $command =~ /AUTH ([^ ]+)/i ) {
-                if ( $self->config_( 'secure_server' ) ne '' ) {
-                    if ( $mail = $self->verify_connected_( $mail, $client,
-                            $self->config_( 'secure_server' ),
-                            $self->config_( 'secure_port' ) ) ) {
-                        my ( $response, $ok ) = $self->get_response_( $mail, $client, $command );
+                if ( $self->config('secure_server' ) ne '' ) {
+                    if ( $mail = $self->verify_connected($mail, $client,
+                            $self->config('secure_server' ),
+                            $self->config('secure_port' ) ) ) {
+                        my ( $response, $ok ) = $self->get_response($mail, $client, $command );
                         while ( ( !( $response =~ /\+OK/ ) ) && ( !( $response =~ /-ERR/ ) ) ) {
                             my $auth = <$client>;
                             $auth =~ s/(\015|\012)$//g;
-                            ( $response, $ok ) = $self->get_response_( $mail, $client, $auth );
+                            ( $response, $ok ) = $self->get_response($mail, $client, $auth );
                         }
                     } else {
                         next;
                     }
                 } else {
-                    $self->tee_( $client, "-ERR No secure server specified$eol" );
+                    $self->tee($client, "-ERR No secure server specified$eol" );
                 }
                 next;
             }
 
             if ( $command =~ /AUTH/i ) {
-                if ( $self->config_( 'secure_server' ) ne '' ) {
-                    if ( $mail = $self->verify_connected_( $mail, $client,
-                            $self->config_( 'secure_server' ),
-                            $self->config_( 'secure_port' ) ) ) {
-                        my $response = $self->echo_response_( $mail, $client, "AUTH" );
+                if ( $self->config('secure_server' ) ne '' ) {
+                    if ( $mail = $self->verify_connected($mail, $client,
+                            $self->config('secure_server' ),
+                            $self->config('secure_port' ) ) ) {
+                        my $response = $self->echo_response($mail, $client, "AUTH" );
                         last if ( $response == 2 );
                         if ( $response == 0 ) {
-                            $self->echo_to_dot_( $mail, $client );
+                            $self->echo_to_dot($mail, $client );
                         }
                     } else {
                         next;
                     }
                 } else {
-                    $self->tee_( $client, "-ERR No secure server specified$eol" );
+                    $self->tee($client, "-ERR No secure server specified$eol" );
                 }
                 next;
             }
 
             if ( ( $command =~ /LIST ?(.*)?/i ) ||
                  ( $command =~ /UIDL ?(.*)?/i ) ) {
-                my $response = $self->echo_response_( $mail, $client, $command );
+                my $response = $self->echo_response($mail, $client, $command );
                 last if ( $response == 2 );
                 if ( $response == 0 ) {
-                    $self->echo_to_dot_( $mail, $client ) if ( $1 eq '' );
+                    $self->echo_to_dot($mail, $client ) if ( $1 eq '' );
                 }
                 next;
             }
@@ -267,8 +267,8 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
             if ( $command =~ /TOP (.*) (.*)/i ) {
                 my $count = $1;
                 if ( $2 ne '99999999' ) {
-                    if ( $self->config_( 'toptoo' ) == 1 ) {
-                        my $response = $self->echo_response_( $mail, $client, "RETR $count" );
+                    if ( $self->config('toptoo' ) == 1 ) {
+                        my $response = $self->echo_response($mail, $client, "RETR $count" );
                         last if ( $response == 2 );
                         if ( $response == 0 ) {
                             my ( $class, $slot ) = $self->set_service()->classify_message(
@@ -276,7 +276,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                             $downloaded{$count}{slot}  = $slot;
                             $downloaded{$count}{class} = $class;
 
-                            $response = $self->echo_response_( $mail, $client, $command, 1 );
+                            $response = $self->echo_response($mail, $client, $command, 1 );
                             last if ( $response == 2 );
                             if ( $response == 0 ) {
                                 $self->set_service()->classify_message(
@@ -284,10 +284,10 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                             }
                         }
                     } else {
-                        my $response = $self->echo_response_( $mail, $client, $command );
+                        my $response = $self->echo_response($mail, $client, $command );
                         last if ( $response == 2 );
                         if ( $response == 0 ) {
-                            $self->echo_to_dot_( $mail, $client );
+                            $self->echo_to_dot($mail, $client );
                         }
                     }
                     next;
@@ -296,26 +296,26 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
             }
 
             if ( $command =~ /CAPA/i ) {
-                if ( $mail || $self->config_( 'secure_server' ) ne '' ) {
-                    if ( $mail || ( $mail = $self->verify_connected_( $mail, $client,
-                                       $self->config_( 'secure_server' ),
-                                       $self->config_( 'secure_port' ) ) ) ) {
-                        my $response = $self->echo_response_( $mail, $client, "CAPA" );
+                if ( $mail || $self->config('secure_server' ) ne '' ) {
+                    if ( $mail || ( $mail = $self->verify_connected($mail, $client,
+                                       $self->config('secure_server' ),
+                                       $self->config('secure_port' ) ) ) ) {
+                        my $response = $self->echo_response($mail, $client, "CAPA" );
                         last if ( $response == 2 );
                         if ( $response == 0 ) {
-                            $self->echo_to_dot_( $mail, $client );
+                            $self->echo_to_dot($mail, $client );
                         }
                     } else {
                         next;
                     }
                 } else {
-                    $self->tee_( $client, "-ERR No secure server specified$eol" );
+                    $self->tee($client, "-ERR No secure server specified$eol" );
                 }
                 next;
             }
 
             if ( $command =~ /HELO/i ) {
-                $self->tee_( $client, "+OK HELO POPFile Server Ready$eol" );
+                $self->tee($client, "+OK HELO POPFile Server Ready$eol" );
                 next;
             }
 
@@ -324,7 +324,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                  ( $command =~ /XSENDER (.*)/i )  ||
                  ( $command =~ /DELE (.*)/i )     ||
                  ( $command =~ /RSET/i ) ) {
-                last if ( $self->echo_response_( $mail, $client, $command ) == 2 );
+                last if ( $self->echo_response($mail, $client, $command ) == 2 );
                 next;
             }
 
@@ -339,8 +339,8 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                      ( $file = $history->get_slot_file( $downloaded{$count}{slot} ) ) &&
                      ( open my $retrfile, '<', $file ) ) {
                     binmode $retrfile;
-                    $self->log_( 1, "Printing message from cache" );
-                    $self->tee_( $client,
+                    $self->log_msg(1, "Printing message from cache" );
+                    $self->tee($client,
                         "+OK " . ( -s $file ) . " bytes from POPFile cache$eol" );
 
                     ( $class, undef ) = $self->set_service()->classify_message(
@@ -350,7 +350,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
                     print $client ".$eol";
                     close $retrfile;
                 } else {
-                    my $response = $self->echo_response_( $mail, $client, $command );
+                    my $response = $self->echo_response($mail, $client, $command );
                     last if ( $response == 2 );
                     if ( $response == 0 ) {
                         my $slot;
@@ -365,31 +365,31 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
 
             if ( $command =~ /QUIT/i ) {
                 if ( $mail ) {
-                    last if ( $self->echo_response_( $mail, $client, $command ) == 2 );
+                    last if ( $self->echo_response($mail, $client, $command ) == 2 );
                     close $mail;
                 } else {
-                    $self->tee_( $client, "+OK goodbye$eol" );
+                    $self->tee($client, "+OK goodbye$eol" );
                 }
                 last;
             }
 
             if ( $mail && $mail->connected ) {
-                last if ( $self->echo_response_( $mail, $client, $command ) == 2 );
+                last if ( $self->echo_response($mail, $client, $command ) == 2 );
                 next;
             } else {
-                $self->tee_( $client, "-ERR unknown command or bad syntax$eol" );
+                $self->tee($client, "-ERR unknown command or bad syntax$eol" );
                 next;
             }
         }
 
         if ( defined($mail) ) {
-            $self->done_slurp_( $mail );
+            $self->done_slurp($mail );
             close $mail;
         }
 
         close $client;
-        $self->mq_post_( 'CMPLT', $$ );
-        $self->log_( 0, "POP3 proxy done" );
+        $self->mq_post('CMPLT', $$ );
+        $self->log_msg(0, "POP3 proxy done" );
     }
 
     # ----------------------------------------------------------------------------
@@ -399,14 +399,14 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
     # ----------------------------------------------------------------------------
     method configure_item ($name, $templ, $language = undef) {
         if ( $name eq 'pop3_configuration' ) {
-            $templ->param( 'POP3_Configuration_If_Force_Fork' => ( $self->config_( 'force_fork' ) == 0 ) );
-            $templ->param( 'POP3_Configuration_Port'          => $self->config_( 'port' ) );
-            $templ->param( 'POP3_Configuration_Separator'     => $self->config_( 'separator' ) );
+            $templ->param( 'POP3_Configuration_If_Force_Fork' => ( $self->config('force_fork' ) == 0 ) );
+            $templ->param( 'POP3_Configuration_Port'          => $self->config('port' ) );
+            $templ->param( 'POP3_Configuration_Separator'     => $self->config('separator' ) );
         } elsif ( $name eq 'pop3_security' ) {
-            $templ->param( 'POP3_Security_Local' => ( $self->config_( 'local' ) == 1 ) );
+            $templ->param( 'POP3_Security_Local' => ( $self->config('local' ) == 1 ) );
         } elsif ( $name eq 'pop3_chain' ) {
-            $templ->param( 'POP3_Chain_Secure_Server' => $self->config_( 'secure_server' ) );
-            $templ->param( 'POP3_Chain_Secure_Port'   => $self->config_( 'secure_port' ) );
+            $templ->param( 'POP3_Chain_Secure_Server' => $self->config('secure_server' ) );
+            $templ->param( 'POP3_Chain_Secure_Port'   => $self->config('secure_port' ) );
         } else {
             $self->SUPER::configure_item( $name, $templ );
         }
@@ -422,13 +422,13 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
             if ( defined( $$form{pop3_port} ) ) {
                 if ( ( $$form{pop3_port} >= 1 ) &&
                      ( $$form{pop3_port} < 65536 ) &&
-                     ( $self->module_config_( 'html', 'port' ) ne $$form{pop3_port} ) ) {
-                    $self->config_( 'port', $$form{pop3_port} );
+                     ( $self->module_config('html', 'port' ) ne $$form{pop3_port} ) ) {
+                    $self->config('port', $$form{pop3_port} );
                     $templ->param( 'POP3_Configuration_If_Port_Updated' => 1 );
                     $templ->param( 'POP3_Configuration_Port_Updated' =>
-                        sprintf( $$language{Configuration_POP3Update}, $self->config_( 'port' ) ) );
+                        sprintf( $$language{Configuration_POP3Update}, $self->config('port' ) ) );
                 } else {
-                    if ( $self->module_config_( 'html', 'port' ) ne $$form{pop3_port} ) {
+                    if ( $self->module_config('html', 'port' ) ne $$form{pop3_port} ) {
                         $templ->param( 'POP3_Configuration_If_Port_Error' => 1 );
                     } else {
                         $templ->param( 'POP3_Configuration_If_UI_Port_Error' => 1 );
@@ -438,39 +438,39 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
 
             if ( defined( $$form{pop3_separator} ) ) {
                 if ( length( $$form{pop3_separator} ) == 1 ) {
-                    $self->config_( 'separator', $$form{pop3_separator} );
+                    $self->config('separator', $$form{pop3_separator} );
                     $templ->param( 'POP3_Configuration_If_Sep_Updated' => 1 );
                     $templ->param( 'POP3_Configuration_Sep_Updated' =>
-                        sprintf( $$language{Configuration_POP3SepUpdate}, $self->config_( 'separator' ) ) );
+                        sprintf( $$language{Configuration_POP3SepUpdate}, $self->config('separator' ) ) );
                 } else {
                     $templ->param( 'POP3_Configuration_If_Sep_Error' => 1 );
                 }
             }
 
             if ( defined( $$form{pop3_force_fork} ) ) {
-                $self->config_( 'force_fork', $$form{pop3_force_fork} );
+                $self->config('force_fork', $$form{pop3_force_fork} );
             }
             return;
         }
 
         if ( $name eq 'pop3_security' ) {
-            $self->config_( 'local', $$form{pop3_local} - 1 ) if ( defined( $$form{pop3_local} ) );
+            $self->config('local', $$form{pop3_local} - 1 ) if ( defined( $$form{pop3_local} ) );
             return;
         }
 
         if ( $name eq 'pop3_chain' ) {
             if ( defined( $$form{server} ) ) {
-                $self->config_( 'secure_server', $$form{server} );
+                $self->config('secure_server', $$form{server} );
                 $templ->param( 'POP3_Chain_If_Server_Updated' => 1 );
                 $templ->param( 'POP3_Chain_Server_Updated' =>
-                    sprintf( $$language{Security_SecureServerUpdate}, $self->config_( 'secure_server' ) ) );
+                    sprintf( $$language{Security_SecureServerUpdate}, $self->config('secure_server' ) ) );
             }
             if ( defined( $$form{sport} ) ) {
                 if ( ( $$form{sport} >= 1 ) && ( $$form{sport} < 65536 ) ) {
-                    $self->config_( 'secure_port', $$form{sport} );
+                    $self->config('secure_port', $$form{sport} );
                     $templ->param( 'POP3_Chain_If_Port_Updated' => 1 );
                     $templ->param( 'POP3_Chain_Port_Updated' =>
-                        sprintf( $$language{Security_SecurePortUpdate}, $self->config_( 'secure_port' ) ) );
+                        sprintf( $$language{Security_SecurePortUpdate}, $self->config('secure_port' ) ) );
                 } else {
                     $templ->param( 'POP3_Chain_If_Port_Error' => 1 );
                 }

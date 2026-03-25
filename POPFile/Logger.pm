@@ -17,12 +17,12 @@ class POPFile::Logger :isa(POPFile::Module) {
     }
 
     method initialize {
-        $self->global_config_( 'debug', 1 );
-        $self->config_( 'logdir',  './' );
-        $self->config_( 'format',  'default' );
-        $self->config_( 'level',   0 );
+        $self->global_config('debug', 1 );
+        $self->config('logdir',  './' );
+        $self->config('format',  'default' );
+        $self->config('level',   0 );
         $last_tickd = time;
-        $self->mq_register_( 'TICKD', $self );
+        $self->mq_register('TICKD', $self );
         return 1
     }
 
@@ -47,7 +47,7 @@ class POPFile::Logger :isa(POPFile::Module) {
         $self->calculate_today();
         if ( $self->time > ($last_tickd + 3600) ) {
             $self->_reconfigure_adapter();
-            $self->mq_post_('TICKD');
+            $self->mq_post('TICKD');
             $last_tickd = $self->time;
         }
         return 1
@@ -59,25 +59,25 @@ class POPFile::Logger :isa(POPFile::Module) {
         my $new_today = int( $self->time / $seconds_per_day ) * $seconds_per_day;
         return if $new_today == $today;
         $today          = $new_today;
-        $debug_filename = $self->get_user_path_(
-            $self->config_('logdir') . "popfile$today.log", 0 );
+        $debug_filename = $self->get_user_path(
+            $self->config('logdir') . "popfile$today.log", 0 );
     }
 
     method _reconfigure_adapter {
-        my $debug = $self->global_config_('debug') // 0;
+        my $debug = $self->global_config('debug') // 0;
         POPFile::Log::Adapter->configure(
             to_file       => ($debug & 1) ? 1 : 0,
             to_stdout     => ($debug & 2) ? 1 : 0,
             filename      => $debug_filename,
-            popfile_level => $self->config_('level') // 0,
-            format        => $self->config_('format') // 'default',
+            popfile_level => $self->config('level') // 0,
+            format        => $self->config('format') // 'default',
         );
         Log::Any::Adapter->set('POPFile::Log::Adapter');
     }
 
     method remove_debug_files {
-        my @files = glob( $self->get_user_path_(
-            $self->config_('logdir') . 'popfile*.log', 0 ) );
+        my @files = glob( $self->get_user_path(
+            $self->config('logdir') . 'popfile*.log', 0 ) );
         for my $f (@files) {
             if ($f =~ /popfile([0-9]+)\.log/) {
                 unlink $f if $1 < ($self->time - 3 * $seconds_per_day);

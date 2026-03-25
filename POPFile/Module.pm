@@ -56,80 +56,80 @@ Lifecycle: C<initialize> → C<start> → C<service> [loop] → C<stop>
 
 =head1 PROTECTED HELPERS
 
-=head2 config_
+=head2 config
 
 Get or set a module-specific configuration parameter.
 
-    my $val = $self->config_( 'param' );
-    $self->config_( 'param', $value );
+    my $val = $self->config( 'param' );
+    $self->config( 'param', $value );
 
 =cut
 
-    method config_ ($param, $val = undef) {
-        return $self->module_config_( $name, $param, $val );
+    method config ($param, $val = undef) {
+        return $self->module_config($name, $param, $val );
     }
 
-=head2 global_config_
+=head2 global_config
 
 Get or set a global (GLOBAL-namespaced) configuration parameter.
 
 =cut
 
-    method global_config_ ($param, $val = undef) {
-        return $self->module_config_( 'GLOBAL', $param, $val );
+    method global_config ($param, $val = undef) {
+        return $self->module_config('GLOBAL', $param, $val );
     }
 
-=head2 module_config_
+=head2 module_config
 
 Get or set a configuration parameter under an explicit module namespace.
 
 =cut
 
-    method module_config_ ($module, $param, $val = undef) {
+    method module_config ($module, $param, $val = undef) {
         return $configuration->parameter( $module . '_' . $param, $val );
     }
 
-=head2 mq_post_
+=head2 mq_post
 
 Post a message to the message queue.
 
 =cut
 
-    method mq_post_ ($type, @message) {
+    method mq_post ($type, @message) {
         return $mq->post( $type, @message );
     }
 
-=head2 mq_register_
+=head2 mq_register
 
 Register this object to receive messages of C<$type> from the MQ.
 
 =cut
 
-    method mq_register_ ($type, $object) {
+    method mq_register ($type, $object) {
         return $mq->register( $type, $object );
     }
 
-    method register_configuration_item_ ($type, $item_name, $templ, $object) {
-        return $self->mq_post_( 'UIREG', $type, $item_name, $templ, $object );
+    method register_configuration_item ($type, $item_name, $templ, $object) {
+        return $self->mq_post( 'UIREG', $type, $item_name, $templ, $object );
     }
 
-=head2 get_user_path_
+=head2 get_user_path
 
 Return the full path to a user-space file or directory.
 
 =cut
 
-    method get_user_path_ ($path, $sandbox = undef) {
+    method get_user_path ($path, $sandbox = undef) {
         return $configuration->get_user_path( $path, $sandbox );
     }
 
-=head2 get_root_path_
+=head2 get_root_path
 
 Return the full path to a POPFile-root-relative file or directory.
 
 =cut
 
-    method get_root_path_ ($path, $sandbox = undef) {
+    method get_root_path ($path, $sandbox = undef) {
         return $configuration->get_root_path( $path, $sandbox );
     }
 
@@ -169,7 +169,7 @@ Return the full path to a POPFile-root-relative file or directory.
             ? length( $slurp_data{"$handle"}{data} ) : 0;
     }
 
-    method slurp_buffer_ ($handle, $length) {
+    method slurp_buffer ($handle, $length) {
         while ( $self->slurp_data_size( $handle ) < $length ) {
             my $c;
             if ( $self->can_read( $handle, 0.01 )
@@ -192,7 +192,7 @@ Return the full path to a POPFile-root-relative file or directory.
         return ( $result ne '' ) ? $result : undef;
     }
 
-=head2 slurp_
+=head2 slurp
 
 Read one line from C<$handle>, tolerating CR, LF, and CRLF endings.
 Blocks up to C<$timeout> seconds (defaults to the global C<timeout> config).
@@ -200,8 +200,8 @@ Returns C<undef> on timeout or closed connection.
 
 =cut
 
-    method slurp_ ($handle, $timeout = undef) {
-        $timeout = $self->global_config_( 'timeout' ) if !defined $timeout;
+    method slurp ($handle, $timeout = undef) {
+        $timeout = $self->global_config('timeout' ) if !defined $timeout;
 
         if ( !defined( $slurp_data{"$handle"}{data} ) ) {
             $slurp_data{"$handle"}{select} = IO::Select->new( $handle );
@@ -215,28 +215,28 @@ Returns C<undef> on timeout or closed connection.
         if ( $self->can_read( $handle, $timeout ) ) {
             while ( sysread( $handle, $c, 160 ) > 0 ) {
                 $slurp_data{"$handle"}{data} .= $c;
-                $self->log_( 2, "Read slurp data $c" );
+                $self->log_msg(2, "Read slurp data $c" );
                 $result = $self->flush_slurp_data( $handle );
                 return $result if $result ne '';
             }
         } else {
-            $self->done_slurp_( $handle );
+            $self->done_slurp($handle );
             close $handle;
             return undef;
         }
 
         my $remaining = $slurp_data{"$handle"}{data};
-        $self->done_slurp_( $handle );
+        $self->done_slurp($handle );
         return ( $remaining eq '' ) ? undef : $remaining;
     }
 
-    method done_slurp_ ($handle) {
+    method done_slurp ($handle) {
         delete $slurp_data{"$handle"}{select};
         delete $slurp_data{"$handle"}{data};
         delete $slurp_data{"$handle"};
     }
 
-    method flush_extra_ ($mail, $client, $discard = 0) {
+    method flush_extra ($mail, $client, $discard = 0) {
         if ( $self->slurp_data_size( $mail ) ) {
             print $client $slurp_data{"$mail"}{data} if $discard != 1;
             $slurp_data{"$mail"}{data} = '';
@@ -261,7 +261,7 @@ Returns C<undef> on timeout or closed connection.
     }
 
     method can_read ($handle, $timeout = undef) {
-        $timeout = $self->global_config_( 'timeout' ) if !defined $timeout;
+        $timeout = $self->global_config('timeout' ) if !defined $timeout;
 
         my $can_read = 0;
         if ( $handle =~ /ssl/i ) {

@@ -40,38 +40,38 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
 
     # ----------------------------------------------------------------------------
     method initialize {
-        $self->config_( 'force_fork', 1 );
-        $self->config_( 'port', 25 );
-        $self->config_( 'chain_server', '' );
-        $self->config_( 'chain_port', 25 );
-        $self->config_( 'local', 1 );
-        $self->config_( 'welcome_string', "SMTP POPFile ($self->version()) welcome" );
+        $self->config('force_fork', 1 );
+        $self->config('port', 25 );
+        $self->config('chain_server', '' );
+        $self->config('chain_port', 25 );
+        $self->config('local', 1 );
+        $self->config('welcome_string', "SMTP POPFile ($self->version()) welcome" );
 
         if ( !$self->SUPER::initialize() ) {
             return 0;
         }
 
-        $self->config_( 'enabled', 0 );
+        $self->config('enabled', 0 );
         return 1;
     }
 
     # ----------------------------------------------------------------------------
     method start {
-        if ( $self->config_( 'enabled' ) == 0 ) {
+        if ( $self->config('enabled' ) == 0 ) {
             return 2;
         }
 
-        $self->register_configuration_item_( 'configuration', 'smtp_fork_and_port',
+        $self->register_configuration_item('configuration', 'smtp_fork_and_port',
                                              'smtp-configuration.thtml', $self );
-        $self->register_configuration_item_( 'security', 'smtp_local',
+        $self->register_configuration_item('security', 'smtp_local',
                                              'smtp-security-local.thtml', $self );
-        $self->register_configuration_item_( 'chain', 'smtp_server',
+        $self->register_configuration_item('chain', 'smtp_server',
                                              'smtp-chain-server.thtml', $self );
-        $self->register_configuration_item_( 'chain', 'smtp_server_port',
+        $self->register_configuration_item('chain', 'smtp_server_port',
                                              'smtp-chain-server-port.thtml', $self );
 
-        if ( $self->config_( 'welcome_string' ) =~ /^SMTP POPFile \(v\d+\.\d+\.\d+\) welcome$/ ) {
-            $self->config_( 'welcome_string', "SMTP POPFile ($self->version()) welcome" );
+        if ( $self->config('welcome_string' ) =~ /^SMTP POPFile \(v\d+\.\d+\.\d+\) welcome$/ ) {
+            $self->config('welcome_string', "SMTP POPFile ($self->version()) welcome" );
         }
 
         return $self->SUPER::start();
@@ -85,44 +85,44 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
     # $client - an open stream to an SMTP client
     #
     # ----------------------------------------------------------------------------
-    method child__ ($client) {
+    method child ($client) {
         my $count = 0;
         my $mail;
 
-        $self->tee_( $client, "220 " . $self->config_( 'welcome_string' ) . "$eol" );
+        $self->tee($client, "220 " . $self->config('welcome_string' ) . "$eol" );
 
         while ( <$client> ) {
             my $command = $_;
             $command =~ s/(\015|\012)//g;
-            $self->log_( 2, "Command: --$command--" );
+            $self->log_msg(2, "Command: --$command--" );
 
             if ( $command =~ /HELO/i ) {
-                if ( $self->config_( 'chain_server' ) ) {
-                    if ( $mail = $self->verify_connected_( $mail, $client,
-                            $self->config_( 'chain_server' ),
-                            $self->config_( 'chain_port' ) ) ) {
-                        $self->smtp_echo_response_( $mail, $client, $command );
+                if ( $self->config('chain_server' ) ) {
+                    if ( $mail = $self->verify_connected($mail, $client,
+                            $self->config('chain_server' ),
+                            $self->config('chain_port' ) ) ) {
+                        $self->smtp_echo_response($mail, $client, $command );
                     } else {
                         last;
                     }
                 } else {
-                    $self->tee_( $client, "421 service not available$eol" );
+                    $self->tee($client, "421 service not available$eol" );
                 }
                 next;
             }
 
             if ( $command =~ /EHLO/i ) {
-                if ( $self->config_( 'chain_server' ) ) {
-                    if ( $mail = $self->verify_connected_( $mail, $client,
-                            $self->config_( 'chain_server' ),
-                            $self->config_( 'chain_port' ) ) ) {
+                if ( $self->config('chain_server' ) ) {
+                    if ( $mail = $self->verify_connected($mail, $client,
+                            $self->config('chain_server' ),
+                            $self->config('chain_port' ) ) ) {
                         my $unsupported = qr/250\-CHUNKING|BINARYMIME|XEXCH50/;
-                        $self->smtp_echo_response_( $mail, $client, $command, $unsupported );
+                        $self->smtp_echo_response($mail, $client, $command, $unsupported );
                     } else {
                         last;
                     }
                 } else {
-                    $self->tee_( $client, "421 service not available$eol" );
+                    $self->tee($client, "421 service not available$eol" );
                 }
                 next;
             }
@@ -134,55 +134,55 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
                  ( $command =~ /NOOP/i )        ||
                  ( $command =~ /HELP/i )        ||
                  ( $command =~ /RSET/i ) ) {
-                $self->smtp_echo_response_( $mail, $client, $command );
+                $self->smtp_echo_response($mail, $client, $command );
                 next;
             }
 
             if ( $command =~ /DATA/i ) {
-                if ( $self->smtp_echo_response_( $mail, $client, $command ) ) {
+                if ( $self->smtp_echo_response($mail, $client, $command ) ) {
                     $count += 1;
                     my ( $class, $history_file ) = $self->set_service()->classify_message(
                         $client, $mail, 0, '', 0, undef, $eol );
-                    my $response = $self->slurp_( $mail );
-                    $self->tee_( $client, $response );
+                    my $response = $self->slurp($mail );
+                    $self->tee($client, $response );
                     next;
                 }
             }
 
             if ( $command =~ /QUIT/i ) {
                 if ( $mail ) {
-                    $self->smtp_echo_response_( $mail, $client, $command );
+                    $self->smtp_echo_response($mail, $client, $command );
                     close $mail;
                 } else {
-                    $self->tee_( $client, "221 goodbye$eol" );
+                    $self->tee($client, "221 goodbye$eol" );
                 }
                 last;
             }
 
             if ( $mail && $mail->connected ) {
-                $self->smtp_echo_response_( $mail, $client, $command );
+                $self->smtp_echo_response($mail, $client, $command );
                 next;
             } else {
-                $self->tee_( $client, "500 unknown command or bad syntax$eol" );
+                $self->tee($client, "500 unknown command or bad syntax$eol" );
                 last;
             }
         }
 
         if ( defined($mail) ) {
-            $self->done_slurp_( $mail );
+            $self->done_slurp($mail );
             close $mail;
         }
 
         close $client;
-        $self->mq_post_( 'CMPLT', $$ );
-        $self->log_( 0, "SMTP proxy done" );
+        $self->mq_post('CMPLT', $$ );
+        $self->log_msg(0, "SMTP proxy done" );
     }
 
     # ----------------------------------------------------------------------------
-    method smtp_echo_response_ ($mail, $client, $command, $suppress = undef) {
-        my ( $response, $ok ) = $self->get_response_( $mail, $client, $command );
+    method smtp_echo_response ($mail, $client, $command, $suppress = undef) {
+        my ( $response, $ok ) = $self->get_response($mail, $client, $command );
         if ( $response =~ /^\d\d\d-/ ) {
-            $self->echo_to_regexp_( $mail, $client, qr/^\d\d\d /, 1, $suppress );
+            $self->echo_to_regexp($mail, $client, qr/^\d\d\d /, 1, $suppress );
         }
         return ( $response =~ /$self->good_response()/ );
     }
@@ -190,14 +190,14 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
     # ----------------------------------------------------------------------------
     method configure_item ($name, $templ, $language = undef) {
         if ( $name eq 'smtp_fork_and_port' ) {
-            $templ->param( 'smtp_port'           => $self->config_( 'port' ) );
-            $templ->param( 'smtp_force_fork_on'  => $self->config_( 'force_fork' ) );
+            $templ->param( 'smtp_port'           => $self->config('port' ) );
+            $templ->param( 'smtp_force_fork_on'  => $self->config('force_fork' ) );
         } elsif ( $name eq 'smtp_local' ) {
-            $templ->param( 'smtp_local_on' => $self->config_( 'local' ) );
+            $templ->param( 'smtp_local_on' => $self->config('local' ) );
         } elsif ( $name eq 'smtp_server' ) {
-            $templ->param( 'smtp_chain_server' => $self->config_( 'chain_server' ) );
+            $templ->param( 'smtp_chain_server' => $self->config('chain_server' ) );
         } elsif ( $name eq 'smtp_server_port' ) {
-            $templ->param( 'smtp_chain_port' => $self->config_( 'chain_port' ) );
+            $templ->param( 'smtp_chain_port' => $self->config('chain_port' ) );
         } else {
             $self->SUPER::configure_item( $name, $templ );
         }
@@ -207,13 +207,13 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
     method validate_item ($name, $templ, $language, $form) {
         if ( $name eq 'smtp_fork_and_port' ) {
             if ( defined( $$form{smtp_force_fork} ) ) {
-                $self->config_( 'force_fork', $$form{smtp_force_fork} );
+                $self->config('force_fork', $$form{smtp_force_fork} );
             }
             if ( defined( $$form{smtp_port} ) ) {
                 if ( ( $$form{smtp_port} >= 1 ) && ( $$form{smtp_port} < 65536 ) ) {
-                    $self->config_( 'port', $$form{smtp_port} );
+                    $self->config('port', $$form{smtp_port} );
                     $templ->param( 'smtp_port_feedback' =>
-                        sprintf( $$language{Configuration_SMTPUpdate}, $self->config_( 'port' ) ) );
+                        sprintf( $$language{Configuration_SMTPUpdate}, $self->config('port' ) ) );
                 } else {
                     $templ->param( 'smtp_port_feedback' =>
                         "<div class=\"error01\">$$language{Configuration_Error3}</div>" );
@@ -223,15 +223,15 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
         }
 
         if ( $name eq 'smtp_local' ) {
-            $self->config_( 'local', $$form{smtp_local} ) if defined $$form{smtp_local};
+            $self->config('local', $$form{smtp_local} ) if defined $$form{smtp_local};
             return;
         }
 
         if ( $name eq 'smtp_server' ) {
             if ( defined $$form{smtp_chain_server} ) {
-                $self->config_( 'chain_server', $$form{smtp_chain_server} );
+                $self->config('chain_server', $$form{smtp_chain_server} );
                 $templ->param( 'smtp_server_feedback' =>
-                    sprintf( $$language{Security_SMTPServerUpdate}, $self->config_( 'chain_server' ) ) );
+                    sprintf( $$language{Security_SMTPServerUpdate}, $self->config('chain_server' ) ) );
             }
             return;
         }
@@ -240,9 +240,9 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
             if ( defined $$form{smtp_chain_server_port} ) {
                 if ( ( $$form{smtp_chain_server_port} >= 1 ) &&
                      ( $$form{smtp_chain_server_port} < 65536 ) ) {
-                    $self->config_( 'chain_port', $$form{smtp_chain_server_port} );
+                    $self->config('chain_port', $$form{smtp_chain_server_port} );
                     $templ->param( 'smtp_port_feedback' =>
-                        sprintf( $$language{Security_SMTPPortUpdate}, $self->config_( 'chain_port' ) ) );
+                        sprintf( $$language{Security_SMTPPortUpdate}, $self->config('chain_port' ) ) );
                 } else {
                     $templ->param( 'smtp_port_feedback' =>
                         "<div class=\"error01\">$$language{Security_Error1}</div>" );

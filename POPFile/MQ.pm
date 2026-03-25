@@ -119,7 +119,7 @@ delivers pending messages to registered waiters.
         # pipes and deal with it now
 
         for my $kid (keys %children) {
-            $self->flush_child_data_( $children{$kid} );
+            $self->flush_child_data($children{$kid} );
         }
 
         # Iterate through all the messages in all the queues
@@ -129,10 +129,10 @@ delivers pending messages to registered waiters.
                  my @message = @$ref;
                  my $flat = join(':', @message);
 
-                 $self->log_( 2, "Message $type ($flat) ready for delivery" );
+                 $self->log_msg(2, "Message $type ($flat) ready for delivery" );
 
                  for my $waiter (@{$waiters{$type}}) {
-                    $self->log_( 2, "Delivering message $type ($flat) to " .                        $waiter->name() );
+                    $self->log_msg(2, "Delivering message $type ($flat) to " .                        $waiter->name() );
                     $waiter->deliver( $type, @message );
                 }
             }
@@ -159,16 +159,16 @@ all child pipe handles.
         }
     }
 
-=head2 yield_( $pipe, $pid )
+=head2 yield( $pipe, $pid )
 
 Called by a child process to allow the parent to do work. Only does
 anything when the child was not forked (i.e. C<$pid != 0>).
 
 =cut
 
-    method yield_ ($pipe, $pid) {
+    method yield ($pipe, $pid) {
         if ( $pid != 0 ) {
-            $self->flush_child_data_( $pipe )
+            $self->flush_child_data( $pipe )
         }
     }
 
@@ -201,7 +201,7 @@ child's pipe reader handle keyed by C<$pid>.
 
     method postfork ($pid = undef, $reader = undef) {
         $children{"$pid"} = $reader;
-        $self->log_( 2, "Parent: postfork() called for pid $pid, reader $reader" );
+        $self->log_msg(2, "Parent: postfork() called for pid $pid, reader $reader" );
     }
 
 =head2 reaper()
@@ -221,24 +221,24 @@ C<waitpid()>, flushes its pipe, and removes it from the children map.
         if ( $#kids >= 0 ) {
             for my $kid (@kids) {
                 if ( waitpid( $kid, &WNOHANG ) == $kid ) {
-                    $self->flush_child_data_( $children{$kid} );
+                    $self->flush_child_data($children{$kid} );
                     close $children{$kid};
                     delete $children{$kid};
 
-                    $self->log_( 0, "Done with $kid (" . scalar(keys %children) . " to go)" );
+                    $self->log_msg(0, "Done with $kid (" . scalar(keys %children) . " to go)" );
                 }
             }
         }
     }
 
-=head2 read_pipe_( $handle )
+=head2 read_pipe( $handle )
 
 Reads a single message from a pipe in a cross-platform way. Returns
 C<undef> if the pipe has no message ready.
 
 =cut
 
-    method read_pipe_ ($handle) {
+    method read_pipe ($handle) {
         if ( $self->pipeready->($handle) ) {
             return <$handle>;
         }
@@ -246,24 +246,24 @@ C<undef> if the pipe has no message ready.
         return undef;
     }
 
-=head2 flush_child_data_( $handle )
+=head2 flush_child_data( $handle )
 
 Flushes all pending data from a child's pipe handle, parsing each line
 as a message and re-posting it into the queue.
 
 =cut
 
-    method flush_child_data_ ($handle) {
+    method flush_child_data ($handle) {
         my $stats_changed = 0;
         my $message;
 
-        while ( defined ( $message = $self->read_pipe_( $handle ) ) )
+        while ( defined ( $message = $self->read_pipe($handle ) ) )
         {
             if ( $message =~ /([^:]+):([^\r\n]*)/ ) {
                 my @parameters = split( ':', $2 || '' );
                 $self->post( $1, @parameters );
             } else {
-                $self->log_( 2, "Recieved invalid message from child: $message" );
+                $self->log_msg(2, "Recieved invalid message from child: $message" );
             }
         }
     }
@@ -290,21 +290,21 @@ written up the pipe to the parent.
 
     method post ($type, @message) {
         my $flat = join( ':', @message );
-        $self->log_( 2, "post $type ($flat)" );
+        $self->log_msg(2, "post $type ($flat)" );
 
         # If we are in the parent process then just stick this on the queue,
         # otherwise write it up the pipe.
 
         if ( $$ == $pid ) {
             if ( exists( $waiters{$type} ) ) {
-                $self->log_( 2, "queuing post $type ($flat)" );
+                $self->log_msg(2, "queuing post $type ($flat)" );
                 push @{$queue{$type}}, \@message;
-                $self->log_( 2, "$type queue length now " . $#{$queue{$type}} );
+                $self->log_msg(2, "$type queue length now " . $#{$queue{$type}} );
             } else {
-                $self->log_( 2, "dropping post $type ($flat)" );
+                $self->log_msg(2, "dropping post $type ($flat)" );
             }
         } else {
-            $self->log_( 2, "sending post $type ($flat) to parent $writer" );
+            $self->log_msg(2, "sending post $type ($flat) to parent $writer" );
             print $writer "$type:$flat\n";
         }
     }

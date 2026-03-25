@@ -73,33 +73,33 @@ class POPFile::Configuration :isa(POPFile::Module) {
         # This is the location where we store the PID of POPFile in a file
         # called popfile.pid
 
-        $self->config_( 'piddir', './' );
+        $self->config('piddir', './' );
 
         # The default interval of checking pid file in seconds
         # To turn off checking, set this option to 0
 
-        $self->config_( 'pidcheck_interval', 5 );
+        $self->config('pidcheck_interval', 5 );
 
         # The default timeout in seconds for POP3 commands
 
-        $self->global_config_( 'timeout', 60 );
+        $self->global_config('timeout', 60 );
 
         # The default location for the message files
 
-        $self->global_config_( 'msgdir', 'messages/' );
+        $self->global_config('msgdir', 'messages/' );
 
         # The maximum number of characters to consider in a message during
         # classification, display or reclassification
 
-        $self->global_config_( 'message_cutoff', 100000 );
+        $self->global_config('message_cutoff', 100000 );
 
         # Checking for updates if off by default
 
-        $self->global_config_( 'update_check', 0 );
+        $self->global_config('update_check', 0 );
 
         # The last time we checked for an update using the local epoch
 
-        $self->global_config_( 'last_update_check', 0 );
+        $self->global_config('last_update_check', 0 );
 
         # Register for the TICKD message which is sent hourly by the
         # Logger module.   We use this to hourly save the configuration file
@@ -111,7 +111,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
         # disk unless a configuration parameter has been changed since the
         # last save.  (see parameter())
 
-        $self->mq_register_( 'TICKD', $self );
+        $self->mq_register('TICKD', $self );
 
         return 1;
     }
@@ -131,13 +131,13 @@ class POPFile::Configuration :isa(POPFile::Module) {
         # at the end means that we allow the piddir to be absolute and
         # outside the user sandbox
 
-        $pid_file = $self->get_user_path( $self->config_( 'piddir' ) . 'popfile.pid', 0 );
+        $pid_file = $self->get_user_path( $self->config('piddir' ) . 'popfile.pid', 0 );
 
-        if (defined($self->live_check_())) {
+        if (defined($self->live_check())) {
             return 0;
         }
 
-        $self->write_pid_();
+        $self->write_pid();
 
         return 1;
     }
@@ -158,13 +158,13 @@ class POPFile::Configuration :isa(POPFile::Module) {
     method service {
         my $time = time;
 
-        if ( $self->config_( 'pidcheck_interval' ) > 0 ) {
-            if ( $pid_check <= ( $time - $self->config_( 'pidcheck_interval' ))) {
+        if ( $self->config('pidcheck_interval' ) > 0 ) {
+            if ( $pid_check <= ( $time - $self->config('pidcheck_interval' ))) {
                 $pid_check = $time;
 
-                if ( !$self->check_pid_() ) {
-                    $self->write_pid_();
-                    $self->log_( 0, "New POPFile instance detected and signalled" );
+                if ( !$self->check_pid() ) {
+                    $self->write_pid();
+                    $self->log_msg(0, "New POPFile instance detected and signalled" );
                 }
             }
         }
@@ -182,7 +182,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     method stop {
         $self->save_configuration();
 
-        $self->delete_pid_();
+        $self->delete_pid();
     }
 
     # ----------------------------------------------------------------------------
@@ -206,20 +206,20 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # Returns the process-ID of the currently running POPFile, undef if none.
     #
     # ----------------------------------------------------------------------------
-    method live_check_ {
-        if ( $self->check_pid_() ) {
-            my $oldpid = $self->get_pid_();
-            my $wait_time = $self->config_( 'pidcheck_interval' ) * 2;
+    method live_check {
+        if ( $self->check_pid() ) {
+            my $oldpid = $self->get_pid();
+            my $wait_time = $self->config('pidcheck_interval' ) * 2;
 
             my $error = "\n\nA copy of POPFile appears to be running.\n Attempting to signal the previous copy.\n Waiting $wait_time seconds for a reply.\n";
 
-            $self->delete_pid_();
+            $self->delete_pid();
 
             print STDERR $error;
 
             select( undef, undef, undef, $wait_time );
 
-            my $pid = $self->get_pid_();
+            my $pid = $self->get_pid();
 
             if ( defined($pid) ) {
                 $error = "\n A copy of POPFile is running.\n It has signaled that it is alive with process ID: $pid\n";
@@ -239,7 +239,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # returns 1 if the pid file exists, 0 otherwise
     #
     # ----------------------------------------------------------------------------
-    method check_pid_ {
+    method check_pid {
         return (-e $pid_file);
     }
 
@@ -251,7 +251,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # otherwise (0 might be a valid PID)
     #
     # ----------------------------------------------------------------------------
-    method get_pid_ {
+    method get_pid {
         if (open my $pid_fh, '<', $pid_file) {
             my $pid = <$pid_fh>;
             $pid =~ s/[\r\n]//g;
@@ -269,7 +269,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # writes the current process-ID into the pid file
     #
     # ----------------------------------------------------------------------------
-    method write_pid_ {
+    method write_pid {
         if ( open my $pid_fh, '>', $pid_file ) {
             print $pid_fh "$$\n";
             close $pid_fh;
@@ -283,7 +283,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # deletes the pid file
     #
     # ----------------------------------------------------------------------------
-    method delete_pid_ {
+    method delete_pid {
         unlink( $pid_file );
     }
 
@@ -345,7 +345,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
                 # A command line argument must start with a -
 
                 if ( $options[$i] =~ /^-(.+)$/ ) {
-                    my $parameter = $self->upgrade_parameter__($1);
+                    my $parameter = $self->upgrade_parameter($1);
 
                     if (defined($configuration_parameters{$parameter})) {
                         if ( $i < $#options ) {
@@ -378,7 +378,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # becomes pop3_port
     #
     # ----------------------------------------------------------------------------
-    method upgrade_parameter__ ($parameter) {
+    method upgrade_parameter ($parameter) {
         # This table maps from the old parameter to the new one, for
         # example the old xpl parameter which controls insertion of the
         # X-POPFile-Link header in email is now called GLOBAL_xpl and is
@@ -479,7 +479,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
                     my $value     = $2;
                     $value = '' if !defined( $value );
 
-                    $parameter = $self->upgrade_parameter__($parameter);
+                    $parameter = $self->upgrade_parameter($parameter);
 
                     # There's a special hack here inserted so that even if
                     # the HTML module is not loaded the html_language
@@ -496,7 +496,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
             close $config;
         } else {
             if ( -e $config_file && !-r _ ) {
-                $self->log_( 0, "Couldn't load from the configuration file $config_file" );
+                $self->log_msg(0, "Couldn't load from the configuration file $config_file" );
             }
         }
 
@@ -520,7 +520,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
         my $config_temp = $self->get_user_path( 'popfile.cfg.tmp' );
 
         if ( -e $config_file && !-w _ ) {
-            $self->log_( 0, "Can't write to the configuration file $config_file" );
+            $self->log_msg(0, "Can't write to the configuration file $config_file" );
         }
 
         if ( open my $config, '>', $config_temp ) {
@@ -534,7 +534,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
 
             rename $config_temp, $config_file;
         } else {
-            $self->log_( 0, "Couldn't open a temporary configuration file $config_temp" );
+            $self->log_msg(0, "Couldn't open a temporary configuration file $config_temp" );
         }
     }
 
@@ -550,11 +550,11 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #
     # ----------------------------------------------------------------------------
     method get_user_path ($path, $sandbox = undef) {
-        return $self->path_join__( $popfile_user, $path, $sandbox );
+        return $self->path_join( $popfile_user, $path, $sandbox );
     }
 
     method get_root_path ($path, $sandbox = undef) {
-        return $self->path_join__( $popfile_root, $path, $sandbox );
+        return $self->path_join( $popfile_root, $path, $sandbox );
     }
 
     # ----------------------------------------------------------------------------
@@ -569,12 +569,12 @@ class POPFile::Configuration :isa(POPFile::Module) {
     #                    paths and paths containing .. are not accepted).
     #
     # ----------------------------------------------------------------------------
-    method path_join__ ($left, $right, $sandbox = undef) {
+    method path_join ($left, $right, $sandbox = undef) {
         $sandbox = 1 if ( !defined( $sandbox ) );
 
         if ( ( $right =~ /^\// ) ||             ( $right =~ /^[A-Za-z]:[\/\\]/ ) ||
              ( $right =~ /\\\\/ ) ) {            if ( $sandbox ) {
-                $self->log_( 0, "Attempt to access path $right outside sandbox" );
+                $self->log_msg(0, "Attempt to access path $right outside sandbox" );
                 return undef;
             } else {
                 return $right;
@@ -582,7 +582,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
         }
 
         if ( $sandbox && ( $right =~ /\.\./ ) ) {
-            $self->log_( 0, "Attempt to access path $right outside sandbox" );
+            $self->log_msg(0, "Attempt to access path $right outside sandbox" );
             return undef;
         }
 

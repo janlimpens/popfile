@@ -275,7 +275,7 @@ callback, or an empty string if no resolver is set.
 
 =cut
 
-method get_color__ ($word) {
+method get_color ($word) {
     return '' unless defined $color_resolver;
     return $color_resolver->($word);
 }
@@ -439,7 +439,7 @@ method update_pseudoword ($prefix, $word, $encoded, $literal) {
             if ( $encoded == 1 ) {
                 $literal =~ s/</&lt;/g;
                 $literal =~ s/>/&gt;/g;
-                my $color = $self->get_color__( $mword );
+                my $color = $self->get_color( $mword );
                 my $to    = "<b><font color=\"$color\"><a title=\"$mword\">$literal</a></font></b>";
                 $ut .= $to . ' ';
             }
@@ -472,7 +472,7 @@ method update_word ($word, $encoded, $before, $after, $prefix) {
         }
 
         if ( defined( $color_resolver ) ) {
-            my $color = $self->get_color__( $mword );
+            my $color = $self->get_color( $mword );
             if ( $encoded == 0 ) {
                 $after = '&' if ( $after eq '>' );
                 if ( !( $ut =~                        s/($before)\Q$word\E($after)
@@ -1940,7 +1940,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
     if ( $self->update_pseudoword( 'header', $header, 0, $header ) ) {
         if ( defined( $color_resolver ) ) {
-            my $color     = $self->get_color__( "header:$header" );
+            my $color     = $self->get_color( "header:$header" );
             $ut = "<b><font color=\"$color\">$header</font></b>: $fix_argument\015\012";
         }
     } else {

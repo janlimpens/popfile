@@ -54,7 +54,7 @@ class Classifier::WordMangle :isa(POPFile::Module) {
     #
     # -------------------------------------------------------------------------
     method load_stopwords {
-        if ( open my $stops, '<', $self->get_user_path_('stopwords') ) {
+        if ( open my $stops, '<', $self->get_user_path('stopwords') ) {
             %stop__ = ();
             while ( <$stops> ) {
                 s/[\r\n]//g;
@@ -62,12 +62,12 @@ class Classifier::WordMangle :isa(POPFile::Module) {
             }
             close $stops;
         } else {
-            $self->log_( 0, 'Failed to open stopwords file' );
+            $self->log_msg(0, 'Failed to open stopwords file' );
         }
     }
 
     method save_stopwords {
-        if ( open my $stops, '>', $self->get_user_path_('stopwords') ) {
+        if ( open my $stops, '>', $self->get_user_path('stopwords') ) {
             for my $word ( keys %stop__ ) {
                 print $stops "$word\n";
             }
