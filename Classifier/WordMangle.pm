@@ -39,6 +39,14 @@ my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)";
 my %snowball_languages = map { $_ => 1 }
     qw( da nl en fi fr de hu it no pt ro ru es sv tr );
 
+my %ui_to_iso = (
+    English => 'en', German => 'de', French => 'fr',
+    Spanish => 'es', Italian => 'it', Dutch => 'nl',
+    Portuguese => 'pt', Swedish => 'sv', Norwegian => 'no',
+    Danish => 'da', Finnish => 'fi', Hungarian => 'hu',
+    Romanian => 'ro', Russian => 'ru', Turkish => 'tr',
+);
+
 class Classifier::WordMangle :isa(POPFile::Module) {
     field %stop__;
     field $language = 'en';
@@ -89,58 +97,28 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         }
     }
 
-    # -------------------------------------------------------------------------
-    #
-    # _init_language
-    #
-    # Private. Sets the active language and (re-)initialises the stemmer and
-    # language-specific stopwords.  Called from start() and set_language().
-    #
-    # $lang   ISO 639-1 two-letter code, e.g. 'en', 'de'
-    #
-    # -------------------------------------------------------------------------
     method _init_language ($lang) {
         $language = $lang;
 
         $stemmer = undef;
         if ( $self->config('stemming') && $snowball_languages{$lang} ) {
-            $stemmer = Lingua::Stem::Snowball->new(
-                lang     => $lang,
-                encoding => 'UTF-8' );
+            $stemmer = Lingua::Stem::Snowball->new(lang => $lang, encoding => 'UTF-8');
         }
 
         my $sw = Lingua::StopWords::getStopWords($lang, 'UTF-8') // {};
         $stop__{$_} = 1 for keys %{$sw};
     }
 
-    # -------------------------------------------------------------------------
-    #
-    # set_language
-    #
-    # Switch the active language.  Reinitialises the stemmer and merges
-    # language-specific stopwords.
-    #
-    # $lang   ISO 639-1 two-letter code
-    #
-    # -------------------------------------------------------------------------
     method set_language ($lang) {
         $self->_init_language($lang);
     }
 
+    method set_ui_language ($ui_name) {
+        $self->_init_language($ui_to_iso{$ui_name} // 'en');
+    }
+
     method get_language { $language }
 
-    # -------------------------------------------------------------------------
-    #
-    # mangle
-    #
-    # Mangles a word into its canonical form or returns '' to indicate the
-    # word should be ignored.
-    #
-    # $word           The word to mangle
-    # $allow_colon    If set, allows ':' inside a word (for header pseudowords)
-    # $ignore_stops   If set, ignores the stop word list
-    #
-    # -------------------------------------------------------------------------
     method mangle ($word, $allow_colon = undef, $ignore_stops = undef) {
         my $lcword = lc($word);
 

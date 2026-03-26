@@ -53,16 +53,6 @@ my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
 
 my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
-my %ui_to_iso = (
-    English    => 'en', German     => 'de', French     => 'fr',
-    Spanish    => 'es', Italian    => 'it', Dutch      => 'nl',
-    Portuguese => 'pt', Swedish    => 'sv', Norwegian  => 'no',
-    Danish     => 'da', Finnish    => 'fi', Hungarian  => 'hu',
-    Romanian   => 'ro', Russian    => 'ru', Turkish    => 'tr',
-);
-
-sub _ui_to_iso { $ui_to_iso{$_[0]} // 'en' }
-
 class Classifier::Bayes :isa(POPFile::Module) {
     # Set this to 1 to get scores for individual words in message detail
     field $wordscores :reader :writer = 0;
@@ -335,7 +325,7 @@ method start {
     # Pass in the current interface language for language specific parsing
 
     $parser->set_lang( $language );
-    $parser->mangle()->set_language( _ui_to_iso($language) );
+    $parser->mangle()->set_ui_language( $language );
     $unclassified = log( $self->config('unclassified_weight' ) );
 
     if ( !$self->db_connect() ) {

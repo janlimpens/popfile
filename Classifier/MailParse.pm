@@ -1442,7 +1442,8 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
         }
         close $sample_fh;
         my $detected = Lingua::Identify::langof($sample);
-        $mangle->set_language($detected) if defined $detected;
+        $mangle->set_language($detected)
+            if defined $detected;
     }
 
     $self->start_parse( $reset );
