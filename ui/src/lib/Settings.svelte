@@ -103,6 +103,10 @@
         { key: 'bayes_sqlite_journal_mode', label: 'SQLite Journal Mode', type: 'select',
           options: [['delete','delete'],['truncate','truncate'],['persist','persist'],['memory','memory'],['off','off']],
           desc: 'SQLite journal / WAL mode.' },
+        { key: 'wordmangle_stemming', label: 'Word Stemming', type: 'bool',
+          desc: 'Reduce words to their stem before classification (e.g. "running" → "run"). Improves recall for morphologically rich languages at ~10% latency cost.' },
+        { key: 'wordmangle_auto_detect_language', label: 'Auto-detect Language', type: 'bool',
+          desc: 'Detect the language of each message and apply matching stopwords and stemmer. Adds ~130% classify latency; useful for mixed-language mailboxes.' },
       ],
     },
     {
