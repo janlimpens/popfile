@@ -68,13 +68,11 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         return 1
     }
 
-    # -------------------------------------------------------------------------
-    #
-    # load_stopwords, save_stopwords
-    #
-    # Load and save the stop word list from/to the stopwords file.
-    #
-    # -------------------------------------------------------------------------
+=head2 load_stopwords
+
+Load the stop word list from the stopwords file.
+
+=cut
     method load_stopwords {
         if ( open my $stops, '<', $self->get_user_path('stopwords') ) {
             %stop__ = ();
@@ -88,6 +86,12 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         }
     }
 
+
+=head2 save_stopwords
+
+Save the stop word list to the stopwords file.
+
+=cut
     method save_stopwords {
         if ( open my $stops, '>', $self->get_user_path('stopwords') ) {
             for my $word ( keys %stop__ ) {
@@ -145,16 +149,14 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         return $result
     }
 
-    # -------------------------------------------------------------------------
-    #
-    # add_stopword, remove_stopword
-    #
-    # Add or remove a stop word.  Returns 1 on success, 0 for invalid input.
-    #
-    # $stopword    The word to add or remove
-    # $lang        The current language
-    #
-    # -------------------------------------------------------------------------
+
+=head2 add_stopword
+
+Add a stop word.  Returns 1 on success, 0 for invalid input.
+
+C<$stopword> The word to add.  C<$lang> The current language.
+
+=cut
     method add_stopword ($stopword, $lang = '') {
         if ( $lang eq 'Nihongo' ) {
             return 0 if $stopword !~ /^($euc_jp)+$/o;
@@ -174,6 +176,14 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         return 0;
     }
 
+
+=head2 remove_stopword
+
+Remove a stop word.  Returns 1 on success, 0 for invalid input.
+
+C<$stopword> The word to remove.  C<$lang> The current language.
+
+=cut
     method remove_stopword ($stopword, $lang = '') {
         if ( $lang eq 'Nihongo' ) {
             return 0 if $stopword !~ /^($euc_jp)+$/o;
@@ -193,9 +203,12 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         return 0;
     }
 
-    # -------------------------------------------------------------------------
-    # stopwords accessor — returns list of current stopwords
-    # -------------------------------------------------------------------------
+
+=head2 stopwords
+
+Returns the list of current stop words.  If C<$value> is a hashref, replaces the list.
+
+=cut
     method stopwords ($value = undef) {
         %stop__ = %{$value} if defined $value;
         return keys %stop__;
