@@ -85,4 +85,42 @@ subtest 'add_stopword / remove_stopword' => sub {
     is( $wm->add_stopword('bad word!', ''), 0, 'invalid stopword rejected' );
 };
 
+subtest 'stemming' => sub {
+    $wm->config('stemming', 1);
+    $wm->set_language('en');
+
+    is( $wm->mangle('running'), 'run',       'English stem: running -> run' );
+    is( $wm->mangle('runs'),    'run',       'English stem: runs -> run' );
+    is( $wm->mangle('dogs'),    'dog',       'English stem: dogs -> dog' );
+    is( $wm->mangle('from:alice', 1), 'from:alice', 'pseudoword with colon not stemmed' );
+
+    $wm->config('stemming', 0);
+    $wm->set_language('en');
+};
+
+subtest 'lingua stopwords' => sub {
+    $wm->set_language('en');
+
+    is( $wm->mangle('the'),   '', '"the" filtered as lingua stopword' );
+    is( $wm->mangle('hello'), 'hello', 'non-stopword still passes' );
+};
+
+subtest 'german stemming and stopwords' => sub {
+    $wm->config('stemming', 1);
+    $wm->set_language('de');
+
+    is( $wm->get_language(), 'de', 'language set to de' );
+    isnt( $wm->mangle('und'), 'und', '"und" filtered as German stopword' );
+    is( $wm->mangle('und'), '', '"und" is empty after filtering' );
+
+    $wm->config('stemming', 0);
+    $wm->set_language('en');
+};
+
+subtest 'set_language survives repeat calls' => sub {
+    my $lang_before = $wm->get_language();
+    $wm->set_language($lang_before);
+    is( $wm->get_language(), $lang_before, 'language unchanged after re-set' );
+};
+
 done_testing;

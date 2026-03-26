@@ -325,6 +325,7 @@ method start {
     # Pass in the current interface language for language specific parsing
 
     $parser->set_lang( $language );
+    $parser->mangle()->set_ui_language( $language );
     $unclassified = log( $self->config('unclassified_weight' ) );
 
     if ( !$self->db_connect() ) {

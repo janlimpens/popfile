@@ -26,6 +26,8 @@ use Object::Pad;
 # ----------------------------------------------------------------------------
 
 use locale;
+use Lingua::Stem::Snowball;
+use Lingua::StopWords;
 
 # These are used for Japanese support
 
@@ -34,25 +36,43 @@ my $two_bytes_euc_jp  = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';
 my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';
 my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)";
 
+my %snowball_languages = map { $_ => 1 }
+    qw( da nl en fi fr de hu it no pt ro ru es sv tr );
+
+my %ui_to_iso = (
+    English => 'en', German => 'de', French => 'fr',
+    Spanish => 'es', Italian => 'it', Dutch => 'nl',
+    Portuguese => 'pt', Swedish => 'sv', Norwegian => 'no',
+    Danish => 'da', Finnish => 'fi', Hungarian => 'hu',
+    Romanian => 'ro', Russian => 'ru', Turkish => 'tr',
+);
+
 class Classifier::WordMangle :isa(POPFile::Module) {
     field %stop__;
+    field $language = 'en';
+    field $stemmer  = undef;
 
     BUILD {
         $self->set_name('wordmangle');
     }
 
-    method start {
-        $self->load_stopwords();
-        return 1;
+    method initialize {
+        $self->config('stemming',             0);
+        $self->config('auto_detect_language', 1);
+        return 1
     }
 
-    # -------------------------------------------------------------------------
-    #
-    # load_stopwords, save_stopwords
-    #
-    # Load and save the stop word list from/to the stopwords file.
-    #
-    # -------------------------------------------------------------------------
+    method start {
+        $self->load_stopwords();
+        $self->_init_language($language);
+        return 1
+    }
+
+=head2 load_stopwords
+
+Load the stop word list from the stopwords file.
+
+=cut
     method load_stopwords {
         if ( open my $stops, '<', $self->get_user_path('stopwords') ) {
             %stop__ = ();
@@ -66,6 +86,12 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         }
     }
 
+
+=head2 save_stopwords
+
+Save the stop word list to the stopwords file.
+
+=cut
     method save_stopwords {
         if ( open my $stops, '>', $self->get_user_path('stopwords') ) {
             for my $word ( keys %stop__ ) {
@@ -75,18 +101,28 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         }
     }
 
-    # -------------------------------------------------------------------------
-    #
-    # mangle
-    #
-    # Mangles a word into its canonical form or returns '' to indicate the
-    # word should be ignored.
-    #
-    # $word           The word to mangle
-    # $allow_colon    If set, allows ':' inside a word (for header pseudowords)
-    # $ignore_stops   If set, ignores the stop word list
-    #
-    # -------------------------------------------------------------------------
+    method _init_language ($lang) {
+        $language = $lang;
+
+        $stemmer = undef;
+        if ( $self->config('stemming') && $snowball_languages{$lang} ) {
+            $stemmer = Lingua::Stem::Snowball->new(lang => $lang, encoding => 'UTF-8');
+        }
+
+        my $sw = Lingua::StopWords::getStopWords($lang, 'UTF-8') // {};
+        $stop__{$_} = 1 for keys %{$sw};
+    }
+
+    method set_language ($lang) {
+        $self->_init_language($lang);
+    }
+
+    method set_ui_language ($ui_name) {
+        $self->_init_language($ui_to_iso{$ui_name} // 'en');
+    }
+
+    method get_language { $language }
+
     method mangle ($word, $allow_colon = undef, $ignore_stops = undef) {
         my $lcword = lc($word);
 
@@ -103,19 +139,24 @@ class Classifier::WordMangle :isa(POPFile::Module) {
 
         $lcword =~ s/://g if !defined($allow_colon);
 
-        return ( $lcword =~ /:/ ) ? $word : $lcword;
+        my $result = ( $lcword =~ /:/ ) ? $word : $lcword;
+
+        if ( defined $stemmer && $result !~ /:/ ) {
+            my $stemmed = $stemmer->stem($result);
+            $result = $stemmed if defined $stemmed && $stemmed ne '';
+        }
+
+        return $result
     }
 
-    # -------------------------------------------------------------------------
-    #
-    # add_stopword, remove_stopword
-    #
-    # Add or remove a stop word.  Returns 1 on success, 0 for invalid input.
-    #
-    # $stopword    The word to add or remove
-    # $lang        The current language
-    #
-    # -------------------------------------------------------------------------
+
+=head2 add_stopword
+
+Add a stop word.  Returns 1 on success, 0 for invalid input.
+
+C<$stopword> The word to add.  C<$lang> The current language.
+
+=cut
     method add_stopword ($stopword, $lang = '') {
         if ( $lang eq 'Nihongo' ) {
             return 0 if $stopword !~ /^($euc_jp)+$/o;
@@ -135,6 +176,14 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         return 0;
     }
 
+
+=head2 remove_stopword
+
+Remove a stop word.  Returns 1 on success, 0 for invalid input.
+
+C<$stopword> The word to remove.  C<$lang> The current language.
+
+=cut
     method remove_stopword ($stopword, $lang = '') {
         if ( $lang eq 'Nihongo' ) {
             return 0 if $stopword !~ /^($euc_jp)+$/o;
@@ -154,9 +203,12 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         return 0;
     }
 
-    # -------------------------------------------------------------------------
-    # stopwords accessor — returns list of current stopwords
-    # -------------------------------------------------------------------------
+
+=head2 stopwords
+
+Returns the list of current stop words.  If C<$value> is a hashref, replaces the list.
+
+=cut
     method stopwords ($value = undef) {
         %stop__ = %{$value} if defined $value;
         return keys %stop__;
