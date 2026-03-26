@@ -37,6 +37,11 @@ recommends 'SOAP::Lite', '0';
 recommends 'Text::Kakasi', '0';
 recommends 'Encode::Guess', '0';
 
+# Word stemming, multilingual stopwords, and language detection
+requires 'Lingua::Stem::Snowball', '0';
+requires 'Lingua::StopWords',      '0';
+requires 'Lingua::Identify',       '0';
+
 # Development and testing
 on 'test' => sub {
     requires 'Test2::V0', '0';

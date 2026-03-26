@@ -30,6 +30,7 @@ use MIME::Base64;
 use MIME::QuotedPrint;
 
 use HTML::Tagset;
+use Lingua::Identify;
 
 # Korean characters definition
 
@@ -1431,6 +1432,18 @@ method parse_html ($line, $encoded) {
 method parse_file ($file, $max_size = undef, $reset = undef) {
     $reset    = 1 if ( !defined( $reset    ) );
     $max_size = 0 if ( !defined( $max_size ) || ( $max_size =~ /\D/ ) );
+
+    if ( defined $mangle && $mangle->config('auto_detect_language') ) {
+        open my $sample_fh, '<', $file;
+        my $sample = '';
+        while ( <$sample_fh> ) {
+            $sample .= $_;
+            last if length($sample) >= 1000;
+        }
+        close $sample_fh;
+        my $detected = Lingua::Identify::langof($sample);
+        $mangle->set_language($detected) if defined $detected;
+    }
 
     $self->start_parse( $reset );
 

@@ -26,6 +26,8 @@ use Object::Pad;
 # ----------------------------------------------------------------------------
 
 use locale;
+use Lingua::Stem::Snowball;
+use Lingua::StopWords;
 
 # These are used for Japanese support
 
@@ -34,16 +36,28 @@ my $two_bytes_euc_jp  = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';
 my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';
 my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)";
 
+my %snowball_languages = map { $_ => 1 }
+    qw( da nl en fi fr de hu it no pt ro ru es sv tr );
+
 class Classifier::WordMangle :isa(POPFile::Module) {
     field %stop__;
+    field $language = 'en';
+    field $stemmer  = undef;
 
     BUILD {
         $self->set_name('wordmangle');
     }
 
+    method initialize {
+        $self->config('stemming',             0);
+        $self->config('auto_detect_language', 1);
+        return 1
+    }
+
     method start {
         $self->load_stopwords();
-        return 1;
+        $self->_init_language($language);
+        return 1
     }
 
     # -------------------------------------------------------------------------
@@ -77,6 +91,46 @@ class Classifier::WordMangle :isa(POPFile::Module) {
 
     # -------------------------------------------------------------------------
     #
+    # _init_language
+    #
+    # Private. Sets the active language and (re-)initialises the stemmer and
+    # language-specific stopwords.  Called from start() and set_language().
+    #
+    # $lang   ISO 639-1 two-letter code, e.g. 'en', 'de'
+    #
+    # -------------------------------------------------------------------------
+    method _init_language ($lang) {
+        $language = $lang;
+
+        $stemmer = undef;
+        if ( $self->config('stemming') && $snowball_languages{$lang} ) {
+            $stemmer = Lingua::Stem::Snowball->new(
+                lang     => $lang,
+                encoding => 'UTF-8' );
+        }
+
+        my $sw = Lingua::StopWords::getStopWords($lang, 'UTF-8') // {};
+        $stop__{$_} = 1 for keys %{$sw};
+    }
+
+    # -------------------------------------------------------------------------
+    #
+    # set_language
+    #
+    # Switch the active language.  Reinitialises the stemmer and merges
+    # language-specific stopwords.
+    #
+    # $lang   ISO 639-1 two-letter code
+    #
+    # -------------------------------------------------------------------------
+    method set_language ($lang) {
+        $self->_init_language($lang);
+    }
+
+    method get_language { $language }
+
+    # -------------------------------------------------------------------------
+    #
     # mangle
     #
     # Mangles a word into its canonical form or returns '' to indicate the
@@ -103,7 +157,14 @@ class Classifier::WordMangle :isa(POPFile::Module) {
 
         $lcword =~ s/://g if !defined($allow_colon);
 
-        return ( $lcword =~ /:/ ) ? $word : $lcword;
+        my $result = ( $lcword =~ /:/ ) ? $word : $lcword;
+
+        if ( defined $stemmer && $result !~ /:/ ) {
+            my $stemmed = $stemmer->stem($result);
+            $result = $stemmed if defined $stemmed && $stemmed ne '';
+        }
+
+        return $result
     }
 
     # -------------------------------------------------------------------------
