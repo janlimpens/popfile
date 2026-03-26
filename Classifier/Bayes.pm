@@ -61,7 +61,7 @@ my %ui_to_iso = (
     Romanian   => 'ro', Russian    => 'ru', Turkish    => 'tr',
 );
 
-sub _ui_to_iso ($ui) { $ui_to_iso{$ui} // 'en' }
+sub _ui_to_iso { $ui_to_iso{$_[0]} // 'en' }
 
 class Classifier::Bayes :isa(POPFile::Module) {
     # Set this to 1 to get scores for individual words in message detail
