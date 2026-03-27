@@ -28,6 +28,7 @@ package Classifier::Bayes;
 
 use Object::Pad;
 use locale;
+use POPFile::Role::SQL;
 use Classifier::MailParse;
 use IO::Handle;
 use DBI;
@@ -53,7 +54,7 @@ my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
 
 my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
-class Classifier::Bayes :isa(POPFile::Module) {
+class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::SQL) {
     # Set this to 1 to get scores for individual words in message detail
     field $wordscores :reader :writer = 0;
 
@@ -143,6 +144,7 @@ This is called inside a child process that has just forked, since
 the child needs access to the database we open it
 
 =cut
+
 method forked ($writer = undef) {
     $self->db_connect();
 }
@@ -153,6 +155,7 @@ This is called inside a child process that is about to finish, since
 the child does not need access to the database we close it
 
 =cut
+
 method childexit {
     $self->db_disconnect();
 }
@@ -162,6 +165,7 @@ method childexit {
 Called to set up the Bayes module's parameters
 
 =cut
+
 method initialize {
     # This is the name for the database
 
@@ -282,6 +286,7 @@ Called by the message queue to deliver a message
 There is no return value from this method
 
 =cut
+
 method deliver ($type, @message) {
     if ( $type eq 'COMIT' ) {
         $self->classified( $message[0], $message[2] );
@@ -301,6 +306,7 @@ method deliver ($type, @message) {
 Called to start the Bayes module running
 
 =cut
+
 method start {
     # In Japanese or Korean or Chinese mode, explicitly set LC_COLLATE and
     # LC_CTYPE to C.
@@ -353,6 +359,7 @@ method start {
 Called when POPFile is terminating
 
 =cut
+
 method stop {
     $self->db_disconnect();
     $db_bucketid     = {};
@@ -370,6 +377,7 @@ Called to inform the module about a classification event
 There is no return value from this method
 
 =cut
+
 method classified ($session, $class) {
     $self->set_bucket_parameter( $session, $class, 'count',        $self->get_bucket_parameter( $session, $class, 'count' ) + 1 );}
 
@@ -379,6 +387,7 @@ Called when the TICKD message is received each hour and if we are using
 the default SQLite database will make a copy with the .backup extension
 
 =cut
+
 method backup_database {
     # If database backup is turned on and we are using SQLite then
     # backup the database by copying it
@@ -398,6 +407,7 @@ C<$state> 1 to enable the tweak, 0 to disable
 C<$db> The db handle to tweak
 
 =cut
+
 method tweak_sqlite ($tweak, $state, $db) {
     if ( $db_is_sqlite &&
          ( $self->config('sqlite_tweaks' ) & $tweak ) ) {
@@ -424,6 +434,7 @@ C<newbucket> The new bucket name
 C<undo> 1 if this is an undo operation
 
 =cut
+
 method reclassified ($session, $bucket, $newbucket, $undo) {
     $self->log_msg(0, "Reclassification from $bucket to $newbucket" );
 
@@ -457,6 +468,7 @@ C<$session> Session key returned by get_session_key
 C<$word> Word to get the color of
 
 =cut
+
 method get_color ($session, $word) {
     my $max   = -10000;
     my $color = 'black';
@@ -480,6 +492,7 @@ method get_color ($session, $word) {
 Returns the probability of a word that doesn't appear
 
 =cut
+
 method get_not_likely ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -494,6 +507,7 @@ converted to the log value of the probability before return to get
 the raw value just hit the hash directly or call get_base_value_
 
 =cut
+
 method get_value ($session, $bucket, $word) {
     my $value = $self->db_get_word_count( $session, $bucket, $word );
 
@@ -527,6 +541,7 @@ Sets the value for a word in a bucket and updates the total word
 counts for the bucket and globally
 
 =cut
+
 method set_value ($session, $bucket, $word, $value) {
     if ( $self->db_put_word_count( $session, $bucket, $word, $value ) == 1 ) {
         my $userid = $self->valid_session_key( $session );
@@ -545,6 +560,7 @@ returns not_likely__ rather than 0 if the word is not found.  This
 makes its result more suitable as a sort key for bucket ranking.
 
 =cut
+
 method get_sort_value ($session, $bucket, $word) {
     my $v = $self->get_value( $session, $bucket, $word );
 
@@ -563,6 +579,7 @@ method get_sort_value ($session, $bucket, $word) {
 Updates not_likely and bucket_start
 
 =cut
+
 method update_constants ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -591,6 +608,7 @@ method update_constants ($session) {
 Connects to the POPFile database and returns 1 if successful
 
 =cut
+
 method db_connect {
     # Connect to the database, note that the database must exist for
     # this to work, to make this easy for people POPFile we will
@@ -793,47 +811,63 @@ method db_connect {
     # word
     # parameter
 
-    $db_get_buckets = $db->prepare(             'select name, id, pseudo from buckets
-                  where buckets.userid = ?;' );
-    $db_get_wordid = $db->prepare(             'select id from words
-                  where words.word = ? limit 1;' );
-    $db_get_userid = $db->prepare(             'select id from users where name = ?
-                                     and password = ? limit 1;' );
-    $db_get_word_count = $db->prepare(             'select matrix.times from matrix
-                  where matrix.bucketid = ? and
-                        matrix.wordid = ? limit 1;' );
-    $db_put_word_count = $db->prepare(           'replace into matrix ( bucketid, wordid, times ) values ( ?, ?, ? );' );
-    $db_get_bucket_word_counts = $db->prepare(             'select sum(matrix.times), count(matrix.id), buckets.name from matrix, buckets
-                  where matrix.bucketid = buckets.id
-                    and buckets.userid = ?
-                    group by buckets.name;' );
-    $db_get_bucket_word_count = $db->prepare(             'select sum(times), count(*) from matrix
-                  where bucketid = ?' );
-    $db_get_unique_word_count = $db->prepare(             'select count(*) from matrix
-                  where matrix.bucketid in (
-                        select buckets.id from buckets
-                            where buckets.userid = ? );' );
-    $db_get_full_total = $db->prepare(             'select sum(matrix.times) from matrix
-                  where matrix.bucketid in (
-                        select buckets.id from buckets
-                            where buckets.userid = ? );' );
-    $db_get_bucket_parameter = $db->prepare(             'select bucket_params.val from bucket_params
-                  where bucket_params.bucketid = ? and
-                        bucket_params.btid = ?;' );
-    $db_set_bucket_parameter = $db->prepare(           'replace into bucket_params ( bucketid, btid, val ) values ( ?, ?, ? );' );
-    $db_get_bucket_parameter_default = $db->prepare(             'select bucket_template.def from bucket_template
-                  where bucket_template.id = ?;' );
-    $db_get_buckets_with_magnets = $db->prepare(             'select buckets.name from buckets, magnets
-                  where buckets.userid = ? and
-                        magnets.id != 0 and
-                        magnets.bucketid = buckets.id group by buckets.name order by buckets.name;' );
-    $db_delete_zero_words = $db->prepare(             'delete from matrix
-                  where matrix.times = 0
-                    and matrix.bucketid = ?;' );
+    $db_get_buckets = $db->prepare( $self->normalize_sql(
+        'SELECT name, id, pseudo FROM buckets
+         WHERE buckets.userid = ?' ) );
+    $db_get_wordid = $db->prepare( $self->normalize_sql(
+        'SELECT id FROM words
+         WHERE words.word = ? LIMIT 1' ) );
+    $db_get_userid = $db->prepare( $self->normalize_sql(
+        'SELECT id FROM users
+         WHERE name = ? AND password = ? LIMIT 1' ) );
+    $db_get_word_count = $db->prepare( $self->normalize_sql(
+        'SELECT matrix.times FROM matrix
+         WHERE matrix.bucketid = ? AND
+               matrix.wordid = ? LIMIT 1' ) );
+    $db_put_word_count = $db->prepare( $self->normalize_sql(
+        'REPLACE INTO matrix ( bucketid, wordid, times ) VALUES ( ?, ?, ? )' ) );
+    $db_get_bucket_word_counts = $db->prepare( $self->normalize_sql(
+        'SELECT sum(matrix.times), count(matrix.id), buckets.name FROM matrix, buckets
+         WHERE matrix.bucketid = buckets.id
+           AND buckets.userid = ?
+         GROUP BY buckets.name' ) );
+    $db_get_bucket_word_count = $db->prepare( $self->normalize_sql(
+        'SELECT sum(times), count(*) FROM matrix
+         WHERE bucketid = ?' ) );
+    $db_get_unique_word_count = $db->prepare( $self->normalize_sql(
+        'SELECT count(*) FROM matrix
+         WHERE matrix.bucketid IN (
+             SELECT buckets.id FROM buckets
+             WHERE buckets.userid = ? )' ) );
+    $db_get_full_total = $db->prepare( $self->normalize_sql(
+        'SELECT sum(matrix.times) FROM matrix
+         WHERE matrix.bucketid IN (
+             SELECT buckets.id FROM buckets
+             WHERE buckets.userid = ? )' ) );
+    $db_get_bucket_parameter = $db->prepare( $self->normalize_sql(
+        'SELECT bucket_params.val FROM bucket_params
+         WHERE bucket_params.bucketid = ? AND
+               bucket_params.btid = ?' ) );
+    $db_set_bucket_parameter = $db->prepare( $self->normalize_sql(
+        'REPLACE INTO bucket_params ( bucketid, btid, val ) VALUES ( ?, ?, ? )' ) );
+    $db_get_bucket_parameter_default = $db->prepare( $self->normalize_sql(
+        'SELECT bucket_template.def FROM bucket_template
+         WHERE bucket_template.id = ?' ) );
+    $db_get_buckets_with_magnets = $db->prepare( $self->normalize_sql(
+        'SELECT buckets.name FROM buckets, magnets
+         WHERE buckets.userid = ? AND
+               magnets.id != 0 AND
+               magnets.bucketid = buckets.id
+         GROUP BY buckets.name
+         ORDER BY buckets.name' ) );
+    $db_delete_zero_words = $db->prepare( $self->normalize_sql(
+        'DELETE FROM matrix
+         WHERE matrix.times = 0
+           AND matrix.bucketid = ?' ) );
     # Get the mapping from parameter names to ids into a local hash
 
     my $h = $self->validate_sql_prepare_and_execute(
-        'select name, id from bucket_template;' );
+        'SELECT name, id FROM bucket_template' );
     while ( my $row = $h->fetchrow_arrayref ) {
         $db_parameterid->{$row->[0]} = $row->[1];
     }
@@ -849,6 +883,7 @@ Insert the POPFile schema in a database
 C<$sqlite> Set to 1 if this is a SQLite database
 
 =cut
+
 method insert_schema ($sqlite) {
     if ( -e $self->get_root_path('Classifier/popfile.sql' ) ) {
         my $schema = '';
@@ -891,6 +926,7 @@ C<$db_from> Database handle convert from
                  undef if upgrade POPFile schema
 
 =cut
+
 method db_upgrade ($db_from) {
     my $drop_table;
 
@@ -1021,6 +1057,7 @@ method db_upgrade ($db_from) {
 Disconnect from the POPFile database
 
 =cut
+
 method db_disconnect {
     return unless ref $db_get_buckets;
     $db_get_buckets->finish;
@@ -1071,6 +1108,7 @@ C<$deleted_bucket> Bucket to delete cache
                    If none of them is specified, update whole cache.
 
 =cut
+
 method db_update_cache ($session, $updated_bucket = undef, $deleted_bucket = undef) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -1139,6 +1177,7 @@ C<$bucket> bucket word is in
 C<$word> word to lookup
 
 =cut
+
 method db_get_word_count ($session, $bucket, $word) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -1173,6 +1212,7 @@ C<$word> word to update
 C<$count> new count value
 
 =cut
+
 method db_put_word_count ($session, $bucket, $word, $count) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -1204,6 +1244,7 @@ Looks for old POPFile data (in flat files or BerkeleyDB tables) and
 upgrades it to the SQL database.  Data upgraded is removed.
 
 =cut
+
 method upgrade_predatabase_data {
     my $c      = 0;
 
@@ -1271,6 +1312,7 @@ C<$session> Valid session key from get_session_key
 C<$bucket> The bucket name
 
 =cut
+
 method upgrade_bucket ($session, $bucket) {
     $bucket =~ /([[:alpha:]0-9-_]+)$/;
     $bucket =  $1;
@@ -1449,6 +1491,7 @@ C<$bucket> The bucket to check
 C<$type> The magnet type to check
 
 =cut
+
 method magnet_match_helper ($session, $match, $bucket, $type) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -1456,14 +1499,15 @@ method magnet_match_helper ($session, $match, $bucket, $type) {
     my @magnets;
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $h = $self->validate_sql_prepare_and_execute(        'select magnets.val, magnets.id from magnets, users, buckets, magnet_types
-                where buckets.id         = ? and
-                      magnets.id        != 0 and
-                      users.id           = buckets.userid and
-                      magnets.bucketid   = buckets.id and
-                      magnet_types.mtype = ? and
-                      magnets.mtid       = magnet_types.id
-                order by magnets.val;',
+    my $h = $self->validate_sql_prepare_and_execute(
+        'SELECT magnets.val, magnets.id FROM magnets, users, buckets, magnet_types
+         WHERE buckets.id = ? AND
+               magnets.id != 0 AND
+               users.id = buckets.userid AND
+               magnets.bucketid = buckets.id AND
+               magnet_types.mtype = ? AND
+               magnets.mtid = magnet_types.id
+         ORDER BY magnets.val',
         $bucketid, $type );
     my ( $val, $id );
     $h->bind_columns( \$val, \$id );
@@ -1495,6 +1539,7 @@ C<$match> The string to match
 C<$type> The magnet type to check
 
 =cut
+
 method single_magnet_match ($magnet, $match, $type) {
     my $matched = 0;
 
@@ -1533,6 +1578,7 @@ C<$bucket> The bucket to check
 C<$type> The magnet type to check
 
 =cut
+
 method magnet_match ($session, $match, $bucket, $type) {
     return $self->magnet_match_helper( $session, $match, $bucket, $type );
 }
@@ -1547,6 +1593,7 @@ C<$line> The line to write
 C<$class> (optional) The current classification
 
 =cut
+
 method write_line ($file, $line, $class) {
     if ( defined( $file ) && ( ref $file eq 'GLOB' ) ) {
         if ( defined( fileno $file ) ) {
@@ -1573,6 +1620,7 @@ C<$bucket> Bucket to add to
 C<$subtract> Set to -1 means subtract the words, set to 1 means add
 
 =cut
+
 method add_words_to_bucket ($session, $bucket, $subtract) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -1582,8 +1630,9 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
 
     my $words;
     $words = join( ',', map( $db->quote( $_ ), (sort keys %{$parser->words()}) ) );
-    $get_wordids = $self->validate_sql_prepare_and_execute(             "select id, word from words
-                     where word in ( $words );" );
+    $get_wordids = $self->validate_sql_prepare_and_execute(
+        "SELECT id, word FROM words
+         WHERE word IN ( $words )" );
     my @id_list;
     my %wordmap;
     my ( $wordid, $word );
@@ -1599,10 +1648,11 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
 
     my $ids = join( ',', @id_list );
 
-    $db_getwords = $self->validate_sql_prepare_and_execute(            "select matrix.times, matrix.wordid from matrix
-                    where matrix.wordid in ( $ids ) and
-                          matrix.bucketid = ?;",
-            $db_bucketid->{$userid}{$bucket}{id} );
+    $db_getwords = $self->validate_sql_prepare_and_execute(
+        "SELECT matrix.times, matrix.wordid FROM matrix
+         WHERE matrix.wordid IN ( $ids ) AND
+               matrix.bucketid = ?",
+        $db_bucketid->{$userid}{$bucket}{id} );
     my %counts;
     my $count;
 
@@ -1671,6 +1721,7 @@ NOTE Also echoes the line with . to $client but not to $file
 Returns 1 if there was a . or 0 if reached EOF before we hit the .
 
 =cut
+
 method echo_to_dot ($mail, $client, $file, $before) {
     my $hit_dot = 0;
 
@@ -1751,6 +1802,7 @@ Returns a unique string based session key that can be used as a key
 in the api_sessions__
 
 =cut
+
 method generate_unique_session_key {
     my @chars = ( 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',                  'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'U', 'V', 'W', 'X', 'Y',
                   'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A' );
@@ -1790,6 +1842,7 @@ preventing asynchronous tasks from completing
 C<$session> A session key previously returned by get_session_key
 
 =cut
+
 method release_session_key_private ($session) {
     if ( defined( $api_sessions->{$session} ) ) {
         $self->log_msg(1, "release_session_key releasing key $session for user $api_sessions->{$session}" );
@@ -1807,6 +1860,7 @@ accesses
 C<$session> Session key returned by call to get_session_key
 
 =cut
+
 method valid_session_key ($session) {
     # This provides protection against someone using the XML-RPC
     # interface and calling this API directly to fish for session
@@ -1860,6 +1914,7 @@ C<$user> The name of an existing user
 C<$pwd> The user's password
 
 =cut
+
 method get_session_key ($user, $pwd) {
     # The password is stored in the database as an MD5 hash of the
     # username and password concatenated and separated by the string
@@ -1898,6 +1953,7 @@ Releases and invalidates the session key
 C<$session> A session key previously returned by get_session_key
 
 =cut
+
 method release_session_key ($session) {
     $self->mq_post("RELSE", $session );
 }
@@ -1918,6 +1974,7 @@ C<$matrix> Reference to the %matrix hash in classify
 C<$buckets> Reference to a list of buckets
 
 =cut
+
 method get_top_bucket ($userid, $id, $matrix, $buckets) {
     my $best_probability = 0;
     my $top_bucket       = 'unclassified';
@@ -1954,6 +2011,7 @@ $idmap (optional) Reference to a hash that will map word ids in the
 $matrix to actual words
 
 =cut
+
 method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = undef) {
     my $msg_total = 0;
 
@@ -2072,10 +2130,10 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
 
     my $words;
     $words = join( ',', map( $db->quote( $_ ), (sort keys %{$parser->words()}) ) );
-    $get_wordids = $self->validate_sql_prepare_and_execute(             "select id, word
-                  from words
-                  where word in ( $words )
-                  order by id;" );
+    $get_wordids = $self->validate_sql_prepare_and_execute(
+        "SELECT id, word FROM words
+         WHERE word IN ( $words )
+         ORDER BY id" );
     my @id_list;
     my %temp_idmap;
     my ( $wordid, $word );
@@ -2095,11 +2153,13 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
 
     my $ids = join( ',', @id_list );
 
-    $db_classify = $self->validate_sql_prepare_and_execute(             "select matrix.times, matrix.wordid, buckets.name
-                  from matrix, buckets
-                  where matrix.wordid in ( $ids )
-                    and matrix.bucketid = buckets.id
-                    and buckets.userid = ?;", $userid );
+    $db_classify = $self->validate_sql_prepare_and_execute(
+        "SELECT matrix.times, matrix.wordid, buckets.name
+         FROM matrix, buckets
+         WHERE matrix.wordid IN ( $ids )
+           AND matrix.bucketid = buckets.id
+           AND buckets.userid = ?",
+        $userid );
     # %matrix maps wordids and bucket names to counts
     # $matrix{$wordid}{$bucket} == $count
 
@@ -2485,6 +2545,7 @@ C<$crlf> - The sequence to use at the end of a line in the output,
   real files you may wish to pass in \n instead
 
 =cut
+
 method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $echo, $crlf) {
     $echo = 1    unless (defined $echo);
     $crlf = $eol unless (defined $crlf);
@@ -2881,6 +2942,7 @@ alphabetic order
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method get_buckets ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -2906,6 +2968,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> The bucket name
 
 =cut
+
 method get_bucket_id ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -2922,6 +2985,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$id> The bucket id
 
 =cut
+
 method get_bucket_name ($session, $id) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -2943,6 +3007,7 @@ alphabetic order
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method get_pseudo_buckets ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -2966,6 +3031,7 @@ alphabetic order
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method get_all_buckets ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -2987,6 +3053,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> The bucket to check
 
 =cut
+
 method is_pseudo_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3003,6 +3070,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> The bucket to check
 
 =cut
+
 method is_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3019,6 +3087,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> The name of the bucket for which the word count is desired
 
 =cut
+
 method get_bucket_word_count ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3037,6 +3106,7 @@ C<$bucket> The name of the bucket for which the word count is desired
 C<$prefix> The first character of the words
 
 =cut
+
 method get_bucket_word_list ($session, $bucket, $prefix) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3064,6 +3134,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> The name of the bucket for which the word count is desired
 
 =cut
+
 method get_bucket_word_prefixes ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3074,10 +3145,14 @@ method get_bucket_word_prefixes ($session, $bucket) {
     my $result = $db->selectcol_arrayref(        "select words.word from matrix, words
          where matrix.wordid  = words.id and
                matrix.bucketid = $bucketid;");
-    if ( $self->module_config('html', 'language' ) eq 'Nihongo' ) {
-        return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr_euc($_,0,1)} @{$result};
+    if ( ($self->module_config('html', 'language' )//'') eq 'Nihongo' ) {
+        return
+            grep {$_ ne $prev && ($prev = $_, 1)}
+            sort
+            map {substr_euc($_,0,1)}
+            $result->@*;
     } else {
-        if  ( $self->module_config('html', 'language' ) eq 'Korean' ) {
+        if  ( ($self->module_config('html', 'language' ) // '') eq 'Korean' ) {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {$_ =~ /([\x20-\x80]|$eksc)/} @{$result};
         } else {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr($_,0,1)}  @{$result};
@@ -3092,6 +3167,7 @@ Returns the total word count (including duplicates)
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method get_word_count ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3113,6 +3189,7 @@ C<$bucket> The bucket we are asking about
 C<$word> The word we are asking about
 
 =cut
+
 method get_count_for_word ($session, $bucket, $word) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3129,6 +3206,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> The name of the bucket for which the word count is desired
 
 =cut
+
 method get_bucket_unique_count ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3145,6 +3223,7 @@ Returns the unique word count (excluding duplicates) for all buckets
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method get_unique_word_count ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3167,6 +3246,7 @@ C<NOTE> This API is DEPRECATED in favor of calling get_bucket_parameter for
       the parameter named 'color'
 
 =cut
+
 method get_bucket_color ($session, $bucket) {
     return $self->get_bucket_parameter( $session, $bucket, 'color' );
 }
@@ -3182,6 +3262,7 @@ C<NOTE> This API is DEPRECATED in favor of calling set_bucket_parameter for
       the parameter named 'color'
 
 =cut
+
 method set_bucket_color ($session, $bucket, $color) {
     return $self->set_bucket_parameter( $session, $bucket, 'color', $color );
 }
@@ -3195,6 +3276,7 @@ C<$bucket> The name of the bucket
 C<$parameter> The name of the parameter
 
 =cut
+
 method get_bucket_parameter ($session, $bucket, $parameter) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3253,6 +3335,7 @@ C<$parameter> The name of the parameter
 C<$value> The new value
 
 =cut
+
 method set_bucket_parameter ($session, $bucket, $parameter, $value) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3292,6 +3375,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$file> The file to parse
 
 =cut
+
 method get_html_colored_message ($session, $file) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3318,6 +3402,7 @@ C<$matrix> Reference to the matrix hash from a call to classify
 C<$idmap> Reference to the idmap hash from a call to classify
 
 =cut
+
 method fast_get_html_colored_message ($session, $file, $matrix, $idmap) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3356,6 +3441,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> Name for the new bucket
 
 =cut
+
 method create_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3384,6 +3470,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> Name of the bucket to delete
 
 =cut
+
 method delete_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3394,10 +3481,11 @@ method delete_bucket ($session, $bucket) {
         return 0;
     }
 
-    $self->validate_sql_prepare_and_execute(        'delete from buckets
-                where buckets.userid = ? and
-                      buckets.name   = ? and
-                      buckets.pseudo = 0;',
+    $self->validate_sql_prepare_and_execute(
+        'DELETE FROM buckets
+         WHERE buckets.userid = ? AND
+               buckets.name = ? AND
+               buckets.pseudo = 0',
         $userid, $bucket );
     $self->db_update_cache( $session, undef, $bucket );
     $history->force_requery();
@@ -3414,6 +3502,7 @@ C<$old_bucket> The old name of the bucket
 C<$new_bucket> The new name of the bucket
 
 =cut
+
 method rename_bucket ($session, $old_bucket, $new_bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3436,7 +3525,8 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
 
     $self->log_msg(1, "Rename bucket $old_bucket to $new_bucket" );
 
-    my $result = $self->validate_sql_prepare_and_execute(        'update buckets set name = ? where id = ?;',
+    my $result = $self->validate_sql_prepare_and_execute(
+        'UPDATE buckets SET name = ? WHERE id = ?',
         $new_bucket, $id );
     if ( !defined( $result ) || ( $result == -1 ) ) {
         return 0;
@@ -3457,6 +3547,7 @@ C<$bucket> Name of the bucket to be updated
 @files           List of file names to parse
 
 =cut
+
 method add_messages_to_bucket ($session, $bucket, @files) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3491,6 +3582,7 @@ C<$bucket> Name of the bucket to be updated
 C<$file> Name of file containing mail message to parse
 
 =cut
+
 method add_message_to_bucket ($session, $bucket, $file) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3511,6 +3603,7 @@ C<$bucket> Name of the bucket to be updated
 C<$file> Name of file containing mail message to parse
 
 =cut
+
 method remove_message_from_bucket ($session, $bucket, $file) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3535,6 +3628,7 @@ Returns the names of the buckets for which magnets are defined
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method get_buckets_with_magnets ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3558,6 +3652,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> The bucket to search for magnets
 
 =cut
+
 method get_magnet_types_in_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3569,12 +3664,13 @@ method get_magnet_types_in_bucket ($session, $bucket) {
     }
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $h = $self->validate_sql_prepare_and_execute(        'select magnet_types.mtype from magnet_types, magnets, buckets
-                where magnet_types.id  = magnets.mtid and
-                      magnets.bucketid = buckets.id and
-                      buckets.id       = ?
-                group by magnet_types.mtype
-                order by magnet_types.mtype;',
+    my $h = $self->validate_sql_prepare_and_execute(
+        'SELECT magnet_types.mtype FROM magnet_types, magnets, buckets
+         WHERE magnet_types.id = magnets.mtid AND
+               magnets.bucketid = buckets.id AND
+               buckets.id = ?
+         GROUP BY magnet_types.mtype
+         ORDER BY magnet_types.mtype',
         $bucketid );
     while ( my $row = $h->fetchrow_arrayref ) {
         push @result, ($row->[0]);
@@ -3592,6 +3688,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> The bucket to clear
 
 =cut
+
 method clear_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3603,7 +3700,7 @@ method clear_bucket ($session, $bucket) {
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
 
     $self->validate_sql_prepare_and_execute(
-        'delete from matrix where matrix.bucketid = ?;',
+        'DELETE FROM matrix WHERE matrix.bucketid = ?',
         $bucketid );
     $self->db_update_cache( $session, $bucket );
 
@@ -3617,6 +3714,7 @@ Removes every magnet currently defined
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method clear_magnets ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3624,12 +3722,12 @@ method clear_magnets ($session) {
     for my $bucket (keys %{$db_bucketid->{$userid}}) {
         my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
         $self->validate_sql_prepare_and_execute(
-            'delete from magnets where magnets.bucketid = ?;',
+            'DELETE FROM magnets WHERE magnets.bucketid = ?',
             $bucketid );
         $self->validate_sql_prepare_and_execute(
-            'update history set magnetid = 0
-                    where bucketid = ? and
-                          userid   = ?;',
+            'UPDATE history SET magnetid = 0
+             WHERE bucketid = ?
+                AND userid = ?',
             $bucketid, $userid );
     }
 
@@ -3645,6 +3743,7 @@ C<$bucket> The bucket to search for magnets
 C<$type> The magnet type (e.g. from, to or subject)
 
 =cut
+
 method get_magnets ($session, $bucket, $type) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3658,12 +3757,13 @@ method get_magnets ($session, $bucket, $type) {
     return 0 if ( !defined( $type ) );
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $h = $self->validate_sql_prepare_and_execute(        'select magnets.val from magnets, magnet_types
-                where magnets.bucketid   = ? and
-                      magnets.id        != 0 and
-                      magnet_types.id    = magnets.mtid and
-                      magnet_types.mtype = ?
-                order by magnets.val;',
+    my $h = $self->validate_sql_prepare_and_execute(
+        'SELECT magnets.val FROM magnets, magnet_types
+         WHERE magnets.bucketid = ?
+            AND magnets.id != 0
+            AND magnet_types.id = magnets.mtid
+            AND magnet_types.mtype = ?
+         ORDER BY magnets.val',
         $bucketid, $type );
     while ( my $row = $h->fetchrow_arrayref ) {
         push @result, ($row->[0]);
@@ -3683,6 +3783,7 @@ C<$type> The magnet type (e.g. from, to or subject)
 C<$text> The text of the magnet
 
 =cut
+
 method create_magnet ($session, $bucket, $type, $text) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3692,14 +3793,16 @@ method create_magnet ($session, $bucket, $type, $text) {
     }
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $result = $self->validate_sql_prepare_and_execute(        'select magnet_types.id from magnet_types
-                where magnet_types.mtype = ?;',
+    my $result = $self->validate_sql_prepare_and_execute(
+        'SELECT magnet_types.id FROM magnet_types
+         WHERE magnet_types.mtype = ?',
         $type )->fetchrow_arrayref;
     my $mtid = $result->[0];
     return 0 if ( !defined( $mtid ) );
 
-    $self->validate_sql_prepare_and_execute(        'insert into magnets ( bucketid, mtid, val )
-                      values (        ?,    ?,   ? );',
+    $self->validate_sql_prepare_and_execute('
+        INSERT INTO magnets ( bucketid, mtid, val )
+        VALUES ( ?, ?, ? )',
         $bucketid, $mtid, $text );
     return 1;
 }
@@ -3711,14 +3814,16 @@ Get a hash mapping magnet types (e.g. from) to magnet names (e.g. From);
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method get_magnet_types ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
     my %result;
 
-    my $h = $self->validate_sql_prepare_and_execute(        'select magnet_types.mtype, magnet_types.header
-                from magnet_types order by mtype;' );
+    my $h = $self->validate_sql_prepare_and_execute(
+        'SELECT magnet_types.mtype, magnet_types.header
+         FROM magnet_types ORDER BY mtype' );
     while ( my $row = $h->fetchrow_arrayref ) {
         $result{$row->[0]} = $row->[1];
     }
@@ -3737,21 +3842,23 @@ C<$type> The magnet type (e.g. from, to or subject)
 C<$text> The text of the magnet
 
 =cut
+
 method delete_magnet ($session, $bucket, $type, $text) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
-
+    # todo: avoid autovivification
     if ( !defined( $db_bucketid->{$userid}{$bucket} ) ) {
         return 0;
     }
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
 
-    my $result = $self->validate_sql_prepare_and_execute(        'select magnets.id from magnets, magnet_types
-                where magnets.mtid       = magnet_types.id and
-                      magnets.bucketid   = ? and
-                      magnets.val        = ? and
-                      magnet_types.mtype = ?;',
+    my $result = $self->validate_sql_prepare_and_execute(
+        'SELECT magnets.id FROM magnets, magnet_types
+         WHERE magnets.mtid = magnet_types.id
+            AND magnets.bucketid = ?
+            AND magnets.val = ?
+            AND magnet_types.mtype = ?',
         $bucketid, $text, $type )->fetchrow_arrayref;
     return 0 if ( !defined( $result ) );
 
@@ -3759,13 +3866,13 @@ method delete_magnet ($session, $bucket, $type, $text) {
 
     return 0 if ( !defined( $magnetid ) );
 
-    $self->validate_sql_prepare_and_execute(        'delete from magnets where id = ?;',
+    $self->validate_sql_prepare_and_execute(
+        'DELETE FROM magnets WHERE id = ?',
         $magnetid );
-    # Change status of the magnetized message by this magnet
-
-    $self->validate_sql_prepare_and_execute(        'update history set magnetid = 0
-                where magnetid = ? and
-                      userid   = ?;',
+    $self->validate_sql_prepare_and_execute(
+        'UPDATE history SET magnetid = 0
+         WHERE magnetid = ?
+            AND userid = ?',
         $magnetid, $userid );
     $history->force_requery();
 
@@ -3779,6 +3886,7 @@ Gets the complete list of stop words
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method get_stopword_list ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3793,14 +3901,16 @@ Gets the number of magnets that are defined
 C<$session> A valid session key returned by a call to get_session_key
 
 =cut
+
 method magnet_count ($session) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
 
-    my $result = $self->validate_sql_prepare_and_execute(        'select count(*) from magnets, buckets
-                where buckets.userid   = ? and
-                      magnets.id      != 0 and
-                      magnets.bucketid = buckets.id;',
+    my $result = $self->validate_sql_prepare_and_execute(
+        'SELECT count(*) FROM magnets, buckets
+         WHERE buckets.userid = ?
+            AND magnets.id != 0
+            AND magnets.bucketid = buckets.id',
         $userid )->fetchrow_arrayref;
     if ( defined( $result ) ) {
         return $result->[0];
@@ -3820,6 +3930,7 @@ C<$session> A valid session key returned by a call to get_session_key
 C<$stopword> The word to add or remove
 
 =cut
+
 method add_stopword ($session, $stopword) {
     my $userid = $self->valid_session_key( $session );
     return undef if ( !defined( $userid ) );
@@ -3840,7 +3951,6 @@ method remove_stopword ($session, $stopword) {
         $stopword, $self->module_config('html', 'language' ) );
 }
 
-
 =head2 db_quote
 
 Quote a string for use in a sql statement. Before calling DBI::quote on the
@@ -3852,6 +3962,7 @@ returns the quoted string without any possible null-bytes
 C<$string> The string that should be quoted.
 
 =cut
+
 method db_quote ($string) {
     my $backup = $string;
     if ( $string =~ s/\x00//g ) {
@@ -3878,6 +3989,7 @@ C<$statement> The sql statement to prepare or the prepared statement handle
 @args       The (optional) list of binding parameters
 
 =cut
+
 method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
     my $dbh = $db;
     my $sth = undef;
@@ -3888,6 +4000,7 @@ method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
     }
     else {
         my $sql = $sql_or_sth;
+        $sql = $self->normalize_sql( $sql );
         $sql = $self->check_for_nullbytes( $sql );
         $sth = $dbh->prepare( $sql );
     }
@@ -3922,6 +4035,7 @@ message in case a null-byte is found.
 Will return the string with any null-bytes removed.
 
 =cut
+
 method check_for_nullbytes ($string) {
     if ( defined $string ) {
         my $backup = $string;
@@ -3935,13 +4049,6 @@ method check_for_nullbytes ($string) {
     return $string;
 }
 
-#----------------------------------------------------------------------------
-#----------------------------------------------------------------------------
-# _____   _____   _____  _______ _____        _______   _______  _____  _____
-#|_____] |     | |_____] |______   |   |      |______   |_____| |_____]   |
-#|       |_____| |       |       __|__ |_____ |______   |     | |       __|__
-#
-
 method set_history ($h) {
     $history = $h;
 }
@@ -3953,4 +4060,3 @@ method parser {
 } # end class Classifier::Bayes
 
 1;
-

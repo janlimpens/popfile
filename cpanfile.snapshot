@@ -30,6 +30,17 @@ DISTRIBUTIONS
       strict 0
       utf8 0
       warnings 0
+  Canary-Stability-2013
+    pathname: M/ML/MLEHMANN/Canary-Stability-2013.tar.gz
+    provides:
+      Canary::Stability 2013
+    requirements:
+      ExtUtils::MakeMaker 0
+  Class-Factory-Util-1.7
+    pathname: D/DR/DROLSKY/Class-Factory-Util-1.7.tar.gz
+    provides:
+      Class::Factory::Util 1.7
+    requirements:
   Class-Inspector-1.36
     pathname: P/PL/PLICEASE/Class-Inspector-1.36.tar.gz
     provides:
@@ -62,6 +73,122 @@ DISTRIBUTIONS
       overload 0
       strict 0
       warnings 0
+  CryptX-0.087
+    pathname: M/MI/MIK/CryptX-0.087.tar.gz
+    provides:
+      Crypt::AuthEnc 0.087
+      Crypt::AuthEnc::CCM 0.087
+      Crypt::AuthEnc::ChaCha20Poly1305 0.087
+      Crypt::AuthEnc::EAX 0.087
+      Crypt::AuthEnc::GCM 0.087
+      Crypt::AuthEnc::OCB 0.087
+      Crypt::Checksum 0.087
+      Crypt::Checksum::Adler32 0.087
+      Crypt::Checksum::CRC32 0.087
+      Crypt::Cipher 0.087
+      Crypt::Cipher::AES 0.087
+      Crypt::Cipher::Anubis 0.087
+      Crypt::Cipher::Blowfish 0.087
+      Crypt::Cipher::CAST5 0.087
+      Crypt::Cipher::Camellia 0.087
+      Crypt::Cipher::DES 0.087
+      Crypt::Cipher::DES_EDE 0.087
+      Crypt::Cipher::IDEA 0.087
+      Crypt::Cipher::KASUMI 0.087
+      Crypt::Cipher::Khazad 0.087
+      Crypt::Cipher::MULTI2 0.087
+      Crypt::Cipher::Noekeon 0.087
+      Crypt::Cipher::RC2 0.087
+      Crypt::Cipher::RC5 0.087
+      Crypt::Cipher::RC6 0.087
+      Crypt::Cipher::SAFERP 0.087
+      Crypt::Cipher::SAFER_K128 0.087
+      Crypt::Cipher::SAFER_K64 0.087
+      Crypt::Cipher::SAFER_SK128 0.087
+      Crypt::Cipher::SAFER_SK64 0.087
+      Crypt::Cipher::SEED 0.087
+      Crypt::Cipher::Serpent 0.087
+      Crypt::Cipher::Skipjack 0.087
+      Crypt::Cipher::Twofish 0.087
+      Crypt::Cipher::XTEA 0.087
+      Crypt::Digest 0.087
+      Crypt::Digest::BLAKE2b_160 0.087
+      Crypt::Digest::BLAKE2b_256 0.087
+      Crypt::Digest::BLAKE2b_384 0.087
+      Crypt::Digest::BLAKE2b_512 0.087
+      Crypt::Digest::BLAKE2s_128 0.087
+      Crypt::Digest::BLAKE2s_160 0.087
+      Crypt::Digest::BLAKE2s_224 0.087
+      Crypt::Digest::BLAKE2s_256 0.087
+      Crypt::Digest::CHAES 0.087
+      Crypt::Digest::Keccak224 0.087
+      Crypt::Digest::Keccak256 0.087
+      Crypt::Digest::Keccak384 0.087
+      Crypt::Digest::Keccak512 0.087
+      Crypt::Digest::MD2 0.087
+      Crypt::Digest::MD4 0.087
+      Crypt::Digest::MD5 0.087
+      Crypt::Digest::RIPEMD128 0.087
+      Crypt::Digest::RIPEMD160 0.087
+      Crypt::Digest::RIPEMD256 0.087
+      Crypt::Digest::RIPEMD320 0.087
+      Crypt::Digest::SHA1 0.087
+      Crypt::Digest::SHA224 0.087
+      Crypt::Digest::SHA256 0.087
+      Crypt::Digest::SHA384 0.087
+      Crypt::Digest::SHA3_224 0.087
+      Crypt::Digest::SHA3_256 0.087
+      Crypt::Digest::SHA3_384 0.087
+      Crypt::Digest::SHA3_512 0.087
+      Crypt::Digest::SHA512 0.087
+      Crypt::Digest::SHA512_224 0.087
+      Crypt::Digest::SHA512_256 0.087
+      Crypt::Digest::SHAKE 0.087
+      Crypt::Digest::Tiger192 0.087
+      Crypt::Digest::Whirlpool 0.087
+      Crypt::KeyDerivation 0.087
+      Crypt::Mac 0.087
+      Crypt::Mac::BLAKE2b 0.087
+      Crypt::Mac::BLAKE2s 0.087
+      Crypt::Mac::F9 0.087
+      Crypt::Mac::HMAC 0.087
+      Crypt::Mac::OMAC 0.087
+      Crypt::Mac::PMAC 0.087
+      Crypt::Mac::Pelican 0.087
+      Crypt::Mac::Poly1305 0.087
+      Crypt::Mac::XCBC 0.087
+      Crypt::Misc 0.087
+      Crypt::Mode 0.087
+      Crypt::Mode::CBC 0.087
+      Crypt::Mode::CFB 0.087
+      Crypt::Mode::CTR 0.087
+      Crypt::Mode::ECB 0.087
+      Crypt::Mode::OFB 0.087
+      Crypt::PK 0.087
+      Crypt::PK::DH 0.087
+      Crypt::PK::DSA 0.087
+      Crypt::PK::ECC 0.087
+      Crypt::PK::Ed25519 0.087
+      Crypt::PK::RSA 0.087
+      Crypt::PK::X25519 0.087
+      Crypt::PRNG 0.087
+      Crypt::PRNG::ChaCha20 0.087
+      Crypt::PRNG::Fortuna 0.087
+      Crypt::PRNG::RC4 0.087
+      Crypt::PRNG::Sober128 0.087
+      Crypt::PRNG::Yarrow 0.087
+      Crypt::Stream::ChaCha 0.087
+      Crypt::Stream::RC4 0.087
+      Crypt::Stream::Rabbit 0.087
+      Crypt::Stream::Salsa20 0.087
+      Crypt::Stream::Sober128 0.087
+      Crypt::Stream::Sosemanuk 0.087
+      CryptX 0.087
+      Math::BigInt::LTM 0.087
+    requirements:
+      ExtUtils::MakeMaker 0
+      Math::BigInt 0
+      perl 5.006
   DBD-SQLite-1.78
     pathname: I/IS/ISHIGAKI/DBD-SQLite-1.78.tar.gz
     provides:
@@ -183,6 +310,15 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 6.48
       Test::Simple 0.90
       perl 5.008001
+  EV-4.37
+    pathname: M/ML/MLEHMANN/EV-4.37.tar.gz
+    provides:
+      EV 4.37
+      EV::MakeMaker undef
+    requirements:
+      Canary::Stability 0
+      ExtUtils::MakeMaker 6.52
+      common::sense 0
   Encode-Locale-1.05
     pathname: G/GA/GAAS/Encode-Locale-1.05.tar.gz
     provides:
@@ -225,6 +361,49 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Future-0.52
+    pathname: P/PE/PEVANS/Future-0.52.tar.gz
+    provides:
+      Future 0.52
+      Future::Exception 0.52
+      Future::Mutex 0.52
+      Future::PP 0.52
+      Future::Utils 0.52
+      Test::Future 0.52
+      Test::Future::Deferred 0.52
+    requirements:
+      Carp 1.25
+      List::Util 1.29
+      Module::Build 0.4004
+      Test::Builder::Module 0
+      Time::HiRes 0
+      perl 5.014
+  Future-AsyncAwait-0.71
+    pathname: P/PE/PEVANS/Future-AsyncAwait-0.71.tar.gz
+    provides:
+      Future::AsyncAwait 0.71
+      Future::AsyncAwait::Awaitable 0.71
+      Future::AsyncAwait::ExtensionBuilder 0.71
+      Test::Future::AsyncAwait::Awaitable 0.71
+    requirements:
+      ExtUtils::CBuilder 0
+      File::ShareDir 1.00
+      Future 0.50
+      Module::Build 0.4004
+      XS::Parse::Keyword 0.13
+      XS::Parse::Keyword::Builder 0.13
+      XS::Parse::Sublike 0.31
+      XS::Parse::Sublike::Builder 0.31
+      perl 5.016
+  Future-XS-0.15
+    pathname: P/PE/PEVANS/Future-XS-0.15.tar.gz
+    provides:
+      Future::XS 0.15
+    requirements:
+      ExtUtils::CBuilder 0
+      Future 0.48_001
+      Module::Build 0.4004
+      perl 5.024
   HTML-Parser-3.83
     pathname: O/OA/OALDERS/HTML-Parser-3.83.tar.gz
     provides:
@@ -333,6 +512,46 @@ DISTRIBUTIONS
       Exporter 5.57
       ExtUtils::MakeMaker 0
       perl 5.008
+  IO-Socket-SSL-2.098
+    pathname: S/SU/SULLR/IO-Socket-SSL-2.098.tar.gz
+    provides:
+      IO::Socket::SSL 2.098
+      IO::Socket::SSL::Intercept 2.056
+      IO::Socket::SSL::OCSP_Cache 2.098
+      IO::Socket::SSL::OCSP_Resolver 2.098
+      IO::Socket::SSL::PublicSuffix undef
+      IO::Socket::SSL::SSL_Context 2.098
+      IO::Socket::SSL::SSL_HANDLE 2.098
+      IO::Socket::SSL::Session_Cache 2.098
+      IO::Socket::SSL::Trace 2.098
+      IO::Socket::SSL::Utils 2.015
+    requirements:
+      ExtUtils::MakeMaker 0
+      Net::SSLeay 1.46
+      Scalar::Util 0
+  IO-Socket-Socks-0.74
+    pathname: O/OL/OLEG/IO-Socket-Socks-0.74.tar.gz
+    provides:
+      IO::Socket::Socks 0.74
+      IO::Socket::Socks::Debug 0.74
+      IO::Socket::Socks::Error 0.74
+      IO::Socket::Socks::ReadOnlyVar 0.74
+      IO::Socket::Socks::SocketClassVar 0.74
+    requirements:
+      ExtUtils::MakeMaker 6.52
+      IO::Select 0
+      Socket 1.94
+      Test::More 0.88
+      constant 1.03
+  JSON-4.11
+    pathname: I/IS/ISHIGAKI/JSON-4.11.tar.gz
+    provides:
+      JSON 4.11
+      JSON::Backend::PP 4.11
+    requirements:
+      ExtUtils::MakeMaker 0
+      Scalar::Util 1.08
+      Test::More 0.88
   JSON-MaybeXS-1.004008
     pathname: E/ET/ETHER/JSON-MaybeXS-1.004008.tar.gz
     provides:
@@ -344,6 +563,15 @@ DISTRIBUTIONS
       JSON::PP 2.27300
       Scalar::Util 0
       perl 5.006
+  JSON-XS-4.04
+    pathname: M/ML/MLEHMANN/JSON-XS-4.04.tar.gz
+    provides:
+      JSON::XS 4.04
+    requirements:
+      Canary::Stability 0
+      ExtUtils::MakeMaker 6.52
+      Types::Serialiser 0
+      common::sense 0
   LWP-MediaTypes-6.04
     pathname: O/OA/OALDERS/LWP-MediaTypes-6.04.tar.gz
     provides:
@@ -356,6 +584,71 @@ DISTRIBUTIONS
       Scalar::Util 0
       perl 5.006002
       strict 0
+  Lingua-Identify-0.56
+    pathname: A/AM/AMBS/Lingua/Lingua-Identify-0.56.tar.gz
+    provides:
+      Lingua::Identify 0.56
+    requirements:
+      Class::Factory::Util 1.6
+      ExtUtils::MakeMaker 0
+      Text::Affixes 0.07
+      Text::Ngram 0.13
+  Lingua-Stem-Snowball-0.952
+    pathname: C/CR/CREAMYG/Lingua-Stem-Snowball-0.952.tar.gz
+    provides:
+      Lingua::Stem::Snowball 0.952
+    requirements:
+      ExtUtils::CBuilder 0
+      ExtUtils::ParseXS 0
+      Test::More 0
+      perl v5.6.2
+  Lingua-StopWords-0.12
+    pathname: W/WO/WOLLMERS/Lingua-StopWords-0.12.tar.gz
+    provides:
+      Lingua::StopWords 0.12
+      Lingua::StopWords::DA 0.12
+      Lingua::StopWords::DE 0.12
+      Lingua::StopWords::EN 0.12
+      Lingua::StopWords::ES 0.12
+      Lingua::StopWords::FI 0.12
+      Lingua::StopWords::FR 0.12
+      Lingua::StopWords::HU 0.12
+      Lingua::StopWords::ID 0.12
+      Lingua::StopWords::IT 0.12
+      Lingua::StopWords::NL 0.12
+      Lingua::StopWords::NO 0.12
+      Lingua::StopWords::PT 0.12
+      Lingua::StopWords::RO 0.12
+      Lingua::StopWords::RU 0.12
+      Lingua::StopWords::SV 0.12
+    requirements:
+      Encode 0.00
+      Exporter 0.00
+      Module::Build::Tiny 0.039
+      perl 5.00600
+  Log-Any-1.719
+    pathname: P/PR/PREACTION/Log-Any-1.719.tar.gz
+    provides:
+      Log::Any 1.719
+      Log::Any::Adapter 1.719
+      Log::Any::Adapter::Base 1.719
+      Log::Any::Adapter::Capture 1.719
+      Log::Any::Adapter::File 1.719
+      Log::Any::Adapter::Multiplex 1.719
+      Log::Any::Adapter::Null 1.719
+      Log::Any::Adapter::Stderr 1.719
+      Log::Any::Adapter::Stdout 1.719
+      Log::Any::Adapter::Syslog 1.719
+      Log::Any::Adapter::Test 1.719
+      Log::Any::Adapter::Util 1.719
+      Log::Any::Manager 1.719
+      Log::Any::Proxy 1.719
+      Log::Any::Proxy::Null 1.719
+      Log::Any::Proxy::Test 1.719
+      Log::Any::Proxy::WithStackTrace 1.719
+      Log::Any::Test 1.719
+    requirements:
+      ExtUtils::MakeMaker 0
   MIME-Base32-1.303
     pathname: R/RE/REHSACK/MIME-Base32-1.303.tar.gz
     provides:
@@ -530,6 +823,28 @@ DISTRIBUTIONS
       IO::Socket::IP 0.37
       Sub::Util 1.41
       perl 5.016
+  Net-DNS-Native-0.22
+    pathname: O/OL/OLEG/Net-DNS-Native-0.22.tar.gz
+    provides:
+      Net::DNS::Native 0.22
+      Net::DNS::Native::Handle 0.22
+    requirements:
+      ExtUtils::MakeMaker 0
+      Socket 1.94
+      Test::More 0.88
+  Net-SSLeay-1.96
+    pathname: C/CH/CHRISN/Net-SSLeay-1.96.tar.gz
+    provides:
+      Net::SSLeay 1.96
+      Net::SSLeay::Handle 1.96
+    requirements:
+      English 0
+      ExtUtils::MakeMaker 0
+      File::Spec::Functions 0
+      MIME::Base64 0
+      Text::Wrap 0
+      constant 0
+      perl 5.008001
   Object-Pad-0.823
     pathname: P/PE/PEVANS/Object-Pad-0.823.tar.gz
     provides:
@@ -549,6 +864,14 @@ DISTRIBUTIONS
       XS::Parse::Sublike 0.35
       XS::Parse::Sublike::Builder 0.35
       perl 5.018
+  Role-Tiny-2.002004
+    pathname: H/HA/HAARG/Role-Tiny-2.002004.tar.gz
+    provides:
+      Role::Tiny 2.002004
+      Role::Tiny::With 2.002004
+    requirements:
+      Exporter 5.57
+      perl 5.006
   Sort-Key-1.33
     pathname: S/SA/SALVA/Sort-Key-1.33.tar.gz
     provides:
@@ -578,6 +901,20 @@ DISTRIBUTIONS
       perl 5.008
       strict 0
       warnings 0
+  Text-Affixes-0.09
+    pathname: K/KA/KAPPA/Text-Affixes-0.09.tar.gz
+    provides:
+      Text::Affixes 0.09
+    requirements:
+      Module::Build 0.38
+      perl 5.008_001
+  Text-Ngram-0.15
+    pathname: A/AM/AMBS/Text/Text-Ngram-0.15.tar.gz
+    provides:
+      Text::Ngram 0.15
+    requirements:
+      ExtUtils::MakeMaker 0
+      Unicode::CaseFold 1.00
   TimeDate-2.35
     pathname: A/AT/ATOOMIC/TimeDate-2.35.tar.gz
     provides:
@@ -626,6 +963,16 @@ DISTRIBUTIONS
     requirements:
       Carp 0
       ExtUtils::MakeMaker 0
+  Types-Serialiser-1.01
+    pathname: M/ML/MLEHMANN/Types-Serialiser-1.01.tar.gz
+    provides:
+      JSON::PP::Boolean 1.01
+      Types::Serialiser 1.01
+      Types::Serialiser::BooleanBase 1.01
+      Types::Serialiser::Error 1.01
+    requirements:
+      ExtUtils::MakeMaker 0
+      common::sense 0
   UNIVERSAL-can-1.20140328
     pathname: C/CH/CHROMATIC/UNIVERSAL-can-1.20140328.tar.gz
     provides:
@@ -727,6 +1074,19 @@ DISTRIBUTIONS
       strict 0
       utf8 0
       warnings 0
+  Unicode-CaseFold-1.01
+    pathname: A/AR/ARODLAND/Unicode-CaseFold-1.01.tar.gz
+    provides:
+      Unicode::CaseFold 1.01
+    requirements:
+      Exporter 0
+      ExtUtils::CBuilder 0
+      Module::Build 0.28
+      Scalar::Util 1.11
+      Unicode::UCD 0
+      perl 5.008001
+      strict 0
+      warnings 0
   XS-Parse-Keyword-0.49
     pathname: P/PE/PEVANS/XS-Parse-Keyword-0.49.tar.gz
     provides:
@@ -752,3 +1112,9 @@ DISTRIBUTIONS
       File::ShareDir 1.00
       Module::Build 0.4004
       perl 5.016
+  common-sense-3.75
+    pathname: M/ML/MLEHMANN/common-sense-3.75.tar.gz
+    provides:
+      common::sense 3.75
+    requirements:
+      ExtUtils::MakeMaker 0

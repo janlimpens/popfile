@@ -26,13 +26,14 @@ package POPFile::History;
 
 use Object::Pad;
 use locale;
+use POPFile::Role::SQL;
 
 use Date::Parse;
 use Digest::MD5 qw( md5_hex );
 
 my $fields_slot ='history.id, hdr_from, hdr_to, hdr_cc, hdr_subject, hdr_date, hash, inserted,
  buckets.name, usedtobe, history.bucketid, magnets.val, size';
-class POPFile::History :isa(POPFile::Module) {
+class POPFile::History :isa(POPFile::Module) :does(POPFile::Role::SQL) {
     # List of committed history items waiting to be committed
     # into the database, it consists of lists containing three
     # elements: the slot id, the bucket classified to and the
@@ -246,9 +247,9 @@ the caller specify the insertion timestamp (defaults to C<time()>).
 method reserve_slot ($inserted_time = undef) {
     $inserted_time //= time;
 
-    my $insert_sth = $self->db()->prepare(
-        'insert into history ( userid, committed, inserted )
-         values  (      ?,         ?,        ? );' );
+    my $insert_sth = $self->db()->prepare( $self->normalize_sql(
+        'INSERT INTO history ( userid, committed, inserted )
+         VALUES ( ?, ?, ? )' ) );
     my $is_sqlite2 = ( $self->db()->{Driver}->{Name} =~ /SQLite2?/ ) &&
                      ( $self->db()->{sqlite_version} =~ /^2\./ );
     my $slot;
@@ -292,7 +293,7 @@ method release_slot ($slot) {
     # Remove the entry from the database and delete the file
     # if present
 
-    my $delete = 'delete from history where history.id = ?;';
+    my $delete = $self->normalize_sql( 'DELETE FROM history WHERE history.id = ?' );
 
     my $h = $self->db()->prepare( $delete );
     $h->execute( $slot );
@@ -369,10 +370,9 @@ method change_slot_classification ($slot, $class, $session, $undo) {
         $oldbucketid = $fields[10];
     }
 
-    my $h = $self->db()->prepare(
-        'update history set bucketid = ?,
-                            usedtobe = ?
-                where id = ?;' );
+    my $h = $self->db()->prepare( $self->normalize_sql(
+        'UPDATE history SET bucketid = ?, usedtobe = ?
+         WHERE id = ?' ) );
     $h->execute( $bucketid, $oldbucketid, $slot );
     $self->force_requery();
 }
@@ -391,10 +391,9 @@ method revert_slot_classification ($slot) {
     my @fields = $self->get_slot_fields( $slot );
     my $oldbucketid = $fields[9];
 
-    my $h = $self->db()->prepare(
-        'update history set bucketid = ?,
-                            usedtobe = ?
-                where id = ?;' );
+    my $h = $self->db()->prepare( $self->normalize_sql(
+        'UPDATE history SET bucketid = ?, usedtobe = ?
+         WHERE id = ?' ) );
     $h->execute( $oldbucketid, 0, $slot );
     $self->force_requery();
 }
@@ -412,12 +411,12 @@ method revert_slot_classification ($slot) {
 method get_slot_fields ($slot) {
     return undef if ( !defined( $slot ) || $slot !~ /^\d+$/ );
 
-    my $h = $self->db()->prepare(
-        "select $fields_slot from history, buckets, magnets
-             where history.id        = ? and
-                   buckets.id        = history.bucketid and
-                   magnets.id        = magnetid and
-                   history.committed = 1;" );
+    my $h = $self->db()->prepare( $self->normalize_sql(
+        "SELECT $fields_slot FROM history, buckets, magnets
+         WHERE history.id = ?
+           AND buckets.id = history.bucketid
+           AND magnets.id = magnetid
+           AND history.committed = 1" ) );
     $h->execute( $slot );
     my @result = $h->fetchrow_array;
     return @result;
@@ -435,10 +434,10 @@ method get_slot_fields ($slot) {
 method is_valid_slot ($slot) {
     return undef if ( !defined( $slot ) || $slot !~ /^\d+$/ );
 
-    my $h = $self->db()->prepare(
-        'select id from history
-             where history.id        = ? and
-                   history.committed = 1;' );
+    my $h = $self->db()->prepare( $self->normalize_sql(
+        'SELECT id FROM history
+         WHERE history.id = ?
+           AND history.committed = 1' ) );
     $h->execute( $slot );
     my @row = $h->fetchrow_array;
 
@@ -458,22 +457,23 @@ method commit_history {
         return;
     }
 
-    my $update_history = $self->db()->prepare(
-        'update history set hdr_from    = ?,
-                            hdr_to      = ?,
-                            hdr_date    = ?,
-                            hdr_cc      = ?,
-                            hdr_subject = ?,
-                            sort_from   = ?,
-                            sort_to     = ?,
-                            sort_cc     = ?,
-                            committed   = ?,
-                            bucketid    = ?,
-                            usedtobe    = ?,
-                            magnetid    = ?,
-                            hash        = ?,
-                            size        = ?
-                            where id    = ?;' );
+    my $update_history = $self->db()->prepare( $self->normalize_sql(
+        'UPDATE history SET
+             hdr_from = ?,
+             hdr_to = ?,
+             hdr_date = ?,
+             hdr_cc = ?,
+             hdr_subject = ?,
+             sort_from = ?,
+             sort_to = ?,
+             sort_cc = ?,
+             committed = ?,
+             bucketid = ?,
+             usedtobe = ?,
+             magnetid = ?,
+             hash = ?,
+             size = ?
+         WHERE id = ?' ) );
     $self->db()->begin_work;
     foreach my $entry (@{$commit_list}) {
         my ( $session, $slot, $bucket, $magnet ) = @{$entry};
@@ -769,7 +769,8 @@ method get_message_hash ($messageid, $date, $subject, $received) {
 #
 #----------------------------------------------------------------------------
 method get_slot_from_hash ($hash) {
-    my $h = $self->db()->prepare( 'select id from history where hash = ? limit 1;' );
+    my $h = $self->db()->prepare( $self->normalize_sql(
+        'SELECT id FROM history WHERE hash = ? LIMIT 1' ) );
     $h->execute( $hash );
     my $result = $h->fetchrow_arrayref;
 
@@ -1193,8 +1194,8 @@ method cleanup_history {
     my $seconds_per_day = 24 * 60 * 60;
     my $old = time - $self->config('history_days' ) * $seconds_per_day;
     my @ids;
-    my $d = $self->db()->prepare(
-        'select id from history where inserted < ?;' );
+    my $d = $self->db()->prepare( $self->normalize_sql(
+        'SELECT id FROM history WHERE inserted < ?' ) );
     $d->execute( $old );
     my $id;
     $d->bind_columns( \$id );
