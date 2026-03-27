@@ -68,7 +68,7 @@ class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::SQL) {
 
     field $history = 0;
 
-    # Cached prepared SQL statements (set in db_connect__, released in db_disconnect__)
+    # Cached prepared SQL statements (set in db_connect, released in db_disconnect)
     field $db_get_buckets = 0;
     field $db_get_wordid = 0;
     field $db_get_word_count = 0;
@@ -106,11 +106,13 @@ class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::SQL) {
     field $parser = Classifier::MailParse->new();
 
     # The possible colors for buckets
-    field $possible_colors = [ 'red',       'green',      'blue',       'brown',                                 'orange',    'purple',     'magenta',    'gray',
-                                 'plum',      'silver',     'pink',       'lightgreen',
-                                 'lightblue', 'lightcyan',  'lightcoral', 'lightsalmon',
-                                 'lightgrey', 'darkorange', 'darkcyan',   'feldspar',
-                                 'black' ];
+    field $possible_colors = [qw(
+        red green blue brown
+        orange purple magenta gray
+        plum silver pink lightgreen
+        lightblue lightcyan lightcoral lightsalmon
+        lightgrey darkorange darkcyan feldspar
+        black)];
     # Precomputed per-bucket log-probabilities
     field $bucket_start = {};
 
@@ -362,10 +364,10 @@ Called when POPFile is terminating
 
 method stop {
     $self->db_disconnect();
-    $db_bucketid     = {};
-    $db_parameters   = {};
-    $db_parameterid  = {};
-    $db_bucketcount  = {};
+    $db_bucketid = {};
+    $db_parameters = {};
+    $db_parameterid = {};
+    $db_bucketcount = {};
     $db_bucketunique = {};
     $parser = Classifier::MailParse->new();
 }
@@ -381,7 +383,7 @@ There is no return value from this method
 method classified ($session, $class) {
     $self->set_bucket_parameter( $session, $class, 'count',        $self->get_bucket_parameter( $session, $class, 'count' ) + 1 );}
 
-=head2 backup_database__
+=head2 backup_database
 
 Called when the TICKD message is received each hour and if we are using
 the default SQLite database will make a copy with the .backup extension
@@ -556,7 +558,7 @@ method set_value ($session, $bucket, $word, $value) {
 
 =head2 get_sort_value_ behaves the same as get_value_, except that it
 
-returns not_likely__ rather than 0 if the word is not found.  This
+returns not_likely rather than 0 if the word is not found.  This
 makes its result more suitable as a sort key for bucket ranking.
 
 =cut
@@ -574,7 +576,7 @@ method get_sort_value ($session, $bucket, $word) {
     }
 }
 
-=head2 update_constants__
+=head2 update_constants
 
 Updates not_likely and bucket_start
 
@@ -603,7 +605,7 @@ method update_constants ($session) {
     }
 }
 
-=head2 db_connect__
+=head2 db_connect
 
 Connects to the POPFile database and returns 1 if successful
 
@@ -643,11 +645,11 @@ method db_connect {
 
     # Record whether we are using SQLite or not and the name of the
     # database so that other routines can access it; this is used by
-    # the backup_database__ routine to make a backup copy of the
+    # the backup_database routine to make a backup copy of the
     # database when using SQLite.
 
     $db_is_sqlite = $sqlite;
-    $db_name      = $dbname;
+    $db_name = $dbname;
 
     # Now perform the connect, note that this is database independent
     # at this point, the actual database that we connect to is defined
@@ -716,9 +718,10 @@ method db_connect {
     }
 
 
-    $db = DBI->connect( $dbconnect,                                  $self->config('dbuser' ),
-                                  $self->config('dbauth' ),
-                                  \%connection_options );
+    $db = DBI->connect( $dbconnect,
+        $self->config('dbuser' ),
+        $self->config('dbauth' ),
+        \%connection_options );
     if ( !defined( $db ) ) {
         $self->log_msg(0, "Failed to connect to database and got error $DBI::errstr" );
         return 0;
@@ -823,13 +826,13 @@ method db_connect {
     $db_get_word_count = $db->prepare( $self->normalize_sql(
         'SELECT matrix.times FROM matrix
          WHERE matrix.bucketid = ? AND
-               matrix.wordid = ? LIMIT 1' ) );
+            matrix.wordid = ? LIMIT 1' ) );
     $db_put_word_count = $db->prepare( $self->normalize_sql(
         'REPLACE INTO matrix ( bucketid, wordid, times ) VALUES ( ?, ?, ? )' ) );
     $db_get_bucket_word_counts = $db->prepare( $self->normalize_sql(
         'SELECT sum(matrix.times), count(matrix.id), buckets.name FROM matrix, buckets
          WHERE matrix.bucketid = buckets.id
-           AND buckets.userid = ?
+            AND buckets.userid = ?
          GROUP BY buckets.name' ) );
     $db_get_bucket_word_count = $db->prepare( $self->normalize_sql(
         'SELECT sum(times), count(*) FROM matrix
@@ -847,7 +850,7 @@ method db_connect {
     $db_get_bucket_parameter = $db->prepare( $self->normalize_sql(
         'SELECT bucket_params.val FROM bucket_params
          WHERE bucket_params.bucketid = ? AND
-               bucket_params.btid = ?' ) );
+            bucket_params.btid = ?' ) );
     $db_set_bucket_parameter = $db->prepare( $self->normalize_sql(
         'REPLACE INTO bucket_params ( bucketid, btid, val ) VALUES ( ?, ?, ? )' ) );
     $db_get_bucket_parameter_default = $db->prepare( $self->normalize_sql(
@@ -855,15 +858,15 @@ method db_connect {
          WHERE bucket_template.id = ?' ) );
     $db_get_buckets_with_magnets = $db->prepare( $self->normalize_sql(
         'SELECT buckets.name FROM buckets, magnets
-         WHERE buckets.userid = ? AND
-               magnets.id != 0 AND
-               magnets.bucketid = buckets.id
+         WHERE buckets.userid = ?
+            AND magnets.id != 0
+            AND magnets.bucketid = buckets.id
          GROUP BY buckets.name
          ORDER BY buckets.name' ) );
     $db_delete_zero_words = $db->prepare( $self->normalize_sql(
         'DELETE FROM matrix
          WHERE matrix.times = 0
-           AND matrix.bucketid = ?' ) );
+            AND matrix.bucketid = ?' ) );
     # Get the mapping from parameter names to ids into a local hash
 
     my $h = $self->validate_sql_prepare_and_execute(
@@ -876,7 +879,7 @@ method db_connect {
     return 1;
 }
 
-=head2 insert_schema__
+=head2 insert_schema
 
 Insert the POPFile schema in a database
 
@@ -918,7 +921,7 @@ method insert_schema ($sqlite) {
     }
 }
 
-=head2 db_upgrade__
+=head2 db_upgrade
 
 Upgrade the POPFile schema / Convert the database
 
@@ -1052,7 +1055,7 @@ method db_upgrade ($db_from) {
     unlink $ins_file;
 }
 
-=head2 db_disconnect__
+=head2 db_disconnect
 
 Disconnect from the POPFile database
 
@@ -1098,7 +1101,7 @@ method db_disconnect {
     }
 }
 
-=head2 db_update_cache__
+=head2 db_update_cache
 
 Updates our local cache of user and bucket ids.
 
@@ -1167,7 +1170,7 @@ method db_update_cache ($session, $updated_bucket = undef, $deleted_bucket = und
     $self->update_constants( $session );
 }
 
-=head2 db_get_word_count__
+=head2 db_get_word_count
 
 Return the 'count' value for a word in a bucket.  If the word is not
 found in that bucket then returns undef.
@@ -1180,7 +1183,8 @@ C<$word> word to lookup
 
 method db_get_word_count ($session, $bucket, $word) {
     my $userid = $self->valid_session_key( $session );
-    return undef if ( !defined( $userid ) );
+    return undef
+        unless defined($userid);
 
     $self->validate_sql_prepare_and_execute( $db_get_wordid, $word );
     my $result = $db_get_wordid->fetchrow_arrayref;
@@ -1201,7 +1205,7 @@ method db_get_word_count ($session, $bucket, $word) {
     }
 }
 
-=head2 db_put_word_count__
+=head2 db_put_word_count
 
 Update 'count' value for a word in a bucket, if the update fails
 then returns 0 otherwise is returns 1
@@ -1238,7 +1242,7 @@ method db_put_word_count ($session, $bucket, $word, $count) {
     return 1;
 }
 
-=head2 upgrade_predatabase_data__
+=head2 upgrade_predatabase_data
 
 Looks for old POPFile data (in flat files or BerkeleyDB tables) and
 upgrades it to the SQL database.  Data upgraded is removed.
@@ -1304,7 +1308,7 @@ method upgrade_predatabase_data {
     return 1;
 }
 
-=head2 upgrade_bucket__
+=head2 upgrade_bucket
 
 Loads an individual bucket
 
@@ -1480,7 +1484,7 @@ method upgrade_bucket ($session, $bucket) {
     return 1;
 }
 
-=head2 magnet_match_helper__
+=head2 magnet_match_helper
 
 Helper the determines if a specific string matches a certain magnet
 type in a bucket, used by magnet_match_
@@ -1567,7 +1571,7 @@ method single_magnet_match ($magnet, $match, $type) {
     return $matched;
 }
 
-=head2 magnet_match__
+=head2 magnet_match
 
 Helper the determines if a specific string matches a certain magnet
 type in a bucket
@@ -1583,7 +1587,7 @@ method magnet_match ($session, $match, $bucket, $type) {
     return $self->magnet_match_helper( $session, $match, $bucket, $type );
 }
 
-=head2 write_line__
+=head2 write_line
 
 Writes a line to a file and parses it unless the classification is
 already known
@@ -1609,7 +1613,7 @@ method write_line ($file, $line, $class) {
     }
 }
 
-=head2 add_words_to_bucket__
+=head2 add_words_to_bucket
 
 Takes words previously parsed by the mail parser and adds/subtracts
 them to/from a bucket, this is a helper used by
@@ -1669,7 +1673,7 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
         # If there's already a count then it means that the word is
         # already in the database and we have its id in
         # $wordmap{$word} so for speed we execute the
-        # db_put_word_count__ query here rather than going through
+        # db_put_word_count query here rather than going through
         # set_value_ which would need to look up the wordid again
 
         if ( defined( $wordmap{$word} ) && defined( $counts{$wordmap{$word}} ) ) {
@@ -1796,10 +1800,10 @@ sub substr_euc
     return $result_str;
 }
 
-=head2 generate_unique_session_key__
+=head2 generate_unique_session_key
 
 Returns a unique string based session key that can be used as a key
-in the api_sessions__
+in the api_sessions
 
 =cut
 
@@ -1828,7 +1832,7 @@ method generate_unique_session_key {
     return $session;
 }
 
-=head2 release_session_key_private__
+=head2 release_session_key_private
 
 
 Releases and invalidates the session key. Worker function that does
@@ -1850,7 +1854,7 @@ method release_session_key_private ($session) {
     }
 }
 
-=head2 valid_session_key__
+=head2 valid_session_key
 
 
 Returns undef is the session key is not valid, or returns the user
@@ -1885,12 +1889,7 @@ method valid_session_key ($session) {
     return $api_sessions->{$session};
 }
 
-#----------------------------------------------------------------------------
-#----------------------------------------------------------------------------
-# _____   _____   _____  _______ _____        _______   _______  _____  _____
-#|_____] |     | |_____] |______   |   |      |______   |_____| |_____]   |
-#|       |_____| |       |       __|__ |_____ |______   |     | |       __|__
-#
+
 # The method below are public and may be accessed by other modules.
 # All of them may be accessed remotely through the XMLRPC.pm module
 # using the XML-RPC protocol
@@ -1959,7 +1958,7 @@ method release_session_key ($session) {
 }
 
 
-=head2 get_top_bucket__
+=head2 get_top_bucket
 
 Helper function used by classify to get the bucket with the highest
 score from data stored in a matrix of information (see definition of
@@ -2042,7 +2041,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     # If all of the user's buckets have no words then we escape here
     # return unclassified
     # $not_likely->{$userid} is 0 if word count is 0.
-    # See: update_constants__()
+    # See: update_constants)
 
     return "unclassified" if ( $not_likely->{$userid} == 0 );
 
@@ -3142,9 +3141,10 @@ method get_bucket_word_prefixes ($session, $bucket) {
     my $prev = '';
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $result = $db->selectcol_arrayref(        "select words.word from matrix, words
-         where matrix.wordid  = words.id and
-               matrix.bucketid = $bucketid;");
+    my $result = $db->selectcol_arrayref("
+        SELECT words.word FROM matrix, words
+        WHERE matrix.wordid = words.id
+            AND matrix.bucketid = ?", undef, $bucketid);
     if ( ($self->module_config('html', 'language' )//'') eq 'Nihongo' ) {
         return
             grep {$_ ne $prev && ($prev = $_, 1)}
