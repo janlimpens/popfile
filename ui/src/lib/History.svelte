@@ -35,6 +35,8 @@
   $effect(() => { page; search; load(); });
 </script>
 
+<div class="page">
+
 <h2>History</h2>
 
 <div class="toolbar">
@@ -87,7 +89,10 @@
   </div>
 {/if}
 
+</div>
+
 <style>
+  .page { padding: 1.75rem 2rem; max-width: 960px; }
   .toolbar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
   input[type=search] { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; width: 280px; background: var(--bg); color: var(--text); }
   table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
