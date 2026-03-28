@@ -632,6 +632,7 @@ method db_connect {
     if ( $sqlite ) {
         $dbname = $self->get_user_path($self->config('database' ) );
         $dbpresent = ( -e $dbname ) || 0;
+        $connection_options{sqlite_unicode} = 1;
     } else {
         $dbname = $self->config('database' );
         $dbpresent = 1;
