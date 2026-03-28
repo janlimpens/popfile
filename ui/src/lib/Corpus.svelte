@@ -72,6 +72,8 @@
   onMount(refresh);
 </script>
 
+<div class="page">
+
 <h2>Corpus</h2>
 
 {#if status}
@@ -147,7 +149,10 @@
   {/if}
 </section>
 
+</div>
+
 <style>
+  .page { padding: 1.75rem 2rem; max-width: 760px; }
   section { margin: 1.5rem 0; }
   h3 { margin-bottom: 0.5rem; font-size: 1rem; color: var(--text-h); }
   table { border-collapse: collapse; width: 100%; }

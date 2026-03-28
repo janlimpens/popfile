@@ -44,6 +44,8 @@
   onMount(load);
 </script>
 
+<div class="page">
+
 <h2>Magnets</h2>
 
 {#if status}<p class="status">{status}</p>{/if}
@@ -88,7 +90,10 @@
   {/each}
 </section>
 
+</div>
+
 <style>
+  .page { padding: 1.75rem 2rem; max-width: 760px; }
   .row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
   input[type=text], select { padding: 0.35rem 0.6rem; border: 1px solid #ccc; border-radius: 4px; }
   button { padding: 0.35rem 0.8rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
