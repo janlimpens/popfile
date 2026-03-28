@@ -76,21 +76,6 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
             return 2;
         }
 
-        $self->register_configuration_item('configuration',
-                                             'pop3_configuration',
-                                             'pop3-configuration-panel.thtml',
-                                             $self );
-
-        $self->register_configuration_item('security',
-                                             'pop3_security',
-                                             'pop3-security-panel.thtml',
-                                             $self );
-
-        $self->register_configuration_item('chain',
-                                             'pop3_chain',
-                                             'pop3-chain-panel.thtml',
-                                             $self );
-
         if ( $self->config('welcome_string' ) =~
              /^POP3 POPFile \(v\d+\.\d+\.\d+\) server ready$/ ) {
             $self->config('welcome_string',
@@ -390,95 +375,6 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
         close $client;
         $self->mq_post('CMPLT', $$ );
         $self->log_msg(0, "POP3 proxy done" );
-    }
-
-    # ----------------------------------------------------------------------------
-    #
-    # configure_item
-    #
-    # ----------------------------------------------------------------------------
-    method configure_item ($name, $templ, $language = undef) {
-        if ( $name eq 'pop3_configuration' ) {
-            $templ->param( 'POP3_Configuration_If_Force_Fork' => ( $self->config('force_fork' ) == 0 ) );
-            $templ->param( 'POP3_Configuration_Port'          => $self->config('port' ) );
-            $templ->param( 'POP3_Configuration_Separator'     => $self->config('separator' ) );
-        } elsif ( $name eq 'pop3_security' ) {
-            $templ->param( 'POP3_Security_Local' => ( $self->config('local' ) == 1 ) );
-        } elsif ( $name eq 'pop3_chain' ) {
-            $templ->param( 'POP3_Chain_Secure_Server' => $self->config('secure_server' ) );
-            $templ->param( 'POP3_Chain_Secure_Port'   => $self->config('secure_port' ) );
-        } else {
-            $self->SUPER::configure_item( $name, $templ );
-        }
-    }
-
-    # ----------------------------------------------------------------------------
-    #
-    # validate_item
-    #
-    # ----------------------------------------------------------------------------
-    method validate_item ($name, $templ, $language, $form) {
-        if ( $name eq 'pop3_configuration' ) {
-            if ( defined( $$form{pop3_port} ) ) {
-                if ( ( $$form{pop3_port} >= 1 ) &&
-                     ( $$form{pop3_port} < 65536 ) &&
-                     ( $self->module_config('html', 'port' ) ne $$form{pop3_port} ) ) {
-                    $self->config('port', $$form{pop3_port} );
-                    $templ->param( 'POP3_Configuration_If_Port_Updated' => 1 );
-                    $templ->param( 'POP3_Configuration_Port_Updated' =>
-                        sprintf( $$language{Configuration_POP3Update}, $self->config('port' ) ) );
-                } else {
-                    if ( $self->module_config('html', 'port' ) ne $$form{pop3_port} ) {
-                        $templ->param( 'POP3_Configuration_If_Port_Error' => 1 );
-                    } else {
-                        $templ->param( 'POP3_Configuration_If_UI_Port_Error' => 1 );
-                    }
-                }
-            }
-
-            if ( defined( $$form{pop3_separator} ) ) {
-                if ( length( $$form{pop3_separator} ) == 1 ) {
-                    $self->config('separator', $$form{pop3_separator} );
-                    $templ->param( 'POP3_Configuration_If_Sep_Updated' => 1 );
-                    $templ->param( 'POP3_Configuration_Sep_Updated' =>
-                        sprintf( $$language{Configuration_POP3SepUpdate}, $self->config('separator' ) ) );
-                } else {
-                    $templ->param( 'POP3_Configuration_If_Sep_Error' => 1 );
-                }
-            }
-
-            if ( defined( $$form{pop3_force_fork} ) ) {
-                $self->config('force_fork', $$form{pop3_force_fork} );
-            }
-            return;
-        }
-
-        if ( $name eq 'pop3_security' ) {
-            $self->config('local', $$form{pop3_local} - 1 ) if ( defined( $$form{pop3_local} ) );
-            return;
-        }
-
-        if ( $name eq 'pop3_chain' ) {
-            if ( defined( $$form{server} ) ) {
-                $self->config('secure_server', $$form{server} );
-                $templ->param( 'POP3_Chain_If_Server_Updated' => 1 );
-                $templ->param( 'POP3_Chain_Server_Updated' =>
-                    sprintf( $$language{Security_SecureServerUpdate}, $self->config('secure_server' ) ) );
-            }
-            if ( defined( $$form{sport} ) ) {
-                if ( ( $$form{sport} >= 1 ) && ( $$form{sport} < 65536 ) ) {
-                    $self->config('secure_port', $$form{sport} );
-                    $templ->param( 'POP3_Chain_If_Port_Updated' => 1 );
-                    $templ->param( 'POP3_Chain_Port_Updated' =>
-                        sprintf( $$language{Security_SecurePortUpdate}, $self->config('secure_port' ) ) );
-                } else {
-                    $templ->param( 'POP3_Chain_If_Port_Error' => 1 );
-                }
-            }
-            return;
-        }
-
-        $self->SUPER::validate_item( $name, $templ, $language, $form );
     }
 
 } # end class Proxy::POP3

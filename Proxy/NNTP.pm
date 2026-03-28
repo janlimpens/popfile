@@ -65,15 +65,6 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
             return 2;
         }
 
-        $self->register_configuration_item('configuration', 'nntp_port',
-                                             'nntp-port.thtml', $self );
-        $self->register_configuration_item('configuration', 'nntp_force_fork',
-                                             'nntp-force-fork.thtml', $self );
-        $self->register_configuration_item('configuration', 'nntp_separator',
-                                             'nntp-separator.thtml', $self );
-        $self->register_configuration_item('security', 'nntp_local',
-                                             'nntp-security-local.thtml', $self );
-
         if ( $self->config('welcome_string' ) =~
              /^NNTP POPFile \(v\d+\.\d+\.\d+\) server ready$/ ) {
             $self->config('welcome_string',
@@ -393,67 +384,6 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
         } else {
             return ( undef, $response );
         }
-    }
-
-    # ----------------------------------------------------------------------------
-    method configure_item ($name, $templ, $language = undef) {
-        if ( $name eq 'nntp_port' ) {
-            $templ->param( 'nntp_port' => $self->config('port' ) );
-        } elsif ( $name eq 'nntp_separator' ) {
-            $templ->param( 'nntp_separator' => $self->config('separator' ) );
-        } elsif ( $name eq 'nntp_local' ) {
-            $templ->param( 'nntp_if_local' => $self->config('local' ) );
-        } elsif ( $name eq 'nntp_force_fork' ) {
-            $templ->param( 'nntp_force_fork_on' => $self->config('force_fork' ) );
-        } else {
-            $self->SUPER::configure_item( $name, $templ );
-        }
-    }
-
-    # ----------------------------------------------------------------------------
-    method validate_item ($name, $templ, $language, $form) {
-        if ( $name eq 'nntp_port' ) {
-            if ( defined $$form{nntp_port} ) {
-                if ( ( $$form{nntp_port} =~ /^\d+$/ ) &&
-                     ( $$form{nntp_port} >= 1 ) &&
-                     ( $$form{nntp_port} <= 65535 ) ) {
-                    $self->config('port', $$form{nntp_port} );
-                    $templ->param( 'nntp_port_feedback' =>
-                        sprintf( $$language{Configuration_NNTPUpdate}, $self->config('port' ) ) );
-                } else {
-                    $templ->param( 'nntp_port_feedback' =>
-                        "<div class=\"error01\">$$language{Configuration_Error3}</div>" );
-                }
-            }
-            return;
-        }
-
-        if ( $name eq 'nntp_separator' ) {
-            if ( defined $$form{nntp_separator} ) {
-                if ( length( $$form{nntp_separator} ) == 1 ) {
-                    $self->config('separator', $$form{nntp_separator} );
-                    $templ->param( 'nntp_separator_feedback' =>
-                        sprintf( $$language{Configuration_NNTPSepUpdate}, $self->config('separator' ) ) );
-                } else {
-                    $templ->param( 'nntp_separator_feedback' =>
-                        "<div class=\"error01\">\n$$language{Configuration_Error1}</div>\n" );
-                }
-            }
-            return;
-        }
-
-        if ( $name eq 'nntp_local' ) {
-            $self->config('local', $$form{nntp_local} ) if defined $$form{nntp_local};
-            return;
-        }
-
-        if ( $name eq 'nntp_force_fork' ) {
-            $self->config('force_fork', $$form{nntp_force_fork} )
-                if defined $$form{nntp_force_fork};
-            return;
-        }
-
-        $self->SUPER::validate_item( $name, $templ, $language, $form );
     }
 
 } # end class Proxy::NNTP

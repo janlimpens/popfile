@@ -122,11 +122,6 @@ Methods to query and manage the stopword list.
     method add_stopword ($w)    { $classifier->add_stopword( $session, $w ) }
     method remove_stopword ($w) { $classifier->remove_stopword( $session, $w ) }
 
-    # --- HTML coloring ---
-
-    method get_html_colored_message ($file)             { $classifier->get_html_colored_message( $session, $file ) }
-    method fast_get_html_colored_message ($f, $m, $i)   { $classifier->fast_get_html_colored_message( $session, $f, $m, $i ) }
-
 =head2 Setters
 
 Called by C<POPFile::Loader::CORE_link_components> to inject dependencies.

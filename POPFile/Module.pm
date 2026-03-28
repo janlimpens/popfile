@@ -109,10 +109,6 @@ Register this object to receive messages of C<$type> from the MQ.
         return $mq->register( $type, $object );
     }
 
-    method register_configuration_item ($type, $item_name, $templ, $object) {
-        return $self->mq_post( 'UIREG', $type, $item_name, $templ, $object );
-    }
-
 =head2 get_user_path
 
 Return the full path to a user-space file or directory.

@@ -61,15 +61,6 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
             return 2;
         }
 
-        $self->register_configuration_item('configuration', 'smtp_fork_and_port',
-                                             'smtp-configuration.thtml', $self );
-        $self->register_configuration_item('security', 'smtp_local',
-                                             'smtp-security-local.thtml', $self );
-        $self->register_configuration_item('chain', 'smtp_server',
-                                             'smtp-chain-server.thtml', $self );
-        $self->register_configuration_item('chain', 'smtp_server_port',
-                                             'smtp-chain-server-port.thtml', $self );
-
         if ( $self->config('welcome_string' ) =~ /^SMTP POPFile \(v\d+\.\d+\.\d+\) welcome$/ ) {
             $self->config('welcome_string', "SMTP POPFile ($self->version()) welcome" );
         }
@@ -185,73 +176,6 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
             $self->echo_to_regexp($mail, $client, qr/^\d\d\d /, 1, $suppress );
         }
         return ( $response =~ /$self->good_response()/ );
-    }
-
-    # ----------------------------------------------------------------------------
-    method configure_item ($name, $templ, $language = undef) {
-        if ( $name eq 'smtp_fork_and_port' ) {
-            $templ->param( 'smtp_port'           => $self->config('port' ) );
-            $templ->param( 'smtp_force_fork_on'  => $self->config('force_fork' ) );
-        } elsif ( $name eq 'smtp_local' ) {
-            $templ->param( 'smtp_local_on' => $self->config('local' ) );
-        } elsif ( $name eq 'smtp_server' ) {
-            $templ->param( 'smtp_chain_server' => $self->config('chain_server' ) );
-        } elsif ( $name eq 'smtp_server_port' ) {
-            $templ->param( 'smtp_chain_port' => $self->config('chain_port' ) );
-        } else {
-            $self->SUPER::configure_item( $name, $templ );
-        }
-    }
-
-    # ----------------------------------------------------------------------------
-    method validate_item ($name, $templ, $language, $form) {
-        if ( $name eq 'smtp_fork_and_port' ) {
-            if ( defined( $$form{smtp_force_fork} ) ) {
-                $self->config('force_fork', $$form{smtp_force_fork} );
-            }
-            if ( defined( $$form{smtp_port} ) ) {
-                if ( ( $$form{smtp_port} >= 1 ) && ( $$form{smtp_port} < 65536 ) ) {
-                    $self->config('port', $$form{smtp_port} );
-                    $templ->param( 'smtp_port_feedback' =>
-                        sprintf( $$language{Configuration_SMTPUpdate}, $self->config('port' ) ) );
-                } else {
-                    $templ->param( 'smtp_port_feedback' =>
-                        "<div class=\"error01\">$$language{Configuration_Error3}</div>" );
-                }
-            }
-            return;
-        }
-
-        if ( $name eq 'smtp_local' ) {
-            $self->config('local', $$form{smtp_local} ) if defined $$form{smtp_local};
-            return;
-        }
-
-        if ( $name eq 'smtp_server' ) {
-            if ( defined $$form{smtp_chain_server} ) {
-                $self->config('chain_server', $$form{smtp_chain_server} );
-                $templ->param( 'smtp_server_feedback' =>
-                    sprintf( $$language{Security_SMTPServerUpdate}, $self->config('chain_server' ) ) );
-            }
-            return;
-        }
-
-        if ( $name eq 'smtp_server_port' ) {
-            if ( defined $$form{smtp_chain_server_port} ) {
-                if ( ( $$form{smtp_chain_server_port} >= 1 ) &&
-                     ( $$form{smtp_chain_server_port} < 65536 ) ) {
-                    $self->config('chain_port', $$form{smtp_chain_server_port} );
-                    $templ->param( 'smtp_port_feedback' =>
-                        sprintf( $$language{Security_SMTPPortUpdate}, $self->config('chain_port' ) ) );
-                } else {
-                    $templ->param( 'smtp_port_feedback' =>
-                        "<div class=\"error01\">$$language{Security_Error1}</div>" );
-                }
-            }
-            return;
-        }
-
-        $self->SUPER::validate_item( $name, $templ, $language, $form );
     }
 
 } # end class Proxy::SMTP

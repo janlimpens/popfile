@@ -94,11 +94,6 @@ class Proxy::Proxy :isa(POPFile::Module) {
 
         $selector = IO::Select->new( $server );
 
-        $self->register_configuration_item('configuration',
-                                             $name . '_socks_configuration',
-                                             'socks-widget.thtml',
-                                             $self );
-
         return 1;
     }
 
@@ -365,45 +360,6 @@ class Proxy::Proxy :isa(POPFile::Module) {
         $self->log_msg(0, "IO::Socket::INET or IO::Socket::SSL gets an error: $@" );
         $self->tee($client, "$connection_failed_error $hostname:$port$eol" );
         return undef;
-    }
-
-    # ----------------------------------------------------------------------------
-    #
-    # configure_item
-    #
-    # ----------------------------------------------------------------------------
-    method configure_item ($name, $templ) {
-        $templ->param( 'Socks_Widget_Name' => $self->name() );
-        $templ->param( 'Socks_Server'      => $self->config('socks_server' ) );
-        $templ->param( 'Socks_Port'        => $self->config('socks_port' ) );
-    }
-
-    # ----------------------------------------------------------------------------
-    #
-    # validate_item
-    #
-    # ----------------------------------------------------------------------------
-    method validate_item ($name, $templ, $language, $form) {
-        my $me = $self->name();
-
-        if ( defined( $$form{ "$me" . "_socks_port" } ) ) {
-            if ( ( $$form{ "$me" . "_socks_port" } >= 1 ) &&
-                 ( $$form{ "$me" . "_socks_port" } < 65536 ) ) {
-                $self->config('socks_port', $$form{ "$me" . "_socks_port" } );
-                $templ->param( 'Socks_Widget_If_Port_Updated' => 1 );
-                $templ->param( 'Socks_Widget_Port_Updated' =>
-                    sprintf( $$language{Configuration_SOCKSPortUpdate}, $self->config('socks_port' ) ) );
-            } else {
-                $templ->param( 'Socks_Widget_If_Port_Error' => 1 );
-            }
-        }
-
-        if ( defined( $$form{ "$me" . "_socks_server" } ) ) {
-            $self->config('socks_server', $$form{ "$me" . "_socks_server" } );
-            $templ->param( 'Socks_Widget_If_Server_Updated' => 1 );
-            $templ->param( 'Socks_Widget_Server_Updated' =>
-                sprintf( $$language{Configuration_SOCKSServerUpdate}, $self->config('socks_server' ) ) );
-        }
     }
 
     method set_service ($svc = undef) {
