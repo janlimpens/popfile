@@ -144,9 +144,16 @@ class Services::IMAP :isa(POPFile::Module) {
             my $uidnext    = $info->{UIDNEXT};
             my $uidvalidity = $info->{UIDVALIDITY};
             unless ( defined $uidvalidity && defined $uidnext ) {
-                $self->log_msg(0, "Could not STATUS folder $folder." );
-                $imap->logout();
-                die "POPFILE-IMAP-EXCEPTION: Could not get a STATUS for IMAP folder $folder (" . __FILE__ . '(' . __LINE__ . '))';
+                $self->log_msg(1, "Folder $folder does not exist, creating it." );
+                $imap->create_folder($folder);
+                my $info2 = $imap->status($folder);
+                $uidnext    = $info2->{UIDNEXT};
+                $uidvalidity = $info2->{UIDVALIDITY};
+                unless ( defined $uidvalidity && defined $uidnext ) {
+                    $self->log_msg(0, "Could not create or STATUS folder $folder, skipping." );
+                    delete $folders{$folder};
+                    next;
+                }
             }
             $folders{$folder}{imap} = $imap;
             if ( defined $imap->uid_validity($folder) ) {

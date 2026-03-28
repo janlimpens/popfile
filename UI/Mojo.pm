@@ -421,6 +421,8 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             imap_update_interval     => [imap    => 'update_interval'],
             imap_expunge             => [imap    => 'expunge'],
             imap_training_mode       => [imap    => 'training_mode'],
+            imap_uidnexts            => [imap    => 'uidnexts'],
+            imap_uidvalidities       => [imap    => 'uidvalidities'],
         );
 
         #--------------------------------------------------------------------

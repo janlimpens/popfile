@@ -1,0 +1,22 @@
+From: bookings@travel.example.com
+To: jan@example.com
+Subject: Your booking confirmation - Berlin to Amsterdam, 15 Feb
+Date: Thu, 11 Jan 2024 08:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+
+Booking Confirmation
+
+Booking reference: TRV-20240215-4492
+
+Passenger: Jan Example
+Route: Berlin HBF -> Amsterdam Centraal
+Date: 15 February 2024
+Departure: 07:23  Arrival: 12:41
+Class: 2nd  Seat: 34A (window, reserved)
+Price: EUR 54.90 (paid)
+
+Please present this email or your booking reference at the station.
+Check-in opens 30 minutes before departure.
+
+Manage your booking: https://travel.example.com/bookings/TRV-20240215-4492

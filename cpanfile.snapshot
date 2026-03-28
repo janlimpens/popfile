@@ -647,6 +647,34 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       perl 5.008001
       utf8 0
+  Mail-IMAPClient-3.43
+    pathname: P/PL/PLOBBES/Mail-IMAPClient-3.43.tar.gz
+    provides:
+      Mail::IMAPClient 3.43
+      Mail::IMAPClient::BodyStructure undef
+      Mail::IMAPClient::BodyStructure::Address undef
+      Mail::IMAPClient::BodyStructure::Envelope undef
+      Mail::IMAPClient::BodyStructure::Parse undef
+      Mail::IMAPClient::BodyStructure::Part undef
+      Mail::IMAPClient::MessageSet undef
+      Mail::IMAPClient::Thread undef
+      Parse::RecDescent::Mail::IMAPClient::BodyStructure::Parse undef
+      Parse::RecDescent::Mail::IMAPClient::Thread undef
+    requirements:
+      Carp 0
+      Errno 0
+      ExtUtils::MakeMaker 0
+      Fcntl 0
+      File::Temp 0
+      IO::File 0
+      IO::Select 0
+      IO::Socket 0
+      IO::Socket::INET 1.26
+      List::Util 0
+      MIME::Base64 0
+      Parse::RecDescent 1.94
+      Test::More 0
+      perl 5.008
   Module-Build-0.4234
     pathname: L/LE/LEONT/Module-Build-0.4234.tar.gz
     provides:
@@ -853,6 +881,30 @@ DISTRIBUTIONS
       XS::Parse::Sublike 0.35
       XS::Parse::Sublike::Builder 0.35
       perl 5.018
+  Parse-RecDescent-1.967015
+    pathname: J/JT/JTBRAUN/Parse-RecDescent-1.967015.tar.gz
+    provides:
+      Parse::RecDescent 1.967015
+      Parse::RecDescent::Action 1.967015
+      Parse::RecDescent::ColCounter 1.967015
+      Parse::RecDescent::Directive 1.967015
+      Parse::RecDescent::Error 1.967015
+      Parse::RecDescent::Expectation 1.967015
+      Parse::RecDescent::InterpLit 1.967015
+      Parse::RecDescent::LineCounter 1.967015
+      Parse::RecDescent::Literal 1.967015
+      Parse::RecDescent::OffsetCounter 1.967015
+      Parse::RecDescent::Operator 1.967015
+      Parse::RecDescent::Production 1.967015
+      Parse::RecDescent::Repetition 1.967015
+      Parse::RecDescent::Result 1.967015
+      Parse::RecDescent::Rule 1.967015
+      Parse::RecDescent::Subrule 1.967015
+      Parse::RecDescent::Token 1.967015
+      Parse::RecDescent::UncondReject 1.967015
+    requirements:
+      Test::More 0
+      Text::Balanced 1.95
   Role-Tiny-2.002004
     pathname: H/HA/HAARG/Role-Tiny-2.002004.tar.gz
     provides:

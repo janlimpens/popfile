@@ -31,7 +31,13 @@
     load();
   }
 
-  onMount(load);
+  onMount(() => {
+    load();
+    const interval = setInterval(() => {
+      if (page === 1 && !search) load();
+    }, 10000);
+    return () => clearInterval(interval);
+  });
   $effect(() => { page; search; load(); });
 </script>
 

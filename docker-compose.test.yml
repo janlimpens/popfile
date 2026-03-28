@@ -1,0 +1,20 @@
+services:
+  imap:
+    image: dovecot/dovecot
+    ports:
+      - "10143:31143"
+    volumes:
+      - ./t/fixtures/dovecot/conf:/etc/dovecot/conf.d:ro
+      - imap-mail:/var/mail
+    environment:
+      - DOVECOT_DISABLE_PLAINTEXT_AUTH=no
+
+  webmail:
+    image: djmaze/snappymail
+    ports:
+      - "8888:8888"
+    depends_on:
+      - imap
+
+volumes:
+  imap-mail:

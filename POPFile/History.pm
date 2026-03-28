@@ -30,6 +30,7 @@ use POPFile::Role::SQL;
 
 use Date::Parse;
 use Digest::MD5 qw( md5_hex );
+use File::Path qw( make_path );
 
 my $fields_slot ='history.id, hdr_from, hdr_to, hdr_cc, hdr_subject, hdr_date, hash, inserted,
  buckets.name, usedtobe, history.bucketid, magnets.val, size';
@@ -1054,7 +1055,7 @@ method make_directory ($path) {
     $path =~ s/[\\\/]$//;
 
     return 1 if ( -d $path );
-    return mkdir( $path );
+    return make_path( $path );
 }
 
 # ---------------------------------------------------------------------------

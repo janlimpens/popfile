@@ -55,4 +55,5 @@ on 'test' => sub {
 on 'develop' => sub {
  requires 'Test2::V0', '0';
  requires 'Test::MockObject', '0';
+ requires 'Mail::IMAPClient', '0';
 };

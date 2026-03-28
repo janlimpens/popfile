@@ -154,6 +154,7 @@ die 'error message'
 my $x = $cond
     ? $this
     : $that;
+```
 
 ### Return Statements
 - No semicolon on return statements at the end of methods
@@ -244,6 +245,12 @@ my $x = do {
 - run tests, add tests
 - fix documentation
 - convert good information from comments to PODs
+
+** Konkrete Muster die VERBOTEN sind:
+- Extra Spaces vor `=>` damit alle Werte in einer Hash-Liste auf gleicher Spalte stehen
+- einfache Hash-Keys NIEMALS quoten (explizit verboten) — `hostname => $val` NICHT `'hostname' => $val`
+- Extra Spaces vor `=` damit alle Zuweisungen in einer Variablengruppe auf gleicher Spalte stehen
+- Extra Spaces vor `//` in Default-Zuweisungen
 
 ## IMPORTANT:
 Reference AGENT.md for your role and information that pertain to you.

@@ -1,0 +1,28 @@
+From: security@bank-secure-alert.example.com
+To: customer@example.com
+Subject: Urgent: Your account has been suspended - verify now
+Date: Mon, 01 Jan 2024 11:00:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+
+IMPORTANT SECURITY NOTICE
+
+Your online banking account has been temporarily suspended due to
+suspicious activity detected on your account.
+
+To restore access you must verify your identity within 24 hours or
+your account will be permanently closed.
+
+Click here to verify: http://secure-bank-login.example.com/verify
+
+You will need to provide:
+- Full name
+- Account number
+- Password
+- Date of birth
+- Social security number
+
+Failure to verify will result in permanent account suspension.
+
+Security Team
+Customer Protection Department
