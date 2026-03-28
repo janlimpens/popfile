@@ -224,3 +224,6 @@ my %hash = (
 ```
 
 don't be overly chatty or explain too much, don't jump ahead, but go one step at a time, unless told otherwise. don't execute db queries unless allowed. in test setting, you may.
+
+## IMPORTANT:
+Reference AGENT.md for your role and information that pertain to you.
