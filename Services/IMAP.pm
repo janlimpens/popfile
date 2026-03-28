@@ -38,7 +38,6 @@ class Services::IMAP :isa(POPFile::Module) {
     }
 
     method start {
-        return 2 if $self->config('enabled') == 0;
         return 1
     }
 
@@ -47,6 +46,7 @@ class Services::IMAP :isa(POPFile::Module) {
     }
 
     method service {
+        return 1 if $self->config('enabled') == 0;
         return 1 if time - $last_update < $self->config('update_interval');
         eval {
             local $SIG{PIPE}    = 'IGNORE';
