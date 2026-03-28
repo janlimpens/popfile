@@ -1363,11 +1363,6 @@ method upgrade_bucket ($session, $bucket) {
                 my $type  = $1;
                 my $value = $2;
 
-                # Some people were accidently creating magnets with
-                # trailing whitespace which really confused them later
-                # when their magnet did not match (see comment in
-                # UI::HTML::magnet for more detail)
-
                 $value =~ s/^[ \t]+//g;
                 $value =~ s/[ \t]+$//g;
 
