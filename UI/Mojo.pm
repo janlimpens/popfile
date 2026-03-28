@@ -410,6 +410,8 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             history_archive_classes  => [history => 'archive_classes'],
             logger_level             => [logger  => 'level'],
             logger_logdir            => [logger  => 'logdir'],
+            logger_log_to_stdout     => [logger  => 'log_to_stdout'],
+            logger_log_sql           => [logger  => 'log_sql'],
             imap_enabled             => [imap    => 'enabled'],
             imap_hostname            => [imap    => 'hostname'],
             imap_port                => [imap    => 'port'],
