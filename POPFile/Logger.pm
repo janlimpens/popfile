@@ -19,9 +19,9 @@ class POPFile::Logger :isa(POPFile::Module) {
 
     method initialize {
         $self->global_config('debug', 1);
-        $self->config('logdir',        $self->_default_log_dir());
-        $self->config('format',        'default');
-        $self->config('level',         0);
+        $self->config('logdir', $self->_default_log_dir());
+        $self->config('format', 'default');
+        $self->config('level', 0);
         $self->config('log_to_stdout', 0);
         $last_tickd = time;
         $self->mq_register('TICKD', $self);
