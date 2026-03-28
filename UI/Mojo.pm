@@ -513,6 +513,88 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
+        # GET /api/v1/status
+        #   Returns health checks: IMAP connectivity, auth, watched folders,
+        #   bucket→folder mapping validity
+        #--------------------------------------------------------------------
+        $r->get( '/api/v1/status' => sub ($c) {
+            require Services::IMAP::Client;
+            my @checks;
+            my $hostname = $self->module_config('imap', 'hostname') // '';
+            my $port     = $self->module_config('imap', 'port')     // '';
+            my $login    = $self->module_config('imap', 'login')    // '';
+            unless ($hostname ne '' && $port ne '') {
+                push @checks, {
+                    id     => 'connectivity',
+                    label  => 'IMAP Connectivity',
+                    status => 'warn',
+                    detail => 'IMAP not configured',
+                };
+                return $c->render(json => { checks => \@checks });
+            }
+            my $client = Services::IMAP::Client->new();
+            $client->set_configuration($self->configuration());
+            $client->set_mq($self->mq());
+            $client->set_name('imap');
+            unless ($client->connect()) {
+                push @checks, {
+                    id     => 'connectivity',
+                    label  => 'IMAP Connectivity',
+                    status => 'error',
+                    detail => "Cannot reach $hostname:$port",
+                };
+                return $c->render(json => { checks => \@checks });
+            }
+            push @checks, {
+                id     => 'connectivity',
+                label  => 'IMAP Connectivity',
+                status => 'ok',
+                detail => "Connected to $hostname:$port",
+            };
+            unless ($client->login()) {
+                push @checks, {
+                    id     => 'authentication',
+                    label  => 'IMAP Authentication',
+                    status => 'error',
+                    detail => "Login failed for $login",
+                };
+                return $c->render(json => { checks => \@checks });
+            }
+            push @checks, {
+                id     => 'authentication',
+                label  => 'IMAP Authentication',
+                status => 'ok',
+                detail => "Logged in as $login",
+            };
+            my @server_folders = $client->get_mailbox_list();
+            $client->logout();
+            my %on_server = map { $_ => 1 } @server_folders;
+            my $watched_raw = $self->module_config('imap', 'watched_folders') // '';
+            my @watched     = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
+            my @missing_w   = grep { !$on_server{$_} } @watched;
+            push @checks, {
+                id     => 'watched_folders',
+                label  => 'Watched Folders',
+                status => @missing_w ? 'warn' : 'ok',
+                detail => @missing_w
+                    ? 'Missing on server: ' . join(', ', @missing_w)
+                    : 'All ' . scalar(@watched) . ' watched folder(s) exist',
+            };
+            my $mapping_raw = $self->module_config('imap', 'bucket_folder_mappings') // '';
+            my %map_hash    = split /\Q$imap_sep\E/, $mapping_raw;
+            my @missing_m   = grep { $_ ne '' && !$on_server{$map_hash{$_}} } keys %map_hash;
+            push @checks, {
+                id     => 'bucket_mappings',
+                label  => 'Bucket → Folder Mappings',
+                status => @missing_m ? 'warn' : 'ok',
+                detail => @missing_m
+                    ? 'Target folders missing: ' . join(', ', map { $map_hash{$_} } @missing_m)
+                    : 'All ' . scalar(keys %map_hash) . ' mapping(s) valid',
+            };
+            $c->render(json => { checks => \@checks });
+        });
+
+        #--------------------------------------------------------------------
         # Start the daemon
         #--------------------------------------------------------------------
         my $daemon = Mojo::Server::Daemon->new(

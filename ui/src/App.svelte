@@ -5,6 +5,7 @@
   import IMAP     from './lib/IMAP.svelte';
   import Magnets  from './lib/Magnets.svelte';
   import Settings from './lib/Settings.svelte';
+  import Status   from './lib/Status.svelte';
 
   let page    = $state(window.location.hash.slice(1) || 'history');
   let buckets = $state([]);
@@ -28,6 +29,7 @@
     ['corpus',   'Corpus'],
     ['magnets',  'Magnets'],
     ['imap',     'IMAP'],
+    ['status',   'Status'],
     ['settings', 'Settings'],
   ];
 
@@ -57,6 +59,8 @@
     <Magnets {buckets} />
   {:else if page === 'imap'}
     <IMAP {buckets} />
+  {:else if page === 'status'}
+    <Status />
   {:else if page === 'settings'}
     <Settings />
   {/if}
