@@ -20,6 +20,9 @@
   let serverFolders = $state([]);
   let fetchingFolders = $state(false);
   let fetchError = $state('');
+  let testStatus = $state(null);
+  let testing = $state(false);
+  let saveAnyway = $state(false);
 
   let connectionReady = $derived(
     !!cfg.imap_hostname?.trim() &&
@@ -106,7 +109,25 @@
     }
   }
 
-  function markCfg() { cfgDirty = true; cfgStatus = ''; }
+  async function testConnection() {
+    testing = true;
+    testStatus = null;
+    const res = await fetch('/api/v1/imap/test-connection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        hostname: cfg.imap_hostname,
+        port: cfg.imap_port,
+        login: cfg.imap_login,
+        password: cfg.imap_password,
+        use_ssl: cfg.imap_use_ssl ?? 0,
+      }),
+    });
+    testing = false;
+    testStatus = await res.json();
+  }
+
+  function markCfg() { cfgDirty = true; cfgStatus = ''; testStatus = null; saveAnyway = false; }
 
   onMount(load);
 </script>
@@ -159,10 +180,23 @@
     </div>
 
     <footer class="card-footer">
+      {#if testStatus?.ok}
+        <span class="msg-ok">✓ Connected</span>
+      {:else if testStatus && !testStatus.ok}
+        <span class="msg-err">✗ {testStatus.error ?? 'Connection failed'}</span>
+        <label class="save-anyway">
+          <input type="checkbox" bind:checked={saveAnyway} />
+          Save anyway
+        </label>
+      {/if}
       {#if cfgStatus === 'ok'}  <span class="msg-ok">✓ Saved</span>
       {:else if cfgStatus === 'error'}<span class="msg-err">✗ Error</span>
       {/if}
-      <button class="btn" onclick={saveCfg} disabled={!cfgDirty || saving}>
+      <button class="btn btn-secondary" onclick={testConnection} disabled={testing}>
+        {testing ? 'Testing…' : 'Test Connection'}
+      </button>
+      <button class="btn" onclick={saveCfg}
+        disabled={!cfgDirty || saving || (testStatus != null && !testStatus.ok && !saveAnyway)}>
         {saving ? 'Saving…' : 'Save Connection'}
       </button>
     </footer>
@@ -503,4 +537,18 @@
   }
   .msg-ok  { font-size: 0.82rem; color: var(--success); font-weight: 500; }
   .msg-err { font-size: 0.82rem; color: var(--danger);  font-weight: 500; }
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:not(:disabled):hover { opacity: .75; }
+  .save-anyway {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
 </style>
