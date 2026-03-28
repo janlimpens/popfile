@@ -492,6 +492,27 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
+        # GET /api/v1/imap/server-folders
+        #   Connects to the IMAP server and returns the live folder list
+        #--------------------------------------------------------------------
+        $r->get( '/api/v1/imap/server-folders' => sub ($c) {
+            require Services::IMAP::Client;
+            my $client = Services::IMAP::Client->new();
+            $client->set_configuration($self->configuration());
+            $client->set_mq($self->mq());
+            $client->set_name('imap');
+            unless ($client->connect()) {
+                return $c->render(status => 503, json => { error => 'connect failed' });
+            }
+            unless ($client->login()) {
+                return $c->render(status => 503, json => { error => 'login failed' });
+            }
+            my @folders = $client->get_mailbox_list();
+            $client->logout();
+            $c->render(json => \@folders);
+        });
+
+        #--------------------------------------------------------------------
         # Start the daemon
         #--------------------------------------------------------------------
         my $daemon = Mojo::Server::Daemon->new(
