@@ -90,23 +90,52 @@
   onMount(load);
 </script>
 
-<!-- ── Enable banner ─────────────────────────────────────────────────── -->
 <div class="page">
   <div class="page-header">
     <div>
       <h2>IMAP Service</h2>
       <p>Monitor IMAP folders and automatically classify incoming messages.</p>
     </div>
-    <label class="big-toggle">
-      <input
-        type="checkbox"
-        checked={cfg.imap_enabled == 1}
-        onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; markCfg(); }}
-      />
-      <span class="track"></span>
-      <span class="toggle-label">{cfg.imap_enabled == 1 ? 'Enabled' : 'Disabled'}</span>
-    </label>
   </div>
+
+  <!-- ── General settings ─────────────────────────────────────────────── -->
+  <section class="card">
+    <h3>General</h3>
+    <div class="fields">
+      <div class="field-row">
+        <label>Enable IMAP service</label>
+        <label class="toggle">
+          <input type="checkbox"
+            checked={cfg.imap_enabled == 1}
+            onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; markCfg(); }}
+          />
+          <span class="track"></span>
+        </label>
+      </div>
+      <div class="field-row">
+        <label>Training mode</label>
+        <label class="toggle">
+          <input type="checkbox"
+            checked={cfg.imap_training_mode == 1}
+            onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; markCfg(); }}
+          />
+          <span class="track"></span>
+        </label>
+      </div>
+    </div>
+    <p class="hint" style="margin-top:0.75rem">
+      Training mode scans existing archive folders and trains the classifier on their contents.
+      The flag resets automatically when training completes.
+    </p>
+    <footer class="card-footer">
+      {#if cfgStatus === 'ok'}  <span class="msg-ok">✓ Saved</span>
+      {:else if cfgStatus === 'error'}<span class="msg-err">✗ Error</span>
+      {/if}
+      <button class="btn" onclick={saveCfg} disabled={!cfgDirty || saving}>
+        {saving ? 'Saving…' : 'Save'}
+      </button>
+    </footer>
+  </section>
 
   <!-- ── Connection settings ──────────────────────────────────────────── -->
   <section class="card">
@@ -252,25 +281,6 @@
     </footer>
   </section>
 
-  <!-- ── Training mode ────────────────────────────────────────────────── -->
-  <section class="card">
-    <h3>Training Mode</h3>
-    <p class="hint">
-      When enabled, POPFile will scan existing archive folders and train the
-      classifier on their contents. This is a one-shot operation; the flag
-      resets automatically when training completes.
-    </p>
-    <div class="field-row">
-      <label>Enable training mode</label>
-      <label class="toggle">
-        <input type="checkbox"
-          checked={cfg.imap_training_mode == 1}
-          onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; markCfg(); }}
-        />
-        <span class="track"></span>
-      </label>
-    </div>
-  </section>
 </div>
 
 <script module>
@@ -295,37 +305,6 @@
   }
   .page-header h2 { margin: 0 0 0.25rem; }
   .page-header p  { margin: 0; font-size: 0.875rem; }
-
-  /* ── Big enable toggle ── */
-  .big-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .big-toggle input { display: none; }
-  .big-toggle .track {
-    width: 52px;
-    height: 28px;
-    background: var(--border);
-    border-radius: 14px;
-    position: relative;
-    transition: background .2s;
-  }
-  .big-toggle .track::after {
-    content: '';
-    position: absolute;
-    top: 4px; left: 4px;
-    width: 20px; height: 20px;
-    background: #fff;
-    border-radius: 50%;
-    transition: transform .2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,.3);
-  }
-  .big-toggle input:checked + .track { background: var(--accent); }
-  .big-toggle input:checked + .track::after { transform: translateX(24px); }
-  .toggle-label { font-size: 0.875rem; font-weight: 600; color: var(--text); min-width: 4rem; }
 
   /* ── Cards ── */
   .card {
