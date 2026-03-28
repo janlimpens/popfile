@@ -17,9 +17,6 @@ requires 'Log::Any', '1.7';
 requires 'Object::Pad', '0.800';
 requires 'Sort::Key::Natural','0';
 requires 'Mojolicious', '9.0';
-requires 'Role::Tiny', '0';
-requires 'Future::AsyncAwait', '0';
-requires 'CryptX', '0';
 requires 'Cpanel::JSON::XS', '0';
 requires 'JSON', '0';
 requires 'JSON::XS', '0';
@@ -29,7 +26,6 @@ requires 'IO::Socket::Socks', '0';
 requires 'Net::DNS::Native', '0';
 requires 'EV', '0';
 requires 'Text::Ngram', 0;
-requires 'Future::XS', 0;
 
 # Optional: alternative database backends
 recommends 'DBD::mysql', '0';
