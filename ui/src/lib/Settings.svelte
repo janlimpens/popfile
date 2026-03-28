@@ -130,6 +130,11 @@
           desc: 'Verbosity of log output.' },
         { key: 'logger_logdir', label: 'Log Directory',  type: 'text',
           desc: 'Directory for log files. Empty = popfile root.' },
+        { key: 'logger_log_to_stdout', label: 'Log to stdout', type: 'bool',
+          desc: 'Mirror log output to stdout in addition to the log file.' },
+        { key: 'logger_log_sql', label: 'Log SQL to stdout', type: 'bool',
+          desc: 'Print every SQL statement with bound values to stdout. Only active when "Log to stdout" is also enabled.',
+          disabledWhen: (cfg) => cfg.logger_log_to_stdout != 1 },
       ],
     },
   ];
@@ -197,10 +202,11 @@
                 </div>
                 <div class="field-input">
                   {#if f.type === 'bool'}
-                    <label class="toggle">
+                    <label class="toggle" class:disabled={f.disabledWhen?.(config)}>
                       <input
                         type="checkbox"
                         checked={config[f.key] == 1}
+                        disabled={f.disabledWhen?.(config)}
                         onchange={(e) => { config[f.key] = e.target.checked ? 1 : 0; mark(); }}
                       />
                       <span class="track"></span>
@@ -404,6 +410,7 @@
   }
   .toggle input:checked + .track { background: var(--accent); }
   .toggle input:checked + .track::after { transform: translateX(20px); }
+  .toggle.disabled { opacity: 0.45; cursor: default; }
 
   /* ── Footer ── */
   .section-footer {

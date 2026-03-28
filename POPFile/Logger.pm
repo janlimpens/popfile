@@ -23,6 +23,7 @@ class POPFile::Logger :isa(POPFile::Module) {
         $self->config('format', 'default');
         $self->config('level', 0);
         $self->config('log_to_stdout', 0);
+        $self->config('log_sql', 0);
         $last_tickd = time;
         $self->mq_register('TICKD', $self);
         return 1
