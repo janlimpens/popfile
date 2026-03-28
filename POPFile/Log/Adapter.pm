@@ -1,7 +1,7 @@
 package POPFile::Log::Adapter;
 
 use Log::Any::Adapter::Base;
-use Log::Any::Adapter::Util qw(logging_methods numeric_level);
+use Log::Any::Adapter::Util qw(logging_methods);
 use POSIX qw(strftime);
 
 our @ISA = ('Log::Any::Adapter::Base');
