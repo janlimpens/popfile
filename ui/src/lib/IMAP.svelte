@@ -18,6 +18,12 @@
   let newMapFolder  = $state('');
   let saving        = $state(false);
 
+  let connectionReady = $derived(
+    !!cfg.imap_hostname?.trim() &&
+    !!cfg.imap_port &&
+    !cfgDirty
+  );
+
   // ── Load ──────────────────────────────────────────────────────────────
   async function load() {
     const [cfgRes, folRes] = await Promise.all([
@@ -98,45 +104,6 @@
     </div>
   </div>
 
-  <!-- ── General settings ─────────────────────────────────────────────── -->
-  <section class="card">
-    <h3>General</h3>
-    <div class="fields">
-      <div class="field-row">
-        <label>Enable IMAP service</label>
-        <label class="toggle">
-          <input type="checkbox"
-            checked={cfg.imap_enabled == 1}
-            onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; markCfg(); }}
-          />
-          <span class="track"></span>
-        </label>
-      </div>
-      <div class="field-row">
-        <label>Training mode</label>
-        <label class="toggle">
-          <input type="checkbox"
-            checked={cfg.imap_training_mode == 1}
-            onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; markCfg(); }}
-          />
-          <span class="track"></span>
-        </label>
-      </div>
-    </div>
-    <p class="hint" style="margin-top:0.75rem">
-      Training mode scans existing archive folders and trains the classifier on their contents.
-      The flag resets automatically when training completes.
-    </p>
-    <footer class="card-footer">
-      {#if cfgStatus === 'ok'}  <span class="msg-ok">✓ Saved</span>
-      {:else if cfgStatus === 'error'}<span class="msg-err">✗ Error</span>
-      {/if}
-      <button class="btn" onclick={saveCfg} disabled={!cfgDirty || saving}>
-        {saving ? 'Saving…' : 'Save'}
-      </button>
-    </footer>
-  </section>
-
   <!-- ── Connection settings ──────────────────────────────────────────── -->
   <section class="card">
     <h3>Connection</h3>
@@ -160,25 +127,19 @@
       {/each}
 
       <div class="field-row">
-        <label>Use SSL / TLS</label>
-        <label class="toggle">
-          <input type="checkbox"
-            checked={cfg.imap_use_ssl == 1}
-            onchange={(e) => { cfg.imap_use_ssl = e.target.checked ? 1 : 0; markCfg(); }}
-          />
-          <span class="track"></span>
-        </label>
+        <label for="imap_use_ssl">Use SSL / TLS</label>
+        <input id="imap_use_ssl" class="switch" type="checkbox"
+          checked={cfg.imap_use_ssl == 1}
+          onchange={(e) => { cfg.imap_use_ssl = e.target.checked ? 1 : 0; markCfg(); }}
+        />
       </div>
 
       <div class="field-row">
-        <label>Expunge after move</label>
-        <label class="toggle">
-          <input type="checkbox"
-            checked={cfg.imap_expunge == 1}
-            onchange={(e) => { cfg.imap_expunge = e.target.checked ? 1 : 0; markCfg(); }}
-          />
-          <span class="track"></span>
-        </label>
+        <label for="imap_expunge">Expunge after move</label>
+        <input id="imap_expunge" class="switch" type="checkbox"
+          checked={cfg.imap_expunge == 1}
+          onchange={(e) => { cfg.imap_expunge = e.target.checked ? 1 : 0; markCfg(); }}
+        />
       </div>
     </div>
 
@@ -190,6 +151,32 @@
         {saving ? 'Saving…' : 'Save Connection'}
       </button>
     </footer>
+  </section>
+
+  <!-- ── Service settings ─────────────────────────────────────────────── -->
+  <section class="card">
+    <h3>Service</h3>
+    <div class="fields">
+      <div class="field-row">
+        <label for="imap_enabled">Enable IMAP service</label>
+        <input id="imap_enabled" class="switch" type="checkbox"
+          checked={cfg.imap_enabled == 1}
+          disabled={!connectionReady}
+          onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
+        />
+      </div>
+      <div class="field-row">
+        <label for="imap_training_mode">Training mode</label>
+        <input id="imap_training_mode" class="switch" type="checkbox"
+          checked={cfg.imap_training_mode == 1}
+          onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; saveCfg(); }}
+        />
+      </div>
+    </div>
+    <p class="hint" style="margin-top:0.75rem">
+      Training mode scans existing archive folders and trains the classifier on their contents.
+      The flag resets automatically when training completes.
+    </p>
   </section>
 
   <!-- ── Watched folders ──────────────────────────────────────────────── -->
@@ -325,7 +312,7 @@
     justify-content: space-between;
     gap: 1rem;
   }
-  .field-row label {
+  .field-row label:not(.toggle), .field-row span {
     font-size: 0.875rem;
     color: var(--text);
     font-weight: 500;
@@ -347,33 +334,33 @@
   }
   .field-row input:focus { outline: none; border-color: var(--accent); }
 
-  /* ── Toggle (small) ── */
-  .toggle {
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-  }
-  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .toggle .track {
-    width: 44px; height: 24px;
+  /* ── Toggle switch ── */
+  .switch {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 2.4em;
+    height: 1.3em;
+    border-radius: 0.65em;
     background: var(--border);
-    border-radius: 12px;
     position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
     transition: background .2s;
   }
-  .toggle .track::after {
+  .switch::before {
     content: '';
     position: absolute;
-    top: 3px; left: 3px;
-    width: 18px; height: 18px;
-    background: #fff;
+    width: 0.9em;
+    height: 0.9em;
     border-radius: 50%;
+    background: #fff;
+    top: 0.2em;
+    left: 0.2em;
     transition: transform .2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,.3);
+    box-shadow: 0 1px 2px rgba(0,0,0,.3);
   }
-  .toggle input:checked + .track { background: var(--accent); }
-  .toggle input:checked + .track::after { transform: translateX(20px); }
+  .switch:checked { background: var(--accent); }
+  .switch:checked::before { transform: translateX(1.1em); }
 
   /* ── Watched folder tags ── */
   .tag-list {
