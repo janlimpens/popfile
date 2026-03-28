@@ -63,8 +63,8 @@
           <td class="trunc">{item.from}</td>
           <td class="trunc">{item.subject}</td>
           <td>
-            <span class="bucket-badge" style="color:{item.color}">
-              {item.bucket}
+            <span class="bucket-badge">
+              <span class="dot" style="background:{item.color}"></span>{item.bucket}
             </span>
           </td>
           <td>
@@ -89,13 +89,14 @@
 
 <style>
   .toolbar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-  input[type=search] { padding: 0.4rem 0.6rem; border: 1px solid #ccc; border-radius: 4px; width: 280px; }
+  input[type=search] { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; width: 280px; background: var(--bg); color: var(--text); }
   table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-  th, td { padding: 0.4rem 0.6rem; border-bottom: 1px solid #e0e0e0; text-align: left; }
-  th { background: #f4f6fb; font-weight: 600; }
+  th, td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); text-align: left; }
+  th { background: var(--code-bg); font-weight: 600; }
   .trunc { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bucket-badge { font-weight: 500; }
+  .bucket-badge { font-weight: 500; display: inline-flex; align-items: center; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; flex-shrink: 0; }
   .pagination { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
-  button { padding: 0.3rem 0.8rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
+  button { padding: 0.3rem 0.8rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
   button:disabled { opacity: 0.4; cursor: default; }
 </style>
