@@ -3131,14 +3131,13 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
 
     $prefix = '' unless (defined($prefix));
     $prefix =~ s/\0//g;
-    $prefix = $self->db_quote("$prefix%");
 
     my $result = $db->selectcol_arrayref('
         SELECT words.word
         FROM matrix, words
         WHERE matrix.wordid = words.id
             AND matrix.bucketid = ?
-            AND words.word LIKE ?', undef, $db_bucketid, $prefix);
+            AND words.word LIKE ?', undef, $bucketid, "$prefix%");
     return $result->@*;
 }
 
@@ -3812,6 +3811,25 @@ C<$type> The magnet type (e.g. from, to or subject)
 C<$text> The text of the magnet
 
 =cut
+
+method create_magnet ($session, $bucket, $type, $text) {
+    my $userid = $self->valid_session_key($session);
+    return undef
+        unless defined $userid;
+    return 0
+        unless defined $db_bucketid->{$userid}{$bucket};
+    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
+    my $result = $self->validate_sql_prepare_and_execute(
+        'SELECT magnet_types.id FROM magnet_types WHERE magnet_types.mtype = ?',
+        $type)->fetchrow_arrayref();
+    my $mtid = $result->[0];
+    return 0
+        unless defined $mtid;
+    $self->validate_sql_prepare_and_execute(
+        'INSERT INTO magnets ( bucketid, mtid, val ) VALUES ( ?, ?, ? )',
+        $bucketid, $mtid, $text);
+    return 1
+}
 
 method delete_magnet ($session, $bucket, $type, $text) {
     my $userid = $self->valid_session_key($session);
