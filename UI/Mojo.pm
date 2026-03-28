@@ -595,6 +595,51 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
+        # POST /api/v1/imap/test-connection
+        #   Body: { hostname, port, login, password, use_ssl }
+        #   Returns { ok: true } or { ok: false, error: "..." }
+        #--------------------------------------------------------------------
+        $r->post('/api/v1/imap/test-connection' => sub ($c) {
+            require Services::IMAP::Client;
+            my $body   = $c->req->json // {};
+            my $client = Services::IMAP::Client->new();
+            $client->set_configuration($self->configuration());
+            $client->set_mq($self->mq());
+            $client->set_name('imap');
+            $client->config('hostname', $body->{hostname} // '');
+            $client->config('port',     $body->{port}     // 143);
+            $client->config('login',    $body->{login}    // '');
+            $client->config('password', $body->{password} // '');
+            $client->config('use_ssl',  $body->{use_ssl}  // 0);
+            my $err = '';
+            eval {
+                unless ($client->connect()) {
+                    die 'connect';
+                }
+                unless ($client->login()) {
+                    die 'login';
+                }
+                $client->logout();
+            };
+            if ($@) {
+                if ($@ =~ /^connect/) {
+                    $err = 'Could not connect to server';
+                }
+                elsif ($@ =~ /^login/) {
+                    $err = 'Login failed';
+                }
+                elsif ($@ =~ /POPFILE-IMAP-EXCEPTION: (.+?) \(/) {
+                    $err = $1;
+                }
+                else {
+                    $err = 'Connection test failed';
+                }
+                return $c->render(json => { ok => \0, error => $err });
+            }
+            $c->render(json => { ok => \1 });
+        });
+
+        #--------------------------------------------------------------------
         # Start the daemon
         #--------------------------------------------------------------------
         my $daemon = Mojo::Server::Daemon->new(
