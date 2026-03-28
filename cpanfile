@@ -32,8 +32,11 @@ recommends 'SOAP::Lite', '0';
 # Optional Mojolicious extras (loaded via eval; missing = feature disabled, not crash)
 # CryptX: Mojo::Util encrypted cookie support
 # Future::AsyncAwait: Mojo::Base -async_await flag
-recommends 'CryptX', '0.080';
-recommends 'Future::AsyncAwait', '0.52';
+# Role::Tiny: used internally by Mojo::Base
+requires 'CryptX', '0.080';
+requires 'Future::AsyncAwait', '0.52';
+requires 'Future::XS', '0';
+requires 'Role::Tiny', '0';
 
 # Optional: Japanese language support
 recommends 'Text::Kakasi', '0';

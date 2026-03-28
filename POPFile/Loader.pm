@@ -117,8 +117,8 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_aborting {
         $alive = 0;
-        foreach my $type (sort keys %components) {
-            foreach my $name (sort keys %{$components{$type}}) {
+        for my $type (sort keys %components) {
+            for my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->set_alive(0);
             }
         }
@@ -144,8 +144,8 @@ class POPFile::Loader {
     # Called on SIGCHLD; asks each module to do whatever reaping is needed.
     #------------------------------------------------------------------------
     method CORE_reaper {
-        foreach my $type (sort keys %components) {
-            foreach my $name (sort keys %{$components{$type}}) {
+        for my $type (sort keys %components) {
+            for my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->reaper();
             }
         }
@@ -160,8 +160,8 @@ class POPFile::Loader {
     # other modules in the same process and then exits.
     #------------------------------------------------------------------------
     method CORE_childexit ($code) {
-        foreach my $type (sort keys %components) {
-            foreach my $name (sort keys %{$components{$type}}) {
+        for my $type (sort keys %components) {
+            for my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->childexit();
             }
         }
@@ -179,8 +179,8 @@ class POPFile::Loader {
     method CORE_forker {
         my @types = sort keys %components;
 
-        foreach my $type (@types) {
-            foreach my $name (sort keys %{$components{$type}}) {
+        for my $type (@types) {
+            for my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->prefork();
             }
         }
@@ -195,8 +195,8 @@ class POPFile::Loader {
         }
 
         if ( $pid == 0 ) {
-            foreach my $type (@types) {
-                foreach my $name (sort keys %{$components{$type}}) {
+            for my $type (@types) {
+                for my $name (sort keys %{$components{$type}}) {
                     $components{$type}{$name}->forked($writer);
                 }
             }
@@ -205,8 +205,8 @@ class POPFile::Loader {
             return (0, $writer);
         }
 
-        foreach my $type (@types) {
-            foreach my $name (sort keys %{$components{$type}}) {
+        for my $type (@types) {
+            for my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->postfork($pid, $reader);
             }
         }
@@ -290,12 +290,14 @@ class POPFile::Loader {
     # Returns the module handle (undef if not a loadable module).
     #------------------------------------------------------------------------
     method load_module ($module) {
-        return undef unless -f $self->root_path($module);
+        return
+            unless -f $self->root_path($module);
         require $module;
         (my $class = $module) =~ s/\//::/g;
         $class =~ s/\.pm$//;
         my $mod = eval { $class->new() };
-        return undef if $@;
+        return
+            if $@;
         return $mod->DOES('POPFile::Loadable') ? $mod : undef
     }
 
@@ -305,17 +307,17 @@ class POPFile::Loader {
     # Sets signal handlers so POPFile handles OS and IPC events gracefully.
     #------------------------------------------------------------------------
     method CORE_signals {
-        $SIG{QUIT}     = $aborting;
-        $SIG{ABRT}     = $aborting;
-        $SIG{KILL}     = $aborting;
-        $SIG{STOP}     = $aborting;
-        $SIG{TERM}     = $aborting;
-        $SIG{INT}      = $aborting;
-        $SIG{CHLD}     = $reaper;
-        $SIG{ALRM}     = 'IGNORE';
-        $SIG{PIPE}     = 'IGNORE';
+        $SIG{QUIT} = $aborting;
+        $SIG{ABRT} = $aborting;
+        $SIG{KILL} = $aborting;
+        $SIG{STOP} = $aborting;
+        $SIG{TERM} = $aborting;
+        $SIG{INT} = $aborting;
+        $SIG{CHLD} = $reaper;
+        $SIG{ALRM} = 'IGNORE';
+        $SIG{PIPE} = 'IGNORE';
         $SIG{__WARN__} = $warning;
-        $SIG{__DIE__}  = $die_cb;
+        $SIG{__DIE__} = $die_cb;
 
         return $SIG;
     }
@@ -329,13 +331,13 @@ class POPFile::Loader {
     method CORE_load ($noserver = 0) {
         print "\n    Loading... " if $debug;
 
-        $self->CORE_load_directory_modules( 'POPFile',    'core'       );
-        $self->CORE_load_directory_modules( 'Classifier', 'classifier' );
+        $self->CORE_load_directory_modules(POPFile => 'core');
+        $self->CORE_load_directory_modules(Classifier => 'classifier');
 
         if ( !$noserver ) {
-            $self->CORE_load_directory_modules( 'UI',       'interface' );
-            $self->CORE_load_directory_modules( 'Proxy',    'proxy'     );
-            $self->CORE_load_directory_modules( 'Services', 'services'  );
+            $self->CORE_load_directory_modules(UI => 'interface');
+            $self->CORE_load_directory_modules(Proxy => 'proxy');
+            $self->CORE_load_directory_modules(Services => 'services');
         }
     }
 
@@ -349,8 +351,8 @@ class POPFile::Loader {
 
         # Give every module access to configuration, version, and MQ.
 
-        foreach my $type (sort keys %components) {
-            foreach my $name (sort keys %{$components{$type}}) {
+        for my $type (sort keys %components) {
+            for my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->set_version(
                     scalar($self->CORE_version()) );
                 $components{$type}{$name}->set_configuration(
@@ -362,8 +364,8 @@ class POPFile::Loader {
 
         # Inject classifier and history into modules that declare set_classifier / set_history.
 
-        foreach my $type (sort keys %components) {
-            foreach my $name (sort keys %{$components{$type}}) {
+        for my $type (sort keys %components) {
+            for my $name (sort keys %{$components{$type}}) {
                 my $mod = $components{$type}{$name};
                 $mod->set_classifier( $components{classifier}{bayes} )
                     if $mod->can('set_classifier');
@@ -378,11 +380,11 @@ class POPFile::Loader {
         if ( defined $components{services}{classifier_service} ) {
             my $svc = $components{services}{classifier_service};
 
-            foreach my $name (sort keys %{$components{proxy}}) {
+            for my $name (sort keys %{$components{proxy}}) {
                 my $mod = $components{proxy}{$name};
                 $mod->set_service($svc) if $mod->can('set_service');
             }
-            foreach my $name (sort keys %{$components{interface}}) {
+            for my $name (sort keys %{$components{interface}}) {
                 my $mod = $components{interface}{$name};
                 $mod->set_service($svc) if $mod->can('set_service');
             }
@@ -410,9 +412,9 @@ class POPFile::Loader {
         # Core must be initialized first.
         my @c = ( 'core', grep { !/^core$/ } sort keys %components );
 
-        foreach my $type (@c) {
+        for my $type (@c) {
             print "\n         {$type:" if $debug;
-            foreach my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys %{$components{$type}}) {
                 print " $name" if $debug;
                 STDOUT->flush();
 
@@ -456,9 +458,9 @@ class POPFile::Loader {
         my @c = ( 'core', 'classifier', 'services',
                   grep { !/^(core|classifier|services)$/ } sort keys %components );
 
-        foreach my $type (@c) {
+        for my $type (@c) {
             print "\n         {$type:" if $debug;
-            foreach my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys %{$components{$type}}) {
                 my $code = $components{$type}{$name}->start();
 
                 if ( $code == 0 ) {
@@ -488,8 +490,8 @@ class POPFile::Loader {
     #------------------------------------------------------------------------
     method CORE_service ($nowait = 0) {
         while ( $alive == 1 ) {
-            foreach my $type (sort keys %components) {
-                foreach my $name (sort keys %{$components{$type}}) {
+            for my $type (sort keys %components) {
+                for my $name (sort keys %{$components{$type}}) {
                     if ( $components{$type}{$name}->service() == 0 ) {
                         $alive = 0;
                         last;
@@ -529,9 +531,9 @@ class POPFile::Loader {
         $components{core}{history}->set_alive(0);
         $components{core}{history}->stop();
 
-        foreach my $type (sort keys %components) {
+        for my $type (sort keys %components) {
             print "\n         {$type:" if $debug;
-            foreach my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys %{$components{$type}}) {
                 print " $name" if $debug;
                 STDOUT->flush();
 

@@ -67,7 +67,7 @@ subtest 'stopwords' => sub {
     $wm->add_stopword('the', '');
     $wm->add_stopword('and', '');
 
-    is( $wm->mangle('the'),            '',      'stopword filtered' );
+    is( $wm->mangle('the'), '', 'stopword filtered' );
     is( $wm->mangle('and'),            '',      'stopword filtered' );
     is( $wm->mangle('hello'),          'hello', 'non-stopword passes' );
     is( $wm->mangle('the', undef, 1), 'the',   'stopword bypassed with ignore_stops' );
@@ -78,9 +78,9 @@ subtest 'stopwords' => sub {
 
 subtest 'add_stopword / remove_stopword' => sub {
     is( $wm->add_stopword('badword', ''),   1, 'add_stopword returns 1 on success' );
-    is( $wm->mangle('badword'),             '', 'newly added stopword is filtered' );
+    is( $wm->mangle('badword'), '', 'newly added stopword is filtered' );
     is( $wm->remove_stopword('badword', ''), 1, 'remove_stopword returns 1 on success' );
-    is( $wm->mangle('badword'),             'badword', 'removed stopword no longer filtered' );
+    is( $wm->mangle('badword'), 'badword', 'removed stopword no longer filtered' );
 
     is( $wm->add_stopword('bad word!', ''), 0, 'invalid stopword rejected' );
 };
