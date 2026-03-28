@@ -14,9 +14,12 @@
   let cfgStatus     = $state('');
   let foldersStatus = $state('');
   let newWatch      = $state('');
-  let newMapBucket  = $state('');
-  let newMapFolder  = $state('');
-  let saving        = $state(false);
+  let newMapBucket = $state('');
+  let newMapFolder = $state('');
+  let saving = $state(false);
+  let serverFolders = $state([]);
+  let fetchingFolders = $state(false);
+  let fetchError = $state('');
 
   let connectionReady = $derived(
     !!cfg.imap_hostname?.trim() &&
@@ -89,6 +92,18 @@
   function removeMapping(bucket) {
     mappings = mappings.filter(m => m.bucket !== bucket);
     foldersDirty = true;
+  }
+
+  async function fetchServerFolders() {
+    fetchingFolders = true;
+    fetchError = '';
+    const res = await fetch('/api/v1/imap/server-folders');
+    fetchingFolders = false;
+    if (res.ok) {
+      serverFolders = await res.json();
+    } else {
+      fetchError = 'Could not connect to server';
+    }
   }
 
   function markCfg() { cfgDirty = true; cfgStatus = ''; }
@@ -209,11 +224,18 @@
 
   <!-- ── Bucket → folder mappings ─────────────────────────────────────── -->
   <section class="card">
-    <h3>Bucket → Folder Mappings</h3>
+    <div class="section-header">
+      <h3>Bucket → Folder Mappings</h3>
+      <button class="btn btn-sm" onclick={fetchServerFolders}
+        disabled={!connectionReady || fetchingFolders}>
+        {fetchingFolders ? 'Fetching…' : 'Fetch Folders'}
+      </button>
+    </div>
     <p class="hint">
       Classified messages are moved to the specified IMAP folder.
       Leave unmapped buckets empty to skip moving.
     </p>
+    {#if fetchError}<p class="msg-err">{fetchError}</p>{/if}
 
     {#if mappings.length > 0}
       <table>
@@ -227,7 +249,12 @@
                 <span class="bucket-dot" style="background:{getBucketColor(m.bucket, buckets)}"></span>
                 {m.bucket}
               </td>
-              <td class="folder-cell">{m.folder}</td>
+              <td class="folder-cell">
+                {m.folder}
+                {#if serverFolders.length > 0 && !serverFolders.includes(m.folder)}
+                  <span class="warn" title="Folder not found on server">⚠</span>
+                {/if}
+              </td>
               <td>
                 <button class="btn-remove" onclick={() => removeMapping(m.bucket)} title="Remove">×</button>
               </td>
@@ -247,12 +274,21 @@
         {/each}
       </select>
       <span class="arrow">→</span>
-      <input
-        type="text"
-        placeholder="INBOX.Classified"
-        bind:value={newMapFolder}
-        onkeydown={(e) => e.key === 'Enter' && addMapping()}
-      />
+      {#if serverFolders.length > 0}
+        <select bind:value={newMapFolder}>
+          <option value="">— folder —</option>
+          {#each serverFolders as f}
+            <option value={f}>{f}</option>
+          {/each}
+        </select>
+      {:else}
+        <input
+          type="text"
+          placeholder="INBOX.Classified"
+          bind:value={newMapFolder}
+          onkeydown={(e) => e.key === 'Enter' && addMapping()}
+        />
+      {/if}
       <button class="btn" onclick={addMapping} disabled={!newMapBucket || !newMapFolder.trim()}>
         Add
       </button>
@@ -302,6 +338,10 @@
     margin-bottom: 1.25rem;
   }
   .card h3 { margin: 0 0 1rem; font-size: 1rem; font-weight: 600; color: var(--text); }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .section-header h3 { margin: 0; }
+  .btn-sm { padding: 0.25rem 0.65rem; font-size: 0.8rem; }
+  .warn { color: var(--danger); margin-left: 0.3rem; font-size: 0.85rem; cursor: default; }
   .hint { margin: -0.5rem 0 1rem; font-size: 0.8rem; color: var(--text-muted); }
 
   /* ── Field rows (inside cards) ── */
