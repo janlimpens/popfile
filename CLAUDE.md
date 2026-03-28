@@ -119,9 +119,9 @@ When you reply be friendly, precise and to the point. Don't gratulate youself to
 - Always use parentheses on method calls, even if empty
 - Example: `$obj->method()` not `$obj->method` and not `$onj->method->something_else()`
 - optional arguments usually as an %args hash
-- use fields reader writer shortcuts where possible
+- use fields :reader :writer shortcuts where possible
 
-### Imports
+### use statements
 - first core dependencies, then alphabetically, unless for a good reason
 
 ### Control Flow
@@ -141,7 +141,7 @@ die 'error message'
 ```
 - Postfix if/unless must have line break and indentation
 - This makes it clearer what is being returned
-- prefer unnegated conditions
+- prefer positive conditions (no `if !`, but `unless`)
 ```
   do() if $so
   # or
@@ -177,16 +177,18 @@ return $value    # no semicolon
 ### General
 - use qw()
 - NEVER align vertically.
-- Avoid multiple commands on a line. as a general rule, use on ; per line olny.
+- Avoid multiple commands on a line. as a general rule, use on ; per line only.
 - fix `@{$bla}` (and similar) to `$bla->@*` (and so on)
+- prefer working with @lists and %hashes to $references, use them as booleans
 - make use of fat comma, where it makes sense 
   ```perl
   $self->apply(username => $email);
   ```
 - user reader/writer abstractions
 - use roles rather than inheritance, where this is possible
+- keep the code clean and readable
 
-### Example
+### Example for good code
 ```perl
 use Init qw(:class :signatures :bool); # put feature selection in a module
 
@@ -221,9 +223,27 @@ my %hash = (
     then => {
         another => 'here',
         and => 'there' } );
+        
+my $x = do {
+    if ($c1) {
+        1
+    } elsif($c2) {
+        2
+    } else {
+        3
+    } };
 ```
-
-don't be overly chatty or explain too much, don't jump ahead, but go one step at a time, unless told otherwise. don't execute db queries unless allowed. in test setting, you may.
+- always return from a function, usually don't retun explicit `undef`
+- use `try {} catch($e) {} finally {}` instead of eval
+- DO NOT ALIGN VERTICALLY and fix it whereever you find it!
+- see sometng repeats too often, refactor it into a method
+- don't be overly chatty or explain too much, don't jump ahead, but go one step at a time, unless told otherwise. 
+- don't execute db queries unless allowed. in test setting, you may.
+- keep your edits and commands within the code directory
+- if you want to use the gh executable for github, use `/usr/bin/gh`
+- run tests, add tests
+- fix documentation
+- convert good information from comments to PODs
 
 ## IMPORTANT:
 Reference AGENT.md for your role and information that pertain to you.

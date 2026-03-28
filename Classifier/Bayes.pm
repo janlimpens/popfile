@@ -1882,16 +1882,6 @@ method valid_session_key($session) {
 }
 
 
-# The method below are public and may be accessed by other modules.
-# All of them may be accessed remotely through the XMLRPC.pm module
-# using the XML-RPC protocol
-#
-# Note that every API function expects to be passed a $session which
-# is obtained by first calling get_session_key with a valid username
-# and password.  Once done call the method release_session_key.
-#
-# See POPFile::API for more details
-#
 #----------------------------------------------------------------------------
 #----------------------------------------------------------------------------
 
