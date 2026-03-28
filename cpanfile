@@ -29,6 +29,12 @@ recommends 'DBD::Pg', '0';
 # Optional: XML-RPC interface
 recommends 'SOAP::Lite', '0';
 
+# Optional Mojolicious extras (loaded via eval; missing = feature disabled, not crash)
+# CryptX: Mojo::Util encrypted cookie support
+# Future::AsyncAwait: Mojo::Base -async_await flag
+recommends 'CryptX', '0.080';
+recommends 'Future::AsyncAwait', '0.52';
+
 # Optional: Japanese language support
 recommends 'Text::Kakasi', '0';
 recommends 'Encode::Guess', '0';

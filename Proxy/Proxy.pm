@@ -62,6 +62,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
     # ----------------------------------------------------------------------------
     method initialize {
         $self->config('enabled', 1 );
+        $self->config('port',    0 );
 
         $self->config('socks_server', '' );
         $self->config('socks_port',   1080 );
