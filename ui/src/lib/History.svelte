@@ -18,7 +18,15 @@
   let bulkBucket = $state('');
   let bulkBusy = $state(false);
 
-  const PAGE_SIZE = 25;
+  let pageSize = $state(25);
+
+  async function loadPageSize() {
+    const res = await fetch('/api/v1/config');
+    if (res.ok) {
+      const cfg = await res.json();
+      pageSize = parseInt(cfg.mojo_ui_page_size) || 25;
+    }
+  }
 
   function allChecked() {
     return items.length > 0 && items.every(i => checkedSlots.has(i.slot));
@@ -40,7 +48,7 @@
 
   async function load() {
     loading = true;
-    const params = new URLSearchParams({ page, per_page: PAGE_SIZE, search });
+    const params = new URLSearchParams({ page, per_page: pageSize, search });
     const res = await fetch('/api/v1/history?' + params);
     if (res.ok) {
       const data = await res.json();
@@ -121,14 +129,15 @@
       });
   }
 
-  onMount(() => {
+  onMount(async () => {
+    await loadPageSize();
     load();
     const interval = setInterval(() => {
       if (page === 1 && !search) load();
     }, 10000);
     return () => clearInterval(interval);
   });
-  $effect(() => { page; search; load(); });
+  $effect(() => { page; search; pageSize; load(); });
 </script>
 
 <div class="page">
@@ -136,12 +145,17 @@
 <h2>History</h2>
 
 <div class="toolbar">
-  <input
-    type="search"
-    placeholder="Search…"
-    bind:value={search}
-    oninput={() => { page = 1; }}
-  />
+  <div class="search-wrap">
+    <input
+      type="search"
+      placeholder="Search…"
+      bind:value={search}
+      oninput={() => { page = 1; }}
+    />
+    {#if search}
+      <button class="clear-btn" onclick={() => { search = ''; page = 1; }} aria-label="Clear search">×</button>
+    {/if}
+  </div>
   <span>{total} messages</span>
   <button onclick={reclassifyAll} disabled={reclassifying}>
     {reclassifying ? 'Reclassifying…' : 'Reclassify unclassified'}
@@ -228,8 +242,8 @@
 
   <div class="pagination">
     <button disabled={page <= 1} onclick={() => page--}>← Prev</button>
-    <span>Page {page} / {Math.ceil(total / PAGE_SIZE)}</span>
-    <button disabled={page * PAGE_SIZE >= total} onclick={() => page++}>Next →</button>
+    <span>Page {page} / {Math.ceil(total / pageSize)}</span>
+    <button disabled={page * pageSize >= total} onclick={() => page++}>Next →</button>
   </div>
 {/if}
 
@@ -238,7 +252,11 @@
 <style>
   .page { padding: 1.75rem 2rem; max-width: 980px; }
   .toolbar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-  input[type=search] { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; width: 280px; background: var(--bg); color: var(--text); }
+  .search-wrap { position: relative; display: inline-flex; align-items: center; }
+  input[type=search] { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; width: 280px; background: var(--bg); color: var(--text); padding-right: 1.8rem; -webkit-appearance: none; }
+  input[type=search]::-webkit-search-cancel-button { display: none; }
+  .clear-btn { position: absolute; right: 0.3rem; background: none; border: none; color: var(--text-muted); font-size: 1rem; line-height: 1; padding: 0 0.2rem; cursor: pointer; }
+  .clear-btn:hover { color: var(--text); }
   .bulk-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; }
   .bulk-bar span { font-weight: 500; color: var(--text); }
   .bulk-bar select { padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); font-size: 0.875rem; }
