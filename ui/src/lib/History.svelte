@@ -69,7 +69,7 @@
       .replace(/(\w+)/g, (match) => {
         const color = colors[match.toLowerCase()];
         return color
-          ? `<mark style="background:${color}22;color:inherit;border-radius:2px;padding:0 1px">${match}</mark>`
+          ? `<mark style="background:${color}66;color:inherit;border-radius:2px;padding:0 1px">${match}</mark>`
           : match;
       });
   }
