@@ -501,6 +501,44 @@ method get_color ($session, $word) {
     return $color;
 }
 
+method get_word_colors ($session, @words) {
+    my $userid = $self->valid_session_key($session);
+    return () unless defined $userid && @words;
+
+    my %id_to_name = map { $db_bucketid->{$userid}{$_}{id} => $_ }
+                     keys %{ $db_bucketid->{$userid} // {} };
+
+    my $placeholders = join ',', ('?') x scalar @words;
+    my $sth = $self->db()->prepare( $self->normalize_sql(
+        "SELECT w.word, m.bucketid, m.times
+         FROM words w
+         JOIN matrix m ON m.wordid = w.id
+         JOIN buckets b ON b.id = m.bucketid
+                        AND b.userid = ?
+                        AND b.pseudo = 0
+         WHERE w.word IN ($placeholders)" ) );
+    $sth->execute( $userid, @words );
+
+    my %best_prob;
+    my %best_name;
+    while ( my ( $word, $bucketid, $times ) = $sth->fetchrow_array() ) {
+        my $name  = $id_to_name{$bucketid} // next;
+        my $total = $self->get_bucket_word_count( $session, $name );
+        next unless $total;
+        my $prob = $times / $total;
+        if ( !exists $best_prob{$word} || $prob > $best_prob{$word} ) {
+            $best_prob{$word} = $prob;
+            $best_name{$word} = $name;
+        }
+    }
+
+    my %colors;
+    for my $word ( keys %best_name ) {
+        $colors{$word} = $self->get_bucket_color( $session, $best_name{$word} );
+    }
+    return %colors
+}
+
 =head2 get_not_likely_
 
 Returns the probability of a word that doesn't appear
@@ -866,7 +904,7 @@ method db_connect() {
          ORDER BY buckets.name'));
     $db_delete_zero_words = $db->prepare($self->normalize_sql(
         'DELETE FROM matrix
-         WHERE matrix.times = 0
+         WHERE (matrix.times = 0 OR matrix.times IS NULL)
             AND matrix.bucketid = ?'));
     # Get the mapping from parameter names to ids into a local hash
 
@@ -1238,6 +1276,7 @@ method db_put_word_count ($session, $bucket, $word, $count) {
             $db_get_wordid, $word)->fetchrow_arrayref;
     }
 
+    return 0 unless defined $count && $count > 0;
     my $wordid = $result->[0];
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
 
@@ -1637,6 +1676,7 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     # Map the list of words to a list of counts currently in the database
     # then update those counts and write them back to the database.
 
+    return unless keys $parser->words()->%*;
     my $words = join(',', map { $db->quote($_) } sort keys $parser->words()->%*);
     $get_wordids = $self->validate_sql_prepare_and_execute(
         "SELECT id, word FROM words

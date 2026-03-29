@@ -476,7 +476,7 @@ method commit_history {
              size = ?
          WHERE id = ?' ) );
     $self->db()->begin_work;
-    foreach my $entry (@{$commit_list}) {
+    for my $entry (@{$commit_list}) {
         my ( $session, $slot, $bucket, $magnet ) = @{$entry};
 
         my $file = $self->get_slot_file( $slot );
@@ -515,10 +515,11 @@ method commit_history {
             $self->log_msg(0, "Could not open history message file $file for reading." );
         }
 
-        my $hash = $self->get_message_hash( ${$header{'message-id'}}[0],
-                                            ${$header{'date'}}[0],
-                                            ${$header{'subject'}}[0],
-                                            ${$header{'received'}}[0] );
+        my $hash = $self->get_message_hash(
+            ${$header{'message-id'}}[0],
+            ${$header{'date'}}[0],
+            ${$header{'subject'}}[0],
+            ${$header{'received'}}[0] );
 
         # For sorting purposes the From, To and CC headers have special
         # cleaned up versions of themselves in the database.  The idea
@@ -531,7 +532,7 @@ method commit_history {
         my @sortable = qw(from to cc);
         my %sort_headers;
 
-        foreach my $h (@sortable) {
+        for my $h (@sortable) {
             $sort_headers{$h} = $classifier->parser()->decode_string(
                 ${$header{$h}}[0] );
             $sort_headers{$h} = lc($sort_headers{$h} || '');
@@ -545,7 +546,7 @@ method commit_history {
 
         my @required = qw(from to cc subject);
 
-        foreach my $h (@required) {
+        for my $h (@required) {
             ${$header{$h}}[0] = $classifier->parser()->decode_string(
                 ${$header{$h}}[0] );
             if ( !defined ${$header{$h}}[0] || ${$header{$h}}[0] =~ /^\s*$/ ) {
@@ -976,7 +977,7 @@ method delete_query ($id) {
     while ( $d->fetchrow_arrayref ) {
         push ( @ids, $history_id );
     }
-    foreach my $id (@ids) {
+    for my $id (@ids) {
         $self->delete_slot( $id, 1 );
     }
 
@@ -1100,7 +1101,7 @@ method upgrade_history_files {
 
         my $i = 0;
         $self->db()->begin_work;
-        foreach my $msg (@msgs) {
+        for my $msg (@msgs) {
             if ( ( ++$i % 100 ) == 0 ) {
                 print "[$i]";
                 STDOUT->flush();
@@ -1204,7 +1205,7 @@ method cleanup_history {
         push ( @ids, $id );
     }
     $d->finish;
-    foreach my $id (@ids) {
+    for my $id (@ids) {
         $self->delete_slot( $id, 1 );
     }
 }
@@ -1247,7 +1248,7 @@ method copy_file ($from, $to_dir, $to_name) {
 method force_requery {
     # Force requery since the messages have changed
 
-    foreach my $id (keys %queries) {
+    for my $id (keys %queries) {
         $queries{$id}{fields} = '';
     }
 }

@@ -90,6 +90,9 @@ Methods to query and manage classification buckets.
     method set_bucket_parameter ($b, $p, $v)    { $classifier->set_bucket_parameter( $session, $b, $p, $v ) }
     method get_bucket_color ($b)                { $classifier->get_bucket_color( $session, $b ) }
     method set_bucket_color ($b, $c)            { $classifier->set_bucket_color( $session, $b, $c ) }
+    method get_color ($w)                       { $classifier->get_color( $session, $w ) }
+    method get_word_colors (@words)             { $classifier->get_word_colors( $session, @words ) }
+    method mangle_word ($w)                     { $classifier->parser()->mangle()->mangle( $w ) }
 
     # --- Training ---
 

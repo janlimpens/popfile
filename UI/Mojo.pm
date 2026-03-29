@@ -299,21 +299,66 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
 
             my $hist = $svc->history_obj();
 
-            # Update the classification record in History
+            # Read old bucket before changing classification
+            my @fields     = $hist->get_slot_fields( $slot );
+            my $old_bucket = @fields ? $fields[8] : undef;
+
             $hist->change_slot_classification( $slot, $bucket, $session, 0 );
 
             # Retrain: remove from old bucket, add to new
-            my @fields = $hist->get_slot_fields( $slot );
-            if ( @fields ) {
-                my $file       = $hist->get_slot_file( $slot );
-                my $old_bucket = $fields[8];
-                if ( defined $old_bucket && $old_bucket ne $bucket ) {
-                    $svc->remove_message_from_bucket( $old_bucket, $file );
-                    $svc->add_message_to_bucket( $bucket, $file );
-                }
+            if ( defined $old_bucket && $old_bucket ne $bucket ) {
+                my $file = $hist->get_slot_file( $slot );
+                $svc->remove_message_from_bucket( $old_bucket, $file );
+                $svc->add_message_to_bucket( $bucket, $file );
             }
 
             $c->render( json => { ok => \1 } );
+        });
+
+        #--------------------------------------------------------------------
+        # GET /api/v1/history/:slot
+        #   Returns message body and per-word bucket colors for highlighting.
+        #--------------------------------------------------------------------
+        $r->get( '/api/v1/history/:slot' => sub ($c) {
+            my $slot = $c->param('slot');
+            return $c->render( status => 400, json => { error => 'invalid slot' } )
+                unless $slot =~ /^\d+$/;
+
+            my $hist = $svc->history_obj();
+            my $file = $hist->get_slot_file( $slot );
+            return $c->render( status => 404, json => { error => 'not found' } )
+                unless -f $file;
+
+            open my $fh, '<', $file
+                or return $c->render( status => 500, json => { error => 'cannot read' } );
+
+            my $in_headers = 1;
+            my $body = '';
+            while ( <$fh> ) {
+                s/[\r\n]//g;
+                if ( $in_headers ) {
+                    $in_headers = 0 if $_ eq '';
+                    next;
+                }
+                $body .= "$_\n";
+            }
+            close $fh;
+
+            my %orig_for;
+            for my $raw ( split /\W+/, $body ) {
+                next if $raw eq '';
+                my $mangled = $svc->mangle_word( $raw );
+                next if $mangled eq '' || exists $orig_for{$mangled};
+                $orig_for{$mangled} = lc $raw;
+            }
+
+            my %mangled_colors = $svc->get_word_colors( keys %orig_for );
+            my %word_colors;
+            for my $mangled ( keys %mangled_colors ) {
+                $word_colors{ $orig_for{$mangled} } = $mangled_colors{$mangled};
+            }
+
+            $c->render( json => { body => $body, word_colors => \%word_colors } );
         });
 
         #--------------------------------------------------------------------
