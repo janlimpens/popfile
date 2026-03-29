@@ -17,5 +17,7 @@ MANIFEST.bak
 pm_to_blib
 legacy/
 lib
+!lib/Query/
+!lib/Query/**
 popfile.db.backup
 tools/cleanup.pl

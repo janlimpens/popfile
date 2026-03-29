@@ -287,33 +287,114 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
+        # GET /api/v1/history/:slot
+        #   Returns { body, word_colors }
+        #--------------------------------------------------------------------
+        $r->get( '/api/v1/history/:slot' => sub ($c) {
+            my $slot = $c->param('slot');
+            unless ($slot =~ /^\d+$/) {
+                return $c->render(status => 400, json => { error => 'invalid slot' });
+            }
+            my $hist = $svc->history_obj();
+            my $file = $hist->get_slot_file($slot);
+            unless (defined $file && -f $file) {
+                return $c->render(status => 404, json => { error => 'not found' });
+            }
+            open my $fh, '<', $file
+                or return $c->render(status => 500, json => { error => 'read error' });
+            my $body = do { local $/; <$fh> };
+            close $fh;
+            my %word_colors;
+            for my $word (split /\W+/, lc $body) {
+                next if length($word) < 3 || exists $word_colors{$word};
+                my $color = $svc->bayes()->get_color($session, $word);
+                $word_colors{$word} = $color
+                    unless $color eq 'black';
+            }
+            $c->render(json => { body => $body, word_colors => \%word_colors });
+        });
+
+        my $do_reclassify = sub ($slot, $bucket) {
+            my %known = map { $_ => 1 } $svc->get_all_buckets();
+            return { error => 'unknown bucket' }
+                unless $known{$bucket};
+            my $hist = $svc->history_obj();
+            my @fields = $hist->get_slot_fields($slot);
+            return { error => 'invalid slot' }
+                unless @fields;
+            my $old_bucket = $fields[8];
+            $hist->change_slot_classification($slot, $bucket, $session, 0);
+            return {}
+                unless defined $old_bucket && $old_bucket ne $bucket;
+            my $file = $hist->get_slot_file($slot);
+            $svc->remove_message_from_bucket($old_bucket, $file);
+            $svc->add_message_to_bucket($bucket, $file);
+            return {}
+        };
+
+        #--------------------------------------------------------------------
+        # POST /api/v1/history/reclassify-unclassified
+        #--------------------------------------------------------------------
+        $r->post( '/api/v1/history/reclassify-unclassified' => sub ($c) {
+            my $hist = $svc->history_obj();
+            my $qid = $hist->start_query();
+            $hist->set_query($qid, 'unclassified', '', '-inserted', 0);
+            my $total = $hist->get_query_size($qid);
+            my @rows = $hist->get_query_rows($qid, 1, $total);
+            $hist->stop_query($qid);
+            my $updated = 0;
+            for my $row (@rows) {
+                next unless defined $row;
+                my $slot = $row->[0];
+                my $file = $hist->get_slot_file($slot);
+                next unless defined $file;
+                my $new_bucket = $svc->classify($file);
+                next unless defined $new_bucket && $new_bucket ne 'unclassified';
+                $hist->change_slot_classification($slot, $new_bucket, $session, 0);
+                $updated++;
+            }
+            $c->render(json => { updated => $updated + 0, total => $total + 0 });
+        });
+
+        #--------------------------------------------------------------------
+        # POST /api/v1/history/bulk-reclassify   { slots: [...], bucket }
+        #--------------------------------------------------------------------
+        $r->post( '/api/v1/history/bulk-reclassify' => sub ($c) {
+            my $body = $c->req->json // {};
+            my $bucket = $body->{bucket} // '';
+            my $slots = $body->{slots} // [];
+            if ($bucket eq '' || ref $slots ne 'ARRAY' || !$slots->@*) {
+                return $c->render(status => 400, json => { error => 'invalid params' });
+            }
+            my %known = map { $_ => 1 } $svc->get_all_buckets();
+            unless ($known{$bucket}) {
+                return $c->render(status => 422, json => { error => 'unknown bucket' });
+            }
+            my @valid_slots = grep { /^\d+$/ } @{$slots};
+            my $updated = 0;
+            for my $slot (@valid_slots) {
+                my $result = $do_reclassify->($slot, $bucket);
+                $updated++
+                    unless $result->{error};
+            }
+            $c->render(json => { updated => $updated + 0 });
+        });
+
+        #--------------------------------------------------------------------
         # POST /api/v1/history/:slot/reclassify   { bucket }
         #--------------------------------------------------------------------
         $r->post( '/api/v1/history/:slot/reclassify' => sub ($c) {
-            my $slot   = $c->param('slot');
-            my $body   = $c->req->json // {};
+            my $slot = $c->param('slot');
+            my $body = $c->req->json // {};
             my $bucket = $body->{bucket} // '';
-            if ( $bucket eq '' || $slot !~ /^\d+$/ ) {
-                return $c->render( status => 400, json => { error => 'invalid params' } );
+            if ($bucket eq '' || $slot !~ /^\d+$/) {
+                return $c->render(status => 400, json => { error => 'invalid params' });
             }
-
-            my $hist = $svc->history_obj();
-
-            # Update the classification record in History
-            $hist->change_slot_classification( $slot, $bucket, $session, 0 );
-
-            # Retrain: remove from old bucket, add to new
-            my @fields = $hist->get_slot_fields( $slot );
-            if ( @fields ) {
-                my $file       = $hist->get_slot_file( $slot );
-                my $old_bucket = $fields[8];
-                if ( defined $old_bucket && $old_bucket ne $bucket ) {
-                    $svc->remove_message_from_bucket( $old_bucket, $file );
-                    $svc->add_message_to_bucket( $bucket, $file );
-                }
+            my $result = $do_reclassify->($slot, $bucket);
+            if ($result->{error}) {
+                return $c->render(status => 422, json => { error => $result->{error} });
             }
-
-            $c->render( json => { ok => \1 } );
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------

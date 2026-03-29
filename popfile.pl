@@ -72,6 +72,7 @@ if ( open PACKING, "<$packing_list" ) {
 use strict;
 use locale;
 use lib defined( $ENV{POPFILE_ROOT} ) ? $ENV{POPFILE_ROOT} : '.';
+use lib (defined( $ENV{POPFILE_ROOT} ) ? $ENV{POPFILE_ROOT} : '.') . '/lib';
 use POPFile::Loader;
 
 # POPFile is actually loaded by the POPFile::Loader object which does all
