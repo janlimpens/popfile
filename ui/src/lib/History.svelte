@@ -8,6 +8,7 @@
   let page  = $state(1);
   let search = $state('');
   let loading = $state(false);
+  let reclassifying = $state(false);
 
   let selected = $state(null);
   let highlight = $state(true);
@@ -40,6 +41,16 @@
       selected = { slot, body: data.body, word_colors: data.word_colors };
     }
     detailLoading = false;
+  }
+
+  async function reclassifyAll() {
+    reclassifying = true;
+    const res = await fetch('/api/v1/history/reclassify-unclassified', { method: 'POST' });
+    reclassifying = false;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.updated > 0) load();
+    }
   }
 
   async function reclassify(slot, bucket) {
@@ -96,6 +107,9 @@
     oninput={() => { page = 1; }}
   />
   <span>{total} messages</span>
+  <button onclick={reclassifyAll} disabled={reclassifying}>
+    {reclassifying ? 'Reclassifying…' : 'Reclassify unclassified'}
+  </button>
 </div>
 
 {#if loading}

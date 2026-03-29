@@ -287,6 +287,33 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
+        # POST /api/v1/history/reclassify-unclassified
+        #   Re-runs the classifier on every unclassified slot and updates
+        #   history in place (no training is done — just bucket update).
+        #--------------------------------------------------------------------
+        $r->post( '/api/v1/history/reclassify-unclassified' => sub ($c) {
+            my $hist = $svc->history_obj();
+            my $qid  = $hist->start_query();
+            $hist->set_query( $qid, 'unclassified', '', '-inserted', 0 );
+            my $total = $hist->get_query_size( $qid );
+            my @rows  = $hist->get_query_rows( $qid, 1, $total );
+            $hist->stop_query( $qid );
+
+            my $updated = 0;
+            for my $row ( @rows ) {
+                next unless defined $row;
+                my $slot = $row->[0];
+                my $file = $hist->get_slot_file( $slot );
+                next unless -f $file;
+                my $class = $svc->classify( $file );
+                next unless defined $class && $class ne 'unclassified';
+                $hist->change_slot_classification( $slot, $class, $session, 0 );
+                $updated++;
+            }
+            $c->render( json => { updated => $updated, total => $total + 0 } );
+        });
+
+        #--------------------------------------------------------------------
         # POST /api/v1/history/:slot/reclassify   { bucket }
         #--------------------------------------------------------------------
         $r->post( '/api/v1/history/:slot/reclassify' => sub ($c) {
