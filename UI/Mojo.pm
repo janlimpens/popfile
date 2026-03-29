@@ -314,6 +314,29 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
+        # POST /api/v1/history/bulk-reclassify   { slots: [...], bucket }
+        #--------------------------------------------------------------------
+        $r->post( '/api/v1/history/bulk-reclassify' => sub ($c) {
+            my $body   = $c->req->json // {};
+            my $bucket = $body->{bucket} // '';
+            my @slots  = grep { /^\d+$/ } @{ $body->{slots} // [] };
+            return $c->render( status => 400, json => { error => 'invalid params' } )
+                unless $bucket ne '' && @slots;
+            my $hist = $svc->history_obj();
+            for my $slot ( @slots ) {
+                my @fields     = $hist->get_slot_fields( $slot );
+                my $old_bucket = @fields ? $fields[8] : undef;
+                $hist->change_slot_classification( $slot, $bucket, $session, 0 );
+                if ( defined $old_bucket && $old_bucket ne $bucket ) {
+                    my $file = $hist->get_slot_file( $slot );
+                    $svc->remove_message_from_bucket( $old_bucket, $file );
+                    $svc->add_message_to_bucket( $bucket, $file );
+                }
+            }
+            $c->render( json => { updated => scalar @slots } );
+        });
+
+        #--------------------------------------------------------------------
         # POST /api/v1/history/:slot/reclassify   { bucket }
         #--------------------------------------------------------------------
         $r->post( '/api/v1/history/:slot/reclassify' => sub ($c) {
