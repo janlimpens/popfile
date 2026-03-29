@@ -27,6 +27,7 @@ package POPFile::History;
 use Object::Pad;
 use locale;
 use POPFile::Role::SQL;
+use Query::Builder;
 
 use Date::Parse;
 use Digest::MD5 qw( md5_hex );
@@ -55,6 +56,7 @@ class POPFile::History :isa(POPFile::Module) :does(POPFile::Role::SQL) {
     field $db = undef;
 
     field $classifier :writer(set_classifier) = 0;
+    field $db_service :writer(set_db_service) = undef;
 
     BUILD {
         $self->set_name('history');
@@ -115,11 +117,7 @@ method stop {
     # added to the queue and before service() is called
 
     $self->commit_history();
-
-    if ( defined( $db ) ) {
-        $db->disconnect;
-        $db = undef;
-    }
+    $db = undef;
 }
 
 # ---------------------------------------------------------------------------
@@ -132,11 +130,8 @@ method stop {
 # through this method.
 # ---------------------------------------------------------------------------
 method db {
-    if ( !defined( $db ) ) {
-        $db = $classifier->db()->clone;
-    }
-
-    return $db;
+    $db //= $db_service->get_handle('history');
+    return $db
 }
 
 =head2 service
@@ -888,21 +883,21 @@ method set_query ($id, $filter, $search, $sort, $not) {
                 where history.userid = 1 and committed = 1';
     $queries{$id}{base} .= ' and history.bucketid = buckets.id';
     $queries{$id}{base} .= ' and magnets.id = magnetid';
+    $queries{$id}{params} = [];
 
-    # If there's a search portion then add the appropriate clause
-    # to find the from/subject header
-
-    my $not_word  = $not ? 'not' : '';
     my $not_equal = $not ? '!='  : '=';
     my $equal     = $not ? '='   : '!=';
 
     if ( $search ne '' ) {
-        $search = $self->db()->quote( '%' . $search . '%' );
-        $queries{$id}{base} .= " and $not_word ( hdr_from like $search or hdr_subject like $search )";
+        my $qb = Query::Builder->new(dialect => $db_service->dialect());
+        my $pat = '%' . $search . '%';
+        my $like_expr = $qb->combine_or(
+            $qb->like('hdr_from', $pat),
+            $qb->like('hdr_subject', $pat));
+        my $expr = $not ? $qb->negate($like_expr) : $like_expr;
+        $queries{$id}{base} .= ' and ' . $expr->to_string();
+        push $queries{$id}{params}->@*, $expr->params()->@*;
     }
-
-    # If there's a filter option then we'll need to get the bucket
-    # id for the filtered bucket and add the appropriate clause
 
     if ( $filter ne '' ) {
         if ( $filter eq '__filter__magnet' ) {
@@ -911,9 +906,11 @@ method set_query ($id, $filter, $search, $sort, $not) {
             if ( $filter eq '__filter__reclassified' ) {
                 $queries{$id}{base} .= " and history.usedtobe $equal 0";
             } else {
-                my $bucket = $self->db()->quote( $filter );
-                $queries{$id}{base} .=
-                        " and buckets.name $not_equal $bucket";
+                my $qb = Query::Builder->new(dialect => $db_service->dialect());
+                my $expr = $qb->compare('buckets.name', $filter,
+                    comparator => $not_equal);
+                $queries{$id}{base} .= ' and ' . $expr->to_string();
+                push $queries{$id}{params}->@*, $expr->params()->@*;
             }
         }
     }
@@ -944,7 +941,7 @@ method set_query ($id, $filter, $search, $sort, $not) {
     $count =~ s/XXX/COUNT(*)/;
 
     my $h = $self->db()->prepare( $count );
-    $h->execute;
+    $h->execute( $queries{$id}{params}->@* );
     $queries{$id}{count} = $h->fetchrow_arrayref->[0];
     $h->finish;
 
@@ -969,7 +966,7 @@ method delete_query ($id) {
     my $delete = $queries{$id}{base};
     $delete =~ s/XXX/history.id/;
     my $d = $self->db()->prepare( $delete );
-    $d->execute;
+    $d->execute( $queries{$id}{params}->@* );
     my $history_id;
     my @row;
     my @ids;
@@ -1027,7 +1024,7 @@ method get_query_rows ($id, $start, $count) {
     if ( ( $size < ( $start + $count - 1 ) ) ) {
         my $rows = $start + $count - $size;
         $self->log_msg(2, "Getting $rows rows from database" );
-        $queries{$id}{query}->execute;
+        $queries{$id}{query}->execute( $queries{$id}{params}->@* );
         $queries{$id}{cache} = $queries{$id}{query}->fetchall_arrayref(
             undef, $start + $count - 1 );
         $queries{$id}{query}->finish;

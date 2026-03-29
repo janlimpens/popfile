@@ -28,8 +28,10 @@ package Classifier::Bayes;
 
 use Object::Pad;
 use locale;
-use POPFile::Role::SQL;
+use Classifier::Bucket;
 use Classifier::MailParse;
+use POPFile::Role::SQL;
+use Query::Builder;
 use IO::Handle;
 use DBI;
 use Digest::MD5 qw(md5_hex);
@@ -103,7 +105,6 @@ field $db_parameters = {};
 field $db_bucketcount = {};
 field $db_bucketunique = {};
 
-# Used to parse mail messages
 field $parser :reader = Classifier::MailParse->new();
 
 # The possible colors for buckets
@@ -136,6 +137,13 @@ field $api_sessions = {};
 
 field $db_is_sqlite = 0;
 field $db_name = '';
+field $db_service :writer(set_db_service) = undef;
+
+method _qb() {
+    state $qb = Query::Builder->new(
+        dialect => $db_service->dialect());
+    return $qb
+}
 
 BUILD {
     $self->set_name('bayes');
@@ -149,6 +157,7 @@ the child needs access to the database we open it
 =cut
 
 method forked ($writer = undef) {
+    $db_service->forked();
     $self->db_connect();
 }
 
@@ -738,8 +747,7 @@ method db_connect() {
                 $old_dbconnect =~ s/SQLite:/SQLite2:/;
                 $old_dbconnect =~ s/\$dbname/$old_dbname/g;
 
-                $old_dbh = DBI->connect($old_dbconnect,                                         $self->config('dbuser'),
-                                         $self->config('dbauth'));
+                $old_dbh = DBI->connect($old_dbconnect, $self->config('dbuser'), $self->config('dbauth'));
                 # Update the config file
 
                 $dbconnect = $self->config('dbconnect');
@@ -760,11 +768,12 @@ method db_connect() {
     }
 
 
-    $db = DBI->connect($dbconnect,
-        $self->config('dbuser'),
-        $self->config('dbauth'),
-        \%connection_options);
-        unless (defined($db)) {
+    $db_service->set_dsn($dbconnect);
+    $db_service->set_user($self->config('dbuser'));
+    $db_service->set_auth($self->config('dbauth'));
+    $db_service->set_options(\%connection_options);
+    $db = $db_service->get_handle();
+    unless (defined($db)) {
         $self->log_msg(0, "Failed to connect to database and got error $DBI::errstr");
         return 0;
     }
@@ -1135,10 +1144,7 @@ method db_disconnect {
     undef $db_get_buckets_with_magnets;
     undef $db_delete_zero_words;
 
-    if (defined($db)) {
-        $db->disconnect();
-        undef $db;
-    }
+    undef $db;
 }
 
 =head2 db_update_cache
@@ -1293,6 +1299,13 @@ upgrades it to the SQL database.  Data upgraded is removed.
 =cut
 
 method upgrade_predatabase_data {
+    my $possible_colors = [qw(
+        red green blue brown
+        orange purple magenta gray
+        plum silver pink lightgreen
+        lightblue lightcyan lightcoral lightsalmon
+        lightgrey darkorange darkcyan feldspar
+        black)];
     my $c = 0;
 
     # There's an assumption here that this is the single user version
@@ -1346,7 +1359,7 @@ method upgrade_predatabase_data {
 
         $self->set_bucket_color($session, $bucket, ($color eq '')?$possible_colors->[$c]:$color);
 
-        $c = ($c+1) % ($#{$possible_colors}+1);
+        $c = ($c+1) % scalar $possible_colors->@*;
     }
 
     $self->release_session_key($session);
@@ -1677,10 +1690,11 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     # then update those counts and write them back to the database.
 
     return unless keys $parser->words()->%*;
-    my $words = join(',', map { $db->quote($_) } sort keys $parser->words()->%*);
+    my $word_expr = $self->_qb()
+        ->compare('word', [sort keys $parser->words()->%*]);
     $get_wordids = $self->validate_sql_prepare_and_execute(
-        "SELECT id, word FROM words
-         WHERE word IN ($words)");
+        "SELECT id, word FROM words WHERE " . $word_expr->to_string(),
+        $word_expr->params()->@*);
     my @id_list;
     my %wordmap;
     my ($wordid, $word);
@@ -1693,11 +1707,13 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
 
     $get_wordids->finish();
     undef $get_wordids;
-    my $placeholders = join ',', map { '?' } @id_list;
+    my $qb = $self->_qb();
+    my $expr = $qb->combine_and(
+        $qb->compare('matrix.wordid', \@id_list),
+        $qb->compare('matrix.bucketid', $db_bucketid->{$userid}{$bucket}{id}));
     $db_getwords = $self->validate_sql_prepare_and_execute(
-        "SELECT matrix.times, matrix.wordid FROM matrix
-         WHERE matrix.wordid IN ($placeholders)
-            AND matrix.bucketid = ?", @id_list, $db_bucketid->{$userid}{$bucket}{id});
+        "SELECT matrix.times, matrix.wordid FROM matrix WHERE "
+        . $expr->to_string(), $expr->params()->@*);
     my %counts;
     my $count;
 
@@ -2990,6 +3006,31 @@ method get_buckets($session) {
     }
 
     return @buckets;
+}
+
+=head2 get_bucket_objects
+
+Returns a list of Classifier::Bucket objects for all non-pseudo buckets,
+each populated with name, color, count, and prior from the in-memory cache.
+
+C<$session> A valid session key returned by a call to get_session_key
+
+=cut
+
+method get_bucket_objects ($session) {
+    my $userid = $self->valid_session_key($session);
+    return ()
+        unless defined $userid;
+    my @result;
+    for my $name ($self->get_buckets($session)) {
+        my $b = Classifier::Bucket->new();
+        $b->set_property('name', $name);
+        $b->set_property('color', $self->get_bucket_parameter($session, $name, 'color'));
+        $b->set_property('count', $db_bucketcount->{$userid}{$name} // 0);
+        $b->set_prior($bucket_start->{$userid}{$name} // 0);
+        push @result, $b;
+    }
+    return @result
 }
 
 =head2 get_bucket_id

@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import { flip } from 'svelte/animate';
 
   let { buckets } = $props();
 
@@ -59,6 +61,20 @@
     checkedSlots = new Set();
   }
 
+  async function pollRefresh() {
+    const params = new URLSearchParams({ page, per_page: pageSize, search });
+    const res = await fetch('/api/v1/history?' + params);
+    if (!res.ok) return;
+    const data = await res.json();
+    total = data.total;
+    const incoming = new Map(data.items.map(i => [i.slot, i]));
+    items = items.filter(i => incoming.has(i.slot));
+    items = items.map(i => incoming.get(i.slot) ?? i);
+    const existing = new Set(items.map(i => i.slot));
+    const added = data.items.filter(i => !existing.has(i.slot));
+    items = [...added, ...items];
+  }
+
   async function select(slot) {
     if (selected?.slot === slot) {
       selected = null;
@@ -72,6 +88,15 @@
       selected = { slot, body: data.body, word_colors: data.word_colors };
     }
     detailLoading = false;
+  }
+
+  async function reclassify(slot, bucket) {
+    await fetch(`/api/v1/history/${slot}/reclassify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bucket }),
+    });
+    pollRefresh();
   }
 
   async function reclassifyAll() {
@@ -94,15 +119,6 @@
     });
     bulkBusy = false;
     bulkBucket = '';
-    load();
-  }
-
-  async function reclassify(slot, bucket) {
-    await fetch(`/api/v1/history/${slot}/reclassify`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bucket }),
-    });
     load();
   }
 
@@ -133,7 +149,7 @@
     await loadPageSize();
     load();
     const interval = setInterval(() => {
-      if (page === 1 && !search) load();
+      if (page === 1 && !search) pollRefresh();
     }, 10000);
     return () => clearInterval(interval);
   });
@@ -190,8 +206,8 @@
         <th></th><th>Date</th><th>From</th><th>Subject</th><th>Bucket</th><th>Reclassify</th>
       </tr>
     </thead>
-    <tbody>
-      {#each items as item (item.slot)}
+    {#each items as item (item.slot)}
+      <tbody animate:flip={{ duration: 200 }} transition:fade={{ duration: 150 }}>
         <tr
           class="row"
           class:active={selected?.slot === item.slot}
@@ -236,8 +252,8 @@
             </td>
           </tr>
         {/if}
-      {/each}
-    </tbody>
+      </tbody>
+    {/each}
   </table>
 
   <div class="pagination">
