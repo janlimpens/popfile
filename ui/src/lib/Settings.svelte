@@ -6,6 +6,7 @@
   let status = $state('');
   let dirty = $state(false);
   let saving = $state(false);
+  let settingsSearch = $state('');
 
   // ─── Section / field schema ─────────────────────────────────────────────
   const SECTIONS = [
@@ -139,6 +140,25 @@
     },
   ];
 
+  // ─── Search filter ──────────────────────────────────────────────────────
+  function matchesSearch(section) {
+    const q = settingsSearch.toLowerCase();
+    if (!q) return true;
+    if (section.label.toLowerCase().includes(q)) return true;
+    return section.settings.some(f =>
+      f.label.toLowerCase().includes(q) || f.desc.toLowerCase().includes(q)
+    );
+  }
+
+  function visibleFields(section) {
+    const q = settingsSearch.toLowerCase();
+    if (!q) return section.settings;
+    if (section.label.toLowerCase().includes(q)) return section.settings;
+    return section.settings.filter(f =>
+      f.label.toLowerCase().includes(q) || f.desc.toLowerCase().includes(q)
+    );
+  }
+
   // ─── Load / save ────────────────────────────────────────────────────────
   async function load() {
     const res = await fetch('/api/v1/config');
@@ -173,28 +193,41 @@
   <!-- ── Sidebar ── -->
   <nav class="sidebar">
     {#each SECTIONS as s}
-      <button
-        class="nav-item"
-        class:active={active === s.id}
-        onclick={() => active = s.id}
-      >
-        <span class="nav-icon">{s.icon}</span>
-        <span class="nav-label">{s.label}</span>
-      </button>
+      {#if !settingsSearch || matchesSearch(s)}
+        <button
+          class="nav-item"
+          class:active={active === s.id}
+          onclick={() => { active = s.id; settingsSearch = ''; }}
+        >
+          <span class="nav-icon">{s.icon}</span>
+          <span class="nav-label">{s.label}</span>
+        </button>
+      {/if}
     {/each}
   </nav>
 
   <!-- ── Main panel ── -->
   <div class="panel">
-    {#each SECTIONS as section (section.id)}
-      {#if active === section.id}
+    <div class="panel-search-wrap">
+      <input
+        class="panel-search"
+        type="search"
+        placeholder="Search settings…"
+        bind:value={settingsSearch}
+        oninput={() => { if (settingsSearch) active = ''; }}
+      />
+      {#if settingsSearch}
+        <button class="clear-btn" onclick={() => { settingsSearch = ''; active = active || 'ui'; }} aria-label="Clear search">×</button>
+      {/if}
+    </div>
+    {#if settingsSearch}
+      {#each SECTIONS.filter(matchesSearch) as section (section.id)}
         <div class="section">
           <header>
             <h2>{section.label}</h2>
           </header>
-
           <div class="fields">
-            {#each section.settings as f (f.key)}
+            {#each visibleFields(section) as f (f.key)}
               <div class="field-row">
                 <div class="field-meta">
                   <label for={f.key}>{f.label}</label>
@@ -234,19 +267,70 @@
             {/each}
           </div>
 
-          <footer class="section-footer">
-            {#if status === 'ok'}
-              <span class="msg-ok">✓ Saved</span>
-            {:else if status === 'error'}
-              <span class="msg-err">✗ Error saving</span>
-            {/if}
-            <button class="btn-save" onclick={save} disabled={!dirty || saving}>
-              {saving ? 'Saving…' : 'Save Changes'}
-            </button>
-          </footer>
         </div>
+      {/each}
+    {:else}
+      {#each SECTIONS as section (section.id)}
+        {#if active === section.id}
+          <div class="section">
+            <header>
+              <h2>{section.label}</h2>
+            </header>
+            <div class="fields">
+              {#each section.settings as f (f.key)}
+                <div class="field-row">
+                  <div class="field-meta">
+                    <label for={f.key}>{f.label}</label>
+                    <p class="desc">{f.desc}</p>
+                  </div>
+                  <div class="field-input">
+                    {#if f.type === 'bool'}
+                      <label class="toggle" class:disabled={f.disabledWhen?.(config)}>
+                        <input
+                          type="checkbox"
+                          checked={config[f.key] == 1}
+                          disabled={f.disabledWhen?.(config)}
+                          onchange={(e) => { config[f.key] = e.target.checked ? 1 : 0; mark(); }}
+                        />
+                        <span class="track"></span>
+                      </label>
+                    {:else if f.type === 'select'}
+                      <select
+                        id={f.key}
+                        bind:value={config[f.key]}
+                        onchange={mark}
+                      >
+                        {#each f.options as [val, lbl]}
+                          <option value={val}>{lbl}</option>
+                        {/each}
+                      </select>
+                    {:else}
+                      <input
+                        id={f.key}
+                        type={f.type}
+                        bind:value={config[f.key]}
+                        oninput={mark}
+                      />
+                    {/if}
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      {/each}
+    {/if}
+
+    <footer class="section-footer">
+      {#if status === 'ok'}
+        <span class="msg-ok">✓ Saved</span>
+      {:else if status === 'error'}
+        <span class="msg-err">✗ Error saving</span>
       {/if}
-    {/each}
+      <button class="btn-save" onclick={save} disabled={!dirty || saving}>
+        {saving ? 'Saving…' : 'Save Changes'}
+      </button>
+    </footer>
   </div>
 </div>
 
@@ -269,6 +353,12 @@
     flex-direction: column;
     gap: 2px;
   }
+  .panel-search-wrap { position: relative; display: flex; align-items: center; margin-bottom: 1.5rem; }
+  .panel-search { width: 100%; padding: 0.45rem 2rem 0.45rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font-size: 0.875rem; box-sizing: border-box; -webkit-appearance: none; }
+  .panel-search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+  .panel-search::-webkit-search-cancel-button { display: none; }
+  .clear-btn { position: absolute; right: 0.5rem; background: none; border: none; color: var(--text-muted); font-size: 1rem; line-height: 1; padding: 0 0.2rem; cursor: pointer; }
+  .clear-btn:hover { color: var(--text); }
 
   .nav-item {
     display: flex;
