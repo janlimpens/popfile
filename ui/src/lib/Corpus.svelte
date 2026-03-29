@@ -4,6 +4,7 @@
   let { buckets = $bindable([]) } = $props();
 
   let newName = $state('');
+  let newColor = $state('#888888');
   let renameFrom = $state('');
   let renameTo = $state('');
   let status = $state('');
@@ -21,10 +22,11 @@
     const res = await fetch('/api/v1/buckets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newName.trim() }),
+      body: JSON.stringify({ name: newName.trim(), color: newColor }),
     });
     status = res.ok ? `Created "${newName}"` : 'Error';
     newName = '';
+    newColor = '#888888';
     refresh();
   }
 
@@ -111,6 +113,7 @@
 <section>
   <h3>Create bucket</h3>
   <div class="row">
+    <input type="color" bind:value={newColor} />
     <input type="text" placeholder="bucket-name" bind:value={newName} />
     <button onclick={createBucket}>Create</button>
   </div>

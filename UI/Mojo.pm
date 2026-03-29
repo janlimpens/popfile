@@ -183,15 +183,17 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
-        # POST /api/v1/buckets   { name }
+        # POST /api/v1/buckets   { name, color? }
         #--------------------------------------------------------------------
         $r->post( '/api/v1/buckets' => sub ($c) {
-            my $body = $c->req->json // {};
-            my $name = $body->{name} // '';
-            if ( $name eq '' ) {
-                return $c->render( status => 400, json => { error => 'name required' } );
-            }
+            my $body  = $c->req->json // {};
+            my $name  = $body->{name} // '';
+            my $color = $body->{color} // '';
+            return $c->render( status => 400, json => { error => 'name required' } )
+                if $name eq '';
             $svc->create_bucket( $name );
+            $svc->set_bucket_color( $name, $color )
+                if $color =~ /^#[0-9a-fA-F]{6}$/;
             $c->render( json => { ok => \1 } );
         });
 
