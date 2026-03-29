@@ -90,6 +90,9 @@ Methods to query and manage classification buckets.
     method set_bucket_parameter ($b, $p, $v)    { $classifier->set_bucket_parameter( $session, $b, $p, $v ) }
     method get_bucket_color ($b)                { $classifier->get_bucket_color( $session, $b ) }
     method set_bucket_color ($b, $c)            { $classifier->set_bucket_color( $session, $b, $c ) }
+    method get_color ($w)                       { $classifier->get_color( $session, $w ) }
+    method get_word_colors (@words)             { $classifier->get_word_colors( $session, @words ) }
+    method mangle_word ($w)                     { $classifier->parser()->mangle()->mangle( $w ) }
 
     # --- Training ---
 
@@ -121,11 +124,6 @@ Methods to query and manage the stopword list.
     method get_stopword_list    { $classifier->get_stopword_list( $session ) }
     method add_stopword ($w)    { $classifier->add_stopword( $session, $w ) }
     method remove_stopword ($w) { $classifier->remove_stopword( $session, $w ) }
-
-    # --- HTML coloring ---
-
-    method get_html_colored_message ($file)             { $classifier->get_html_colored_message( $session, $file ) }
-    method fast_get_html_colored_message ($f, $m, $i)   { $classifier->fast_get_html_colored_message( $session, $f, $m, $i ) }
 
 =head2 Setters
 

@@ -299,21 +299,66 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
 
             my $hist = $svc->history_obj();
 
-            # Update the classification record in History
+            # Read old bucket before changing classification
+            my @fields     = $hist->get_slot_fields( $slot );
+            my $old_bucket = @fields ? $fields[8] : undef;
+
             $hist->change_slot_classification( $slot, $bucket, $session, 0 );
 
             # Retrain: remove from old bucket, add to new
-            my @fields = $hist->get_slot_fields( $slot );
-            if ( @fields ) {
-                my $file       = $hist->get_slot_file( $slot );
-                my $old_bucket = $fields[8];
-                if ( defined $old_bucket && $old_bucket ne $bucket ) {
-                    $svc->remove_message_from_bucket( $old_bucket, $file );
-                    $svc->add_message_to_bucket( $bucket, $file );
-                }
+            if ( defined $old_bucket && $old_bucket ne $bucket ) {
+                my $file = $hist->get_slot_file( $slot );
+                $svc->remove_message_from_bucket( $old_bucket, $file );
+                $svc->add_message_to_bucket( $bucket, $file );
             }
 
             $c->render( json => { ok => \1 } );
+        });
+
+        #--------------------------------------------------------------------
+        # GET /api/v1/history/:slot
+        #   Returns message body and per-word bucket colors for highlighting.
+        #--------------------------------------------------------------------
+        $r->get( '/api/v1/history/:slot' => sub ($c) {
+            my $slot = $c->param('slot');
+            return $c->render( status => 400, json => { error => 'invalid slot' } )
+                unless $slot =~ /^\d+$/;
+
+            my $hist = $svc->history_obj();
+            my $file = $hist->get_slot_file( $slot );
+            return $c->render( status => 404, json => { error => 'not found' } )
+                unless -f $file;
+
+            open my $fh, '<', $file
+                or return $c->render( status => 500, json => { error => 'cannot read' } );
+
+            my $in_headers = 1;
+            my $body = '';
+            while ( <$fh> ) {
+                s/[\r\n]//g;
+                if ( $in_headers ) {
+                    $in_headers = 0 if $_ eq '';
+                    next;
+                }
+                $body .= "$_\n";
+            }
+            close $fh;
+
+            my %orig_for;
+            for my $raw ( split /\W+/, $body ) {
+                next if $raw eq '';
+                my $mangled = $svc->mangle_word( $raw );
+                next if $mangled eq '' || exists $orig_for{$mangled};
+                $orig_for{$mangled} = lc $raw;
+            }
+
+            my %mangled_colors = $svc->get_word_colors( keys %orig_for );
+            my %word_colors;
+            for my $mangled ( keys %mangled_colors ) {
+                $word_colors{ $orig_for{$mangled} } = $mangled_colors{$mangled};
+            }
+
+            $c->render( json => { body => $body, word_colors => \%word_colors } );
         });
 
         #--------------------------------------------------------------------
@@ -410,6 +455,8 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             history_archive_classes  => [history => 'archive_classes'],
             logger_level             => [logger  => 'level'],
             logger_logdir            => [logger  => 'logdir'],
+            logger_log_to_stdout     => [logger  => 'log_to_stdout'],
+            logger_log_sql           => [logger  => 'log_sql'],
             imap_enabled             => [imap    => 'enabled'],
             imap_hostname            => [imap    => 'hostname'],
             imap_port                => [imap    => 'port'],
@@ -419,6 +466,8 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             imap_update_interval     => [imap    => 'update_interval'],
             imap_expunge             => [imap    => 'expunge'],
             imap_training_mode       => [imap    => 'training_mode'],
+            imap_uidnexts            => [imap    => 'uidnexts'],
+            imap_uidvalidities       => [imap    => 'uidvalidities'],
         );
 
         #--------------------------------------------------------------------
@@ -489,6 +538,154 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
 
             $self->configuration()->save_configuration();
             $c->render( json => { ok => \1 } );
+        });
+
+        #--------------------------------------------------------------------
+        # GET /api/v1/imap/server-folders
+        #   Connects to the IMAP server and returns the live folder list
+        #--------------------------------------------------------------------
+        $r->get( '/api/v1/imap/server-folders' => sub ($c) {
+            require Services::IMAP::Client;
+            my $client = Services::IMAP::Client->new();
+            $client->set_configuration($self->configuration());
+            $client->set_mq($self->mq());
+            $client->set_name('imap');
+            unless ($client->connect()) {
+                return $c->render(status => 503, json => { error => 'connect failed' });
+            }
+            unless ($client->login()) {
+                return $c->render(status => 503, json => { error => 'login failed' });
+            }
+            my @folders = $client->get_mailbox_list();
+            $client->logout();
+            $c->render(json => \@folders);
+        });
+
+        #--------------------------------------------------------------------
+        # GET /api/v1/status
+        #   Returns health checks: IMAP connectivity, auth, watched folders,
+        #   bucket→folder mapping validity
+        #--------------------------------------------------------------------
+        $r->get( '/api/v1/status' => sub ($c) {
+            require Services::IMAP::Client;
+            my @checks;
+            my $hostname = $self->module_config('imap', 'hostname') // '';
+            my $port     = $self->module_config('imap', 'port')     // '';
+            my $login    = $self->module_config('imap', 'login')    // '';
+            unless ($hostname ne '' && $port ne '') {
+                push @checks, {
+                    id     => 'connectivity',
+                    label  => 'IMAP Connectivity',
+                    status => 'warn',
+                    detail => 'IMAP not configured',
+                };
+                return $c->render(json => { checks => \@checks });
+            }
+            my $client = Services::IMAP::Client->new();
+            $client->set_configuration($self->configuration());
+            $client->set_mq($self->mq());
+            $client->set_name('imap');
+            unless ($client->connect()) {
+                push @checks, {
+                    id     => 'connectivity',
+                    label  => 'IMAP Connectivity',
+                    status => 'error',
+                    detail => "Cannot reach $hostname:$port",
+                };
+                return $c->render(json => { checks => \@checks });
+            }
+            push @checks, {
+                id     => 'connectivity',
+                label  => 'IMAP Connectivity',
+                status => 'ok',
+                detail => "Connected to $hostname:$port",
+            };
+            unless ($client->login()) {
+                push @checks, {
+                    id     => 'authentication',
+                    label  => 'IMAP Authentication',
+                    status => 'error',
+                    detail => "Login failed for $login",
+                };
+                return $c->render(json => { checks => \@checks });
+            }
+            push @checks, {
+                id     => 'authentication',
+                label  => 'IMAP Authentication',
+                status => 'ok',
+                detail => "Logged in as $login",
+            };
+            my @server_folders = $client->get_mailbox_list();
+            $client->logout();
+            my %on_server = map { $_ => 1 } @server_folders;
+            my $watched_raw = $self->module_config('imap', 'watched_folders') // '';
+            my @watched     = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
+            my @missing_w   = grep { !$on_server{$_} } @watched;
+            push @checks, {
+                id     => 'watched_folders',
+                label  => 'Watched Folders',
+                status => @missing_w ? 'warn' : 'ok',
+                detail => @missing_w
+                    ? 'Missing on server: ' . join(', ', @missing_w)
+                    : 'All ' . scalar(@watched) . ' watched folder(s) exist',
+            };
+            my $mapping_raw = $self->module_config('imap', 'bucket_folder_mappings') // '';
+            my %map_hash    = split /\Q$imap_sep\E/, $mapping_raw;
+            my @missing_m   = grep { $_ ne '' && !$on_server{$map_hash{$_}} } keys %map_hash;
+            push @checks, {
+                id     => 'bucket_mappings',
+                label  => 'Bucket → Folder Mappings',
+                status => @missing_m ? 'warn' : 'ok',
+                detail => @missing_m
+                    ? 'Target folders missing: ' . join(', ', map { $map_hash{$_} } @missing_m)
+                    : 'All ' . scalar(keys %map_hash) . ' mapping(s) valid',
+            };
+            $c->render(json => { checks => \@checks });
+        });
+
+        #--------------------------------------------------------------------
+        # POST /api/v1/imap/test-connection
+        #   Body: { hostname, port, login, password, use_ssl }
+        #   Returns { ok: true } or { ok: false, error: "..." }
+        #--------------------------------------------------------------------
+        $r->post('/api/v1/imap/test-connection' => sub ($c) {
+            require Services::IMAP::Client;
+            my $body   = $c->req->json // {};
+            my $client = Services::IMAP::Client->new();
+            $client->set_configuration($self->configuration());
+            $client->set_mq($self->mq());
+            $client->set_name('imap');
+            $client->config('hostname', $body->{hostname} // '');
+            $client->config('port',     $body->{port}     // 143);
+            $client->config('login',    $body->{login}    // '');
+            $client->config('password', $body->{password} // '');
+            $client->config('use_ssl',  $body->{use_ssl}  // 0);
+            my $err = '';
+            eval {
+                unless ($client->connect()) {
+                    die 'connect';
+                }
+                unless ($client->login()) {
+                    die 'login';
+                }
+                $client->logout();
+            };
+            if ($@) {
+                if ($@ =~ /^connect/) {
+                    $err = 'Could not connect to server';
+                }
+                elsif ($@ =~ /^login/) {
+                    $err = 'Login failed';
+                }
+                elsif ($@ =~ /POPFILE-IMAP-EXCEPTION: (.+?) \(/) {
+                    $err = $1;
+                }
+                else {
+                    $err = 'Connection test failed';
+                }
+                return $c->render(json => { ok => \0, error => $err });
+            }
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------

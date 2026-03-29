@@ -72,6 +72,8 @@
   onMount(refresh);
 </script>
 
+<div class="page">
+
 <h2>Corpus</h2>
 
 {#if status}
@@ -85,7 +87,7 @@
     <tbody>
       {#each buckets as b (b.name)}
         <tr>
-          <td style="color:{b.color}; font-weight:600">{b.name}</td>
+          <td><span class="dot" style="background:{b.color}"></span>{b.name}</td>
           <td>{b.word_count ?? 0}</td>
           <td>
             <input
@@ -147,16 +149,16 @@
   {/if}
 </section>
 
+</div>
+
 <style>
+  .page { padding: 1.75rem 2rem; max-width: 760px; }
   section { margin: 1.5rem 0; }
-  h3 { margin-bottom: 0.5rem; font-size: 1rem; color: #444; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { padding: 0.4rem 0.7rem; border-bottom: 1px solid #e0e0e0; text-align: left; }
-  th { background: #f4f6fb; }
+  h3 { margin-bottom: 0.5rem; font-size: 1rem; color: var(--text); }
   .row { display: flex; gap: 0.5rem; align-items: center; }
-  input[type=text], select { padding: 0.35rem 0.6rem; border: 1px solid #ccc; border-radius: 4px; }
-  button { padding: 0.35rem 0.8rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
-  .btn-danger { color: #c0392b; border-color: #c0392b; }
-  .status { color: #27ae60; font-weight: 500; }
+  button { padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
+  .btn-danger { color: var(--danger); border-color: var(--danger); }
+  .status { color: var(--success); font-weight: 500; }
   .word-list { column-count: 3; margin-top: 0.5rem; font-size: 0.85rem; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; vertical-align: middle; }
 </style>
