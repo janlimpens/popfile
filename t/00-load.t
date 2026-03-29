@@ -16,7 +16,6 @@ my @modules = qw(
     POPFile::MQ
     POPFile::Mutex
     POPFile::History
-    POPFile::API
     Classifier::WordMangle
     Classifier::MailParse
     Classifier::Bayes

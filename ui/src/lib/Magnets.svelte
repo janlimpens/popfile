@@ -73,8 +73,11 @@
 <section>
   <h3>Existing magnets</h3>
   {#each Object.entries(byBucket) as [bucket, types]}
+    {@const bc = buckets.find(b => b.name === bucket)}
     <div class="bucket-block">
-      <h4>{bucket}</h4>
+      <h4>
+        <span class="dot" style="background:{bc?.color ?? '#888'}"></span>{bucket}
+      </h4>
       {#each Object.entries(types) as [type, values]}
         <div class="type-row">
           <strong>{magnetTypes[type] ?? type}:</strong>
@@ -94,13 +97,15 @@
 
 <style>
   .page { padding: 1.75rem 2rem; max-width: 760px; }
+  .page { padding: 1.75rem 2rem; max-width: 760px; }
   .row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
-  input[type=text], select { padding: 0.35rem 0.6rem; border: 1px solid #ccc; border-radius: 4px; }
-  button { padding: 0.35rem 0.8rem; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; }
-  .bucket-block { margin: 1rem 0; }
-  .bucket-block h4 { font-size: 0.95rem; color: #555; margin-bottom: 0.3rem; }
-  .type-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.2rem 0; }
-  .magnet { display: inline-flex; align-items: center; gap: 0.2rem; background: #e8f0fe; border-radius: 3px; padding: 0.15rem 0.4rem; font-size: 0.85rem; }
-  .remove { border: none; background: none; cursor: pointer; color: #888; padding: 0; font-size: 0.9rem; }
-  .status { color: #27ae60; font-weight: 500; }
+  button { padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
+  .bucket-block { margin: 1.25rem 0; }
+  .bucket-block h4 { font-size: 0.95rem; color: var(--text); margin-bottom: 0.4rem; display: flex; align-items: center; }
+  .type-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.25rem 0 0.25rem 1.2rem; }
+  .magnet { display: inline-flex; align-items: center; gap: 0.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 0.15rem 0.4rem; font-size: 0.85rem; }
+  .remove { border: none; background: none; cursor: pointer; color: var(--text-muted); padding: 0; font-size: 0.9rem; }
+  .remove:hover { color: var(--danger); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.5rem; flex-shrink: 0; }
+  .status { color: var(--success); font-weight: 500; }
 </style>

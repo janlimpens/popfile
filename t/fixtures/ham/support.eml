@@ -1,0 +1,23 @@
+From: support@toolvendor.example.com
+To: jan@example.com
+Subject: Re: [Ticket #88412] Export to CSV not working in Firefox
+Date: Wed, 10 Jan 2024 11:03:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+
+Hi Jan,
+
+Thank you for the detailed bug report and the HAR file you attached.
+
+We have reproduced the issue in Firefox 121 when the table has more than
+500 rows. The root cause is a Content-Disposition header being stripped
+by Firefox's stricter CSP handling.
+
+A fix is scheduled for the next release (2.9.3) on January 22nd. In the
+meantime you can use the workaround: hold Shift while clicking Export to
+trigger a direct download instead of the blob URL.
+
+Sorry for the inconvenience.
+
+Kind regards,
+Tom - ToolVendor Support

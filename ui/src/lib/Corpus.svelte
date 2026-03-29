@@ -4,6 +4,7 @@
   let { buckets = $bindable([]) } = $props();
 
   let newName = $state('');
+  let newColor = $state('#888888');
   let renameFrom = $state('');
   let renameTo = $state('');
   let status = $state('');
@@ -21,11 +22,17 @@
     const res = await fetch('/api/v1/buckets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newName.trim() }),
+      body: JSON.stringify({ name: newName.trim(), color: newColor }),
     });
-    status = res.ok ? `Created "${newName}"` : 'Error';
-    newName = '';
-    refresh();
+    if (res.ok) {
+      status = `Created "${newName}"`;
+      newName = '';
+      newColor = '#888888';
+      refresh();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      status = data.error ?? 'Error';
+    }
   }
 
   async function deleteBucket(name) {
@@ -77,7 +84,7 @@
 <h2>Corpus</h2>
 
 {#if status}
-  <p class="status">{status}</p>
+  <p class="status" class:error={status.startsWith('invalid') || status === 'bucket already exists'}>{status}</p>
 {/if}
 
 <section>
@@ -111,7 +118,8 @@
 <section>
   <h3>Create bucket</h3>
   <div class="row">
-    <input type="text" placeholder="bucket-name" bind:value={newName} />
+    <input type="color" bind:value={newColor} />
+    <input type="text" placeholder="my-bucket-1" pattern="[a-z0-9_-]+" title="lowercase letters, digits, - and _ only" bind:value={newName} />
     <button onclick={createBucket}>Create</button>
   </div>
 </section>
@@ -154,15 +162,12 @@
 <style>
   .page { padding: 1.75rem 2rem; max-width: 760px; }
   section { margin: 1.5rem 0; }
-  h3 { margin-bottom: 0.5rem; font-size: 1rem; color: var(--text-h); }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { padding: 0.4rem 0.7rem; border-bottom: 1px solid var(--border); text-align: left; }
-  th { background: var(--code-bg); }
+  h3 { margin-bottom: 0.5rem; font-size: 1rem; color: var(--text); }
   .row { display: flex; gap: 0.5rem; align-items: center; }
-  input[type=text], select { padding: 0.35rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); }
   button { padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
-  .btn-danger { color: #c0392b; border-color: #c0392b; }
-  .status { color: #27ae60; font-weight: 500; }
+  .btn-danger { color: var(--danger); border-color: var(--danger); }
+  .status { color: var(--success); font-weight: 500; }
+  .status.error { color: var(--danger); }
   .word-list { column-count: 3; margin-top: 0.5rem; font-size: 0.85rem; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; vertical-align: middle; }
 </style>

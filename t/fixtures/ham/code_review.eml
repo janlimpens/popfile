@@ -1,0 +1,22 @@
+From: carol@dev.example.com
+To: team@dev.example.com
+Subject: Re: Pull request #42 - refactor authentication module
+Date: Tue, 02 Jan 2024 14:23:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+
+Hi Carol,
+
+I reviewed your pull request and left a few comments inline.
+
+The main concern is the session handling in auth.py line 87 - we should
+invalidate the old token before issuing a new one, otherwise there is a
+small race window.
+
+Also the unit tests need updating for the new token format. Can you add
+a test case for the expiry edge case?
+
+Otherwise looks good, clean implementation.
+
+Cheers,
+Dave

@@ -183,15 +183,21 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
-        # POST /api/v1/buckets   { name }
+        # POST /api/v1/buckets   { name, color? }
         #--------------------------------------------------------------------
         $r->post( '/api/v1/buckets' => sub ($c) {
-            my $body = $c->req->json // {};
-            my $name = $body->{name} // '';
-            if ( $name eq '' ) {
-                return $c->render( status => 400, json => { error => 'name required' } );
-            }
-            $svc->create_bucket( $name );
+            my $body  = $c->req->json // {};
+            my $name  = $body->{name} // '';
+            my $color = $body->{color} // '';
+            return $c->render( status => 400, json => { error => 'name required' } )
+                if $name eq '';
+            return $c->render( status => 422, json => { error => 'invalid name: use lowercase letters, digits, - and _ only' } )
+                if $name =~ /[^a-z\-_0-9]/;
+            my $ok = $svc->create_bucket( $name );
+            return $c->render( status => 409, json => { error => 'bucket already exists' } )
+                unless $ok;
+            $svc->set_bucket_color( $name, $color )
+                if $color =~ /^#[0-9a-fA-F]{6}$/;
             $c->render( json => { ok => \1 } );
         });
 
@@ -370,7 +376,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             unless ($known{$bucket}) {
                 return $c->render(status => 422, json => { error => 'unknown bucket' });
             }
-            my @valid_slots = grep { /^\d+$/ } @{$slots};
+            my @valid_slots = grep { /^\d+$/ } $slots->@*;
             my $updated = 0;
             for my $slot (@valid_slots) {
                 my $result = $do_reclassify->($slot, $bucket);
@@ -395,6 +401,52 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
                 return $c->render(status => 422, json => { error => $result->{error} });
             }
             $c->render(json => { ok => \1 });
+        });
+
+        #--------------------------------------------------------------------
+        # GET /api/v1/history/:slot
+        #   Returns message body and per-word bucket colors for highlighting.
+        #--------------------------------------------------------------------
+        $r->get( '/api/v1/history/:slot' => sub ($c) {
+            my $slot = $c->param('slot');
+            return $c->render( status => 400, json => { error => 'invalid slot' } )
+                unless $slot =~ /^\d+$/;
+
+            my $hist = $svc->history_obj();
+            my $file = $hist->get_slot_file( $slot );
+            return $c->render( status => 404, json => { error => 'not found' } )
+                unless -f $file;
+
+            open my $fh, '<', $file
+                or return $c->render( status => 500, json => { error => 'cannot read' } );
+
+            my $in_headers = 1;
+            my $body = '';
+            while ( <$fh> ) {
+                s/[\r\n]//g;
+                if ( $in_headers ) {
+                    $in_headers = 0 if $_ eq '';
+                    next;
+                }
+                $body .= "$_\n";
+            }
+            close $fh;
+
+            my %orig_for;
+            for my $raw ( split /\W+/, $body ) {
+                next if $raw eq '';
+                my $mangled = $svc->mangle_word( $raw );
+                next if $mangled eq '' || exists $orig_for{$mangled};
+                $orig_for{$mangled} = lc $raw;
+            }
+
+            my %mangled_colors = $svc->get_word_colors( keys %orig_for );
+            my %word_colors;
+            for my $mangled ( keys %mangled_colors ) {
+                $word_colors{ $orig_for{$mangled} } = $mangled_colors{$mangled};
+            }
+
+            $c->render( json => { body => $body, word_colors => \%word_colors } );
         });
 
         #--------------------------------------------------------------------
@@ -502,6 +554,8 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             imap_update_interval     => [imap    => 'update_interval'],
             imap_expunge             => [imap    => 'expunge'],
             imap_training_mode       => [imap    => 'training_mode'],
+            imap_uidnexts            => [imap    => 'uidnexts'],
+            imap_uidvalidities       => [imap    => 'uidvalidities'],
         );
 
         #--------------------------------------------------------------------

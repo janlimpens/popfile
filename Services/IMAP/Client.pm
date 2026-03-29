@@ -112,6 +112,11 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         return $result
     }
 
+    method create_folder ($folder_name) {
+        $self->say( "CREATE \"$folder_name\"" );
+        return $self->get_response()
+    }
+
     method expunge {
         $self->say('EXPUNGE');
         $self->get_response();
