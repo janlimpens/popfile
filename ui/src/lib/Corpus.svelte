@@ -24,10 +24,15 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: newName.trim(), color: newColor }),
     });
-    status = res.ok ? `Created "${newName}"` : 'Error';
-    newName = '';
-    newColor = '#888888';
-    refresh();
+    if (res.ok) {
+      status = `Created "${newName}"`;
+      newName = '';
+      newColor = '#888888';
+      refresh();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      status = data.error ?? 'Error';
+    }
   }
 
   async function deleteBucket(name) {
@@ -79,7 +84,7 @@
 <h2>Corpus</h2>
 
 {#if status}
-  <p class="status">{status}</p>
+  <p class="status" class:error={status.startsWith('invalid') || status === 'bucket already exists'}>{status}</p>
 {/if}
 
 <section>
@@ -114,7 +119,7 @@
   <h3>Create bucket</h3>
   <div class="row">
     <input type="color" bind:value={newColor} />
-    <input type="text" placeholder="bucket-name" bind:value={newName} />
+    <input type="text" placeholder="my-bucket-1" pattern="[a-z0-9_-]+" title="lowercase letters, digits, - and _ only" bind:value={newName} />
     <button onclick={createBucket}>Create</button>
   </div>
 </section>
@@ -162,6 +167,7 @@
   button { padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
   .btn-danger { color: var(--danger); border-color: var(--danger); }
   .status { color: var(--success); font-weight: 500; }
+  .status.error { color: var(--danger); }
   .word-list { column-count: 3; margin-top: 0.5rem; font-size: 0.85rem; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; vertical-align: middle; }
 </style>

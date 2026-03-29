@@ -191,7 +191,11 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             my $color = $body->{color} // '';
             return $c->render( status => 400, json => { error => 'name required' } )
                 if $name eq '';
-            $svc->create_bucket( $name );
+            return $c->render( status => 422, json => { error => 'invalid name: use lowercase letters, digits, - and _ only' } )
+                if $name =~ /[^a-z\-_0-9]/;
+            my $ok = $svc->create_bucket( $name );
+            return $c->render( status => 409, json => { error => 'bucket already exists' } )
+                unless $ok;
             $svc->set_bucket_color( $name, $color )
                 if $color =~ /^#[0-9a-fA-F]{6}$/;
             $c->render( json => { ok => \1 } );
