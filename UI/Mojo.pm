@@ -50,6 +50,7 @@ Registers configuration defaults: C<port> (8080) and C<static_dir> (public).
         $self->config('date_format',      '' );
         $self->config('session_dividers', 1 );
         $self->config('wordtable_format', '' );
+        $self->config('locale',           '' );
         return 1;
     }
 
@@ -480,6 +481,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             mojo_ui_date_format      => [mojo_ui => 'date_format'],
             mojo_ui_session_dividers => [mojo_ui => 'session_dividers'],
             mojo_ui_wordtable_format => [mojo_ui => 'wordtable_format'],
+            mojo_ui_locale           => [mojo_ui => 'locale'],
             pop3_port                => [pop3    => 'port'],
             pop3_separator           => [pop3    => 'separator'],
             pop3_local               => [pop3    => 'local'],
@@ -527,6 +529,57 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             imap_uidnexts            => [imap    => 'uidnexts'],
             imap_uidvalidities       => [imap    => 'uidvalidities'],
         );
+
+        my $languages_dir = $self->get_root_path('languages');
+
+        #--------------------------------------------------------------------
+        # GET /api/v1/i18n
+        #   Returns [{name, code, direction}, ...] for each available locale
+        #--------------------------------------------------------------------
+        $r->get('/api/v1/i18n' => sub ($c) {
+            my @locales;
+            for my $file (sort glob "$languages_dir/*.msg") {
+                my $name = $file;
+                $name =~ s|.*/||;
+                $name =~ s|\.msg$||;
+                my ($code, $dir) = ('en', 'ltr');
+                open my $fh, '<:encoding(UTF-8)', $file or next;
+                while (my $line = <$fh>) {
+                    chomp $line;
+                    next if $line =~ /^#/ || $line !~ /\S/;
+                    if ($line =~ /^LanguageCode\s+(\S+)/) { $code = $1 }
+                    if ($line =~ /^LanguageDirection\s+(\S+)/) { $dir = $1 }
+                    last if $code ne 'en' || $dir ne 'ltr';
+                }
+                close $fh;
+                push @locales, { name => $name, code => $code, direction => $dir };
+            }
+            $c->render(json => \@locales);
+        });
+
+        #--------------------------------------------------------------------
+        # GET /api/v1/i18n/:locale
+        #   Returns { key => value, ... } for the given locale .msg file
+        #--------------------------------------------------------------------
+        $r->get('/api/v1/i18n/:locale' => sub ($c) {
+            my $name = $c->param('locale');
+            $name =~ s/[^A-Za-z0-9_\-]//g;
+            my $file = "$languages_dir/$name.msg";
+            return $c->render(status => 404, json => { error => 'locale not found' })
+                unless -f $file;
+            my %strings;
+            open my $fh, '<:encoding(UTF-8)', $file or
+                return $c->render(status => 500, json => { error => 'read error' });
+            while (my $line = <$fh>) {
+                chomp $line;
+                next if $line =~ /^#/ || $line !~ /\S/;
+                if ($line =~ /^(\S+)\s+(.+)/) {
+                    $strings{$1} = $2;
+                }
+            }
+            close $fh;
+            $c->render(json => \%strings);
+        });
 
         #--------------------------------------------------------------------
         # GET /api/v1/config  →  { key: value, ... }

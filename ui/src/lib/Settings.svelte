@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { loadLocale } from './locale.svelte.js';
 
   let config = $state({});
   let active = $state('ui');
@@ -7,6 +8,7 @@
   let dirty = $state(false);
   let saving = $state(false);
   let settingsSearch = $state('');
+  let availableLocales = $state([]);
 
   // ─── Section / field schema ─────────────────────────────────────────────
   const SECTIONS = [
@@ -26,6 +28,8 @@
         { key: 'mojo_ui_wordtable_format', label: 'Word Table',        type: 'select',
           options: [['','Hidden'],['freq','Frequencies'],['prob','Probabilities'],['score','Log Scores']],
           desc: 'What to display in the word probability table.' },
+        { key: 'mojo_ui_locale', label: 'Language', type: 'locale',
+          desc: 'UI display language. Leave empty to auto-detect from browser.' },
       ],
     },
     {
@@ -161,8 +165,12 @@
 
   // ─── Load / save ────────────────────────────────────────────────────────
   async function load() {
-    const res = await fetch('/api/v1/config');
-    if (res.ok) config = await res.json();
+    const [cfgRes, localeRes] = await Promise.all([
+      fetch('/api/v1/config'),
+      fetch('/api/v1/i18n'),
+    ]);
+    if (cfgRes.ok) config = await cfgRes.json();
+    if (localeRes.ok) availableLocales = await localeRes.json();
   }
 
   async function save() {
@@ -178,6 +186,7 @@
       status = 'ok';
       dirty = false;
       setTimeout(() => { status = ''; }, 2500);
+      if (config.mojo_ui_locale) loadLocale(config.mojo_ui_locale);
     } else {
       status = 'error';
     }
@@ -254,6 +263,17 @@
                         <option value={val}>{lbl}</option>
                       {/each}
                     </select>
+                  {:else if f.type === 'locale'}
+                    <select
+                      id={f.key}
+                      bind:value={config[f.key]}
+                      onchange={mark}
+                    >
+                      <option value="">Auto-detect</option>
+                      {#each availableLocales as l}
+                        <option value={l.name}>{l.name}</option>
+                      {/each}
+                    </select>
                   {:else}
                     <input
                       id={f.key}
@@ -302,6 +322,17 @@
                       >
                         {#each f.options as [val, lbl]}
                           <option value={val}>{lbl}</option>
+                        {/each}
+                      </select>
+                    {:else if f.type === 'locale'}
+                      <select
+                        id={f.key}
+                        bind:value={config[f.key]}
+                        onchange={mark}
+                      >
+                        <option value="">Auto-detect</option>
+                        {#each availableLocales as l}
+                          <option value={l.name}>{l.name}</option>
                         {/each}
                       </select>
                     {:else}

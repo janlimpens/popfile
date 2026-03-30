@@ -6,6 +6,7 @@
   import Magnets  from './lib/Magnets.svelte';
   import Settings from './lib/Settings.svelte';
   import Status   from './lib/Status.svelte';
+  import { t, initLocale } from './lib/locale.svelte.js';
 
   let page    = $state(window.location.hash.slice(1) || 'history');
   let buckets = $state([]);
@@ -17,20 +18,25 @@
   });
 
   onMount(async () => {
-    const res = await fetch('/api/v1/buckets');
-    if (res.ok) buckets = await res.json();
+    const [bucketsRes, cfgRes] = await Promise.all([
+      fetch('/api/v1/buckets'),
+      fetch('/api/v1/config'),
+    ]);
+    if (bucketsRes.ok) buckets = await bucketsRes.json();
+    const cfg = cfgRes.ok ? await cfgRes.json() : {};
+    await initLocale(cfg.mojo_ui_locale || '');
     window.addEventListener('hashchange', () => {
       page = window.location.hash.slice(1) || 'history';
     });
   });
 
   const NAV = [
-    ['history',  'History'],
-    ['corpus',   'Corpus'],
-    ['magnets',  'Magnets'],
-    ['imap',     'IMAP'],
-    ['status',   'Status'],
-    ['settings', 'Settings'],
+    ['history',  'NavHistory',  'History'],
+    ['corpus',   'NavCorpus',   'Corpus'],
+    ['magnets',  'NavMagnets',  'Magnets'],
+    ['imap',     'NavIMAP',     'IMAP'],
+    ['status',   'NavStatus',   'Status'],
+    ['settings', 'NavSettings', 'Settings'],
   ];
 
   function toggleTheme() {
@@ -41,8 +47,8 @@
 <nav>
   <span class="logo">POPFile</span>
   <div class="nav-links">
-    {#each NAV as [id, label]}
-      <a href="#{id}" class:active={page === id}>{label}</a>
+    {#each NAV as [id, key, fallback]}
+      <a href="#{id}" class:active={page === id}>{t(key) === key ? fallback : t(key)}</a>
     {/each}
   </div>
   <button class="theme-btn" onclick={toggleTheme} title="Toggle theme">
