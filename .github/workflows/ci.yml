@@ -10,25 +10,24 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        perl-version: ['5.38', '5.40']
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Perl ${{ matrix.perl-version }}
+      - name: Set up Perl 5.40
         uses: shogo82148/actions-setup-perl@v1
         with:
-          perl-version: ${{ matrix.perl-version }}
+          perl-version: '5.40'
+
+      - name: Install Carton
+        run: cpanm --notest Carton
 
       - name: Install dependencies
-        run: cpanm --notest --installdeps . && cpanm --notest Test2::V0 Test::MockObject
+        run: carton install
 
       - name: Run tests
-        run: perl -I. -MApp::Prove -e 'App::Prove->new->run' -- -lr t/
+        run: carton exec prove -l t/
 
       - name: Syntax check all modules
         run: |
           find . -name '*.pm' -not -path './lib/*' -not -path './local/*' -print0 \
-            | xargs -0 -I{} perl -I. -c {} 2>&1
+            | xargs -0 -I{} perl -Ilib -I. -c {} 2>&1
