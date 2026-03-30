@@ -123,32 +123,11 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
     #========================================================================
     # PRIVATE: child process — build Mojolicious app and run daemon
     #========================================================================
-    method run_server {
+    method build_app ($svc, $session) {
         require Mojolicious;
-        require Mojo::Server::Daemon;
+        require Mojo::Path;
 
-        my $svc    = $service;
-        my $port   = $self->config('port' );
-        my $static = $self->get_root_path($self->config('static_dir' ) );
-
-        # Reset DB connections inherited from the parent (force lazy re-clone)
-        if ( defined $svc ) {
-            my $history = $svc->history_obj();
-            $history->forked() if defined $history;
-
-            my $bayes = $svc->bayes();
-            if ( defined $bayes ) {
-                # Bayes::forked reinitialises the DB handle and prepared stmts
-                $bayes->forked( undef );
-            }
-        }
-
-        # Obtain a fresh session for this child process
-        my $session = '';
-        if ( defined $svc && defined $svc->bayes() ) {
-            $session = $svc->bayes()->get_session_key( 'admin', '' );
-        }
-
+        my $static = $self->get_root_path($self->config('static_dir'));
         my $app = Mojolicious->new();
         $app->log->level('warn');
 
@@ -254,6 +233,25 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         });
 
         #--------------------------------------------------------------------
+        # GET /api/v1/buckets/:name
+        #   Returns { name, color, word_count, pseudo, fpcount, fncount }
+        #--------------------------------------------------------------------
+        $r->get( '/api/v1/buckets/:name' => sub ($c) {
+            my $name = $c->param('name');
+            unless ($svc->is_bucket($name) || $svc->is_pseudo_bucket($name)) {
+                return $c->render(status => 404, json => { error => 'not found' });
+            }
+            $c->render(json => {
+                name => $name,
+                color => $svc->get_bucket_color($name) // '#666666',
+                word_count => $svc->get_bucket_word_count($name) + 0,
+                pseudo => $svc->is_pseudo_bucket($name) ? \1 : \0,
+                fpcount => ($svc->get_bucket_parameter($name, 'fpcount') // 0) + 0,
+                fncount => ($svc->get_bucket_parameter($name, 'fncount') // 0) + 0,
+            });
+        });
+
+        #--------------------------------------------------------------------
         # GET /api/v1/history?page=1&per_page=25&search=…
         #   Returns { items: [...], total: N }
         #--------------------------------------------------------------------
@@ -290,34 +288,6 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
                 };
             }
             $c->render( json => { items => \@items, total => $total + 0 } );
-        });
-
-        #--------------------------------------------------------------------
-        # GET /api/v1/history/:slot
-        #   Returns { body, word_colors }
-        #--------------------------------------------------------------------
-        $r->get( '/api/v1/history/:slot' => sub ($c) {
-            my $slot = $c->param('slot');
-            unless ($slot =~ /^\d+$/) {
-                return $c->render(status => 400, json => { error => 'invalid slot' });
-            }
-            my $hist = $svc->history_obj();
-            my $file = $hist->get_slot_file($slot);
-            unless (defined $file && -f $file) {
-                return $c->render(status => 404, json => { error => 'not found' });
-            }
-            open my $fh, '<', $file
-                or return $c->render(status => 500, json => { error => 'read error' });
-            my $body = do { local $/; <$fh> };
-            close $fh;
-            my %word_colors;
-            for my $word (split /\W+/, lc $body) {
-                next if length($word) < 3 || exists $word_colors{$word};
-                my $color = $svc->bayes()->get_color($session, $word);
-                $word_colors{$word} = $color
-                    unless $color eq 'black';
-            }
-            $c->render(json => { body => $body, word_colors => \%word_colors });
         });
 
         my $do_reclassify = sub ($slot, $bucket) {
@@ -415,7 +385,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             my $hist = $svc->history_obj();
             my $file = $hist->get_slot_file( $slot );
             return $c->render( status => 404, json => { error => 'not found' } )
-                unless -f $file;
+                unless defined $file && -f $file;
 
             open my $fh, '<', $file
                 or return $c->render( status => 500, json => { error => 'cannot read' } );
@@ -776,12 +746,32 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             $c->render(json => { ok => \1 });
         });
 
-        #--------------------------------------------------------------------
-        # Start the daemon
-        #--------------------------------------------------------------------
+        return $app
+    }
+
+    method run_server {
+        require Mojo::Server::Daemon;
+
+        my $svc  = $service;
+        my $port = $self->config('port');
+
+        if ( defined $svc ) {
+            my $history = $svc->history_obj();
+            $history->forked() if defined $history;
+            my $bayes = $svc->bayes();
+            $bayes->forked(undef) if defined $bayes;
+        }
+
+        my $session = '';
+        if ( defined $svc && defined $svc->bayes() ) {
+            $session = $svc->bayes()->get_session_key('admin', '');
+        }
+
+        my $app = $self->build_app($svc, $session);
+
         my $daemon = Mojo::Server::Daemon->new(
-            app    => $app,
-            listen => [ "http://*:$port" ],
+            app => $app,
+            listen => ["http://*:$port"],
         );
         $daemon->run();
     }
