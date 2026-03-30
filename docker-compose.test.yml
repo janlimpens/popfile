@@ -3,6 +3,7 @@ services:
     image: dovecot/dovecot
     ports:
       - "10143:31143"
+      - "10110:31110"
     volumes:
       - ./t/fixtures/dovecot/conf:/etc/dovecot/conf.d:ro
       - imap-mail:/var/mail
