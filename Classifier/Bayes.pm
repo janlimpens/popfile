@@ -27,6 +27,7 @@ package Classifier::Bayes;
 #----------------------------------------------------------------------------
 
 use Object::Pad;
+use feature 'state';
 use locale;
 use Classifier::Bucket;
 use Classifier::MailParse;
@@ -1707,23 +1708,24 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
 
     $get_wordids->finish();
     undef $get_wordids;
-    my $qb = $self->_qb();
-    my $expr = $qb->combine_and(
-        $qb->compare('matrix.wordid', \@id_list),
-        $qb->compare('matrix.bucketid', $db_bucketid->{$userid}{$bucket}{id}));
-    $db_getwords = $self->validate_sql_prepare_and_execute(
-        "SELECT matrix.times, matrix.wordid FROM matrix WHERE "
-        . $expr->to_string(), $expr->params()->@*);
     my %counts;
-    my $count;
-
-    $db_getwords->bind_columns(\$count, \$wordid);
-    while ($db_getwords->fetchrow_arrayref) {
-        $counts{$wordid} = $count;
+    if (@id_list) {
+        my $qb = $self->_qb();
+        my $expr = $qb->combine_and(
+            $qb->compare('matrix.wordid', \@id_list),
+            $qb->compare('matrix.bucketid', $db_bucketid->{$userid}{$bucket}{id}));
+        $db_getwords = $self->validate_sql_prepare_and_execute(
+            "SELECT matrix.times, matrix.wordid FROM matrix WHERE "
+            . $expr->to_string(), $expr->params()->@*);
+        my $count;
+        my $wid;
+        $db_getwords->bind_columns(\$count, \$wid);
+        while ($db_getwords->fetchrow_arrayref) {
+            $counts{$wid} = $count;
+        }
+        $db_getwords->finish();
+        undef $db_getwords;
     }
-
-    $db_getwords->finish();
-    undef $db_getwords;
 
     $db->begin_work;
     for my $word (keys $parser->words()->%*) {

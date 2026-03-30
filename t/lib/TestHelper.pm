@@ -88,6 +88,11 @@ sub make_module {
     wire($mod, $config, $mq);
     $mod->initialize();
     if ( $class eq 'Classifier::Bayes' ) {
+        require Services::Database;
+        my $db_svc = Services::Database->new();
+        wire($db_svc, $config, $mq);
+        $db_svc->initialize();
+        $mod->set_db_service($db_svc);
         $mod->set_history( bless {}, 'TestHelper::History' );
         configure_db($config);
     }
