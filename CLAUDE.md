@@ -6,36 +6,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 POPFile is a Bayesian email classifier written in Perl. It acts as a proxy between mail clients and mail servers (POP3, SMTP, NNTP), intercepting messages and inserting an `X-Text-Classification:` header with the predicted category ("bucket"). Users correct misclassifications through the web UI, which trains the classifier over time.
 
-## Commands
+## Environment and Dependencies
 
-### Install dependencies
+**Perl version:** `perl-5.40.0` via perlbrew. Never use system Perl or system Perl libraries.
 
-Ideally, develop inside a container and have everything zou need in there. Use docker-copose or similar to string services together.
+**Dependency management:** Carton. All dependencies are declared in `cpanfile` and installed locally into `local/`. Every Perl invocation must go through `carton exec`.
 
-use carton/perbrew/perlenv or similar and install locally to the project, don't use system perl and system perl libs. 
-set things up so, that you don't need to repeatedly recreate the environment verbosely
+**`lib/` directory:** Only `lib/Query/` is vendored (local Query::Builder). Everything else comes from carton. Do not add XS modules, Windows DLLs, or autosplit artifacts to `lib/` — these cause version mismatches across platforms.
 
-- prefer to use well established Perl modules to having to maintain something very similar!!!
-  - Log::Any
-  - DBI
-  - Mojolicious
-  - Path::Tiny
-  - Cpanel::JSON::XS
-  - ...
+**CI:** GitHub Actions runs `carton install` then `carton exec prove -l t/` on Perl 5.40.
 
 ```sh
-perl Makefile.PL
-make
-# or install CPAN deps directly:
-cpan DBI DBD::SQLite HTTP::Daemon HTTP::Status LWP::UserAgent Digest::MD5 \
-     MIME::Base64 MIME::QuotedPrint Date::Parse HTML::Template HTML::Tagset \
-     Sort::Key::Natural
+carton install          # install/update dependencies
+carton exec perl popfile.pl
+carton exec prove -l t/
 ```
+
+Prefer well-established CPAN modules over maintaining custom code:
+- `Log::Any`, `DBI`, `Mojolicious`, `Path::Tiny`, `Cpanel::JSON::XS`, etc.
+
+## Commands
 
 ### Run POPFile
 
 ```sh
-perl popfile.pl
+carton exec perl popfile.pl
 ```
 
 The `POPFILE_ROOT` environment variable overrides the root directory (default: `./`).
@@ -93,7 +88,7 @@ SQLite 3.x (via `DBD::SQLite >= 1.00`) is the default backend; MySQL and Postgre
 
 ### Bundled libraries
 
-`lib/` contains vendored copies of third-party Perl modules. Prefer these over system-installed versions when running POPFile directly from the source tree.
+`lib/Query/` contains a local vendored copy of Query::Builder (not on CPAN). All other dependencies come from carton (`local/`).
 
 ### Internationalization
 
