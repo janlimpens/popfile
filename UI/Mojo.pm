@@ -37,21 +37,25 @@ class UI::Mojo :isa(POPFile::Module) {
 
 =head2 initialize
 
-Registers configuration defaults: C<port> (8080) and C<static_dir> (public).
+Registers configuration defaults: C<port> (8080), C<static_dir> (public),
+and C<open_browser> (0).  Set C<port> to 0 to let the OS pick a free port
+at startup.  Set C<open_browser> to 1 to open the UI in the default browser
+once the server is ready (config key: C<mojo_ui_open_browser>).
 
 =cut
 
     method initialize {
-        $self->config('port',             8080 );
-        $self->config('static_dir',       'public' );
-        $self->config('password',         '' );
-        $self->config('local',            1 );
-        $self->config('page_size',        25 );
-        $self->config('date_format',      '' );
-        $self->config('session_dividers', 1 );
-        $self->config('wordtable_format', '' );
-        $self->config('locale',           '' );
-        return 1;
+        $self->config('port',             8080);
+        $self->config('static_dir',       'public');
+        $self->config('password',         '');
+        $self->config('local',            1);
+        $self->config('page_size',        25);
+        $self->config('date_format',      '');
+        $self->config('session_dividers', 1);
+        $self->config('wordtable_format', '');
+        $self->config('locale',           '');
+        $self->config('open_browser',     0);
+        return 1
     }
 
 =head2 start
@@ -60,22 +64,39 @@ Forks a child process running the Mojolicious daemon. Returns 1 on success.
 
 =cut
 
+    method _find_free_port {
+        require IO::Socket::INET;
+        my $sock = IO::Socket::INET->new(
+            Listen => 1,
+            Proto => 'tcp',
+            LocalAddr => '0.0.0.0',
+            LocalPort => 0,
+            ReuseAddr => 1,
+        );
+        my $port = $sock->sockport();
+        $sock->close();
+        return $port
+    }
+
     method start {
+        my $port = $self->config('port');
+        if ($port == 0) {
+            $port = $self->_find_free_port();
+            $self->config('port', $port);
+        }
         my $pid = fork();
-        if ( !defined $pid ) {
-            $self->log_msg(0, "UI::Mojo: fork failed: $!" );
+        if (!defined $pid) {
+            $self->log_msg(0, "UI::Mojo: fork failed: $!");
             return 0;
         }
-        if ( $pid == 0 ) {
-            # --- child ---
+        if ($pid == 0) {
             eval { $self->run_server() };
-            $self->log_msg(0, "UI::Mojo child error: $@" ) if $@;
+            $self->log_msg(0, "UI::Mojo child error: $@") if $@;
             exit 0;
         }
-        # --- parent ---
         $child_pid = $pid;
-        $self->log_msg(0, "UI::Mojo: started on port " . $self->config('port') . " (pid $pid)" );
-        return 1;
+        $self->log_msg(0, "UI::Mojo: started on port $port (pid $pid)");
+        return 1
     }
 
 =head2 stop
@@ -808,7 +829,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         my $svc  = $service;
         my $port = $self->config('port');
 
-        if ( defined $svc ) {
+        if (defined $svc) {
             my $history = $svc->history_obj();
             $history->forked() if defined $history;
             my $bayes = $svc->bayes();
@@ -816,7 +837,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         }
 
         my $session = '';
-        if ( defined $svc && defined $svc->bayes() ) {
+        if (defined $svc && defined $svc->bayes()) {
             $session = $svc->bayes()->get_session_key('admin', '');
         }
 
@@ -826,7 +847,14 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             app => $app,
             listen => ["http://*:$port"],
         );
-        $daemon->run();
+        $daemon->start();
+
+        if ($self->config('open_browser')) {
+            require Browser::Open;
+            Browser::Open::open_browser("http://localhost:$port/");
+        }
+
+        $daemon->ioloop->start();
     }
 
 } # end class UI::Mojo
