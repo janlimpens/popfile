@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import { flip } from 'svelte/animate';
+  import BucketSelect from './BucketSelect.svelte';
 
   let { buckets } = $props();
 
@@ -21,6 +22,7 @@
   let bulkBusy = $state(false);
 
   let pageSize = $state(25);
+  let ready = $state(false);
 
   async function loadPageSize() {
     const res = await fetch('/api/v1/config');
@@ -153,13 +155,17 @@
 
   onMount(async () => {
     await loadPageSize();
-    load();
+    ready = true;
     const interval = setInterval(() => {
       if (page === 1 && !search) pollRefresh();
     }, 10000);
     return () => clearInterval(interval);
   });
-  $effect(() => { page; search; pageSize; load(); });
+  $effect(() => {
+    if (!ready) return;
+    page; search; pageSize;
+    load();
+  });
 </script>
 
 <div class="page">
@@ -187,12 +193,7 @@
 {#if checkedSlots.size > 0}
   <div class="bulk-bar">
     <span>{checkedSlots.size} selected</span>
-    <select bind:value={bulkBucket}>
-      <option value="">— move to —</option>
-      {#each buckets as b}
-        <option value={b.name}>{b.name}</option>
-      {/each}
-    </select>
+    <BucketSelect {buckets} bind:value={bulkBucket} placeholder="— move to —" />
     <button onclick={bulkReclassify} disabled={!bulkBucket || bulkBusy}>
       {bulkBusy ? 'Moving…' : 'Apply'}
     </button>
@@ -200,10 +201,10 @@
   </div>
 {/if}
 
-{#if loading}
+{#if loading && items.length === 0}
   <p>Loading…</p>
-{:else}
-  <table>
+{/if}
+<table class:loading>
     <thead>
       <tr>
         <th class="cb-col">
@@ -233,12 +234,12 @@
             </span>
           </td>
           <td onclick={e => e.stopPropagation()}>
-            <select onchange={e => reclassify(item.slot, e.target.value)}>
-              <option value="">— move to —</option>
-              {#each buckets as b}
-                <option value={b.name} selected={b.name === item.bucket}>{b.name}</option>
-              {/each}
-            </select>
+            <BucketSelect
+              {buckets}
+              value={item.bucket}
+              placeholder="— move to —"
+              onchange={v => reclassify(item.slot, v)}
+            />
           </td>
         </tr>
         {#if selected?.slot === item.slot}
@@ -262,12 +263,11 @@
     {/each}
   </table>
 
-  <div class="pagination">
-    <button disabled={page <= 1} onclick={() => page--}>← Prev</button>
-    <span>Page {page} / {Math.ceil(total / pageSize)}</span>
-    <button disabled={page * pageSize >= total} onclick={() => page++}>Next →</button>
-  </div>
-{/if}
+<div class="pagination">
+  <button disabled={page <= 1} onclick={() => page--}>← Prev</button>
+  <span>Page {page} / {Math.ceil(total / pageSize)}</span>
+  <button disabled={page * pageSize >= total} onclick={() => page++}>Next →</button>
+</div>
 
 </div>
 
@@ -281,9 +281,9 @@
   .clear-btn:hover { color: var(--text); }
   .bulk-bar { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; }
   .bulk-bar span { font-weight: 500; color: var(--text); }
-  .bulk-bar select { padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); font-size: 0.875rem; }
   .btn-cancel { color: var(--text-muted); }
   table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  table.loading { opacity: 0.6; pointer-events: none; }
   th, td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); text-align: left; }
   .cb-col { width: 2rem; padding-right: 0; }
   .trunc { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
