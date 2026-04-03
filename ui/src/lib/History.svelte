@@ -66,13 +66,19 @@
     const res = await fetch('/api/v1/history?' + params);
     if (!res.ok) return;
     const data = await res.json();
-    total = data.total;
     const incoming = new Map(data.items.map(i => [i.slot, i]));
-    items = items.filter(i => incoming.has(i.slot));
-    items = items.map(i => incoming.get(i.slot) ?? i);
-    const existing = new Set(items.map(i => i.slot));
-    const added = data.items.filter(i => !existing.has(i.slot));
-    items = [...added, ...items];
+    const existingSlots = new Set(items.map(i => i.slot));
+    const added = data.items.filter(i => !existingSlots.has(i.slot));
+    if (added.length === 0 && data.total === total) {
+      items = items.map(i => incoming.get(i.slot) ?? i);
+      return;
+    }
+    total = data.total;
+    items = items.filter(i => incoming.has(i.slot)).map(i => incoming.get(i.slot));
+    for (const item of added) {
+      items = [item, ...items];
+      await new Promise(r => setTimeout(r, 80));
+    }
   }
 
   async function select(slot) {
