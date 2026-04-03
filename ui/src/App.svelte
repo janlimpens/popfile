@@ -7,6 +7,10 @@
   import Settings from './lib/Settings.svelte';
   import Status   from './lib/Status.svelte';
   import { t, initLocale } from './lib/locale.svelte.js';
+  import { installFetchInterceptor } from './lib/connectivity.svelte.js';
+  import ReconnectModal from './lib/ReconnectModal.svelte';
+
+  installFetchInterceptor();
 
   let page    = $state(window.location.hash.slice(1) || 'history');
   let buckets = $state([]);
@@ -55,6 +59,8 @@
     {theme === 'dark' ? '☀' : '🌙'}
   </button>
 </nav>
+
+<ReconnectModal />
 
 <main>
   {#if page === 'history'}
