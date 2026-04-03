@@ -10,6 +10,7 @@ use Test2::V0;
 # This catches syntax errors and missing dependencies early.
 
 my @modules = qw(
+    POPFile::Features
     POPFile::Module
     POPFile::Configuration
     POPFile::Logger
