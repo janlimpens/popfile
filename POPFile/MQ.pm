@@ -305,6 +305,7 @@ written up the pipe to the parent.
                 $self->log_msg(2, "dropping post $type ($flat)" );
             }
         } else {
+            return unless defined $writer;
             $self->log_msg(2, "sending post $type ($flat) to parent $writer" );
             print $writer "$type:$flat\n";
         }
