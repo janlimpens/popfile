@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import BucketSelect from './BucketSelect.svelte';
 
   let { buckets } = $props();
 
@@ -53,12 +54,12 @@
 <section>
   <h3>Add magnet</h3>
   <div class="row">
-    <select bind:value={newBucket}>
-      <option value="">— bucket —</option>
-      {#each buckets.filter(b => !b.pseudo) as b}
-        <option value={b.name}>{b.name}</option>
-      {/each}
-    </select>
+    <BucketSelect
+      {buckets}
+      bind:value={newBucket}
+      placeholder="— bucket —"
+      filter={b => !b.pseudo}
+    />
     <select bind:value={newType}>
       <option value="">— type —</option>
       {#each Object.entries(magnetTypes) as [type, header]}
