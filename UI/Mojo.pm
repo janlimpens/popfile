@@ -593,7 +593,7 @@ by all request handlers.
                 $name =~ s|.*/||;
                 $name =~ s|\.msg$||;
                 my ($code, $dir) = ('en', 'ltr');
-                open my $fh, '<:encoding(UTF-8)', $file or next;
+                open my $fh, '<:raw:perlio', $file or next;
                 while (my $line = <$fh>) {
                     chomp $line;
                     next if $line =~ /^#/ || $line !~ /\S/;
