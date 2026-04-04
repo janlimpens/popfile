@@ -12,7 +12,7 @@ POPFile is a Bayesian email classifier written in Perl. It acts as a proxy betwe
 
 **Dependency management:** Carton. All dependencies are declared in `cpanfile` and installed locally into `local/`. Every Perl invocation must go through `carton exec`.
 
-**`lib/` directory:** Only `lib/Query/` is vendored (local Query::Builder). Everything else comes from carton. Do not add XS modules, Windows DLLs, or autosplit artifacts to `lib/` — these cause version mismatches across platforms.
+**`lib/` directory:** Do not add XS modules, Windows DLLs, or autosplit artifacts — these cause version mismatches across platforms. Everything except git submodules comes from carton.
 
 **CI:** GitHub Actions runs `carton install` then `carton exec prove -l t/` on Perl 5.40.
 
@@ -88,12 +88,58 @@ SQLite 3.x (via `DBD::SQLite >= 1.00`) is the default backend; MySQL and Postgre
 
 ### Bundled libraries
 
-`lib/Query/` contains a local vendored copy of Query::Builder (not on CPAN). All other dependencies come from carton (`local/`).
+`vendor/perl-querybuilder` is a git submodule pointing to [janlimpens/perl-querybuilder](https://github.com/janlimpens/perl-querybuilder). After cloning, initialise it with:
+
+```sh
+git submodule update --init
+```
+
+All other dependencies come from carton (`local/`).
 
 ### Internationalization
 
 UI strings live in `languages/*.msg` files, one per locale.
 
+
+## Contributing to dependencies
+
+`vendor/perl-querybuilder` is a full git clone. You can develop fixes inside it and submit them upstream.
+
+### Identify the issue
+
+Run tests to reproduce. Note whether the missing feature or bug is in the builder API (`Query::Builder`, `Query::Dialect::*`) or in an `Expression` subclass.
+
+If the feature does not exist upstream yet, open an issue at [janlimpens/perl-querybuilder](https://github.com/janlimpens/perl-querybuilder) before starting work.
+
+### Fix inside the submodule
+
+```sh
+cd vendor/perl-querybuilder
+git checkout -b fix/my-feature
+# edit, test locally
+cd ../..
+carton exec prove -l t/    # run POPFile tests against your change
+```
+
+### Open a PR upstream
+
+```sh
+cd vendor/perl-querybuilder
+git push origin fix/my-feature
+# open PR at https://github.com/janlimpens/perl-querybuilder
+```
+
+### Update the submodule pointer after merge
+
+Once the upstream PR is merged:
+
+```sh
+cd vendor/perl-querybuilder
+git checkout main && git pull
+cd ../..
+git add vendor/perl-querybuilder
+git commit -m "chore: update perl-querybuilder submodule to <description>"
+```
 
 You are an expert programmer using these guidelines (you can break these rules if editing existing source code, and adapt to the present style, if it isn't too crazy):
 
