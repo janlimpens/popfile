@@ -53,18 +53,66 @@ my %ui_to_iso = (
 class Classifier::WordMangle :isa(POPFile::Module);
 
 field %stop__;
-    field $language = 'en';
-    field $stemmer = undef;
+field $language = 'en';
+field $stemmer = undef;
 
-    BUILD {
-        $self->set_name('wordmangle');
-    }
+BUILD {
+    $self->set_name('wordmangle');
+}
+
+=head1 NAME
+
+Classifier::WordMangle — normalise and filter words before classification
+
+=head1 DESCRIPTION
+
+Prepares raw words extracted from email messages for use by the Bayesian
+classifier.  Responsibilities:
+
+=over 4
+
+=item *
+
+Stop-word filtering — words on the user-editable stopwords list are dropped.
+
+=item *
+
+Word normalisation — lowercasing, stripping of special characters, length
+limits, and hex-string rejection.
+
+=item *
+
+Optional Snowball stemming — reduces inflected forms to their stem so that
+"running" and "runs" count as the same token.
+
+=item *
+
+Language support — loads the correct stop-word list and stemmer for the
+current UI language.
+
+=back
+
+=head1 METHODS
+
+=head2 initialize
+
+Registers the C<stemming> and C<auto_detect_language> configuration
+parameters.  Returns 1.
+
+=cut
 
     method initialize() {
         $self->config('stemming',             0);
         $self->config('auto_detect_language', 1);
         return 1
     }
+
+=head2 start
+
+Loads the stopwords file and initialises the stemmer and stop-word list for
+the current language.  Returns 1.
+
+=cut
 
     method start() {
         $self->load_stopwords();
@@ -117,15 +165,61 @@ Save the stop word list to the stopwords file.
         $stop__{$_} = 1 for keys $sw->%*;
     }
 
+=head2 set_language($lang)
+
+Sets the active language using a two-letter ISO 639-1 code (e.g. C<'en'>,
+C<'de'>).  Reinitialises the stemmer and stop-word list accordingly.
+
+=cut
+
     method set_language ($lang) {
         $self->_init_language($lang);
     }
+
+=head2 set_ui_language($ui_name)
+
+Sets the active language from a human-readable UI name (e.g. C<'German'>).
+Translates to the corresponding ISO 639-1 code and delegates to
+L</set_language>.
+
+=cut
 
     method set_ui_language ($ui_name) {
         $self->_init_language($ui_to_iso{$ui_name} // 'en');
     }
 
+=head2 get_language
+
+Returns the current ISO 639-1 language code.
+
+=cut
+
     method get_language() { $language }
+
+=head2 mangle($word, $allow_colon, $ignore_stops)
+
+Normalises C<$word> for use as a classifier token.  Returns the normalised
+word, or an empty string if the word should be discarded.
+
+Discards the word when it:
+
+=over 4
+
+=item * is empty after lowercasing
+
+=item * is in the stop-word list (unless C<$ignore_stops> is true)
+
+=item * is longer than 45 characters
+
+=item * looks like a hex string (8 or more hex digits)
+
+=back
+
+Strips colons unless C<$allow_colon> is true (colons separate header-field
+tokens such as C<content-type:text/plain>).  If stemming is enabled and the
+word contains no colon, applies the Snowball stemmer.
+
+=cut
 
     method mangle ($word, $allow_colon = undef, $ignore_stops = undef) {
         my $lcword = lc($word);

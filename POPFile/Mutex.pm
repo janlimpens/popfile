@@ -21,6 +21,26 @@ package POPFile::Mutex;
 use Object::Pad;
 
 class POPFile::Mutex;
+
+=head1 NAME
+
+POPFile::Mutex — advisory filesystem mutex using C<mkdir>
+
+=head1 DESCRIPTION
+
+Provides a simple cross-process mutual-exclusion lock.  The lock is
+implemented by creating a directory on the filesystem; C<mkdir> is atomic on
+POSIX systems, so two concurrent callers cannot both succeed.
+
+Create one instance per lock name.  The name is used to construct a directory
+path of the form C<popfile_mutex_E<lt>nameE<gt>.mtx> in the current working
+directory.  Any stale lock directory left by a crashed process is cleaned up
+by the constructor.
+
+=head1 METHODS
+
+=cut
+
     # Full filesystem path used as the lock directory
     field $lock_path;
 
@@ -31,8 +51,6 @@ class POPFile::Mutex;
         $lock_path = "popfile_mutex_${mutex_name}.mtx";
         $self->release();
     }
-
-=head1 METHODS
 
 =head2 acquire
 
