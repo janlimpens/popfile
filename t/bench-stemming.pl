@@ -13,7 +13,7 @@
 #   all       stemming=1, auto_detect_language=1
 
 use FindBin qw($Bin);
-use lib "$Bin/lib", "$Bin/..";
+use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
 use POPFile::Features;
 
 use File::Temp qw(tempdir tempfile);

@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 use FindBin qw($Bin);
-use lib "$Bin/lib", "$Bin/..";
+use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
 BEGIN { push @INC, "$FindBin::Bin/../lib" }
 
 use Test2::V0;

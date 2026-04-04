@@ -1,0 +1,3 @@
+[submodule "vendor/perl-querybuilder"]
+	path = vendor/perl-querybuilder
+	url = https://github.com/janlimpens/perl-querybuilder
