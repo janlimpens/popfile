@@ -1,11 +1,11 @@
 From: support@toolvendor.example.com
-To: jan@example.com
+To: user@example.com
 Subject: Re: [Ticket #88412] Export to CSV not working in Firefox
 Date: Wed, 10 Jan 2024 11:03:00 +0000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 
-Hi Jan,
+Hi Alice,
 
 Thank you for the detailed bug report and the HAR file you attached.
 

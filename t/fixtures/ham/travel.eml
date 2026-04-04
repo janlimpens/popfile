@@ -1,5 +1,5 @@
 From: bookings@travel.example.com
-To: jan@example.com
+To: user@example.com
 Subject: Your booking confirmation - Berlin to Amsterdam, 15 Feb
 Date: Thu, 11 Jan 2024 08:00:00 +0000
 MIME-Version: 1.0
@@ -9,7 +9,7 @@ Booking Confirmation
 
 Booking reference: TRV-20240215-4492
 
-Passenger: Jan Example
+Passenger: Alice Example
 Route: Berlin HBF -> Amsterdam Centraal
 Date: 15 February 2024
 Departure: 07:23  Arrival: 12:41
