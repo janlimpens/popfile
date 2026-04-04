@@ -27,6 +27,23 @@ package POPFile::History;
 #
 #----------------------------------------------------------------------------
 
+=head1 NAME
+
+POPFile::History - manage the POPFile message history
+
+=head1 DESCRIPTION
+
+Stores and retrieves classified messages in the POPFile database.  Each
+message that passes through a proxy is recorded in the C<history> table with
+its classification result, sender, subject, and other header fields.
+
+The module supports paged queries (C<start_query>/C<get_query_rows>),
+on-the-fly reclassification, slot reservation for messages still in
+transit, and periodic cleanup of old entries based on the
+C<history_days> configuration parameter.
+
+=cut
+
 use Object::Pad;
 use locale;
 use POPFile::Role::DBAccess;

@@ -24,6 +24,23 @@ package UI::Mojo;
 #
 #----------------------------------------------------------------------------
 
+=head1 NAME
+
+UI::Mojo - Mojolicious-based HTTP server for the POPFile web UI
+
+=head1 DESCRIPTION
+
+Provides the POPFile web interface as a Mojolicious application.  The server
+runs in a forked child process so that it does not block POPFile's
+C<service()> event loop.  The child opens its own database connection and
+session key; no in-process state is shared with the parent.
+
+The application exposes a REST API at C</api/v1/*> consumed by the Svelte
+single-page application, and serves the built Svelte bundle from the
+C<public/> directory (configurable via the C<static_dir> config key).
+
+=cut
+
 use Object::Pad;
 use locale;
 
@@ -146,9 +163,17 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
     }
 
 
-    #========================================================================
-    # PRIVATE: child process — build Mojolicious app and run daemon
-    #========================================================================
+=head2 build_app
+
+    my $app = $self->build_app($svc, $session);
+
+Constructs and returns the L<Mojolicious> application.  Called inside the
+forked child.  C<$svc> is the L<Services::Classifier> instance (may be
+C<undef> in tests); C<$session> is a pre-obtained Bayes session key used
+by all request handlers.
+
+=cut
+
     method build_app ($svc, $session) {
         require Mojolicious;
         require Mojo::Path;
@@ -826,6 +851,17 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
 
         return $app
     }
+
+=head2 run_server
+
+    $self->run_server();
+
+Entry point for the forked child process.  Notifies the history and Bayes
+modules that they are running in a fork, then calls L</build_app> and starts
+the L<Mojo::Server::Daemon> on the configured port.  Does not return while
+the server is running.
+
+=cut
 
     method run_server() {
         require Mojo::Server::Daemon;
