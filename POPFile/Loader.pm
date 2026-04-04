@@ -87,7 +87,7 @@ to exit at the next iteration.
 
 =cut
 
-method CORE_aborting (@_) {
+method CORE_aborting {
     $alive = 0;
     for my $type (sort keys %components) {
         for my $name (sort keys $components{$type}->%*) {
@@ -121,7 +121,7 @@ for its own child processes, then reinstalls itself.
 
 =cut
 
-method CORE_reaper (@_) {
+method CORE_reaper {
     for my $type (sort keys %components) {
         for my $name (sort keys $components{$type}->%*) {
             $components{$type}{$name}->reaper();
