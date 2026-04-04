@@ -45,16 +45,16 @@ once the server is ready (config key: C<mojo_ui_open_browser>).
 =cut
 
     method initialize {
-        $self->config('port',             8080);
-        $self->config('static_dir',       'public');
-        $self->config('password',         '');
-        $self->config('local',            1);
-        $self->config('page_size',        25);
-        $self->config('date_format',      '');
+        $self->config('port', 8080);
+        $self->config('static_dir', 'public');
+        $self->config('password', '');
+        $self->config('local', 1);
+        $self->config('page_size', 25);
+        $self->config('date_format', '');
         $self->config('session_dividers', 1);
         $self->config('wordtable_format', '');
-        $self->config('locale',           '');
-        $self->config('open_browser',     0);
+        $self->config('locale', '');
+        $self->config('open_browser', 0);
         return 1
     }
 
