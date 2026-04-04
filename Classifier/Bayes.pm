@@ -35,7 +35,6 @@ use locale;
 use Classifier::Bucket;
 use Classifier::MailParse;
 use POPFile::Role::SQL;
-use Query::Builder;
 use IO::Handle;
 use DBI;
 use Digest::MD5 qw(md5_hex);
@@ -142,12 +141,6 @@ field $api_sessions = {};
 field $db_is_sqlite = 0;
 field $db_name = '';
 field $db_service :writer(set_db_service) = undef;
-
-method _qb() {
-    state $qb = Query::Builder->new(
-        dialect => $db_service->dialect());
-    return $qb
-}
 
 BUILD {
     $self->set_name('bayes');
@@ -522,7 +515,7 @@ method get_word_colors ($session, @words) {
     my %id_to_name = map { $db_bucketid->{$userid}{$_}{id} => $_ }
                      keys $uid_buckets->%*;
 
-    my $placeholders = join ',', ('?') x scalar @words;
+    my $word_expr = $self->qb()->compare('w.word', \@words);
     my $sth = $self->db()->prepare($self->normalize_sql(
         "SELECT w.word, m.bucketid, m.times
          FROM words w
@@ -530,8 +523,8 @@ method get_word_colors ($session, @words) {
          JOIN buckets b ON b.id = m.bucketid
                         AND b.userid = ?
                         AND b.pseudo = 0
-         WHERE w.word IN ($placeholders)"));
-    $sth->execute($userid, @words);
+         WHERE " . $word_expr->to_string()));
+    $sth->execute($userid, $word_expr->params()->@*);
 
     my %best_prob;
     my %best_name;
@@ -1695,7 +1688,7 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     # then update those counts and write them back to the database.
 
     return unless keys $parser->words()->%*;
-    my $word_expr = $self->_qb()
+    my $word_expr = $self->qb()
         ->compare('word', [sort keys $parser->words()->%*]);
     $get_wordids = $self->validate_sql_prepare_and_execute(
         "SELECT id, word FROM words WHERE " . $word_expr->to_string(),
@@ -1714,7 +1707,7 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     undef $get_wordids;
     my %counts;
     if (@id_list) {
-        my $qb = $self->_qb();
+        my $qb = $self->qb();
         my $expr = $qb->combine_and(
             $qb->compare('matrix.wordid', \@id_list),
             $qb->compare('matrix.bucketid', $db_bucketid->{$userid}{$bucket}{id}));
@@ -2174,11 +2167,11 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     # winning bucket is.
 
     my @words = sort keys $parser->words()->%*;
-    my $placeholders = join ',', map { '?' } @words;
+    my $words_expr = $self->qb()->compare('word', \@words);
     $get_wordids = $self->validate_sql_prepare_and_execute(
         "SELECT id, word FROM words
-         WHERE word IN ($placeholders)
-         ORDER BY id", @words);
+         WHERE " . $words_expr->to_string() . "
+         ORDER BY id", $words_expr->params()->@*);
     my @id_list;
     my %temp_idmap;
     my ($wordid, $word);
@@ -2196,14 +2189,14 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     $get_wordids->finish();
     undef $get_wordids;
 
-    $placeholders = join ',', map { '?' } @id_list;
+    my $ids_expr = $self->qb()->compare('matrix.wordid', \@id_list);
     $db_classify = $self->validate_sql_prepare_and_execute(
         "SELECT matrix.times, matrix.wordid, buckets.name
          FROM matrix, buckets
-         WHERE matrix.wordid IN ($placeholders)
+         WHERE (" . $ids_expr->to_string() . ")
            AND matrix.bucketid = buckets.id
            AND buckets.userid = ?",
-        @id_list,
+        $ids_expr->params()->@*,
         $userid);
     # %matrix maps wordids and bucket names to counts
     # $matrix{$wordid}{$bucket} == $count

@@ -62,4 +62,21 @@ subtest 'Single value compare uses plain equality' => sub {
     is $expr->params()->[0], 'inbox', 'param is the filter value';
 };
 
+subtest 'IN-list pattern: multi-value compare as OR' => sub {
+    my @words = qw(alpha beta gamma);
+    my $expr = $qb_sqlite->compare('word', \@words);
+    like $expr->to_string(), qr/OR/, 'multi-value uses OR';
+    unlike $expr->to_string(), qr/alpha|beta|gamma/, 'words not in SQL string';
+    my @params = $expr->params()->@*;
+    is scalar(@params), 3, 'three bind params for three words';
+    is [sort @params], [sort @words], 'params match word list';
+};
+
+subtest 'IN-list pattern: single word is plain equality' => sub {
+    my @words = ('only');
+    my $expr = $qb_sqlite->compare('word', \@words);
+    like $expr->to_string(), qr/word = \?/, 'single word uses equality';
+    is $expr->params()->[0], 'only', 'param matches word';
+};
+
 done_testing;

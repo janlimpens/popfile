@@ -4,6 +4,33 @@ use Object::Pad;
 
 role POPFile::Role::SQL {
 
+use Query::Builder;
+
+field $_qb = undef;
+
+my %driver_map = (
+    SQLite  => 'sqlite',
+    SQLite2 => 'sqlite',
+    mysql   => 'mysql',
+    Pg      => 'pg',
+);
+
+=head2 qb
+
+Returns a Query::Builder instance configured for the active database dialect.
+The instance is lazily created and cached per object.
+
+=cut
+
+method qb() {
+    return $_qb
+        if defined $_qb;
+    my $driver = $self->db()->{Driver}{Name} // 'SQLite';
+    my $dialect = $driver_map{$driver} // 'sqlite';
+    $_qb = Query::Builder->new(dialect => $dialect);
+    return $_qb
+}
+
 =head2 normalize_sql
 
 Collapses runs of whitespace in an SQL string to single spaces and strips
