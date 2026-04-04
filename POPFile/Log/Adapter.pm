@@ -1,6 +1,6 @@
 package POPFile::Log::Adapter;
 
-use feature 'signatures';
+use POPFile::Features;
 use Log::Any::Adapter::Base;
 use Log::Any::Adapter::Util qw(logging_methods);
 use POSIX qw(strftime);

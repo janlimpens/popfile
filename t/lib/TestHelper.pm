@@ -8,9 +8,7 @@ package TestHelper;
 # Logging goes through Log::Any (Null adapter by default in tests).
 # ---------------------------------------------------------------------------
 
-use strict;
-use warnings;
-use feature 'signatures';
+use POPFile::Features;
 use File::Temp qw(tempdir);
 use FindBin    qw($Bin);
 use Cwd        qw(abs_path);

@@ -10,11 +10,9 @@
 #   lang-det  stemming=0, auto_detect_language=1
 #   all       stemming=1, auto_detect_language=1
 
-use strict;
-use warnings;
-use feature 'signatures';
 use FindBin qw($Bin);
 use lib "$Bin/lib", "$Bin/..";
+use POPFile::Features;
 
 use File::Temp qw(tempdir tempfile);
 use Time::HiRes qw(gettimeofday tv_interval);

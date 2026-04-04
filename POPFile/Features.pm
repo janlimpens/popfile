@@ -10,7 +10,7 @@ sub import {
     strict->import();
     warnings->import();
     utf8->import();
-    feature->import(qw(say state try));
+    feature->import(qw(say state try signatures));
     warnings->unimport('experimental::try');
     no strict 'refs';
     my $caller = caller;
@@ -43,7 +43,7 @@ Calling C<use POPFile::Features> in a file is equivalent to:
     use strict;
     use warnings;
     use utf8;
-    use feature qw(say state try);
+    use feature qw(say state try signatures);
     no warnings 'experimental::try';
     use builtin qw(trim);
 
