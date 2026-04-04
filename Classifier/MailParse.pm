@@ -206,8 +206,45 @@ my %color_map = ('aliceblue',            'f0f8ff', 'antiquewhite',      'faebd7'
              'white',                'ffffff', 'whitesmoke',        'f5f5f5',
              'yellow',               'ffff00', 'yellowgreen',       '9acd32'
 );
-class Classifier::MailParse;    # Hash of word frequencies
-    field %words;
+class Classifier::MailParse;
+
+=head1 NAME
+
+Classifier::MailParse — parse email messages into a word-frequency map
+
+=head1 DESCRIPTION
+
+C<Classifier::MailParse> reads a raw email message (RFC 2822 / MIME) and
+extracts a word-frequency hash suitable for Bayesian classification by
+L<Classifier::Bayes>.
+
+The parser handles:
+
+=over 4
+
+=item * Plain text, HTML (including CSS color and invisible-ink detection), and multi-part MIME
+
+=item * Base64 and quoted-printable content transfer encodings
+
+=item * URL tokenisation (scheme, host, path components)
+
+=item * Japanese text via optional Kakasi or MeCab tokenisers
+
+=item * Pseudo-words derived from message headers, MIME structure, and attachment filenames
+
+=back
+
+The typical call sequence when parsing a file on disk is just
+C<parse_file()>.  For streaming use, call C<start_parse()>, then
+C<parse_line()> for each line, then C<stop_parse()>.  After parsing,
+retrieve results via C<words()>, C<get_header()>, C<first20()>, and
+C<quickmagnets()>.
+
+=head1 METHODS
+
+=cut
+
+field %words;
     field $msg_total = 0;
 
     # Internal buffer for colorized output
@@ -1416,21 +1453,20 @@ method parse_html ($line, $encoded) {
     return 0;
 }
 
-# ----------------------------------------------------------------------------
-#
-# parse_file
-#
-# Read messages from file and parse into a list of words and
-# frequencies, returns a colorized HTML version of message if color is
-# set
-#
-# $file     The file to open and parse
-# $max_size The maximum size of message to parse, or 0 for unlimited
-# $reset    If set to 0 then the list of words from a previous parse is not
-#           reset, this can be used to do multiple parses and build a single
-#           word list.  By default this is set to 1 and the word list is reset
-#
-# ----------------------------------------------------------------------------
+=head2 parse_file($file, $max_size, $reset)
+
+Parses the email message stored at C<$file>, populating C<words()>,
+C<get_header()>, C<first20()>, and C<quickmagnets()>.
+
+C<$max_size> limits the number of bytes read (0 or undef = unlimited).
+C<$reset> (default 1) clears the word list before parsing; pass 0 to
+accumulate words across multiple calls.
+
+If a C<color_resolver> is set, returns an HTML-coloured rendering of the
+message body; otherwise returns an empty string.
+
+=cut
+
 method parse_file ($file, $max_size = undef, $reset = undef) {
     $reset = 1 if (!defined($reset));
     $max_size = 0 if (!defined($max_size) || ($max_size =~ /\D/));
@@ -1484,18 +1520,17 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
 }
 
 # ----------------------------------------------------------------------------
-#
-# start_parse
-#
-# Called to reset internal variables before parsing.  This is
-# automatically called when using the parse_file API, and must be
-# called before the first call to parse_line.
-#
-# $reset    If set to 0 then the list of words from a previous parse is not
-#           reset, this can be used to do multiple parses and build a single
-#           word list.  By default this is set to 1 and the word list is reset
-#
-# ----------------------------------------------------------------------------
+=head2 start_parse($reset)
+
+Resets all internal parsing state before a new parse session.  Called
+automatically by C<parse_file()>; must be called explicitly before the first
+C<parse_line()> when using the streaming API.
+
+C<$reset> (default 1) clears the word list; pass 0 to retain words from a
+previous parse.
+
+=cut
+
 method start_parse ($reset = undef) {
     $reset = 1 if (!defined($reset));
 
@@ -1575,13 +1610,15 @@ method start_parse ($reset = undef) {
 
 # ----------------------------------------------------------------------------
 #
-# stop_parse
-#
-# Called at the end of a parse job.  Automatically called if
-# parse_file is used, must be called after the last call to
-# parse_line.
-#
-# ----------------------------------------------------------------------------
+=head2 stop_parse()
+
+Finalises the parse session: flushes any remaining base64 or
+quoted-printable buffers and handles any unclosed HTML tags or incomplete
+header state.  Called automatically by C<parse_file()>; must be called
+after the last C<parse_line()> when using the streaming API.
+
+=cut
+
 method stop_parse() {
     $colorized .= $self->clear_out_base64();
 
@@ -1619,17 +1656,18 @@ method stop_parse() {
     }
 }
 
-# ----------------------------------------------------------------------------
-#
-# parse_line
-#
-# Called to parse a single line from a message.  If using this API
-# directly then be sure to call start_parse before the first call to
-# parse_line.
-#
-# $line               Line of file to parse
-#
-# ----------------------------------------------------------------------------
+=head2 parse_line($line)
+
+Parses one raw line from an email message, updating the internal word map
+and parser state.  Handles header parsing, MIME boundary detection, content
+transfer decoding (base64, quoted-printable), HTML/CSS parsing, and
+Japanese text segmentation.
+
+When using the streaming API, call C<start_parse()> before the first call
+and C<stop_parse()> after the last.
+
+=cut
+
 method parse_line ($read) {
     if ($read ne '') {
         # For the Mac we do further splitting of the line at the CR
@@ -1957,13 +1995,14 @@ method decode_string ($mystring, $lang = undef) {
     return $output;
 }
 
-# ----------------------------------------------------------------------------
-#
-# get_header - Returns the value of the from, to, subject or cc header
-#
-# $header      Name of header to return (note must be lowercase)
-#
-# ----------------------------------------------------------------------------
+=head2 get_header($header)
+
+Returns the value of a key header captured during parsing.  C<$header>
+must be one of C<'from'>, C<'to'>, C<'cc'>, or C<'subject'> (lowercase).
+Returns an empty string for any other value.
+
+=cut
+
 method get_header ($header) {
     return $from    if $header eq 'from';
     return $to      if $header eq 'to';
@@ -2472,15 +2511,35 @@ method splitline ($line, $encoding) {
     return $line;
 }
 
-# GETTERS/SETTERS
+=head2 first20()
+
+Returns the first 20 words seen in the message body as a space-separated
+string.  Used by the history UI for quick previews.
+
+=cut
 
 method first20() {
     return $first20;
 }
 
+=head2 quickmagnets()
+
+Returns a reference to the hash of magnet candidates extracted from
+headers during parsing (keys are magnet types such as C<'from'> or
+C<'to'>, values are the corresponding header values).
+
+=cut
+
 method quickmagnets() {
     return \%quickmagnets;
 }
+
+=head2 words()
+
+Returns a reference to the word-frequency hash built during parsing.
+Keys are word strings; values are occurrence counts.
+
+=cut
 
 method words() {
     return \%words;
