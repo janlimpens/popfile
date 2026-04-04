@@ -1,7 +1,7 @@
 # POPFile dependency manifest
 # Install with: cpanm --installdeps .
 
-requires 'perl', '5.038';
+requires 'perl', '5.040';
 
 # Core runtime dependencies
 requires 'DBI', '1.643';
