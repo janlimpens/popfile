@@ -65,23 +65,27 @@ and wait for Agent 1 to clarify.
 - **Never self-assign tickets.** Only Agent 1 assigns work.
 - **Never close GitHub issues.** Only Agent 1 closes issues. Report completion in outbox.
 
-## Polling loop
+## Waiting for tasks
 
-When asked to stay in the loop, set up a session-only cron job (durable: false)
-that fires every 15 minutes:
+When asked to stay in the loop, watch inbox.md for changes using `inotifywait`
+instead of polling. This reacts immediately when Agent 1 writes a new task.
 
-  prompt: "check inbox.md for new tasks and process them according to AGENT.md"
-  cron:   */15 * * * *
-  recurring: true
-  durable: false   ← important: prevents new sessions and resume dialogs
+**Start the watcher** (run in background via Bash tool):
 
-On each tick:
+```sh
+inotifywait -e close_write /home/jan/Entwicklung/Claude/popfile/agent{{N}}/inbox.md
+```
+
+When the background command completes (inbox.md was written), you will be
+notified automatically. Then:
+
 1. Read inbox.md
 2. If the task is new (not already done), work on it
 3. Reset branch to latest main before touching code (see Git workflow above)
 4. Implement, test, commit to agent{{N}} branch
 5. Write DONE + summary to outbox.md
-6. If context runs low, write state.md + PAUSED to outbox.md and stop
+6. Start the watcher again to wait for the next task
+7. If context runs low, write state.md + PAUSED to outbox.md and stop instead
 
 ## Token limit handling
 
