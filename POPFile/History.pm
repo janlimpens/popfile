@@ -60,7 +60,7 @@ class POPFile::History :isa(POPFile::Module) :does(POPFile::Role::DBAccess) :doe
     # into the database, it consists of lists containing three
     # elements: the slot id, the bucket classified to and the
     # magnet if used
-    field $commit_list = undef;
+    field $commit_list = [];
 
     # Contains queries started with start_query and consists
     # of a mapping between unique IDs and quadruples containing
@@ -609,7 +609,7 @@ method commit_history() {
     $self->db()->commit;
     $update_history->finish;
 
-    $commit_list = ();
+    $commit_list = [];
     $self->force_requery();
 }
 
