@@ -114,7 +114,7 @@ Save the stop word list to the stopwords file.
         }
 
         my $sw = Lingua::StopWords::getStopWords($lang, 'UTF-8') // {};
-        $stop__{$_} = 1 for keys %{$sw};
+        $stop__{$_} = 1 for keys $sw->%*;
     }
 
     method set_language ($lang) {
@@ -214,7 +214,7 @@ Returns the list of current stop words.  If C<$value> is a hashref, replaces the
 
 =cut
     method stopwords ($value = undef) {
-        %stop__ = %{$value} if defined $value;
+        %stop__ = $value->%* if defined $value;
         return keys %stop__;
     }
 

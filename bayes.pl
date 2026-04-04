@@ -84,7 +84,7 @@ if (@ARGV) {
                 print "`$file' is `" . $b->classify($session, $file) . "'\n";
             }
 
-            foreach my $word (sort keys %{$b->{parser__}->{words__}}) {
+            foreach my $word (sort keys $b->{parser__}->{words__}->%*) {
                 print "$word $b->{parser__}->{words__}{$word}\n";
             }
         }

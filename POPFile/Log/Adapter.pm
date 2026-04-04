@@ -61,8 +61,9 @@ sub _write($msg) {
         }
     }
     print $line if $cfg{to_stdout};
-    push @{ $cfg{ring} }, $line;
-    shift @{ $cfg{ring} } if @{ $cfg{ring} } > 10;
+    push $cfg{ring}->@*, $line;
+    shift $cfg{ring}->@*
+        if $cfg{ring}->@* > 10;
 }
 
 1;

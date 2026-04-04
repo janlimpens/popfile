@@ -518,8 +518,9 @@ method get_word_colors ($session, @words) {
     my $userid = $self->valid_session_key($session);
     return () unless defined $userid && @words;
 
+    my $uid_buckets = $db_bucketid->{$userid} // {};
     my %id_to_name = map { $db_bucketid->{$userid}{$_}{id} => $_ }
-                     keys %{ $db_bucketid->{$userid} // {} };
+                     keys $uid_buckets->%*;
 
     my $placeholders = join ',', ('?') x scalar @words;
     my $sth = $self->db()->prepare($self->normalize_sql(
@@ -1207,7 +1208,7 @@ method db_update_cache ($session, $updated_bucket = undef, $deleted_bucket = und
 
         $self->validate_sql_prepare_and_execute(
             $db_get_bucket_word_counts, $userid);
-        for my $b (sort keys %{$db_bucketid->{$userid}}) {
+        for my $b (sort keys $db_bucketid->{$userid}->%*) {
             $db_bucketcount->{$userid}{$b} = 0;
             $db_bucketunique->{$userid}{$b} = 0;
         }
@@ -2282,8 +2283,8 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     }
 
     if ($wordscores && defined($templ)) {
-        my %qm = %{$parser->quickmagnets()};
-        my $mlen = scalar(keys %{$parser->quickmagnets()});
+        my %qm = $parser->quickmagnets()->%*;
+        my $mlen = scalar(keys $parser->quickmagnets()->%*);
 
         if ($mlen > 0) {
             $templ->param(View_QuickMagnets_If => 1);
@@ -2312,7 +2313,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
                     $row_data{View_QuickMagnets_Loop_Buckets} = \@bucket_data;
 
                     my @magnet_data;
-                    for my $magnet (@{$qm{$type}}) {
+                    for my $magnet ($qm{$type}->@*) {
                         my %row_magnet;
                         $row_magnet{View_QuickMagnets_Magnet} = $magnet;
                         push (@magnet_data, \%row_magnet);
@@ -3070,7 +3071,7 @@ method get_bucket_name ($session, $id) {
     return
         unless defined $userid;
 
-    for $b (keys %{$db_bucketid->{$userid}}) {
+    for $b (keys $db_bucketid->{$userid}->%*) {
         if ($id == $db_bucketid->{$userid}{$b}{id}) {
             return $b;
         }
@@ -3095,7 +3096,7 @@ method get_pseudo_buckets ($session) {
 
     my @buckets;
 
-    for my $b (sort keys %{$db_bucketid->{$userid}}) {
+    for my $b (sort keys $db_bucketid->{$userid}->%*) {
         if ($db_bucketid->{$userid}{$b}{pseudo} == 1) {
             push @buckets, ($b);
         }
@@ -3120,7 +3121,7 @@ method get_all_buckets ($session) {
 
     my @buckets;
 
-    for my $b (sort keys %{$db_bucketid->{$userid}}) {
+    for my $b (sort keys $db_bucketid->{$userid}->%*) {
          push @buckets, ($b);
     }
 
@@ -3245,9 +3246,9 @@ method get_bucket_word_prefixes($session, $bucket) {
             $result->@*;
     } else {
         if  (($self->module_config('html', 'language') // '') eq 'Korean') {
-            return grep {$_ ne $prev && ($prev = $_, 1)} sort map {$_ =~ /([\x20-\x80]|$eksc)/} @{$result};
+            return grep {$_ ne $prev && ($prev = $_, 1)} sort map {$_ =~ /([\x20-\x80]|$eksc)/} $result->@*;
         } else {
-            return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr($_,0,1)}  @{$result};
+            return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr($_,0,1)} $result->@*;
         }
     }
 }
@@ -3266,7 +3267,7 @@ method get_word_count ($session) {
         unless defined $userid;
 
     my $word_count = 0;
-    for my $bucket (keys %{$db_bucketid->{$userid}}) {
+    for my $bucket (keys $db_bucketid->{$userid}->%*) {
         $word_count += $db_bucketcount->{$userid}{$bucket};
     }
 
@@ -3327,7 +3328,7 @@ method get_unique_word_count ($session) {
         unless defined $userid;
 
     my $unique_word_count = 0;
-    for my $bucket (keys %{$db_bucketid->{$userid}}) {
+    for my $bucket (keys $db_bucketid->{$userid}->%*) {
         $unique_word_count += $db_bucketunique->{$userid}{$bucket};
     }
 
@@ -3759,7 +3760,7 @@ method clear_magnets ($session) {
     return
         unless defined $userid;
 
-    for my $bucket (keys %{$db_bucketid->{$userid}}) {
+    for my $bucket (keys $db_bucketid->{$userid}->%*) {
         my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
         $self->validate_sql_prepare_and_execute(
             'DELETE FROM magnets WHERE magnets.bucketid = ?',

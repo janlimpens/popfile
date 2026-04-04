@@ -158,7 +158,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         $app->log->level('warn');
 
         # Serve the built Svelte bundle as static files
-        push @{ $app->static->paths }, $static;
+        push $app->static->paths->@*, $static;
 
         # Fall back to index.html for any non-API path (SPA routing)
         $app->hook(before_dispatch => sub ($c) {
@@ -612,7 +612,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         $r->get('/api/v1/config' => sub ($c) {
             my %cfg;
             for my $key (keys %CFG) {
-                my ($mod, $param) = @{ $CFG{$key} };
+                my ($mod, $param) = $CFG{$key}->@*;
                 $cfg{$key} = $self->module_config($mod, $param) // '';
             }
             $c->render(json => \%cfg);
@@ -623,9 +623,9 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #--------------------------------------------------------------------
         $r->put('/api/v1/config' => sub ($c) {
             my $body = $c->req->json // {};
-            for my $key (keys %{$body}) {
+            for my $key (keys $body->%*) {
                 next unless exists $CFG{$key};
-                my ($mod, $param) = @{ $CFG{$key} };
+                my ($mod, $param) = $CFG{$key}->@*;
                 $self->module_config($mod, $param, $body->{$key});
             }
             $self->configuration()->save_configuration();
@@ -657,14 +657,14 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             my $body = $c->req->json // {};
 
             if (defined $body->{watched}) {
-                my @w = grep { defined $_ && $_ ne '' } @{ $body->{watched} };
+                my @w = grep { defined $_ && $_ ne '' } $body->{watched}->@*;
                 my $raw = join($imap_sep, @w) . (@w ? $imap_sep : '');
                 $self->module_config('imap', 'watched_folders', $raw);
             }
 
             if (defined $body->{mappings}) {
                 my $raw = '';
-                for my $m (@{ $body->{mappings} }) {
+                for my $m ($body->{mappings}->@*) {
                     next unless defined $m->{bucket} && $m->{bucket} ne ''
                              && defined $m->{folder} && $m->{folder} ne '';
                     $raw .= "$m->{bucket}$imap_sep$m->{folder}$imap_sep";

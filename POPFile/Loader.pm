@@ -115,7 +115,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     method CORE_aborting() {
         $alive = 0;
         for my $type (sort keys %components) {
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 $components{$type}{$name}->set_alive(0);
             }
         }
@@ -142,7 +142,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     #------------------------------------------------------------------------
     method CORE_reaper() {
         for my $type (sort keys %components) {
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 $components{$type}{$name}->reaper();
             }
         }
@@ -158,7 +158,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     #------------------------------------------------------------------------
     method CORE_childexit ($code) {
         for my $type (sort keys %components) {
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 $components{$type}{$name}->childexit();
             }
         }
@@ -177,7 +177,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         my @types = sort keys %components;
 
         for my $type (@types) {
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 $components{$type}{$name}->prefork();
             }
         }
@@ -193,7 +193,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
 
         if ($pid == 0) {
             for my $type (@types) {
-                for my $name (sort keys %{$components{$type}}) {
+                for my $name (sort keys $components{$type}->%*) {
                     $components{$type}{$name}->forked($writer);
                 }
             }
@@ -203,7 +203,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         }
 
         for my $type (@types) {
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 $components{$type}{$name}->postfork($pid, $reader);
             }
         }
@@ -349,7 +349,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         # Give every module access to configuration, version, and MQ.
 
         for my $type (sort keys %components) {
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 $components{$type}{$name}->set_version(
                     scalar($self->CORE_version()));
                 $components{$type}{$name}->set_configuration(
@@ -362,7 +362,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         # Inject classifier and history into modules that declare set_classifier / set_history.
 
         for my $type (sort keys %components) {
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 my $mod = $components{$type}{$name};
                 $mod->set_classifier($components{classifier}{bayes})
                     if $mod->can('set_classifier');
@@ -377,11 +377,11 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         if (defined $components{services}{classifier_service}) {
             my $svc = $components{services}{classifier_service};
 
-            for my $name (sort keys %{$components{proxy}}) {
+            for my $name (sort keys $components{proxy}->%*) {
                 my $mod = $components{proxy}{$name};
                 $mod->set_service($svc) if $mod->can('set_service');
             }
-            for my $name (sort keys %{$components{interface}}) {
+            for my $name (sort keys $components{interface}->%*) {
                 my $mod = $components{interface}{$name};
                 $mod->set_service($svc) if $mod->can('set_service');
             }
@@ -402,7 +402,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         if (defined $components{services}{database}) {
             my $db_svc = $components{services}{database};
             foreach my $type (sort keys %components) {
-                foreach my $name (sort keys %{$components{$type}}) {
+                foreach my $name (sort keys $components{$type}->%*) {
                     $components{$type}{$name}->set_db_service($db_svc)
                         if $components{$type}{$name}->can('set_db_service');
                 }
@@ -423,7 +423,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
 
         for my $type (@c) {
             print "\n         {$type:" if $debug;
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 print " $name" if $debug;
                 STDOUT->flush();
 
@@ -469,7 +469,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
 
         for my $type (@c) {
             print "\n         {$type:" if $debug;
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 my $code = $components{$type}{$name}->start();
 
                 if ($code == 0) {
@@ -500,7 +500,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     method CORE_service ($nowait = 0) {
         while ($alive == 1) {
             for my $type (sort keys %components) {
-                for my $name (sort keys %{$components{$type}}) {
+                for my $name (sort keys $components{$type}->%*) {
                     if ($components{$type}{$name}->service() == 0) {
                         $alive = 0;
                         last;
@@ -542,7 +542,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
 
         for my $type (sort keys %components) {
             print "\n         {$type:" if $debug;
-            for my $name (sort keys %{$components{$type}}) {
+            for my $name (sort keys $components{$type}->%*) {
                 print " $name" if $debug;
                 STDOUT->flush();
 

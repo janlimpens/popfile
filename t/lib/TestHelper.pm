@@ -147,11 +147,12 @@ sub load_fixture($bayes, $session, $fixture) {
             or die "Cannot load fixture '$fixture': " . ($@ || $!);
     }
     my $fixture_dir = "$REPO_ROOT/t/fixtures";
-    for my $bucket ( @{ $fixture->{buckets} // [] } ) {
+    for my $bucket ( ( $fixture->{buckets} // [] )->@* ) {
         $bayes->create_bucket($session, $bucket);
     }
-    for my $bucket ( keys %{ $fixture->{train} // {} } ) {
-        for my $filename ( @{ $fixture->{train}{$bucket} } ) {
+    my $train = $fixture->{train} // {};
+    for my $bucket ( keys $train->%* ) {
+        for my $filename ( $fixture->{train}{$bucket}->@* ) {
             $bayes->add_message_to_bucket($session, $bucket, "$fixture_dir/$filename");
         }
     }
@@ -170,14 +171,14 @@ sub force_requery {}
 package TestHelper::MQ;
 
 sub post($self, $type, @msg) {
-    push @{ $self->{posted} }, { type => $type, msg => \@msg };
-    for my $waiter (@{ $self->{waiters}{$type} // [] }) {
+    push $self->{posted}->@*, { type => $type, msg => \@msg };
+    for my $waiter (( $self->{waiters}{$type} // [] )->@*) {
         $waiter->deliver($type, @msg);
     }
 }
 
 sub register($self, $type, $obj) {
-    push @{ $self->{waiters}{$type} }, $obj;
+    push $self->{waiters}{$type}->@*, $obj;
 }
 
 1;

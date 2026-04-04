@@ -178,7 +178,7 @@ method deliver ($type, @message) {
     }
 
     if ($type eq 'COMIT') {
-        push (@{$commit_list}, \@message);
+        push $commit_list->@*, \@message;
     }
 }
 
@@ -469,8 +469,8 @@ method commit_history() {
              size = ?
          WHERE id = ?'));
     $self->db()->begin_work;
-    for my $entry (@{$commit_list}) {
-        my ($session, $slot, $bucket, $magnet) = @{$entry};
+    for my $entry ($commit_list->@*) {
+        my ($session, $slot, $bucket, $magnet) = $entry->@*;
 
         my $file = $self->get_slot_file($slot);
 
@@ -494,11 +494,11 @@ method commit_history() {
 
                 if (/^([^ \t]+):[ \t]*(.*)$/) {
                     $last = lc $1;
-                    push @{$header{$last}}, $2;
+                    push $header{$last}->@*, $2;
 
                 } else {
                     if (defined $last) {
-                        ${$header{$last}}[$#{$header{$last}}] .= $_;
+                        $header{$last}->[-1] .= $_;
                     }
                 }
             }
@@ -509,10 +509,10 @@ method commit_history() {
         }
 
         my $hash = $self->get_message_hash(
-            ${$header{'message-id'}}[0],
-            ${$header{'date'}}[0],
-            ${$header{'subject'}}[0],
-            ${$header{'received'}}[0]);
+            $header{'message-id'}->[0],
+            $header{'date'}->[0],
+            $header{'subject'}->[0],
+            $header{'received'}->[0]);
 
         # For sorting purposes the From, To and CC headers have special
         # cleaned up versions of themselves in the database.  The idea
@@ -527,7 +527,7 @@ method commit_history() {
 
         for my $h (@sortable) {
             $sort_headers{$h} = $classifier->parser()->decode_string(
-                ${$header{$h}}[0]);
+                $header{$h}->[0]);
             $sort_headers{$h} = lc($sort_headers{$h} || '');
             $sort_headers{$h} =~ s/[\"<>]//g;
             $sort_headers{$h} =~ s/^[ \t]+//g;
@@ -540,17 +540,17 @@ method commit_history() {
         my @required = qw(from to cc subject);
 
         for my $h (@required) {
-            ${$header{$h}}[0] = $classifier->parser()->decode_string(
-                ${$header{$h}}[0]);
-            if (!defined ${$header{$h}}[0] || ${$header{$h}}[0] =~ /^\s*$/) {
+            $header{$h}->[0] = $classifier->parser()->decode_string(
+                $header{$h}->[0]);
+            if (!defined $header{$h}->[0] || $header{$h}->[0] =~ /^\s*$/) {
                 if ($h ne 'cc') {
-                    ${$header{$h}}[0] = "<$h header missing>";
+                    $header{$h}->[0] = "<$h header missing>";
                 } else {
-                    ${$header{$h}}[0] = '';
+                    $header{$h}->[0] = '';
                 }
             }
 
-            ${$header{$h}}[0] =~ s/\0//g;
+            $header{$h}->[0] =~ s/\0//g;
         }
 
         # If we do not have a date header then set the date to
@@ -558,10 +558,10 @@ method commit_history() {
         # using Date::Parse to interpret it and turn it into the
         # Unix epoch.
 
-        if (!defined(${$header{date}}[0])) {
-            ${$header{date}}[0] = 0;
+        if (!defined($header{date}->[0])) {
+            $header{date}->[0] = 0;
         } else {
-            ${$header{date}}[0] = str2time(${$header{date}}[0]) || 0;
+            $header{date}->[0] = str2time($header{date}->[0]) || 0;
         }
 
         # Figure out the ID of the bucket this message has been
@@ -578,11 +578,11 @@ method commit_history() {
 
         if (defined($bucketid)) {
             my $result = $update_history->execute(
-                    ${$header{from}}[0],    # hdr_from
-                    ${$header{to}}[0],      # hdr_to
-                    ${$header{date}}[0],    # hdr_date
-                    ${$header{cc}}[0],      # hdr_cc
-                    ${$header{subject}}[0], # hdr_subject
+                    $header{from}->[0],    # hdr_from
+                    $header{to}->[0],      # hdr_to
+                    $header{date}->[0],    # hdr_date
+                    $header{cc}->[0],      # hdr_cc
+                    $header{subject}->[0], # hdr_subject
                     $sort_headers{from},    # sort_from
                     $sort_headers{to},      # sort_to
                     $sort_headers{cc},      # sort_cc
@@ -1030,7 +1030,7 @@ method get_query_rows ($id, $start, $count) {
 
     $self->log_msg(2, "Returning $from..$to");
 
-    return @{$queries{$id}{cache}}[$from..$to];
+    return $queries{$id}{cache}->@[$from..$to];
 }
 
 # ---------------------------------------------------------------------------
@@ -1111,7 +1111,7 @@ method upgrade_history_files() {
                 my ($slot, $file) = $self->reserve_slot();
                 rename $msg, $file;
                 my @message = ($session, $slot, $bucket, 0);
-                push (@{$commit_list}, \@message);
+                push $commit_list->@*, \@message;
             }
         }
         $self->db()->commit;

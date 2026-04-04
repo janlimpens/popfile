@@ -141,7 +141,7 @@ my @NOISE_DE = qw(wichtig information nachricht aktualisierung neuigkeiten);
 my @NOISE_FR = qw(important information message mise-à-jour nouvelles);
 
 sub pick_n($aref, $n) {
-    my @pool = @{$aref};
+    my @pool = $aref->@*;
     my @out;
     push @out, $pool[int(rand(@pool))] for 1..$n;
     @out
@@ -166,7 +166,8 @@ sub make_email($lang, $class, $use_variants, $idx) {
     }
     push @body, pick_n($noise, 3);
     # also include some stop-like words to test stopword filtering
-    push @body, @{$CORPUS{en}{stopwords_train}} if $lang eq 'en';
+    push @body, $CORPUS{en}{stopwords_train}->@*
+        if $lang eq 'en';
 
     my %subj = (
         en => { spam => 'Important offer for you', ham => 'Project update' },

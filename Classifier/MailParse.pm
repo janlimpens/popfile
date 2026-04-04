@@ -471,7 +471,7 @@ method update_word ($word, $encoded, $before, $after, $prefix) {
         $mword = $prefix . ':' . $mword if ($prefix ne '');
 
         if ($prefix =~ /(from|to|cc|subject)/i) {
-            push @{ $quickmagnets{$prefix} }, $word;
+            push $quickmagnets{$prefix}->@*, $word;
         }
 
         if (defined($color_resolver)) {
@@ -973,7 +973,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
             if ($debug) {
                 print "      CSS properties: ";
-                foreach my $key (keys(%{$style})) {
+                foreach my $key (keys($style->%*)) {
                     print "$key($style->{$key}), ";
                 }
                 print "\n";
@@ -1664,7 +1664,7 @@ method parse_line ($read) {
 
                 $line = convert_encoding(
                     $line, $charset, 'euc-jp', '7bit-jis',
-                    @{ $encoding_candidates{ $lang } });
+                    $encoding_candidates{ $lang }->@*);
                 $line = $nihongo_parser{parse}($self, $line);
             }
 
@@ -1832,7 +1832,7 @@ method clear_out_base64() {
         if ($lang eq 'Nihongo') {
             $decoded = convert_encoding(
                 $decoded, $charset, 'euc-jp', '7bit-jis',
-                @{ $encoding_candidates{ $lang } });
+                $encoding_candidates{ $lang }->@*);
             $decoded = $nihongo_parser{parse}($self, $decoded);
         }
 
@@ -1873,7 +1873,7 @@ method clear_out_qp() {
         if ($lang eq 'Nihongo') {
             $line = convert_encoding(
                 $line, $charset, 'euc-jp', '7bit-jis',
-                @{ $encoding_candidates{ $lang } });
+                $encoding_candidates{ $lang }->@*);
             $line = $nihongo_parser{parse}($self, $line);
         }
 
@@ -1930,7 +1930,7 @@ method decode_string ($mystring, $lang = undef) {
 
                 if ($lang eq 'Nihongo') {
                     $value = convert_encoding($value, $charset, 'euc-jp', '7bit-jis',
-                        @{ $encoding_candidates{ $lang } });                }
+                        $encoding_candidates{ $lang }->@*);                }
                 $last_is_encoded = 1;
             } elsif ($encoding =~ /^[qQ]$/) {
                 $value =~ s/\_/=20/g;
@@ -1941,7 +1941,7 @@ method decode_string ($mystring, $lang = undef) {
 
                 if ($lang eq 'Nihongo') {
                     $value = convert_encoding($value, $charset, 'euc-jp', '7bit-jis',
-                        @{ $encoding_candidates{ $lang } });                }
+                        $encoding_candidates{ $lang }->@*);                }
                 $last_is_encoded = 1;
             }
         } else {

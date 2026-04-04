@@ -127,13 +127,13 @@ delivers pending messages to registered waiters.
         # Iterate through all the messages in all the queues
 
         for my $type (sort keys %queue) {
-             while (my $ref = shift @{$queue{$type}}) {
+             while (my $ref = shift $queue{$type}->@*) {
                  my @message = @$ref;
                  my $flat = join(':', @message);
 
                  $self->log_msg(2, "Message $type ($flat) ready for delivery");
 
-                 for my $waiter (@{$waiters{$type}}) {
+                 for my $waiter ($waiters{$type}->@*) {
                     $self->log_msg(2, "Delivering message $type ($flat) to " .
                         $waiter->name());
                     $waiter->deliver($type, @message);
@@ -280,7 +280,7 @@ message parameters.
 =cut
 
     method register ($type, $callback) {
-        push @{$waiters{$type}}, ($callback);
+        push $waiters{$type}->@*, ($callback);
     }
 
 =head2 post($type, @message)
@@ -301,8 +301,8 @@ written up the pipe to the parent.
         if ($$ == $pid) {
             if (exists($waiters{$type})) {
                 $self->log_msg(2, "queuing post $type ($flat)");
-                push @{$queue{$type}}, \@message;
-                $self->log_msg(2, "$type queue length now " . $#{$queue{$type}} );
+                push $queue{$type}->@*, \@message;
+                $self->log_msg(2, "$type queue length now " . $queue{$type}->$#*);
             } else {
                 $self->log_msg(2, "dropping post $type ($flat)");
             }

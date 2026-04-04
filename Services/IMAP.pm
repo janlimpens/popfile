@@ -331,7 +331,7 @@ field $classifier :writer(set_classifier) = 0;
             last if /^$/;
             if (/^([^ \t]+):[ \t]*(.*)$/) {
                 $last = lc $1;
-                push @{$header{$last}}, $2;
+                push $header{$last}->@*, $2;
             }
             elsif (defined $last) {
                 $header{$last}[-1] .= $_;
