@@ -31,7 +31,7 @@ use POPFile::Loader;
 
 my $code = 0;
 
-if ( $#ARGV > 0 ) {
+if (@ARGV > 1) {
 
     # POPFile is actually loaded by the POPFile::Loader object which does all
     # the work
@@ -53,9 +53,9 @@ if ( $#ARGV > 0 ) {
     my @files;
 
     if ($^O =~ /linux/) {
-        @files = @ARGV[0 .. $#ARGV];
+        @files = @ARGV;
     } else {
-        @files = map { glob } @ARGV[0 .. $#ARGV];
+        @files = map { glob } @ARGV;
     }
 
     @ARGV = ();
@@ -90,7 +90,7 @@ if ( $#ARGV > 0 ) {
                 $code = 1;
             } else {
                 $b->add_messages_to_bucket( $session, $bucket, @files );
-                print "Added ", $#files+1, " files to `$bucket'\n";
+                print "Added ", scalar @files, " files to `$bucket'\n";
             }
         }
 

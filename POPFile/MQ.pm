@@ -221,7 +221,7 @@ C<waitpid()>, flushes its pipe, and removes it from the children map.
 
         my @kids = keys %children;
 
-        if ( $#kids >= 0 ) {
+        if (@kids) {
             for my $kid (@kids) {
                 if ( waitpid( $kid, &WNOHANG ) == $kid ) {
                     $self->flush_child_data($children{$kid} );

@@ -340,7 +340,7 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
 
         push @options, @ARGV;
 
-        if ( $#options >= 0 )  {
+        if (@options)  {
             my $i = 0;
 
             while ( $i <= $#options )  {

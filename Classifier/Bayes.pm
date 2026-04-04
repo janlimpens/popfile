@@ -2080,7 +2080,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     # return unclassified
 
     return "unclassified"
-        if ($#buckets == -1);
+        unless @buckets;
 
     # If all of the user's buckets have no words then we escape here
     # return unclassified
@@ -2126,7 +2126,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     # If the user does not have at least two buckets which contains
     # some words then we escape here return unclassified
 
-    return "unclassified" if ($#buckets < 1);
+    return "unclassified" if (@buckets < 2);
 
     # For each word go through the buckets and calculate
     # P(word|bucket) and then calculate P(word|bucket) ^ word count

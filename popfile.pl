@@ -113,7 +113,7 @@ if ( $POPFile->CORE_config() ) {
     # If there were any log messages from the packing list check then
     # log them now
 
-    if ( $#log != -1 ) {
+    if (@log) {
         foreach my $m (@log) {
             $POPFile->get_module( 'POPFile::Logger' )->debug( 0, $m );
         }

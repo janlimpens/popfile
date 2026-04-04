@@ -31,7 +31,7 @@ use POPFile::Loader;
 
 my $code = 0;
 
-if ( $#ARGV >= 0 ) {
+if (@ARGV) {
 
     # POPFile is actually loaded by the POPFile::Loader object which does all
     # the work
@@ -51,9 +51,9 @@ if ( $#ARGV >= 0 ) {
     my @files;
 
     if ($^O =~ /linux/) {
-        @files = @ARGV[0 .. $#ARGV];
+        @files = @ARGV;
     } else {
-        @files = map { glob } @ARGV[0 .. $#ARGV];
+        @files = map { glob } @ARGV;
     }
 
     @ARGV = ();

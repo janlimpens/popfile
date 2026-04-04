@@ -32,7 +32,7 @@ use POPFile::Loader;
 
 # main
 
-if ( $#ARGV == -1 ) {
+unless (@ARGV) {
 
     # POPFile is actually loaded by the POPFile::Loader object which does all
     # the work

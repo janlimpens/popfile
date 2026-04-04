@@ -451,7 +451,7 @@ method is_valid_slot ($slot) {
 #
 #----------------------------------------------------------------------------
 method commit_history() {
-    if ( $#{$commit_list} == -1 ) {
+    unless (@{$commit_list}) {
         return;
     }
 
@@ -1093,7 +1093,7 @@ method upgrade_history_files() {
 
     my @msgs = sort compare_mf__ glob $self->get_user_path(
         $self->global_config('msgdir' ) . 'popfile*.msg', 0 );
-    if ( $#msgs != -1 ) {
+    if (@msgs) {
         my $session = $classifier->get_session_key( 'admin', '' );
 
         print "\nFound old history files, moving them into database\n    ";
