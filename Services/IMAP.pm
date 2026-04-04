@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Jan Limpens
 use Object::Pad;
 use Fcntl ();
 use Services::IMAP::Client;

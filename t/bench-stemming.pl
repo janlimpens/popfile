@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Jan Limpens
 # bench-stemming.pl — benchmark accuracy, speed and memory of word stemming,
 # multilingual stopwords and language detection in POPFile.
 #

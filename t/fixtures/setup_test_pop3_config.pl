@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 Jan Limpens
 use strict;
 use warnings;
 use feature 'say';

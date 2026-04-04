@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2001-2011 John Graham-Cumming
+# Copyright (C) 2026 Jan Limpens
 # ----------------------------------------------------------------------------
 #
 # pipe.pl --- Read a message in on STDIN and write out the modified
