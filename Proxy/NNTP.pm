@@ -110,12 +110,12 @@ BUILD {
             }
 
             if ( $connection_state eq 'username needed' ) {
-                my $separator    = $self->config('separator' );
+                my $separator = $self->config('separator' );
                 my $user_command = "^ *AUTHINFO USER ([^:]+)(:([\\d]{1,5}))?(\\Q$separator\\E(.+))?";
 
                 if ( $command =~ /$user_command/i ) {
-                    my $server   = $1;
-                    my $port     = ( defined($3) && ($3 > 0) && ($3 < 65536) ) ? $3 : undef;
+                    my $server = $1;
+                    my $port = ( defined($3) && ($3 > 0) && ($3 < 65536) ) ? $3 : undef;
                     my $username = $5;
 
                     if ( $server ne '' ) {
@@ -206,7 +206,7 @@ BUILD {
                             $message_id = $2;
                             my ( $class, $history_file ) = $self->set_service()->classify_message(
                                 $news, $client, 0, '', 0, undef, $eol );
-                            $downloaded{$message_id}{slot}  = $history_file;
+                            $downloaded{$message_id}{slot} = $history_file;
                             $downloaded{$message_id}{class} = $class;
                         }
                     }
@@ -230,8 +230,8 @@ BUILD {
                         my $cached = 0;
 
                         if ( defined( $downloaded{$message_id} ) ) {
-                            $cached       = 1;
-                            $class        = $downloaded{$message_id}{class};
+                            $cached = 1;
+                            $class = $downloaded{$message_id}{class};
                             $history_file = $downloaded{$message_id}{slot};
                         } else {
                             my $article_command = $command;
@@ -245,7 +245,7 @@ BUILD {
 
                                 ( $class, $history_file ) = $self->set_service()->classify_message(
                                     $news, undef, 0, '', 0, 0, $eol );
-                                $downloaded{$message_id}{slot}  = $history_file;
+                                $downloaded{$message_id}{slot} = $history_file;
                                 $downloaded{$message_id}{class} = $class;
                             } else {
                                 $self->tee($client, "$response" );
@@ -304,7 +304,7 @@ BUILD {
 
                             my ( $class, $history_file ) = $self->set_service()->classify_message(
                                 $news, undef, 0, '', 0, 0, $eol );
-                            $downloaded{$message_id}{slot}  = $history_file;
+                            $downloaded{$message_id}{slot} = $history_file;
                             $downloaded{$message_id}{class} = $class;
 
                             ( $response, $ok ) = $self->get_response($news, $client,

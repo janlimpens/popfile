@@ -34,8 +34,8 @@ use Lingua::StopWords;
 
 # These are used for Japanese support
 
-my $ascii             = '[\x00-\x7F]';
-my $two_bytes_euc_jp  = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';
+my $ascii = '[\x00-\x7F]';
+my $two_bytes_euc_jp = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';
 my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';
 my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)";
 
@@ -54,7 +54,7 @@ class Classifier::WordMangle :isa(POPFile::Module);
 
 field %stop__;
     field $language = 'en';
-    field $stemmer  = undef;
+    field $stemmer = undef;
 
     BUILD {
         $self->set_name('wordmangle');

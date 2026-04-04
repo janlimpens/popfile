@@ -15,14 +15,14 @@ field $socket = undef;
     field $last_response = '';
     field $last_command = '';
 
-    my $eol           = "\015\012";
+    my $eol = "\015\012";
     my $cfg_separator = "-->";
 
     method connect() {
         my $hostname = $self->config('hostname');
-        my $port     = $self->config('port');
-        my $use_ssl  = $self->config('use_ssl');
-        my $timeout  = $self->global_config('timeout');
+        my $port = $self->config('port');
+        my $use_ssl = $self->config('use_ssl');
+        my $timeout = $self->global_config('timeout');
         $self->log_msg(1, "Connecting to $hostname:$port" );
         unless ( $hostname ne '' && $port ne '' ) {
             $self->log_msg(0, "Invalid port or hostname. Will not connect to server." );
@@ -32,19 +32,19 @@ field $socket = undef;
         if ( $use_ssl ) {
             require IO::Socket::SSL;
             $imap = IO::Socket::SSL->new(
-                Proto    => 'tcp',
+                Proto => 'tcp',
                 PeerAddr => $hostname,
                 PeerPort => $port,
-                Timeout  => $timeout,
-                Domain   => Socket::AF_INET(),
+                Timeout => $timeout,
+                Domain => Socket::AF_INET(),
             ) or $self->log_msg(0, "IO::Socket::SSL error: $@" );
         }
         else {
             $imap = IO::Socket::INET->new(
-                Proto    => 'tcp',
+                Proto => 'tcp',
                 PeerAddr => $hostname,
                 PeerPort => $port,
-                Timeout  => $timeout,
+                Timeout => $timeout,
             ) or $self->log_msg(0, "IO::Socket::INET error: $@" );
         }
         return unless $imap && $imap->connected();
@@ -63,7 +63,7 @@ field $socket = undef;
 
     method login() {
         my $login = $self->config('login');
-        my $pass  = $self->config('password');
+        my $pass = $self->config('password');
         $self->log_msg(1, "Logging in" );
         $self->say( 'LOGIN "' . $login . '" "' . $pass . '"' );
         return $self->get_response() == 1 ? 1 : undef
@@ -95,7 +95,7 @@ field $socket = undef;
             my @lines = split /$eol/, $last_response;
             for (@lines) {
                 if (/^\* STATUS/) {
-                    $ret->{UIDNEXT}     = $1 if /UIDNEXT (\d+)/;
+                    $ret->{UIDNEXT} = $1 if /UIDNEXT (\d+)/;
                     $ret->{UIDVALIDITY} = $1 if /UIDVALIDITY (\d+)/;
                 }
                 last;
@@ -142,10 +142,10 @@ field $socket = undef;
             $self->bail_out( "The connection to the IMAP server timed out while we waited for a response." );
         };
         alarm $self->global_config('timeout');
-        my $actual_tag   = sprintf "A%05d", $tag;
-        my $response     = '';
+        my $actual_tag = sprintf "A%05d", $tag;
+        my $response = '';
         my $count_octets = 0;
-        my $octet_count  = 0;
+        my $octet_count = 0;
         while ( my $buf = $self->slurp($socket) ) {
             if ( $response eq '' && !defined $buf ) {
                 $self->bail_out( "The connection to the IMAP server was lost while trying to get a response to command '$last_command'." );
@@ -212,7 +212,7 @@ field $socket = undef;
             $self->log_msg(0, "LIST command failed (return value [$result])." );
             return
         }
-        my @lines     = split /$eol/, $last_response;
+        my @lines = split /$eol/, $last_response;
         my @mailboxes;
         for (@lines) {
             next unless /^\*/;
@@ -238,7 +238,7 @@ field $socket = undef;
 
     method get_new_message_list_unselected ($folder_name) {
         my $last_known = $self->uid_next($folder_name);
-        my $info       = $self->status($folder_name);
+        my $info = $self->status($folder_name);
         $self->bail_out( "Could not get a valid response to the STATUS command." )
             unless defined $info;
         my $new_next = $info->{UIDNEXT};
@@ -303,7 +303,7 @@ field $socket = undef;
 
     method uid_validity ($folder_name, $uidval = undef) {
         Carp::confess("gimme a folder!") unless $folder_name;
-        my $all  = $self->config('uidvalidities');
+        my $all = $self->config('uidvalidities');
         my %hash = defined $all ? split( /$cfg_separator/, $all ) : ();
         if ( defined $uidval ) {
             $hash{$folder_name} = $uidval;
@@ -320,7 +320,7 @@ field $socket = undef;
 
     method uid_next ($folder_name, $uidnext = undef) {
         Carp::confess("I need a folder") unless $folder_name;
-        my $all  = $self->config('uidnexts');
+        my $all = $self->config('uidnexts');
         my %hash = defined $all ? split( /$cfg_separator/, $all ) : ();
         if ( defined $uidnext ) {
             $hash{$folder_name} = $uidnext;

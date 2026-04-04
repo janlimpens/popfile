@@ -105,15 +105,15 @@ field $use_apop = 0;
         my $mail;
 
         $apop_banner = undef;
-        $use_apop    = 0;
-        $apop_user   = '';
+        $use_apop = 0;
+        $apop_user = '';
 
         $self->tee($client, "+OK " . $self->config('welcome_string' ) . "$eol" );
 
         my $s = $self->config('separator' );
         $s =~ s/(\$|\@|\[|\]|\(|\)|\||\?|\*|\.|\^|\+)/\\$1/;
 
-        my $transparent  = "^USER ([^$s]+)\$";
+        my $transparent = "^USER ([^$s]+)\$";
         my $user_command = "USER ([^$s]+)($s(\\d{1,5}))?$s([^$s]+)($s([^$s]+))?";
         my $apop_command = "APOP ([^$s]+)($s(\\d{1,5}))?$s([^$s]+) (.*?)";
 
@@ -157,7 +157,7 @@ field $use_apop = 0;
                                 if defined( $apop_banner );
 
                             if ( defined( $apop_banner ) ) {
-                                $use_apop  = 1;
+                                $use_apop = 1;
                                 $apop_user = $user;
                                 $self->tee($client, "+OK hello $user$eol" );
                                 next;
@@ -262,7 +262,7 @@ field $use_apop = 0;
                         if ( $response == 0 ) {
                             my ( $class, $slot ) = $self->set_service()->classify_message(
                                 $mail, $client, 0, '', 0, 0, $eol );
-                            $downloaded{$count}{slot}  = $slot;
+                            $downloaded{$count}{slot} = $slot;
                             $downloaded{$count}{class} = $class;
 
                             $response = $self->echo_response($mail, $client, $command, 1 );
@@ -345,7 +345,7 @@ field $use_apop = 0;
                         my $slot;
                         ( $class, $slot ) = $self->set_service()->classify_message(
                             $mail, $client, 0, '', 0, undef, $eol );
-                        $downloaded{$count}{slot}  = $slot;
+                        $downloaded{$count}{slot} = $slot;
                         $downloaded{$count}{class} = $class;
                     }
                 }

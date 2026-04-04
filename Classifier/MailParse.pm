@@ -37,10 +37,10 @@ use Lingua::Identify;
 
 # Korean characters definition
 
-my $ksc5601_sym   = '(?:[\xA1-\xAC][\xA1-\xFE])';
-my $ksc5601_han   = '(?:[\xB0-\xC8][\xA1-\xFE])';
+my $ksc5601_sym = '(?:[\xA1-\xAC][\xA1-\xFE])';
+my $ksc5601_han = '(?:[\xB0-\xC8][\xA1-\xFE])';
 my $ksc5601_hanja = '(?:[\xCA-\xFD][\xA1-\xFE])';
-my $ksc5601       = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
+my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
 
 my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
@@ -48,17 +48,17 @@ my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
 my %encoding_candidates = (    'Nihongo' => [ 'cp932', 'euc-jp', '7bit-jis' ]
 );
-my $ascii              = '[\x00-\x7F]';                                      # ASCII chars
-my $two_bytes_euc_jp   = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';                   # 2bytes EUC-JP chars
+my $ascii = '[\x00-\x7F]';                                      # ASCII chars
+my $two_bytes_euc_jp = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';                   # 2bytes EUC-JP chars
 my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';                   # 3bytes EUC-JP chars
-my $euc_jp             = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)"; # EUC-JP chars
+my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)"; # EUC-JP chars
 
 # Symbols in EUC-JP chars which cannot be considered a part of words
 
 my $symbol_row1_euc_jp = '(?:[\xA1][\xA1-\xBB\xBD-\xFE])';
 my $symbol_row2_euc_jp = '(?:[\xA2][\xA1-\xFE])';
 my $symbol_row8_euc_jp = '(?:[\xA8][\xA1-\xFE])';
-my $symbol_euc_jp      = "(?:$symbol_row1_euc_jp|$symbol_row2_euc_jp|$symbol_row8_euc_jp)";
+my $symbol_euc_jp = "(?:$symbol_row1_euc_jp|$symbol_row2_euc_jp|$symbol_row8_euc_jp)";
 
 # Cho-on kigou(symbol in Japanese), a special symbol which can appear
 # in middle of words
@@ -72,12 +72,12 @@ my $non_symbol_euc_jp = "(?:$non_symbol_two_bytes_euc_jp|$three_bytes_euc_jp|$ch
 
 # Constants for the internal wakachigaki parser.
 # Kind of EUC-JP chars
-my $euc_jp_symbol    = '[\xA1\xA2\xA6-\xA8\xAD\xF9-\xFC][\xA1-\xFE]';                # The symbols make a word of one character.
-my $euc_jp_alphanum  = '(?:\xA3[\xB0-\xB9\xC1-\xDA\xE1-\xFA])+';                     # One or more alphabets and numbers
-my $euc_jp_hiragana  = '(?:(?:\xA4[\xA1-\xF3])+(?:\xA1[\xAB\xAC\xB5\xB6\xBC])*)+';   # One or more Hiragana characters
-my $euc_jp_katakana  = '(?:(?:\xA5[\xA1-\xF6])+(?:\xA1[\xA6\xBC\xB3\xB4])*)+';       # One or more Katakana characters
+my $euc_jp_symbol = '[\xA1\xA2\xA6-\xA8\xAD\xF9-\xFC][\xA1-\xFE]';                # The symbols make a word of one character.
+my $euc_jp_alphanum = '(?:\xA3[\xB0-\xB9\xC1-\xDA\xE1-\xFA])+';                     # One or more alphabets and numbers
+my $euc_jp_hiragana = '(?:(?:\xA4[\xA1-\xF3])+(?:\xA1[\xAB\xAC\xB5\xB6\xBC])*)+';   # One or more Hiragana characters
+my $euc_jp_katakana = '(?:(?:\xA5[\xA1-\xF6])+(?:\xA1[\xA6\xBC\xB3\xB4])*)+';       # One or more Katakana characters
 my $euc_jp_hkatakana = '(?:\x8E[\xA6-\xDF])+';                                       # One or more Half-width Katakana characters
-my $euc_jp_kanji     = '[\xB0-\xF4][\xA1-\xFE](?:[\xB0-\xF4][\xA1-\xFE]|\xA1\xB9)?'; # One or two Kanji characters
+my $euc_jp_kanji = '[\xB0-\xF4][\xA1-\xFE](?:[\xB0-\xF4][\xA1-\xFE]|\xA1\xB9)?'; # One or two Kanji characters
 
 my $euc_jp_word = '(' .    $euc_jp_alphanum .     '|' . 
     $euc_jp_hiragana .     '|' . 
@@ -90,31 +90,31 @@ my $euc_jp_word = '(' .    $euc_jp_alphanum .     '|' .
 # HTML entity mapping to character codes, this maps things like &amp;
 # to their corresponding character code
 
-my %entityhash = (          'aacute' => 225, 'Aacute' => 193, 'Acirc'  => 194, 'acirc'  => 226,
-          'acute'  => 180, 'AElig'  => 198, 'aelig'  => 230, 'Agrave' => 192,
-          'agrave' => 224, 'amp'    => 38,  'Aring'  => 197, 'aring'  => 229,
-          'atilde' => 227, 'Atilde' => 195, 'Auml'   => 196, 'auml'   => 228,
-          'brvbar' => 166, 'ccedil' => 231, 'Ccedil' => 199, 'cedil'  => 184,
-          'cent'   => 162, 'copy'   => 169, 'curren' => 164, 'deg'    => 176,
-          'divide' => 247, 'Eacute' => 201, 'eacute' => 233, 'ecirc'  => 234,
-          'Ecirc'  => 202, 'Egrave' => 200, 'egrave' => 232, 'ETH'    => 208,
-          'eth'    => 240, 'Euml'   => 203, 'euml'   => 235, 'frac12' => 189,
+my %entityhash = (          'aacute' => 225, 'Aacute' => 193, 'Acirc' => 194, 'acirc' => 226,
+          'acute' => 180, 'AElig' => 198, 'aelig' => 230, 'Agrave' => 192,
+          'agrave' => 224, 'amp' => 38,  'Aring' => 197, 'aring' => 229,
+          'atilde' => 227, 'Atilde' => 195, 'Auml' => 196, 'auml' => 228,
+          'brvbar' => 166, 'ccedil' => 231, 'Ccedil' => 199, 'cedil' => 184,
+          'cent' => 162, 'copy' => 169, 'curren' => 164, 'deg' => 176,
+          'divide' => 247, 'Eacute' => 201, 'eacute' => 233, 'ecirc' => 234,
+          'Ecirc' => 202, 'Egrave' => 200, 'egrave' => 232, 'ETH' => 208,
+          'eth' => 240, 'Euml' => 203, 'euml' => 235, 'frac12' => 189,
           'frac14' => 188, 'frac34' => 190, 'iacute' => 237, 'Iacute' => 205,
-          'icirc'  => 238, 'Icirc'  => 206, 'iexcl'  => 161, 'igrave' => 236,
-          'Igrave' => 204, 'iquest' => 191, 'iuml'   => 239, 'Iuml'   => 207,
-          'laquo'  => 171, 'macr'   => 175, 'micro'  => 181, 'middot' => 183,
-          'nbsp'   => 160, 'not'    => 172, 'ntilde' => 241, 'Ntilde' => 209,
-          'oacute' => 243, 'Oacute' => 211, 'Ocirc'  => 212, 'ocirc'  => 244,
-          'Ograve' => 210, 'ograve' => 242, 'ordf'   => 170, 'ordm'   => 186,
+          'icirc' => 238, 'Icirc' => 206, 'iexcl' => 161, 'igrave' => 236,
+          'Igrave' => 204, 'iquest' => 191, 'iuml' => 239, 'Iuml' => 207,
+          'laquo' => 171, 'macr' => 175, 'micro' => 181, 'middot' => 183,
+          'nbsp' => 160, 'not' => 172, 'ntilde' => 241, 'Ntilde' => 209,
+          'oacute' => 243, 'Oacute' => 211, 'Ocirc' => 212, 'ocirc' => 244,
+          'Ograve' => 210, 'ograve' => 242, 'ordf' => 170, 'ordm' => 186,
           'oslash' => 248, 'Oslash' => 216, 'Otilde' => 213, 'otilde' => 245,
-          'Ouml'   => 214, 'ouml'   => 246, 'para'   => 182, 'plusmn' => 177,
-          'pound'  => 163, 'raquo'  => 187, 'reg'    => 174, 'sect'   => 167,
-          'shy'    => 173, 'sup1'   => 185, 'sup2'   => 178, 'sup3'   => 179,
-          'szlig'  => 223, 'thorn'  => 254, 'THORN'  => 222, 'times'  => 215,
-          'Uacute' => 218, 'uacute' => 250, 'ucirc'  => 251, 'Ucirc'  => 219,
-          'ugrave' => 249, 'Ugrave' => 217, 'uml'    => 168, 'Uuml'   => 220,
-          'uuml'   => 252, 'Yacute' => 221, 'yacute' => 253, 'yen'    => 165,
-          'yuml'   => 255 );
+          'Ouml' => 214, 'ouml' => 246, 'para' => 182, 'plusmn' => 177,
+          'pound' => 163, 'raquo' => 187, 'reg' => 174, 'sect' => 167,
+          'shy' => 173, 'sup1' => 185, 'sup2' => 178, 'sup3' => 179,
+          'szlig' => 223, 'thorn' => 254, 'THORN' => 222, 'times' => 215,
+          'Uacute' => 218, 'uacute' => 250, 'ucirc' => 251, 'Ucirc' => 219,
+          'ugrave' => 249, 'Ugrave' => 217, 'uml' => 168, 'Uuml' => 220,
+          'uuml' => 252, 'Yacute' => 221, 'yacute' => 253, 'yen' => 165,
+          'yuml' => 255 );
 # All known HTML tags divided into two groups: tags that generate
 # whitespace as in 'foo<br></br>bar' and tags that don't such as
 # 'foo<b></b>bar'.  The first case shouldn't count as an empty pair
@@ -443,7 +443,7 @@ method update_pseudoword ($prefix, $word, $encoded, $literal) {
                 $literal =~ s/</&lt;/g;
                 $literal =~ s/>/&gt;/g;
                 my $color = $self->get_color( $mword );
-                my $to    = "<b><font color=\"$color\"><a title=\"$mword\">$literal</a></font></b>";
+                my $to = "<b><font color=\"$color\"><a title=\"$mword\">$literal</a></font></b>";
                 $ut .= $to . ' ';
             }
         }
@@ -536,7 +536,7 @@ method add_line ($bigline, $encoded, $prefix) {
 
             while ( $line =~ m/(&(\w{3,6});)/g ) {
                 my $from = $1;
-                my $to   = $entityhash{$2};
+                my $to = $entityhash{$2};
 
                 if ( defined( $to ) ) {
                     # HTML entities confilict with DBCS and EUC-JP
@@ -558,7 +558,7 @@ method add_line ($bigline, $encoded, $prefix) {
 
                 if ( ( ( $2 < 255 ) && ( $2 > 63 ) ) ||                     ( $2 == 61 ) ||
                      ( ( $2 < 60 ) && ( $2 > 31 ) ) ) {                    my $from = $1;
-                    my $to   = chr( $2 );
+                    my $to = chr( $2 );
 
                     if ( defined( $to ) && ( $to ne '' ) ) {
                         $line         =~ s/$from/$to/g;
@@ -636,7 +636,7 @@ method add_line ($bigline, $encoded, $prefix) {
                                 (?:[A-Za-z]\3){1,14}[A-Za-z])
                                ([ ]|\3|[!\?,]|$)/ /x ) {
                 my $original = "$1$2$4";
-                my $word     = $2;
+                my $word = $2;
                 print "$word ->" if $debug;
                 $word =~ s/[^A-Z]//gi;
                 print "$word\n" if $debug;
@@ -763,7 +763,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
         }
 
         if ( lc( $tag ) eq $cssbackcolortag ) {
-            $htmlbackcolor   = $htmlbodycolor;
+            $htmlbackcolor = $htmlbodycolor;
             $cssbackcolortag = '';
 
             $self->compute_html_color_distance();
@@ -772,7 +772,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
         }
 
         if ( lc( $tag ) eq $cssfontcolortag ) {
-            $htmlfontcolor   = $self->map_color( 'black' );
+            $htmlfontcolor = $self->map_color( 'black' );
             $cssfontcolortag = '';
 
             $self->compute_html_color_distance();
@@ -805,13 +805,13 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
     while ( $arg =~ s/[ \t]*                      ((\w+)[ \t]*=[ \t]*
                        (([\"\'])(.*?)\4|([^ \t>]+)($|([ \t>])))
-                      )//x ) {        $original  = $1;
+                      )//x ) {        $original = $1;
         $attribute = $2;
-        $value     = $5 || $6 || '';
-        $quote     = '';
+        $value = $5 || $6 || '';
+        $quote = '';
         $end_quote = '[\> \t\&\n]';
         if ( defined $4 ) {
-            $quote     = $4;
+            $quote = $4;
             $end_quote = $4;
         }
 
@@ -1148,7 +1148,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
 
     # Remove any URL encoding (protocol may not be URL encoded)
 
-    my $oldurl   = $url;
+    my $oldurl = $url;
     my $percents = ( $url =~ s/(%([0-9A-Fa-f]{2}))/chr(hex("0x$2"))/ge );
 
     if ( ( $percents > 0 ) && !defined( $noadd ) ) {
@@ -1172,7 +1172,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
                      int|jobs|mil|mobi|museum|name|net|org|pro|tel|
                      travel|xxx|[a-z]{2})
                     ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {
-        $host     = "$1$3";
+        $host = "$1$3";
         $hostform = "name";
     } else {
         if ( $url =~ /(([^:\/])+)/ ) {
@@ -1201,7 +1201,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
                 # possible IP quad(s)
 
                 my $quad_candidate = $1;
-                my $more_dots      = $3;
+                my $more_dots = $3;
 
                 if ( defined $hex ) {
                     # hex number
@@ -1253,7 +1253,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
                 # we did actually find an IP address, and not some fake
 
                 $hostform = "ip";
-                $host     = "$quads{1}.$quads{2}.$quads{3}.$quads{4}";
+                $host = "$quads{1}.$quads{2}.$quads{3}.$quads{4}";
                 $url =~ s/(([^:\/])+)//;
             }
         }
@@ -1264,10 +1264,10 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
         return '';
     }
 
-    $port  = $1 if ( $url =~ s/^\:(\d+)// );
-    $path  = $1 if ( $url =~ s/^([\\\/][^\#\?\n]*)($)?// );
+    $port = $1 if ( $url =~ s/^\:(\d+)// );
+    $path = $1 if ( $url =~ s/^([\\\/][^\#\?\n]*)($)?// );
     $query = $1 if ( $url =~ s/^[\?]([^\#\n]*|$)?// );
-    $hash  = $1 if ( $url =~ s/^[\#](.*)$// );
+    $hash = $1 if ( $url =~ s/^[\#](.*)$// );
 
     if ( !defined( $protocol ) || ( $protocol =~ /^(http|https)$/ ) ) {
         $temp_before = $before;
@@ -1371,7 +1371,7 @@ method parse_html ($line, $encoded) {
                 $html_arg =~ s/=\n ?//g;
                 $self->update_tag( $html_tag, $html_arg,                                   $html_end, $encoded );                $html_tag = '';
                 $html_arg = '';
-                $found              = 1;
+                $found = 1;
                 next;
             } else {
                 $html_arg .= $line;
@@ -1394,9 +1394,9 @@ method parse_html ($line, $encoded) {
         # to indicate to the caller that we have an unclosed tag
 
         if ( $line =~ /^<([\/]?)([A-Za-z][^ >]+)([^>]*)$/ ) {
-            $html_end      = ( $1 eq '/' );
-            $html_tag    = $2;
-            $html_arg    = $3;
+            $html_end = ( $1 eq '/' );
+            $html_tag = $2;
+            $html_arg = $3;
             $in_html_tag = 1;
             return 1;
         }
@@ -1432,7 +1432,7 @@ method parse_html ($line, $encoded) {
 #
 # ----------------------------------------------------------------------------
 method parse_file ($file, $max_size = undef, $reset = undef) {
-    $reset    = 1 if ( !defined( $reset    ) );
+    $reset = 1 if ( !defined( $reset    ) );
     $max_size = 0 if ( !defined( $max_size ) || ( $max_size =~ /\D/ ) );
 
     if ( defined $mangle && $mangle->config('auto_detect_language') ) {
@@ -1509,7 +1509,7 @@ method start_parse ($reset = undef) {
 
     # Variables to save header information to while parsing headers
 
-    $cur_header   = '';
+    $cur_header = '';
     $cur_argument = '';
 
     # Clear the word hash
@@ -1526,19 +1526,19 @@ method start_parse ($reset = undef) {
 
     $in_html_tag = 0;
 
-    $html_tag    = '';
-    $html_arg    = '';
+    $html_tag = '';
+    $html_arg = '';
 
     if ( $reset ) {
         %words = ();
     }
 
-    $msg_total    = 0;
-    $from         = '';
-    $to           = '';
-    $cc           = '';
-    $subject      = '';
-    $ut           = '';
+    $msg_total = 0;
+    $from = '';
+    $to = '';
+    $cc = '';
+    $subject = '';
+    $ut = '';
     %quickmagnets = ();
 
     $htmlbodycolor = $self->map_color( 'white' );
@@ -1548,7 +1548,7 @@ method start_parse ($reset = undef) {
 
     $in_headers = 1;
 
-    $first20      = '';
+    $first20 = '';
     $first20count = 0;
 
     # Used to return a colorize page
@@ -1602,7 +1602,7 @@ method stop_parse() {
     # TODO: Fix me
 
     if ( $cur_header ne '' ) {
-        $self->parse_header( $cur_header, $cur_argument,                             $cur_mime, $cur_encoding );        $cur_header   = '';
+        $self->parse_header( $cur_header, $cur_argument,                             $cur_mime, $cur_encoding );        $cur_header = '';
         $cur_argument = '';
     }
 
@@ -1691,7 +1691,7 @@ method parse_line ($read) {
                             $cur_header, $cur_argument,
                             $cur_mime, $cur_encoding );
                     # Clear the saved headers
-                    $cur_header   = '';
+                    $cur_header = '';
                     $cur_argument = '';
 
                     $ut .= $self->splitline( "\015\012", 0 );
@@ -1723,7 +1723,7 @@ method parse_line ($read) {
                         if ( $cur_header ne '' );
                     # Save the new information for the current header
 
-                    $cur_header   = $1;
+                    $cur_header = $1;
                     $cur_argument = $2;
                     next;
                 }
@@ -1822,7 +1822,7 @@ method clear_out_base64() {
     if ( $base64 ne '' ) {
         my $decoded = '';
 
-        $ut     = '' if ( defined( $color_resolver ) );
+        $ut = '' if ( defined( $color_resolver ) );
         $base64 =~ s/ //g;
 
         print "Base64 data: " . $base64 . "\n" if $debug;
@@ -1913,7 +1913,7 @@ method decode_string ($mystring, $lang = undef) {
 
     $lang = $lang if ( !defined( $lang ) || ( $lang eq '' ) );
 
-    my $output          = '';
+    my $output = '';
     my $last_is_encoded = 0;
 
     while ( $mystring =~ m/(.*?)(=\?([\w-]+)\?(B|Q)\?(.*?)\?=)/igc ) {
@@ -2000,7 +2000,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
     if ( $self->update_pseudoword( 'header', $header, 0, $header ) ) {
         if ( defined( $color_resolver ) ) {
-            my $color     = $self->get_color( "header:$header" );
+            my $color = $self->get_color( "header:$header" );
             $ut = "<b><font color=\"$color\">$header</font></b>: $fix_argument\015\012";
         }
     } else {
@@ -2269,7 +2269,7 @@ method parse_css_color ($color) {
 
         my $ispercent = 0;
 
-        my $value_re   = qr/^((-[1-9]\d*)|([1-9]\d*|0))$/;
+        my $value_re = qr/^((-[1-9]\d*)|([1-9]\d*|0))$/;
         my $percent_re = qr/^([1-9]\d+|0)%$/;
 
         my ( $r_temp, $g_temp, $b_temp );
@@ -2311,7 +2311,7 @@ method parse_css_color ($color) {
             # here we have a combination of percentages and integers
             # or some other oddity
             $ispercent = 0;
-            $error     = 1;
+            $error = 1;
         }
 
         print "        CSS rgb($r, $g, $b) percent: $ispercent\n" if $debug;
@@ -2636,7 +2636,7 @@ method init_mecab() {
     # Initialize MeCab (-F %M\s -U %M\s -E \n is passed to MeCab as argument).
     # Insert white spaces after words.
 
-    $nihongo_parser{obj_mecab}        = MeCab::Tagger->new( '-F %M\s -U %M\s -E \n' );}
+    $nihongo_parser{obj_mecab} = MeCab::Tagger->new( '-F %M\s -U %M\s -E \n' );}
 
 # ----------------------------------------------------------------------------
 #
@@ -2710,7 +2710,7 @@ method setup_nihongo_parser ($nihongo_parser) {
         require MeCab;
         MeCab->import();
 
-        $nihongo_parser{init}  = \&init_mecab;
+        $nihongo_parser{init} = \&init_mecab;
         $nihongo_parser{parse} = \&parse_line_with_mecab;
         $nihongo_parser{close} = \&close_mecab;
     } elsif ( $nihongo_parser eq 'kakasi' ) {
@@ -2718,12 +2718,12 @@ method setup_nihongo_parser ($nihongo_parser) {
         require Text::Kakasi;
         Text::Kakasi->import();
 
-        $nihongo_parser{init}  = \&init_kakasi;
+        $nihongo_parser{init} = \&init_kakasi;
         $nihongo_parser{parse} = \&parse_line_with_kakasi;
         $nihongo_parser{close} = \&close_kakasi;
     } else {
         # Require no external modules
-        $nihongo_parser{init}  = sub { }; # Needs no initialization
+        $nihongo_parser{init} = sub { }; # Needs no initialization
         $nihongo_parser{parse} = \&parse_line_with_internal_parser;
         $nihongo_parser{close} = sub { };
     }

@@ -748,9 +748,9 @@ method get_slot_file ($slot) {
 #----------------------------------------------------------------------------
 method get_message_hash ($messageid, $date, $subject, $received) {
     $messageid = '' if ( !defined( $messageid ) );
-    $date      = '' if ( !defined( $date      ) );
-    $subject   = '' if ( !defined( $subject   ) );
-    $received  = '' if ( !defined( $received  ) );
+    $date = '' if ( !defined( $date      ) );
+    $subject = '' if ( !defined( $subject   ) );
+    $received = '' if ( !defined( $received  ) );
 
     return md5_hex( "[$messageid][$date][$subject][$received]" );
 }
@@ -888,7 +888,7 @@ method set_query ($id, $filter, $search, $sort, $not) {
     $queries{$id}{params} = [];
 
     my $not_equal = $not ? '!='  : '=';
-    my $equal     = $not ? '='   : '!=';
+    my $equal = $not ? '='   : '!=';
 
     if ( $search ne '' ) {
         my $qb = Query::Builder->new(dialect => $db_service->dialect());
@@ -1166,7 +1166,7 @@ method history_read_class ($filename) {
 
         $reclassified = 0;
         if ( defined( $bucket ) && ( $bucket =~ /RECLASSIFIED/ ) ) {
-            $bucket       = <$class_fh>;
+            $bucket = <$class_fh>;
             $usedtobe = <$class_fh>;
             $reclassified = 1;
             $usedtobe =~ s/[\r\n]//g;

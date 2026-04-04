@@ -535,7 +535,7 @@ method get_word_colors ($session, @words) {
     my %best_prob;
     my %best_name;
     while ( my ( $word, $bucketid, $times ) = $sth->fetchrow_array() ) {
-        my $name  = $id_to_name{$bucketid} // next;
+        my $name = $id_to_name{$bucketid} // next;
         my $total = $self->get_bucket_word_count( $session, $name );
         next unless $total;
         my $prob = $times / $total;

@@ -83,13 +83,13 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         # important functions from anywhere using the reference, granting
         # internal access to $self without exposing $self to the caller.
 
-        $aborting  = sub { $self->CORE_aborting(@_) };
+        $aborting = sub { $self->CORE_aborting(@_) };
         $pipeready = sub { $self->pipeready(@_) };
-        $forker    = sub { $self->CORE_forker(@_) };
-        $reaper    = sub { $self->CORE_reaper(@_) };
+        $forker = sub { $self->CORE_forker(@_) };
+        $reaper = sub { $self->CORE_reaper(@_) };
         $childexit = sub { $self->CORE_childexit(@_) };
-        $warning   = sub { $self->CORE_warning(@_) };
-        $die_cb       = sub { $self->CORE_die(@_) };
+        $warning = sub { $self->CORE_warning(@_) };
+        $die_cb = sub { $self->CORE_die(@_) };
 
         my $version_file = $self->root_path( 'VERSION' );
 
@@ -427,7 +427,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
                 print " $name" if $debug;
                 STDOUT->flush();
 
-                my $mod  = $components{$type}{$name};
+                my $mod = $components{$type}{$name};
                 my $code = $mod->initialize();
 
                 if ( $code == 0 ) {

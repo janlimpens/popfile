@@ -203,7 +203,7 @@ Returns C<undef> on timeout or closed connection.
 
         if ( !defined( $slurp_data{"$handle"}{data} ) ) {
             $slurp_data{"$handle"}{select} = IO::Select->new( $handle );
-            $slurp_data{"$handle"}{data}   = '';
+            $slurp_data{"$handle"}{data} = '';
         }
 
         my $result = $self->flush_slurp_data( $handle );
@@ -240,10 +240,10 @@ Returns C<undef> on timeout or closed connection.
             $slurp_data{"$mail"}{data} = '';
         }
 
-        my $selector    = IO::Select->new( $mail );
-        my $buf         = '';
-        my $full_buf    = '';
-        my $max_length  = 8192;
+        my $selector = IO::Select->new( $mail );
+        my $buf = '';
+        my $full_buf = '';
+        my $max_length = 8192;
         my $n;
 
         while ( defined( $selector->can_read(0.01) ) ) {

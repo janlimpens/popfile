@@ -10,23 +10,23 @@ use POSIX qw(strftime);
 our @ISA = ('Log::Any::Adapter::Base');
 
 my %cfg = (
-    to_file       => 1,
-    to_stdout     => 0,
-    filename      => '',
+    to_file => 1,
+    to_stdout => 0,
+    filename => '',
     popfile_level => 0,
-    format        => 'default',
-    ring          => [],
+    format => 'default',
+    ring => [],
 );
 
 my %_required_popfile_level = (
-    trace     => 2,
-    debug     => 2,
-    info      => 1,
-    notice    => 1,
-    warning   => 1,
-    error     => 0,
-    critical  => 0,
-    alert     => 0,
+    trace => 2,
+    debug => 2,
+    info => 1,
+    notice => 1,
+    warning => 1,
+    error => 0,
+    critical => 0,
+    alert => 0,
     emergency => 0,
 );
 
@@ -52,7 +52,7 @@ sub _write($msg) {
     my $delim = $cfg{format} eq 'tabbed' ? "\t"
               : $cfg{format} eq 'csv'    ? ','
               :                            ' ';
-    my $ts   = strftime("%Y/%m/%d${delim}%H:%M:%S", localtime);
+    my $ts = strftime("%Y/%m/%d${delim}%H:%M:%S", localtime);
     my $line = "$ts${delim}$$:${delim}$msg\n";
     if ($cfg{to_file} && $cfg{filename}) {
         if (open my $fh, '>>', $cfg{filename}) {

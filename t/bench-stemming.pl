@@ -136,9 +136,9 @@ my %CORPUS = (
 );
 
 # Shared words that appear in BOTH spam and ham (makes classification harder)
-my @NOISE_EN  = qw(important information message update news special contact);
-my @NOISE_DE  = qw(wichtig information nachricht aktualisierung neuigkeiten);
-my @NOISE_FR  = qw(important information message mise-à-jour nouvelles);
+my @NOISE_EN = qw(important information message update news special contact);
+my @NOISE_DE = qw(wichtig information nachricht aktualisierung neuigkeiten);
+my @NOISE_FR = qw(important information message mise-à-jour nouvelles);
 
 sub pick_n($aref, $n) {
     my @pool = @{$aref};
@@ -151,7 +151,7 @@ sub make_email($lang, $class, $use_variants, $idx) {
     srand($idx * 137 + ($lang eq 'en' ? 0 : $lang eq 'de' ? 1000 : 2000)
           + ($class eq 'spam' ? 0 : 5000));
 
-    my $pool  = $CORPUS{$lang}{$class};
+    my $pool = $CORPUS{$lang}{$class};
     my $noise = $lang eq 'en' ? \@NOISE_EN : $lang eq 'de' ? \@NOISE_DE : \@NOISE_FR;
 
     my @body;
@@ -193,11 +193,11 @@ for my $lang (qw(en de fr)) {
     for my $class (qw(spam ham)) {
         for my $i (0..59) {
             push @train_msgs, { class => $class, lang => $lang,
-                                body  => make_email($lang, $class, 0, $idx++) };
+                                body => make_email($lang, $class, 0, $idx++) };
         }
         for my $i (0..19) {
             push @test_msgs, { class => $class, lang => $lang,
-                               body  => make_email($lang, $class, 1, $idx++) };
+                               body => make_email($lang, $class, 1, $idx++) };
         }
     }
 }
@@ -226,7 +226,7 @@ sub run_scenario($label, %cfg) {
     $bayes->create_bucket($session, 'ham');
 
     my $mem0 = rss_kb();
-    my $t0   = [gettimeofday];
+    my $t0 = [gettimeofday];
 
     for my $msg (@train_msgs) {
         my ($fh, $fname) = tempfile(DIR => $tmpdir, SUFFIX => '.eml', UNLINK => 1);
@@ -236,10 +236,10 @@ sub run_scenario($label, %cfg) {
         $bayes->add_message_to_bucket($session, $msg->{class}, $fname);
     }
 
-    my $train_s  = tv_interval($t0);
-    my $mem1     = rss_kb();
-    my $vocab    = $bayes->db()->selectrow_array('select count(*) from words')  // 0;
-    my $matrix   = $bayes->db()->selectrow_array('select count(*) from matrix') // 0;
+    my $train_s = tv_interval($t0);
+    my $mem1 = rss_kb();
+    my $vocab = $bayes->db()->selectrow_array('select count(*) from words')  // 0;
+    my $matrix = $bayes->db()->selectrow_array('select count(*) from matrix') // 0;
 
     # Classify test set — warm up cache first (1 pass), then time second pass
     my @test_files;
@@ -267,24 +267,24 @@ sub run_scenario($label, %cfg) {
         $correct_de++ if $ok && $tf->{lang} eq 'de';
         $correct_fr++ if $ok && $tf->{lang} eq 'fr';
     }
-    my $cls_s  = tv_interval($t1);
-    my $mem2   = rss_kb();
-    my $total  = scalar @test_files;
+    my $cls_s = tv_interval($t1);
+    my $mem2 = rss_kb();
+    my $total = scalar @test_files;
 
     return {
-        label        => $label,
-        accuracy     => $total ? $correct / $total : 0,
-        acc_en       => $correct_en,
-        acc_de       => $correct_de,
-        acc_fr       => $correct_fr,
-        correct      => $correct,
-        total        => $total,
-        vocab        => $vocab,
-        matrix       => $matrix,
-        train_s      => $train_s,
-        cls_us       => $total ? $cls_s / $total * 1_000_000 : 0,
+        label => $label,
+        accuracy => $total ? $correct / $total : 0,
+        acc_en => $correct_en,
+        acc_de => $correct_de,
+        acc_fr => $correct_fr,
+        correct => $correct,
+        total => $total,
+        vocab => $vocab,
+        matrix => $matrix,
+        train_s => $train_s,
+        cls_us => $total ? $cls_s / $total * 1_000_000 : 0,
         mem_train_kb => $mem1 - $mem0,
-        mem_cls_kb   => $mem2 - $mem1,
+        mem_cls_kb => $mem2 - $mem1,
     }
 }
 
@@ -325,11 +325,11 @@ for my $r (@R) {
 print "\n--- vs baseline ---\n";
 my $b = $R[0];
 for my $r (@R[1..$#R]) {
-    my $dacc  = sprintf('%+.1f pp', ($r->{accuracy} - $b->{accuracy}) * 100);
-    my $dvoc  = sprintf('%+.0f%%', ($r->{vocab}  - $b->{vocab})  / ($b->{vocab}  || 1) * 100);
+    my $dacc = sprintf('%+.1f pp', ($r->{accuracy} - $b->{accuracy}) * 100);
+    my $dvoc = sprintf('%+.0f%%', ($r->{vocab}  - $b->{vocab})  / ($b->{vocab}  || 1) * 100);
     my $dmtrx = sprintf('%+.0f%%', ($r->{matrix} - $b->{matrix}) / ($b->{matrix} || 1) * 100);
-    my $dcls  = sprintf('%+.0f%%', ($r->{cls_us} - $b->{cls_us}) / ($b->{cls_us} || 1) * 100);
-    my $dtrn  = sprintf('%+.0f%%', ($r->{train_s} - $b->{train_s}) / ($b->{train_s} || 1) * 100);
+    my $dcls = sprintf('%+.0f%%', ($r->{cls_us} - $b->{cls_us}) / ($b->{cls_us} || 1) * 100);
+    my $dtrn = sprintf('%+.0f%%', ($r->{train_s} - $b->{train_s}) / ($b->{train_s} || 1) * 100);
     printf "%-10s  accuracy %s  vocab %s  matrix %s  train %s  classify %s\n",
         $r->{label}, $dacc, $dvoc, $dmtrx, $dtrn, $dcls;
 }

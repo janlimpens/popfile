@@ -77,7 +77,7 @@ field $debug_filename = '';
     method calculate_today() {
         my $new_today = int( $self->time / $seconds_per_day ) * $seconds_per_day;
         return if $new_today == $today;
-        $today          = $new_today;
+        $today = $new_today;
         $debug_filename = $self->get_user_path(
             $self->config('logdir') . "popfile$today.log", 0);
     }
@@ -85,11 +85,11 @@ field $debug_filename = '';
     method _reconfigure_adapter() {
         my $debug = $self->global_config('debug') // 0;
         POPFile::Log::Adapter->configure(
-            to_file       => ($debug & 1) ? 1 : 0,
-            to_stdout     => (($debug & 2) || $self->config('log_to_stdout')) ? 1 : 0,
-            filename      => $debug_filename,
+            to_file => ($debug & 1) ? 1 : 0,
+            to_stdout => (($debug & 2) || $self->config('log_to_stdout')) ? 1 : 0,
+            filename => $debug_filename,
             popfile_level => $self->config('level') // 0,
-            format        => $self->config('format') // 'default',
+            format => $self->config('format') // 'default',
         );
         Log::Any::Adapter->set('+POPFile::Log::Adapter');
     }

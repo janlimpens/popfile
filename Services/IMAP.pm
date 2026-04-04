@@ -52,7 +52,7 @@ field $classifier :writer(set_classifier) = 0;
         return 1 if $self->config('enabled') == 0;
         return 1 if time - $last_update < $self->config('update_interval');
         eval {
-            local $SIG{PIPE}    = 'IGNORE';
+            local $SIG{PIPE} = 'IGNORE';
             local $SIG{__DIE__};
             if ( $self->config('training_mode') == 1 ) {
                 $self->train_on_archive();
@@ -143,14 +143,14 @@ field $classifier :writer(set_classifier) = 0;
                 }
             }
             @mailboxes = $imap->get_mailbox_list() unless @mailboxes;
-            my $info       = $imap->status($folder);
-            my $uidnext    = $info->{UIDNEXT};
+            my $info = $imap->status($folder);
+            my $uidnext = $info->{UIDNEXT};
             my $uidvalidity = $info->{UIDVALIDITY};
             unless ( defined $uidvalidity && defined $uidnext ) {
                 $self->log_msg(1, "Folder $folder does not exist, creating it." );
                 $imap->create_folder($folder);
                 my $info2 = $imap->status($folder);
-                $uidnext    = $info2->{UIDNEXT};
+                $uidnext = $info2->{UIDNEXT};
                 $uidvalidity = $info2->{UIDVALIDITY};
                 unless ( defined $uidvalidity && defined $uidnext ) {
                     $self->log_msg(0, "Could not create or STATUS folder $folder, skipping." );
@@ -193,7 +193,7 @@ field $classifier :writer(set_classifier) = 0;
 
     method scan_folder ($folder) {
         my $is_watched = exists $folders{$folder}{watched} ? 1 : 0;
-        my $is_output  = exists $folders{$folder}{output}  ? $folders{$folder}{output} : '';
+        my $is_output = exists $folders{$folder}{output}  ? $folders{$folder}{output} : '';
         $self->log_msg(1, "Looking for new messages in folder $folder." );
         my $imap = $folders{$folder}{imap};
         $imap->noop();
@@ -246,7 +246,7 @@ field $classifier :writer(set_classifier) = 0;
             return
         }
         binmode $pseudo_mailer;
-        my $imap       = $folders{$folder}{imap};
+        my $imap = $folders{$folder}{imap};
         my $moved_a_msg = '';
         PART: for my $part (qw/ HEADER TEXT /) {
             my ($ok, @lines) = $imap->fetch_message_part( $msg, $part );
@@ -293,7 +293,7 @@ field $classifier :writer(set_classifier) = 0;
 
     method reclassify_message ($folder, $msg, $old_bucket, $hash) {
         my $new_bucket = $folders{$folder}{output};
-        my $imap       = $folders{$folder}{imap};
+        my $imap = $folders{$folder}{imap};
         my ($ok, @lines) = $imap->fetch_message_part( $msg, '' );
         unless ($ok) {
             $self->log_msg(0, "Could not fetch message $msg!" );
@@ -337,11 +337,11 @@ field $classifier :writer(set_classifier) = 0;
                 $header{$last}[-1] .= $_;
             }
         }
-        my $mid      = $header{'message-id'}[0];
-        my $date     = $header{'date'}[0];
-        my $subject  = $header{'subject'}[0];
+        my $mid = $header{'message-id'}[0];
+        my $date = $header{'date'}[0];
+        my $subject = $header{'subject'}[0];
         my $received = $header{'received'}[0];
-        my $hash     = $history->get_message_hash( $mid, $date, $subject, $received );
+        my $hash = $history->get_message_hash( $mid, $date, $subject, $received );
         $self->log_msg(1, sprintf( 'Hashed message: %s.', $subject // 'undef' ) );
         $self->log_msg(1, "Message $msg has hash value $hash" );
         return $hash
@@ -386,7 +386,7 @@ field $classifier :writer(set_classifier) = 0;
     }
 
     method folder_for_bucket ($bucket, $folder = undef) {
-        my $all     = $self->config('bucket_folder_mappings');
+        my $all = $self->config('bucket_folder_mappings');
         my %mapping = split /$cfg_separator/, $all;
         if ( defined $folder ) {
             $mapping{$bucket} = $folder;

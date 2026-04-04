@@ -178,10 +178,10 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             my @result;
             for my $b ( $svc->get_all_buckets() ) {
                 push @result, {
-                    name       => $b,
-                    pseudo     => $svc->is_pseudo_bucket($b) ? \1 : \0,
+                    name => $b,
+                    pseudo => $svc->is_pseudo_bucket($b) ? \1 : \0,
                     word_count => $svc->get_bucket_word_count($b) + 0,
-                    color      => $svc->get_bucket_color($b) // '#666666',
+                    color => $svc->get_bucket_color($b) // '#666666',
                 };
             }
             $c->render( json => \@result );
@@ -191,8 +191,8 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         # POST /api/v1/buckets   { name, color? }
         #--------------------------------------------------------------------
         $r->post( '/api/v1/buckets' => sub ($c) {
-            my $body  = $c->req->json // {};
-            my $name  = $body->{name} // '';
+            my $body = $c->req->json // {};
+            my $name = $body->{name} // '';
             my $color = $body->{color} // '';
             return $c->render( status => 400, json => { error => 'name required' } )
                 if $name eq '';
@@ -219,7 +219,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #--------------------------------------------------------------------
         $r->put( '/api/v1/buckets/:name/rename' => sub ($c) {
             my $body = $c->req->json // {};
-            my $new  = $body->{new_name} // '';
+            my $new = $body->{new_name} // '';
             if ( $new eq '' ) {
                 return $c->render( status => 400, json => { error => 'new_name required' } );
             }
@@ -239,7 +239,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         # PUT /api/v1/buckets/:name/params   { color }
         #--------------------------------------------------------------------
         $r->put( '/api/v1/buckets/:name/params' => sub ($c) {
-            my $body  = $c->req->json // {};
+            my $body = $c->req->json // {};
             my $bname = $c->param('name');
             if ( defined $body->{color} ) {
                 $svc->set_bucket_color( $bname, $body->{color} );
@@ -253,7 +253,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #--------------------------------------------------------------------
         $r->get( '/api/v1/buckets/:name/words' => sub ($c) {
             my $prefix = $c->param('prefix') // '';
-            my @words  = $svc->get_bucket_word_list( $c->param('name'), $prefix );
+            my @words = $svc->get_bucket_word_list( $c->param('name'), $prefix );
             my @result = map { { word => $_->[0], count => $_->[1] + 0 } } @words;
             $c->render( json => \@result );
         });
@@ -282,18 +282,18 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #   Returns { items: [...], total: N }
         #--------------------------------------------------------------------
         $r->get( '/api/v1/history' => sub ($c) {
-            my $page     = ( $c->param('page')     // 1  ) + 0;
+            my $page = ( $c->param('page')     // 1  ) + 0;
             my $per_page = ( $c->param('per_page') // 25 ) + 0;
-            my $search   = $c->param('search') // '';
-            $page     = 1  if $page     < 1;
+            my $search = $c->param('search') // '';
+            $page = 1  if $page     < 1;
             $per_page = 25 if $per_page < 1 || $per_page > 200;
 
-            my $hist  = $svc->history_obj();
-            my $qid   = $hist->start_query();
+            my $hist = $svc->history_obj();
+            my $qid = $hist->start_query();
             $hist->set_query( $qid, '', $search, '-inserted', 0 );
             my $total = $hist->get_query_size( $qid );
             my $start = ( $page - 1 ) * $per_page + 1;
-            my @rows  = $hist->get_query_rows( $qid, $start, $per_page );
+            my @rows = $hist->get_query_rows( $qid, $start, $per_page );
             $hist->stop_query( $qid );
 
             my @items;
@@ -303,14 +303,14 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
                 #         hash(6) inserted(7) bucket_name(8) usedtobe(9)
                 #         bucket_id(10) magnet(11) size(12)
                 push @items, {
-                    slot    => $row->[0] + 0,
-                    from    => $row->[1] // '',
-                    to      => $row->[2] // '',
+                    slot => $row->[0] + 0,
+                    from => $row->[1] // '',
+                    to => $row->[2] // '',
                     subject => $row->[4] // '',
-                    date    => $row->[5] // '',
-                    bucket  => $row->[8] // '',
-                    color   => $svc->get_bucket_color( $row->[8] // '' ) // '#666666',
-                    magnet  => $row->[11] // '',
+                    date => $row->[5] // '',
+                    bucket => $row->[8] // '',
+                    color => $svc->get_bucket_color( $row->[8] // '' ) // '#666666',
+                    magnet => $row->[11] // '',
                 };
             }
             $c->render( json => { items => \@items, total => $total + 0 } );
@@ -499,60 +499,60 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         # Keys match the frontend's SECTIONS schema.
         #--------------------------------------------------------------------
         my %CFG = (
-            mojo_ui_port             => [mojo_ui => 'port'],
-            mojo_ui_password         => [mojo_ui => 'password'],
-            mojo_ui_local            => [mojo_ui => 'local'],
-            mojo_ui_page_size        => [mojo_ui => 'page_size'],
-            mojo_ui_date_format      => [mojo_ui => 'date_format'],
+            mojo_ui_port => [mojo_ui => 'port'],
+            mojo_ui_password => [mojo_ui => 'password'],
+            mojo_ui_local => [mojo_ui => 'local'],
+            mojo_ui_page_size => [mojo_ui => 'page_size'],
+            mojo_ui_date_format => [mojo_ui => 'date_format'],
             mojo_ui_session_dividers => [mojo_ui => 'session_dividers'],
             mojo_ui_wordtable_format => [mojo_ui => 'wordtable_format'],
-            mojo_ui_locale           => [mojo_ui => 'locale'],
-            pop3_port                => [pop3    => 'port'],
-            pop3_separator           => [pop3    => 'separator'],
-            pop3_local               => [pop3    => 'local'],
-            pop3_force_fork          => [pop3    => 'force_fork'],
-            pop3_toptoo              => [pop3    => 'toptoo'],
-            pop3_secure_server       => [pop3    => 'secure_server'],
-            pop3_secure_port         => [pop3    => 'secure_port'],
-            smtp_port                => [smtp    => 'port'],
-            smtp_chain_server        => [smtp    => 'chain_server'],
-            smtp_chain_port          => [smtp    => 'chain_port'],
-            smtp_local               => [smtp    => 'local'],
-            smtp_force_fork          => [smtp    => 'force_fork'],
-            nntp_port                => [nntp    => 'port'],
-            nntp_separator           => [nntp    => 'separator'],
-            nntp_local               => [nntp    => 'local'],
-            nntp_force_fork          => [nntp    => 'force_fork'],
-            nntp_headtoo             => [nntp    => 'headtoo'],
-            bayes_hostname           => [bayes   => 'hostname'],
-            bayes_message_cutoff     => [bayes   => 'message_cutoff'],
-            bayes_unclassified_weight => [bayes  => 'unclassified_weight'],
-            bayes_subject_mod_left   => [bayes   => 'subject_mod_left'],
-            bayes_subject_mod_right  => [bayes   => 'subject_mod_right'],
-            bayes_subject_mod_pos    => [bayes   => 'subject_mod_pos'],
-            bayes_sqlite_tweaks      => [bayes   => 'sqlite_tweaks'],
-            bayes_sqlite_journal_mode    => [bayes       => 'sqlite_journal_mode'],
-            wordmangle_stemming          => [wordmangle  => 'stemming'],
+            mojo_ui_locale => [mojo_ui => 'locale'],
+            pop3_port => [pop3 => 'port'],
+            pop3_separator => [pop3 => 'separator'],
+            pop3_local => [pop3 => 'local'],
+            pop3_force_fork => [pop3 => 'force_fork'],
+            pop3_toptoo => [pop3 => 'toptoo'],
+            pop3_secure_server => [pop3 => 'secure_server'],
+            pop3_secure_port => [pop3 => 'secure_port'],
+            smtp_port => [smtp => 'port'],
+            smtp_chain_server => [smtp => 'chain_server'],
+            smtp_chain_port => [smtp => 'chain_port'],
+            smtp_local => [smtp => 'local'],
+            smtp_force_fork => [smtp => 'force_fork'],
+            nntp_port => [nntp => 'port'],
+            nntp_separator => [nntp => 'separator'],
+            nntp_local => [nntp => 'local'],
+            nntp_force_fork => [nntp => 'force_fork'],
+            nntp_headtoo => [nntp => 'headtoo'],
+            bayes_hostname => [bayes => 'hostname'],
+            bayes_message_cutoff => [bayes => 'message_cutoff'],
+            bayes_unclassified_weight => [bayes => 'unclassified_weight'],
+            bayes_subject_mod_left => [bayes => 'subject_mod_left'],
+            bayes_subject_mod_right => [bayes => 'subject_mod_right'],
+            bayes_subject_mod_pos => [bayes => 'subject_mod_pos'],
+            bayes_sqlite_tweaks => [bayes => 'sqlite_tweaks'],
+            bayes_sqlite_journal_mode => [bayes => 'sqlite_journal_mode'],
+            wordmangle_stemming => [wordmangle => 'stemming'],
             wordmangle_auto_detect_language => [wordmangle => 'auto_detect_language'],
-            history_history_days     => [history => 'history_days'],
-            history_archive          => [history => 'archive'],
-            history_archive_dir      => [history => 'archive_dir'],
-            history_archive_classes  => [history => 'archive_classes'],
-            logger_level             => [logger  => 'level'],
-            logger_logdir            => [logger  => 'logdir'],
-            logger_log_to_stdout     => [logger  => 'log_to_stdout'],
-            logger_log_sql           => [logger  => 'log_sql'],
-            imap_enabled             => [imap    => 'enabled'],
-            imap_hostname            => [imap    => 'hostname'],
-            imap_port                => [imap    => 'port'],
-            imap_login               => [imap    => 'login'],
-            imap_password            => [imap    => 'password'],
-            imap_use_ssl             => [imap    => 'use_ssl'],
-            imap_update_interval     => [imap    => 'update_interval'],
-            imap_expunge             => [imap    => 'expunge'],
-            imap_training_mode       => [imap    => 'training_mode'],
-            imap_uidnexts            => [imap    => 'uidnexts'],
-            imap_uidvalidities       => [imap    => 'uidvalidities'],
+            history_history_days => [history => 'history_days'],
+            history_archive => [history => 'archive'],
+            history_archive_dir => [history => 'archive_dir'],
+            history_archive_classes => [history => 'archive_classes'],
+            logger_level => [logger => 'level'],
+            logger_logdir => [logger => 'logdir'],
+            logger_log_to_stdout => [logger => 'log_to_stdout'],
+            logger_log_sql => [logger => 'log_sql'],
+            imap_enabled => [imap => 'enabled'],
+            imap_hostname => [imap => 'hostname'],
+            imap_port => [imap => 'port'],
+            imap_login => [imap => 'login'],
+            imap_password => [imap => 'password'],
+            imap_use_ssl => [imap => 'use_ssl'],
+            imap_update_interval => [imap => 'update_interval'],
+            imap_expunge => [imap => 'expunge'],
+            imap_training_mode => [imap => 'training_mode'],
+            imap_uidnexts => [imap => 'uidnexts'],
+            imap_uidvalidities => [imap => 'uidvalidities'],
         );
 
         my $languages_dir = $self->get_root_path('languages');
@@ -638,10 +638,10 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #--------------------------------------------------------------------
         my $imap_sep = '-->';
         $r->get( '/api/v1/imap/folders' => sub ($c) {
-            my $watched_raw  = $self->module_config('imap', 'watched_folders')       // '';
-            my $mapping_raw  = $self->module_config('imap', 'bucket_folder_mappings') // '';
+            my $watched_raw = $self->module_config('imap', 'watched_folders')       // '';
+            my $mapping_raw = $self->module_config('imap', 'bucket_folder_mappings') // '';
 
-            my @watched  = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
+            my @watched = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
             my %map_hash = split /\Q$imap_sep\E/, $mapping_raw;
             my @mappings = map { { bucket => $_, folder => $map_hash{$_} } }
                            grep { $_ ne '' } keys %map_hash;
@@ -657,7 +657,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             my $body = $c->req->json // {};
 
             if ( defined $body->{watched} ) {
-                my @w   = grep { defined $_ && $_ ne '' } @{ $body->{watched} };
+                my @w = grep { defined $_ && $_ ne '' } @{ $body->{watched} };
                 my $raw = join( $imap_sep, @w ) . ( @w ? $imap_sep : '' );
                 $self->module_config('imap', 'watched_folders', $raw);
             }
@@ -706,12 +706,12 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             require Services::IMAP::Client;
             my @checks;
             my $hostname = $self->module_config('imap', 'hostname') // '';
-            my $port     = $self->module_config('imap', 'port')     // '';
-            my $login    = $self->module_config('imap', 'login')    // '';
+            my $port = $self->module_config('imap', 'port')     // '';
+            my $login = $self->module_config('imap', 'login')    // '';
             unless ($hostname ne '' && $port ne '') {
                 push @checks, {
-                    id     => 'connectivity',
-                    label  => 'IMAP Connectivity',
+                    id => 'connectivity',
+                    label => 'IMAP Connectivity',
                     status => 'warn',
                     detail => 'IMAP not configured',
                 };
@@ -723,31 +723,31 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             $client->set_name('imap');
             unless ($client->connect()) {
                 push @checks, {
-                    id     => 'connectivity',
-                    label  => 'IMAP Connectivity',
+                    id => 'connectivity',
+                    label => 'IMAP Connectivity',
                     status => 'error',
                     detail => "Cannot reach $hostname:$port",
                 };
                 return $c->render(json => { checks => \@checks });
             }
             push @checks, {
-                id     => 'connectivity',
-                label  => 'IMAP Connectivity',
+                id => 'connectivity',
+                label => 'IMAP Connectivity',
                 status => 'ok',
                 detail => "Connected to $hostname:$port",
             };
             unless ($client->login()) {
                 push @checks, {
-                    id     => 'authentication',
-                    label  => 'IMAP Authentication',
+                    id => 'authentication',
+                    label => 'IMAP Authentication',
                     status => 'error',
                     detail => "Login failed for $login",
                 };
                 return $c->render(json => { checks => \@checks });
             }
             push @checks, {
-                id     => 'authentication',
-                label  => 'IMAP Authentication',
+                id => 'authentication',
+                label => 'IMAP Authentication',
                 status => 'ok',
                 detail => "Logged in as $login",
             };
@@ -755,22 +755,22 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             $client->logout();
             my %on_server = map { $_ => 1 } @server_folders;
             my $watched_raw = $self->module_config('imap', 'watched_folders') // '';
-            my @watched     = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
-            my @missing_w   = grep { !$on_server{$_} } @watched;
+            my @watched = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
+            my @missing_w = grep { !$on_server{$_} } @watched;
             push @checks, {
-                id     => 'watched_folders',
-                label  => 'Watched Folders',
+                id => 'watched_folders',
+                label => 'Watched Folders',
                 status => @missing_w ? 'warn' : 'ok',
                 detail => @missing_w
                     ? 'Missing on server: ' . join(', ', @missing_w)
                     : 'All ' . scalar(@watched) . ' watched folder(s) exist',
             };
             my $mapping_raw = $self->module_config('imap', 'bucket_folder_mappings') // '';
-            my %map_hash    = split /\Q$imap_sep\E/, $mapping_raw;
-            my @missing_m   = grep { $_ ne '' && !$on_server{$map_hash{$_}} } keys %map_hash;
+            my %map_hash = split /\Q$imap_sep\E/, $mapping_raw;
+            my @missing_m = grep { $_ ne '' && !$on_server{$map_hash{$_}} } keys %map_hash;
             push @checks, {
-                id     => 'bucket_mappings',
-                label  => 'Bucket → Folder Mappings',
+                id => 'bucket_mappings',
+                label => 'Bucket → Folder Mappings',
                 status => @missing_m ? 'warn' : 'ok',
                 detail => @missing_m
                     ? 'Target folders missing: ' . join(', ', map { $map_hash{$_} } @missing_m)
@@ -786,7 +786,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #--------------------------------------------------------------------
         $r->post('/api/v1/imap/test-connection' => sub ($c) {
             require Services::IMAP::Client;
-            my $body   = $c->req->json // {};
+            my $body = $c->req->json // {};
             my $client = Services::IMAP::Client->new();
             $client->set_configuration($self->configuration());
             $client->set_mq($self->mq());
@@ -830,7 +830,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
     method run_server() {
         require Mojo::Server::Daemon;
 
-        my $svc  = $service;
+        my $svc = $service;
         my $port = $self->config('port');
 
         if (defined $svc) {
