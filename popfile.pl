@@ -99,6 +99,7 @@ $POPFile->CORE_signals();
 $POPFile->CORE_load();
 $POPFile->CORE_link_components();
 $POPFile->CORE_initialize();
+print "POPFile " . $POPFile->CORE_version() . "\n";
 if ( $POPFile->CORE_config() ) {
     $POPFile->CORE_start();
 

@@ -62,10 +62,6 @@ class POPFile::Loader {
     field $warning = '';
     field $die_cb = '';
 
-    # POPFile version
-    field $major_version = '?';
-    field $minor_version = '?';
-    field $build_version = '?';
     field $version_string = '';
 
     # Where POPFile is installed
@@ -93,15 +89,14 @@ class POPFile::Loader {
         $warning   = sub { $self->CORE_warning(@_) };
         $die_cb       = sub { $self->CORE_die(@_) };
 
-        my $version_file = $self->root_path( 'POPFile/popfile_version' );
+        my $version_file = $self->root_path( 'VERSION' );
 
         if ( -e $version_file ) {
-            open my $ver, '<', $version_file;
-            my $major = int(<$ver>);
-            my $minor = int(<$ver>);
-            my $rev   = int(<$ver>);
-            close $ver;
-            $self->CORE_version( $major, $minor, $rev );
+            open my $fh, '<', $version_file;
+            my $v = <$fh>;
+            close $fh;
+            chomp $v;
+            $self->CORE_version( $v );
         }
 
         GetOptions( 'shutdown' => \$shutdown );
@@ -561,23 +556,10 @@ class POPFile::Loader {
             if $debug;
     }
 
-    #------------------------------------------------------------------------
-    # CORE_version
-    #
-    # Gets or sets POPFile's version data.
-    # Returns string in scalar context, or (major, minor, build) in list.
-    #------------------------------------------------------------------------
-    method CORE_version ($major_version = undef, $minor_version = undef, $build_version = undef) {
-        if ( !defined $major_version ) {
-            return wantarray
-                ? ($major_version, $minor_version, $build_version)
-                : $version_string;
-        }
-
-        ($major_version,
-         $minor_version,
-         $build_version) = ($major_version, $minor_version, $build_version);
-        $version_string = "v$major_version.$minor_version.$build_version";
+    method CORE_version ($v = undef) {
+        return $version_string
+            unless defined $v;
+        $version_string = $v;
     }
 
     #------------------------------------------------------------------------
