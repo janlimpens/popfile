@@ -414,10 +414,10 @@ method get_slot_fields ($slot) {
     return undef if (!defined($slot) || $slot !~ /^\d+$/);
 
     my $h = $self->validate_sql_prepare_and_execute(
-        "SELECT $fields_slot FROM history, buckets, magnets
+        "SELECT $fields_slot FROM history, buckets
+         LEFT JOIN magnets ON magnets.id = history.magnetid
          WHERE history.id = ?
            AND buckets.id = history.bucketid
-           AND magnets.id = magnetid
            AND history.committed = 1",
         $slot);
     return $h->fetchrow_array
@@ -884,10 +884,10 @@ method set_query ($id, $filter, $search, $sort, $not) {
     # to retrieve it all
 
     $queries{$id}{base} =
-        'select XXX from history, buckets, magnets
+        'select XXX from history, buckets
+                left join magnets on magnets.id = history.magnetid
                 where history.userid = 1 and committed = 1';
     $queries{$id}{base} .= ' and history.bucketid = buckets.id';
-    $queries{$id}{base} .= ' and magnets.id = magnetid';
     $queries{$id}{params} = [];
 
     my $not_equal = $not ? '!='  : '=';
