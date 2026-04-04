@@ -9,6 +9,56 @@ use POSIX qw(strftime);
 
 our @ISA = ('Log::Any::Adapter::Base');
 
+=head1 NAME
+
+POPFile::Log::Adapter — Log::Any adapter that writes to file and/or stdout
+
+=head1 DESCRIPTION
+
+C<POPFile::Log::Adapter> is a L<Log::Any> adapter that formats and routes log
+lines for POPFile.  It is installed by L<POPFile::Logger> via
+C<< Log::Any::Adapter->set('+POPFile::Log::Adapter') >>.
+
+Each log line is prefixed with a timestamp (C<YYYY/MM/DD HH:MM:SS>) followed
+by the process ID and the message body.  The delimiter between fields is
+configurable (space, tab, or comma).
+
+Sensitive information is masked: C<USER>/C<PASS> command arguments are
+replaced with C<XXXXXX>, and non-printable bytes are escaped as C<[XX]>.
+
+A rolling ten-line ring buffer of recent output is maintained and exposed via
+C<ring()> for the web UI.
+
+The adapter maps Log::Any severity levels to POPFile's numeric level scale
+(0 = error, 1 = info/notice/warning, 2 = debug/trace) and suppresses messages
+below the configured C<popfile_level>.
+
+=head1 METHODS
+
+=head2 configure(%args)
+
+Class method.  Updates the adapter's runtime configuration.  Accepted keys:
+
+=over 4
+
+=item C<to_file> — write to the log file (boolean)
+
+=item C<to_stdout> — write to standard output (boolean)
+
+=item C<filename> — path of the log file to append to
+
+=item C<popfile_level> — minimum POPFile severity level to emit (0–2)
+
+=item C<format> — timestamp delimiter: C<'default'> (space), C<'tabbed'>, or C<'csv'>
+
+=back
+
+=head2 ring()
+
+Class method.  Returns the arrayref of the last ten log lines.
+
+=cut
+
 my %cfg = (
     to_file => 1,
     to_stdout => 0,
