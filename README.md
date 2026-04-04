@@ -22,7 +22,8 @@ carton install
 carton exec perl popfile.pl
 ```
 
-The web UI is available at <http://localhost:8080> by default.
+The web UI is available at `http://localhost:<port>/` — the port is printed to
+the console on startup (default 8080, configurable via `mojo_ui_port`).
 
 `POPFILE_ROOT` overrides the root directory for config, database, and message
 cache (default: `./`).
@@ -44,7 +45,7 @@ The frontend lives in `ui/` and builds to `public/`.
 ```sh
 cd ui && npm install
 
-# Development (hot-reload, proxies /api to localhost:8080)
+# Development (hot-reload, proxies /api to the POPFile port — default 8080)
 npm run dev
 
 # Production build → public/

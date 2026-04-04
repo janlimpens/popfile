@@ -50,15 +50,6 @@ if ( $#ARGV == -1 ) {
     $POPFile->CORE_initialize();
 
     # Ugly hack which is needed because Bayes::classify_and_modify looks up
-    # the UI port and whether we are allowing remote connections or not
-    # to set the XPL link in the header.  If we don't have these predefined
-    # then they'll be discarded when the configuration is loaded, and since
-    # we are not loading the UI, they are not defined at this point
-
-    my $c = $POPFile->get_module('POPFile::Config');
-    $c->module_config('html', 'local', 1 );
-    $c->module_config('html', 'port',  8080 );
-
     if ( $POPFile->CORE_config() ) {
 
         # Prevent the tool from finding another copy of POPFile running
