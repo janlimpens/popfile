@@ -29,6 +29,7 @@ package POPFile::History;
 
 use Object::Pad;
 use locale;
+use POPFile::Role::DBAccess;
 use POPFile::Role::SQL;
 use Query::Builder;
 
@@ -38,7 +39,7 @@ use File::Path qw(make_path);
 
 my $fields_slot ='history.id, hdr_from, hdr_to, hdr_cc, hdr_subject, hdr_date, hash, inserted,
  buckets.name, usedtobe, history.bucketid, magnets.val, size';
-class POPFile::History :isa(POPFile::Module) :does(POPFile::Role::SQL);    # List of committed history items waiting to be committed
+class POPFile::History :isa(POPFile::Module) :does(POPFile::Role::DBAccess) :does(POPFile::Role::SQL);    # List of committed history items waiting to be committed
     # into the database, it consists of lists containing three
     # elements: the slot id, the bucket classified to and the
     # magnet if used
@@ -52,10 +53,6 @@ class POPFile::History :isa(POPFile::Module) :does(POPFile::Role::SQL);    # Lis
     field %queries;
 
     field $firsttime = 1;
-
-    # Will contain the database handle retrieved from
-    # Classifier::Bayes
-    field $db = undef;
 
     field $classifier :writer(set_classifier) = 0;
     field $db_service :writer(set_db_service) = undef;
@@ -119,7 +116,7 @@ method stop() {
     # added to the queue and before service() is called
 
     $self->commit_history();
-    $db = undef;
+    $self->_clear_db();
 }
 
 # ---------------------------------------------------------------------------
@@ -132,8 +129,9 @@ method stop() {
 # through this method.
 # ---------------------------------------------------------------------------
 method db() {
-    $db //= $db_service->get_handle('history');
-    return $db
+    $self->_set_db($db_service->get_handle('history'))
+        unless defined $self->_db();
+    return $self->_db()
 }
 
 =head2 service
@@ -182,16 +180,8 @@ method deliver ($type, @message) {
     }
 }
 
-# ---------------------------------------------------------------------------
-#
-# forked
-#
-# This is called inside a child process that has just forked, since the
-# child needs access to the database we open it
-#
-# ---------------------------------------------------------------------------
 method forked ($writer = undef) {
-    $db = undef;
+    $self->_clear_db();
 }
 
 #----------------------------------------------------------------------------

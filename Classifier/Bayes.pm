@@ -34,6 +34,7 @@ use feature 'state';
 use locale;
 use Classifier::Bucket;
 use Classifier::MailParse;
+use POPFile::Role::DBAccess;
 use POPFile::Role::SQL;
 use IO::Handle;
 use DBI;
@@ -59,7 +60,7 @@ my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
 
 my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
-class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::SQL);
+class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::DBAccess) :does(POPFile::Role::SQL);
 
 # Set this to 1 to get scores for individual words in message detail
 field $wordscores :reader :writer = 0;
@@ -68,9 +69,6 @@ field $wordscores :reader :writer = 0;
 field $wmformat :reader :writer = '';
 
 field $hostname = '';
-
-# DBI database handle
-field $db :reader(db) = undef;
 
 field $history = 0;
 
@@ -152,6 +150,10 @@ This is called inside a child process that has just forked, since
 the child needs access to the database we open it
 
 =cut
+
+method db() {
+    return $self->_db()
+}
 
 method forked ($writer = undef) {
     $db_service->forked();
@@ -770,7 +772,8 @@ method db_connect() {
     $db_service->set_user($self->config('dbuser'));
     $db_service->set_auth($self->config('dbauth'));
     $db_service->set_options(\%connection_options);
-    $db = $db_service->get_handle();
+    $self->_set_db($db_service->get_handle());
+    my $db = $self->db();
     unless (defined($db)) {
         $self->log_msg(0, "Failed to connect to database and got error $DBI::errstr");
         return 0;
@@ -954,7 +957,7 @@ method insert_schema ($sqlite) {
             $schema .= $_;
 
             if (/end;/ || (/\);/) || (/^alter/i)) {
-                $db->do($schema);
+                $self->db()->do($schema);
                 $schema = '';
             }
         }
@@ -982,11 +985,11 @@ method db_upgrade ($db_from) {
         # Upgrade
 
         $drop_table = 1;
-        $db_from = $db;
+        $db_from = $self->db();
     }
 
     my $from_sqlite = ($db_from->{Driver}->{Name} =~ /SQLite/);
-    my $to_sqlite = ($db->{Driver}->{Name} =~ /SQLite/);
+    my $to_sqlite = ($self->db()->{Driver}->{Name} =~ /SQLite/);
 
     my $sqlquotechar = $db_from->get_info(29) || '';
     my @tables = map { s/$sqlquotechar//g; $_ } ($db_from->tables());
@@ -1069,7 +1072,7 @@ method db_upgrade ($db_from) {
                 next;
             }
             print "    Dropping old table $table\n";
-            $db->do("DROP TABLE $table;");
+            $self->db()->do("DROP TABLE $table;");
         }
     }
 
@@ -1080,7 +1083,7 @@ method db_upgrade ($db_from) {
 
     print "    Restoring old data\n    ";
 
-    $db->begin_work;
+    $self->db()->begin_work;
     open INSERT, '<' . $ins_file;
     $i = 0;
     while (<INSERT>) {
@@ -1093,10 +1096,10 @@ method db_upgrade ($db_from) {
             STDOUT->flush();
         }
         s/[\r\n]//g;
-        $db->do($_);
+        $self->db()->do($_);
     }
     close INSERT;
-    $db->commit;
+    $self->db()->commit;
 
     unlink $ins_file;
 }
@@ -1142,7 +1145,7 @@ method db_disconnect() {
     undef $db_get_buckets_with_magnets;
     undef $db_delete_zero_words;
 
-    undef $db;
+    $self->_clear_db();
 }
 
 =head2 db_update_cache
@@ -1447,7 +1450,7 @@ method upgrade_bucket ($session, $bucket) {
     if (-e $self->get_user_path($self->config('corpus') . "/$bucket/table")) {
         $self->log_msg(0, "Performing automatic upgrade of $bucket corpus from flat file to DBI");
 
-        $db->begin_work();
+        $self->db()->begin_work();
 
         if (open WORDS, '<' . $self->get_user_path($self->config('corpus') . "/$bucket/table"))  {
             my $wc = 1;
@@ -1457,7 +1460,7 @@ method upgrade_bucket ($session, $bucket) {
                 if ($1 != $corpus_version)  {
                     print STDERR "Incompatible corpus version in $bucket\n";
                     close WORDS;
-                    $db->rollback;
+                    $self->db()->rollback;
                     return 0;
                 } else {
                     $self->log_msg(0, "Upgrading bucket $bucket...");
@@ -1486,12 +1489,12 @@ method upgrade_bucket ($session, $bucket) {
                 close WORDS;
             } else {
                 close WORDS;
-                $db->rollback();
+                $self->db()->rollback();
                 unlink $self->get_user_path($self->config('corpus') . "/$bucket/table");
                 return 0;
             }
 
-            $db->commit();
+            $self->db()->commit();
             unlink $self->get_user_path($self->config('corpus') . "/$bucket/table");
         }
     }
@@ -1509,7 +1512,7 @@ method upgrade_bucket ($session, $bucket) {
         tie %h, "BerkeleyDB::Hash", -Filename => $bdb_file;
 
         $self->log_msg(0, "Upgrading bucket $bucket...");
-        $db->begin_work;
+        $self->db()->begin_work;
 
         my $wc = 1;
 
@@ -1528,7 +1531,7 @@ method upgrade_bucket ($session, $bucket) {
 
         $wc -= 1;
         $self->log_msg(0, "(completed $wc words)");
-        $db->commit();
+        $self->db()->commit();
         untie %h;
         unlink $bdb_file;
     }
@@ -1724,7 +1727,7 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
         undef $db_getwords;
     }
 
-    $db->begin_work;
+    $self->db()->begin_work;
     for my $word (keys $parser->words()->%*) {
         # If there's already a count then it means that the word is
         # already in the database and we have its id in
@@ -1760,7 +1763,7 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
             $db_bucketid->{$userid}{$bucket}{id});
     }
 
-    $db->commit();
+    $self->db()->commit();
 }
 
 =head2 echo_to_dot
@@ -3201,7 +3204,7 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
     $prefix = '' unless (defined($prefix));
     $prefix =~ s/\0//g;
 
-    my $result = $db->selectcol_arrayref('
+    my $result = $self->db()->selectcol_arrayref('
         SELECT words.word
         FROM matrix, words
         WHERE matrix.wordid = words.id
@@ -3227,7 +3230,7 @@ method get_bucket_word_prefixes($session, $bucket) {
     my $prev = '';
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $result = $db->selectcol_arrayref("
+    my $result = $self->db()->selectcol_arrayref("
         SELECT words.word FROM matrix, words
         WHERE matrix.wordid = words.id
             AND matrix.bucketid = ?", undef, $bucketid);
@@ -4031,7 +4034,7 @@ method db_quote ($string) {
         my ($package, $file, $line) = caller;
         $self->log_msg(0, "Found null-byte in string '$backup'. Called from package '$package' ($file), line $line.");
     }
-    return $db->quote($string);
+    return $self->db()->quote($string);
 }
 
 
