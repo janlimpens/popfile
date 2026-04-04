@@ -31,5 +31,5 @@ jobs:
 
       - name: Syntax check all modules
         run: |
-          find . -name '*.pm' -not -path './lib/*' -not -path './local/*' -print0 \
-            | xargs -0 -I{} perl -Ilib -I. -c {} 2>&1
+          find . -name '*.pm' -not -path './lib/*' -not -path './local/*' -not -path './vendor/*' -print0 \
+            | xargs -0 -I{} perl -Ilib -I. -Ivendor/perl-querybuilder/lib -c {} 2>&1
