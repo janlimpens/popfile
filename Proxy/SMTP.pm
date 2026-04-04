@@ -34,6 +34,30 @@ my $eol = "\015\012";
 
 class Proxy::SMTP :isa(Proxy::Proxy);
 
+=head1 NAME
+
+Proxy::SMTP — SMTP proxy that classifies outgoing messages with POPFile
+
+=head1 DESCRIPTION
+
+C<Proxy::SMTP> extends L<Proxy::Proxy> to intercept SMTP sessions between a
+mail client and a real SMTP relay.  It forwards C<HELO>/C<EHLO>, envelope
+commands, and C<DATA> to the configured C<chain_server>, passing each
+submitted message through the classifier service to add an
+C<X-Text-Classification> header.
+
+Disabled by default (C<enabled = 0>).
+
+=head1 METHODS
+
+=head2 initialize()
+
+Registers SMTP-specific configuration parameters: C<port> (default 25),
+C<chain_server>, C<chain_port>, C<local>, and C<welcome_string>.  Forces
+C<enabled> to 0 after calling C<< Proxy::Proxy->initialize() >>.
+
+=cut
+
 BUILD {
         $self->set_name('smtp');
         $self->set_child(\&child__);
@@ -59,7 +83,14 @@ BUILD {
         return 1;
     }
 
-    # ----------------------------------------------------------------------------
+=head2 start()
+
+Skips startup (returns 2) if the C<enabled> config flag is 0.  Otherwise
+refreshes the C<welcome_string> if it still contains the old version token,
+then calls C<< Proxy::Proxy->start() >> to open the listening socket.
+
+=cut
+
     method start() {
         if ($self->config('enabled') == 0) {
             return 2;
@@ -72,14 +103,16 @@ BUILD {
         return $self->SUPER::start();
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # child__
-    #
-    # $self   - this Proxy::SMTP object
-    # $client - an open stream to an SMTP client
-    #
-    # ----------------------------------------------------------------------------
+=head2 child($client)
+
+Handles one complete SMTP session for C<$client>.  Connects to the configured
+C<chain_server> on the first C<HELO>/C<EHLO>, relays envelope commands
+(C<MAIL FROM>, C<RCPT TO>, etc.), and classifies each message body when C<DATA>
+is received.  Suppresses unsupported ESMTP extensions (C<CHUNKING>,
+C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
+
+=cut
+
     method child ($client) {
         my $count = 0;
         my $mail;
@@ -173,7 +206,15 @@ BUILD {
         $self->log_msg(0, "SMTP proxy done");
     }
 
-    # ----------------------------------------------------------------------------
+=head2 smtp_echo_response($mail, $client, $command, $suppress)
+
+Sends C<$command> to C<$mail> and relays the response to C<$client>.  If the
+response is a multi-line C<2xx-> continuation, reads and forwards lines until
+the final C<2xx > terminator, optionally filtering lines matching C<$suppress>.
+Returns true if the response matched C<$good_response>.
+
+=cut
+
     method smtp_echo_response ($mail, $client, $command, $suppress = undef) {
         my ($response, $ok) = $self->get_response($mail, $client, $command);
         if ($response =~ /^\d\d\d-/) {

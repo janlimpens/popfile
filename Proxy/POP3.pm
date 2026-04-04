@@ -38,6 +38,32 @@ my $eol = "\015\012";
 
 class Proxy::POP3 :isa(Proxy::Proxy);
 
+=head1 NAME
+
+Proxy::POP3 — POP3 proxy that classifies messages with POPFile
+
+=head1 DESCRIPTION
+
+C<Proxy::POP3> extends L<Proxy::Proxy> to intercept POP3 sessions between a
+mail client and a real POP3 server.  It parses the extended
+C<USER host:port:username> syntax to determine the upstream server, relays
+authentication, and calls the classifier service to tag each retrieved message
+with an C<X-Text-Classification> header before forwarding it to the client.
+
+Supports plain username/password authentication, APOP, and SSL connections
+(when L<IO::Socket::SSL> is available) as well as optional SOCKS proxying
+inherited from the base class.
+
+=head1 METHODS
+
+=head2 initialize()
+
+Registers POP3-specific configuration parameters: C<port> (default 1110),
+C<secure_server>, C<secure_port>, C<local>, C<toptoo>, C<separator>, and
+C<welcome_string>.  Delegates to C<< Proxy::Proxy->initialize() >>.
+
+=cut
+
 field $use_apop = 0;
     field $apop_user = '';
     field $apop_banner = undef;
@@ -70,11 +96,14 @@ field $use_apop = 0;
         return $self->SUPER::initialize();
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # start
-    #
-    # ----------------------------------------------------------------------------
+=head2 start()
+
+Skips startup (returns 2) if the C<enabled> config flag is 0.  Otherwise
+refreshes the C<welcome_string> if it still contains the old version token,
+then calls C<< Proxy::Proxy->start() >> to open the listening socket.
+
+=cut
+
     method start() {
         if ($self->config('enabled') == 0) {
             return 2;
@@ -89,17 +118,16 @@ field $use_apop = 0;
         return $self->SUPER::start();
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # child__
-    #
-    # The worker method called when we get a good connection from a client.
-    # Called as a plain sub via coderef stored in $self->{child_}.
-    #
-    # $self   - this Proxy::POP3 object
-    # $client - an open stream to a POP3 client
-    #
-    # ----------------------------------------------------------------------------
+=head2 child($client)
+
+Handles one complete POP3 session for C<$client>.  Parses the extended
+C<USER host[:port]:username[:ssl|apop]> syntax, connects to the upstream
+server, relays authentication, classifies each retrieved message via the
+classifier service, and supports C<RETR>, C<TOP>, C<LIST>, C<UIDL>,
+C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
+
+=cut
+
     method child ($client) {
         my %downloaded;
         my $mail;

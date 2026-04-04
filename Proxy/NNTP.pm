@@ -36,6 +36,32 @@ my $eol = "\015\012";
 
 class Proxy::NNTP :isa(Proxy::Proxy);
 
+=head1 NAME
+
+Proxy::NNTP — NNTP proxy that classifies news articles with POPFile
+
+=head1 DESCRIPTION
+
+C<Proxy::NNTP> extends L<Proxy::Proxy> to intercept NNTP sessions between a
+news reader and a real NNTP server.  It parses the extended
+C<AUTHINFO USER server[:port]:username> syntax to determine the upstream
+server, manages a three-state authentication handshake (username needed →
+password needed → connected), and classifies each fetched article via the
+classifier service.
+
+Supports C<ARTICLE>, C<HEAD>, C<BODY>, and the full set of NNTP read commands.
+Disabled by default (C<enabled = 0>).
+
+=head1 METHODS
+
+=head2 initialize()
+
+Registers NNTP-specific configuration parameters: C<port> (default 119),
+C<local>, C<headtoo>, C<separator>, and C<welcome_string>.  Forces
+C<enabled> to 0 after calling C<< Proxy::Proxy->initialize() >>.
+
+=cut
+
 BUILD {
         $self->set_name('nntp');
         $self->set_child(\&child__);
@@ -63,7 +89,14 @@ BUILD {
         return 1;
     }
 
-    # ----------------------------------------------------------------------------
+=head2 start()
+
+Skips startup (returns 2) if the C<enabled> config flag is 0.  Otherwise
+refreshes the C<welcome_string> if it still contains the old version token,
+then calls C<< Proxy::Proxy->start() >> to open the listening socket.
+
+=cut
+
     method start() {
         if ($self->config('enabled') == 0) {
             return 2;
@@ -78,14 +111,17 @@ BUILD {
         return $self->SUPER::start();
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # child__
-    #
-    # $self   - this Proxy::NNTP object
-    # $client - an open stream to an NNTP client
-    #
-    # ----------------------------------------------------------------------------
+=head2 child($client)
+
+Handles one complete NNTP session for C<$client>.  Implements a three-state
+machine (C<username needed> → C<password needed> / C<ignore password> →
+C<connected>) driven by C<AUTHINFO USER> and C<AUTHINFO PASS> commands.
+Once connected, relays C<ARTICLE>, C<HEAD>, C<BODY>, C<GROUP>, C<LIST>,
+C<NEWGROUPS>, C<NEWNEWS>, C<XOVER>, and other standard NNTP commands,
+classifying full articles via the classifier service.
+
+=cut
+
     method child ($client) {
         my %downloaded;
         my $news;
@@ -379,7 +415,15 @@ BUILD {
         $self->log_msg(0, "NNTP proxy done");
     }
 
-    # ----------------------------------------------------------------------------
+=head2 get_message_id($news, $client, $command)
+
+Converts an C<ARTICLE>/C<HEAD>/C<BODY> command to a C<STAT> command and sends
+it to C<$news> to resolve a numeric article number to its Message-ID.
+Returns C<($message_id, $response)> on success or C<(undef, $response)> if
+the server returns an error.
+
+=cut
+
     method get_message_id ($news, $client, $command) {
         $command =~ s/^ *(ARTICLE|HEAD|BODY)/STAT/i;
         my ($response, $ok) = $self->get_response($news, $client, $command, 0, 1);
