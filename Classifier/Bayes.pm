@@ -1691,11 +1691,11 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     # then update those counts and write them back to the database.
 
     return unless keys $parser->words()->%*;
-    my $word_expr = $self->qb()
-        ->compare('word', [sort keys $parser->words()->%*]);
+    my $qb = $self->qb();
+    my $word_expr = $qb->compare('word', [sort keys $parser->words()->%*]);
+    my $select = $qb->select('id', 'word')->from('words')->where($word_expr);
     $get_wordids = $self->validate_sql_prepare_and_execute(
-        "SELECT id, word FROM words WHERE " . $word_expr->as_sql(),
-        $word_expr->params());
+        $select->as_sql(), $select->params());
     my @id_list;
     my %wordmap;
     my ($wordid, $word);
@@ -1714,9 +1714,9 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
         my $expr = $qb->combine_and(
             $qb->compare('matrix.wordid', \@id_list),
             $qb->compare('matrix.bucketid', $db_bucketid->{$userid}{$bucket}{id}));
+        my $select = $qb->select('matrix.times', 'matrix.wordid')->from('matrix')->where($expr);
         $db_getwords = $self->validate_sql_prepare_and_execute(
-            "SELECT matrix.times, matrix.wordid FROM matrix WHERE "
-            . $expr->as_sql(), $expr->params());
+            $select->as_sql(), $select->params());
         my $count;
         my $wid;
         $db_getwords->bind_columns(\$count, \$wid);
@@ -2170,11 +2170,14 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     # winning bucket is.
 
     my @words = sort keys $parser->words()->%*;
-    my $words_expr = $self->qb()->compare('word', \@words);
+    my $qb = $self->qb();
+    my $words_expr = $qb->compare('word', \@words);
+    my $select = $qb->select('id', 'word')
+        ->from('words')
+        ->where($words_expr)
+        ->order_by($qb->order_by('id'));
     $get_wordids = $self->validate_sql_prepare_and_execute(
-        "SELECT id, word FROM words
-         WHERE " . $words_expr->as_sql() . "
-         ORDER BY id", $words_expr->params());
+        $select->as_sql(), $select->params());
     my @id_list;
     my %temp_idmap;
     my ($wordid, $word);
