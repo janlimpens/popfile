@@ -22,7 +22,9 @@ use Test2::V0;
 use IO::Socket::INET;
 
 if ($ENV{SKIP_INTEGRATION} || !$ENV{POP3_TEST_HOST}) {
-    plan(skip_all => 'POP3 integration tests require POP3_TEST_HOST to be set');
+    diag('POP3 integration tests skipped — set POP3_TEST_HOST to run them.');
+    diag('See development.md for Docker setup instructions.');
+    plan(skip_all => 'POP3_TEST_HOST not set');
 }
 
 my $host = $ENV{POP3_TEST_HOST} // 'localhost';

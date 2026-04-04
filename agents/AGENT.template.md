@@ -28,6 +28,7 @@ You work exclusively on the `agent{{N}}` branch. Never commit to `main`.
 git fetch origin
 git checkout agent{{N}}
 git reset --hard origin/main
+git submodule update --init
 ```
 
 This ensures your branch is always a clean fork of main with no stale history.
