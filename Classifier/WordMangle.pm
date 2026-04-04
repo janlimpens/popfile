@@ -56,13 +56,13 @@ class Classifier::WordMangle :isa(POPFile::Module) {
         $self->set_name('wordmangle');
     }
 
-    method initialize {
+    method initialize() {
         $self->config('stemming',             0);
         $self->config('auto_detect_language', 1);
         return 1
     }
 
-    method start {
+    method start() {
         $self->load_stopwords();
         $self->_init_language($language);
         return 1
@@ -73,7 +73,7 @@ class Classifier::WordMangle :isa(POPFile::Module) {
 Load the stop word list from the stopwords file.
 
 =cut
-    method load_stopwords {
+    method load_stopwords() {
         if ( open my $stops, '<', $self->get_user_path('stopwords') ) {
             %stop__ = ();
             while ( <$stops> ) {
@@ -92,7 +92,7 @@ Load the stop word list from the stopwords file.
 Save the stop word list to the stopwords file.
 
 =cut
-    method save_stopwords {
+    method save_stopwords() {
         if ( open my $stops, '>', $self->get_user_path('stopwords') ) {
             for my $word ( keys %stop__ ) {
                 print $stops "$word\n";
@@ -121,7 +121,7 @@ Save the stop word list to the stopwords file.
         $self->_init_language($ui_to_iso{$ui_name} // 'en');
     }
 
-    method get_language { $language }
+    method get_language() { $language }
 
     method mangle ($word, $allow_colon = undef, $ignore_stops = undef) {
         my $lcword = lc($word);

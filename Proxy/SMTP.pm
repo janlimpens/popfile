@@ -39,7 +39,7 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
     }
 
     # ----------------------------------------------------------------------------
-    method initialize {
+    method initialize() {
         $self->config('force_fork', 1 );
         $self->config('port', 25 );
         $self->config('chain_server', '' );
@@ -56,7 +56,7 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
     }
 
     # ----------------------------------------------------------------------------
-    method start {
+    method start() {
         if ( $self->config('enabled' ) == 0 ) {
             return 2;
         }

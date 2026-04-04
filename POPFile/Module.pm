@@ -291,16 +291,16 @@ C<setchildexit> is a combined getter/setter for the loader's child-exit callback
         return $childexit;
     }
 
-    method initialize                               { return 1 }
-    method start                                    { return 1 }
-    method stop                                     {}
-    method service                                  { return 1 }
-    method prefork                                  {}
-    method forked ($writer = undef)                 {}
+    method initialize() { return 1 }
+    method start() { return 1 }
+    method stop() {}
+    method service() { return 1 }
+    method prefork() {}
+    method forked ($writer = undef) {}
     method postfork ($pid = undef, $reader = undef) {}
-    method childexit                                {}
-    method reaper                                   {}
-    method deliver ($type, @message)                {}
+    method childexit() {}
+    method reaper() {}
+    method deliver ($type, @message) {}
 }
 
 1;

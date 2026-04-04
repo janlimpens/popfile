@@ -15,7 +15,7 @@ class Services::IMAP::Client :isa(POPFile::Module) {
     my $eol           = "\015\012";
     my $cfg_separator = "-->";
 
-    method connect {
+    method connect() {
         my $hostname = $self->config('hostname');
         my $port     = $self->config('port');
         my $use_ssl  = $self->config('use_ssl');
@@ -58,7 +58,7 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         return 1
     }
 
-    method login {
+    method login() {
         my $login = $self->config('login');
         my $pass  = $self->config('password');
         $self->log_msg(1, "Logging in" );
@@ -66,7 +66,7 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         return $self->get_response() == 1 ? 1 : undef
     }
 
-    method logout {
+    method logout() {
         $self->log_msg(1, "Logging out" );
         $self->say('LOGOUT');
         if ( $self->get_response() == 1 ) {
@@ -78,7 +78,7 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         return 0
     }
 
-    method noop {
+    method noop() {
         $self->say('NOOP');
         my $result = $self->get_response();
         $self->log_msg(0, "NOOP failed (return value $result)" ) unless $result == 1;
@@ -117,7 +117,7 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         return $self->get_response()
     }
 
-    method expunge {
+    method expunge() {
         $self->say('EXPUNGE');
         $self->get_response();
     }
@@ -133,7 +133,7 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         return 1
     }
 
-    method get_response {
+    method get_response() {
         local $SIG{ALRM} = sub {
             alarm 0;
             $self->bail_out( "The connection to the IMAP server timed out while we waited for a response." );
@@ -201,7 +201,7 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         return $ok ? 1 : 0
     }
 
-    method get_mailbox_list {
+    method get_mailbox_list() {
         $self->log_msg(1, "Getting mailbox list" );
         $self->say( 'LIST "" "*"' );
         my $result = $self->get_response();
@@ -220,7 +220,7 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         return sort @mailboxes
     }
 
-    method get_new_message_list {
+    method get_new_message_list() {
         my $uid = $self->uid_next($folder);
         $self->log_msg(1, "Getting uids ge $uid in folder $folder" );
         $self->say( "UID SEARCH UID $uid:* UNDELETED" );
@@ -339,7 +339,7 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         return $new_val == $old_val ? 1 : undef
     }
 
-    method connected {
+    method connected() {
         return $socket ? 1 : undef
     }
 

@@ -19,7 +19,7 @@ class Services::IMAP :isa(POPFile::Module) {
         $self->set_name('imap');
     }
 
-    method initialize {
+    method initialize() {
         $self->config('hostname',        '' );
         $self->config('port',            143 );
         $self->config('login',           '' );
@@ -37,15 +37,15 @@ class Services::IMAP :isa(POPFile::Module) {
         return 1
     }
 
-    method start {
+    method start() {
         return 1
     }
 
-    method stop {
+    method stop() {
         $self->disconnect_folders();
     }
 
-    method service {
+    method service() {
         return 1 if $self->config('enabled') == 0;
         return 1 if time - $last_update < $self->config('update_interval');
         eval {
@@ -80,12 +80,12 @@ class Services::IMAP :isa(POPFile::Module) {
         return 1
     }
 
-    method api_session {
+    method api_session() {
         $api_session = $classifier->get_session_key('admin', '') unless $api_session;
         return $api_session
     }
 
-    method new_imap_client {
+    method new_imap_client() {
         my $client = Services::IMAP::Client->new();
         $client->set_configuration($self->configuration());
         $client->set_mq($self->mq());
@@ -104,7 +104,7 @@ class Services::IMAP :isa(POPFile::Module) {
         return
     }
 
-    method build_folder_list {
+    method build_folder_list() {
         $self->log_msg(1, "Building list of serviced folders." );
         %folders = ();
         for my $folder ( $self->watched_folders() ) {
@@ -118,7 +118,7 @@ class Services::IMAP :isa(POPFile::Module) {
         $folder_change_flag = 0;
     }
 
-    method connect_server {
+    method connect_server() {
         my $imap;
         for my $folder ( keys %folders ) {
             last if exists $folders{$folder}{imap};
@@ -177,7 +177,7 @@ class Services::IMAP :isa(POPFile::Module) {
         }
     }
 
-    method disconnect_folders {
+    method disconnect_folders() {
         $self->log_msg(1, "Trying to disconnect all connections." );
         for my $folder ( keys %folders ) {
             my $imap = $folders{$folder}{imap};
@@ -405,7 +405,7 @@ class Services::IMAP :isa(POPFile::Module) {
         return split /$cfg_separator/, $all
     }
 
-    method train_on_archive {
+    method train_on_archive() {
         $self->log_msg(0, "Training on existing archive." );
         %folders = ();
         $self->build_folder_list();

@@ -12,6 +12,7 @@
 
 use strict;
 use warnings;
+use feature 'signatures';
 use FindBin qw($Bin);
 use lib "$Bin/lib", "$Bin/..";
 
@@ -139,16 +140,14 @@ my @NOISE_EN  = qw(important information message update news special contact);
 my @NOISE_DE  = qw(wichtig information nachricht aktualisierung neuigkeiten);
 my @NOISE_FR  = qw(important information message mise-à-jour nouvelles);
 
-sub pick_n {
-    my ($aref, $n) = @_;
+sub pick_n($aref, $n) {
     my @pool = @{$aref};
     my @out;
     push @out, $pool[int(rand(@pool))] for 1..$n;
     @out
 }
 
-sub make_email {
-    my ($lang, $class, $use_variants, $idx) = @_;
+sub make_email($lang, $class, $use_variants, $idx) {
     srand($idx * 137 + ($lang eq 'en' ? 0 : $lang eq 'de' ? 1000 : 2000)
           + ($class eq 'spam' ? 0 : 5000));
 
@@ -214,8 +213,7 @@ sub rss_kb {
     0
 }
 
-sub run_scenario {
-    my ($label, %cfg) = @_;
+sub run_scenario($label, %cfg) {
 
     my ($config, $mq, $tmpdir) = TestHelper::setup();
     my ($wm, $bayes) = TestHelper::setup_bayes($config, $mq);

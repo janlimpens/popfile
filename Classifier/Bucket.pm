@@ -23,7 +23,7 @@ class Classifier::Bucket {
         return $self
     }
 
-    method prior { return $prior }
+    method prior() { return $prior }
 
     method set_prior ($v) { $prior = $v }
 }

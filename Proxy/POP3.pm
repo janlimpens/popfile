@@ -51,7 +51,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
     # initialize
     #
     # ----------------------------------------------------------------------------
-    method initialize {
+    method initialize() {
         $self->config('enabled', 1 );
         $self->config('force_fork', 1 );
         $self->config('port', 1110 );
@@ -71,7 +71,7 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
     # start
     #
     # ----------------------------------------------------------------------------
-    method start {
+    method start() {
         if ( $self->config('enabled' ) == 0 ) {
             return 2;
         }

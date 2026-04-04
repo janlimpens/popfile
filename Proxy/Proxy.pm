@@ -60,7 +60,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
     # initialize
     #
     # ----------------------------------------------------------------------------
-    method initialize {
+    method initialize() {
         $self->config('enabled', 1 );
         $self->config('port',    0 );
 
@@ -75,7 +75,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
     # start
     #
     # ----------------------------------------------------------------------------
-    method start {
+    method start() {
         $self->log_msg(1, "Opening listening socket on port " . $self->config('port') . '.' );
         $server = IO::Socket::INET->new(
             Proto     => 'tcp',
@@ -103,7 +103,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
     # stop
     #
     # ----------------------------------------------------------------------------
-    method stop {
+    method stop() {
         close $server if ( defined( $server ) );
     }
 
@@ -112,7 +112,7 @@ class Proxy::Proxy :isa(POPFile::Module) {
     # service
     #
     # ----------------------------------------------------------------------------
-    method service {
+    method service() {
         if ( ( defined( $selector->can_read(0) ) ) &&
              ( $self->alive() ) ) {
             if ( my $client = $server->accept() ) {

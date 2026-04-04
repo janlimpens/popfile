@@ -72,7 +72,7 @@ class POPFile::Loader {
     #
     # Initialize things only needed in CORE
     #------------------------------------------------------------------------
-    method CORE_loader_init {
+    method CORE_loader_init() {
         if ( defined $ENV{POPFILE_ROOT} ) {
             $popfile_root = $ENV{POPFILE_ROOT};
         }
@@ -110,7 +110,7 @@ class POPFile::Loader {
     # Called if we are going to be aborted.  Sets alive to 0 so that we
     # abort at the next convenient moment.
     #------------------------------------------------------------------------
-    method CORE_aborting {
+    method CORE_aborting() {
         $alive = 0;
         for my $type (sort keys %components) {
             for my $name (sort keys %{$components{$type}}) {
@@ -138,7 +138,7 @@ class POPFile::Loader {
     #
     # Called on SIGCHLD; asks each module to do whatever reaping is needed.
     #------------------------------------------------------------------------
-    method CORE_reaper {
+    method CORE_reaper() {
         for my $type (sort keys %components) {
             for my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->reaper();
@@ -171,7 +171,7 @@ class POPFile::Loader {
     # child process.  Returns (pid, pipe_handle): pid==0 in child (with
     # writer), non-zero pid in parent (with reader).
     #------------------------------------------------------------------------
-    method CORE_forker {
+    method CORE_forker() {
         my @types = sort keys %components;
 
         for my $type (@types) {
@@ -301,7 +301,7 @@ class POPFile::Loader {
     #
     # Sets signal handlers so POPFile handles OS and IPC events gracefully.
     #------------------------------------------------------------------------
-    method CORE_signals {
+    method CORE_signals() {
         $SIG{QUIT} = $aborting;
         $SIG{ABRT} = $aborting;
         $SIG{KILL} = $aborting;
@@ -341,7 +341,7 @@ class POPFile::Loader {
     #
     # Links POPFile's modules together so they can use each other as objects.
     #------------------------------------------------------------------------
-    method CORE_link_components {
+    method CORE_link_components() {
         print "\n\nPOPFile Engine $version_string starting" if $debug;
 
         # Give every module access to configuration, version, and MQ.
@@ -413,7 +413,7 @@ class POPFile::Loader {
     #
     # Loops across POPFile's modules and initializes them.
     #------------------------------------------------------------------------
-    method CORE_initialize {
+    method CORE_initialize() {
         print "\n\n    Initializing... " if $debug;
 
         # Core must be initialized first.
@@ -449,7 +449,7 @@ class POPFile::Loader {
     #
     # Loads POPFile's configuration and applies command-line overrides.
     #------------------------------------------------------------------------
-    method CORE_config {
+    method CORE_config() {
         $components{core}{config}->load_configuration();
         return $components{core}{config}->parse_command_line();
     }
@@ -459,7 +459,7 @@ class POPFile::Loader {
     #
     # Loops across POPFile's modules and starts them.
     #------------------------------------------------------------------------
-    method CORE_start {
+    method CORE_start() {
         print "\n    Starting...     " if $debug;
 
         my @c = ( 'core', 'classifier', 'services',
@@ -523,7 +523,7 @@ class POPFile::Loader {
     #
     # Loops across POPFile's modules and stops them.
     #------------------------------------------------------------------------
-    method CORE_stop {
+    method CORE_stop() {
         if ( $debug ) {
             print "\n\nPOPFile Engine $version_string stopping\n";
             STDOUT->flush();

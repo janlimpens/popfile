@@ -69,7 +69,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # Called to initialize the interface
     #
     # ----------------------------------------------------------------------------
-    method initialize {
+    method initialize() {
         # This is the location where we store the PID of POPFile in a file
         # called popfile.pid
 
@@ -123,7 +123,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # Called to start this module
     #
     # ----------------------------------------------------------------------------
-    method start {
+    method start() {
         $started = 1;
 
         # Check to see if the PID file is present, if it is then another
@@ -155,7 +155,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # return 1.
     #
     # ----------------------------------------------------------------------------
-    method service {
+    method service() {
         my $time = time;
 
         if ( $self->config('pidcheck_interval' ) > 0 ) {
@@ -179,7 +179,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # Called to shutdown this module
     #
     # ----------------------------------------------------------------------------
-    method stop {
+    method stop() {
         $self->save_configuration();
 
         $self->delete_pid();
@@ -206,7 +206,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # Returns the process-ID of the currently running POPFile, undef if none.
     #
     # ----------------------------------------------------------------------------
-    method live_check {
+    method live_check() {
         if ( $self->check_pid() ) {
             my $oldpid = $self->get_pid();
             my $wait_time = $self->config('pidcheck_interval' ) * 2;
@@ -239,7 +239,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # returns 1 if the pid file exists, 0 otherwise
     #
     # ----------------------------------------------------------------------------
-    method check_pid {
+    method check_pid() {
         return (-e $pid_file);
     }
 
@@ -251,7 +251,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # otherwise (0 might be a valid PID)
     #
     # ----------------------------------------------------------------------------
-    method get_pid {
+    method get_pid() {
         if (open my $pid_fh, '<', $pid_file) {
             my $pid = <$pid_fh>;
             $pid =~ s/[\r\n]//g;
@@ -269,7 +269,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # writes the current process-ID into the pid file
     #
     # ----------------------------------------------------------------------------
-    method write_pid {
+    method write_pid() {
         if ( open my $pid_fh, '>', $pid_file ) {
             print $pid_fh "$$\n";
             close $pid_fh;
@@ -283,7 +283,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # deletes the pid file
     #
     # ----------------------------------------------------------------------------
-    method delete_pid {
+    method delete_pid() {
         unlink( $pid_file );
     }
 
@@ -297,7 +297,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # argument has to have a value.
     #
     # ----------------------------------------------------------------------------
-    method parse_command_line {
+    method parse_command_line() {
         # Options from the command line specified with the --set parameter
 
         my @set_options;
@@ -446,7 +446,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # containing a space separated name and value pair
     #
     # ----------------------------------------------------------------------------
-    method load_configuration {
+    method load_configuration() {
         $started = 1;
 
         my $config_file = $self->get_user_path( 'popfile.cfg' );
@@ -494,7 +494,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
     # hash to a local file.
     #
     # ----------------------------------------------------------------------------
-    method save_configuration {
+    method save_configuration() {
         if ( $save_needed == 0 ) {
             return;
         }
@@ -625,7 +625,7 @@ class POPFile::Configuration :isa(POPFile::Module) {
 
     # GETTERS / SETTERS
 
-    method configuration_parameters {
+    method configuration_parameters() {
         return sort keys %configuration_parameters;
     }
 

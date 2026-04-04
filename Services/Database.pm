@@ -17,12 +17,12 @@ class Services::Database :isa(POPFile::Module) {
         $self->set_name('database');
     }
 
-    method initialize {
+    method initialize() {
         $self->config('dbtype', 'sqlite');
         return 1
     }
 
-    method start {
+    method start() {
         $dialect = $self->config('dbtype') || 'sqlite';
         return 1
     }
@@ -38,7 +38,7 @@ class Services::Database :isa(POPFile::Module) {
         %handles = ();
     }
 
-    method stop {
+    method stop() {
         $_->disconnect()
             for values %handles;
         %handles = ();

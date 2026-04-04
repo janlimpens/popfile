@@ -29,12 +29,12 @@ class Services::Classifier :isa(POPFile::Module) {
         $self->set_name('classifier_service');
     }
 
-    method start {
+    method start() {
         $session = $classifier->get_session_key( 'admin', '' );
         return defined( $session ) ? 1 : 0;
     }
 
-    method stop {
+    method stop() {
         if ( $session ne '' ) {
             $classifier->release_session_key( $session );
             $session = '';
@@ -64,9 +64,9 @@ Methods to query and manage classification buckets.
 
 =cut
 
-    method get_buckets          { $classifier->get_buckets( $session ) }
-    method get_all_buckets      { $classifier->get_all_buckets( $session ) }
-    method get_pseudo_buckets   { $classifier->get_pseudo_buckets( $session ) }
+    method get_buckets()          { $classifier->get_buckets( $session ) }
+    method get_all_buckets()      { $classifier->get_all_buckets( $session ) }
+    method get_pseudo_buckets()   { $classifier->get_pseudo_buckets( $session ) }
     method is_bucket ($b)       { $classifier->is_bucket( $session, $b ) }
     method is_pseudo_bucket ($b){ $classifier->is_pseudo_bucket( $session, $b ) }
     method create_bucket ($b)   { $classifier->create_bucket( $session, $b ) }
@@ -78,8 +78,8 @@ Methods to query and manage classification buckets.
 
     method get_bucket_word_count ($b)       { $classifier->get_bucket_word_count( $session, $b ) }
     method get_bucket_unique_count ($b)     { $classifier->get_bucket_unique_count( $session, $b ) }
-    method get_word_count                   { $classifier->get_word_count( $session ) }
-    method get_unique_word_count            { $classifier->get_unique_word_count( $session ) }
+    method get_word_count()                   { $classifier->get_word_count( $session ) }
+    method get_unique_word_count()            { $classifier->get_unique_word_count( $session ) }
     method get_bucket_word_list ($b, $pfx)  { $classifier->get_bucket_word_list( $session, $b, $pfx ) }
     method get_bucket_word_prefixes ($b)    { $classifier->get_bucket_word_prefixes( $session, $b ) }
     method get_count_for_word ($b, $w)      { $classifier->get_count_for_word( $session, $b, $w ) }
@@ -106,14 +106,14 @@ Methods to query and manage magnets (forced-classification rules).
 
 =cut
 
-    method get_buckets_with_magnets             { $classifier->get_buckets_with_magnets( $session ) }
-    method get_magnet_types                     { $classifier->get_magnet_types( $session ) }
+    method get_buckets_with_magnets()             { $classifier->get_buckets_with_magnets( $session ) }
+    method get_magnet_types()                     { $classifier->get_magnet_types( $session ) }
     method get_magnet_types_in_bucket ($b)      { $classifier->get_magnet_types_in_bucket( $session, $b ) }
     method get_magnets ($b, $t)                 { $classifier->get_magnets( $session, $b, $t ) }
     method create_magnet ($b, $t, $text)        { $classifier->create_magnet( $session, $b, $t, $text ) }
     method delete_magnet ($b, $t, $text)        { $classifier->delete_magnet( $session, $b, $t, $text ) }
-    method clear_magnets                        { $classifier->clear_magnets( $session ) }
-    method magnet_count                         { $classifier->magnet_count( $session ) }
+    method clear_magnets()                        { $classifier->clear_magnets( $session ) }
+    method magnet_count()                         { $classifier->magnet_count( $session ) }
 
 =head2 Stopwords
 
@@ -121,7 +121,7 @@ Methods to query and manage the stopword list.
 
 =cut
 
-    method get_stopword_list    { $classifier->get_stopword_list( $session ) }
+    method get_stopword_list()    { $classifier->get_stopword_list( $session ) }
     method add_stopword ($w)    { $classifier->add_stopword( $session, $w ) }
     method remove_stopword ($w) { $classifier->remove_stopword( $session, $w ) }
 
@@ -138,9 +138,9 @@ Direct access to internal objects for XML-RPC and legacy callers.
 
 =cut
 
-    method session      { $session }
-    method bayes        { $classifier }
-    method history_obj  { $history }
+    method session()      { $session }
+    method bayes()        { $classifier }
+    method history_obj()  { $history }
 
 } # end class Services::Classifier
 

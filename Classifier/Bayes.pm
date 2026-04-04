@@ -319,7 +319,7 @@ Called to start the Bayes module running
 
 =cut
 
-method start {
+method start() {
     # In Japanese or Korean or Chinese mode, explicitly set LC_COLLATE and
     # LC_CTYPE to C.
     #
@@ -371,7 +371,7 @@ Called when POPFile is terminating
 
 =cut
 
-method stop {
+method stop() {
     $self->db_disconnect();
     $db_bucketid = {};
     $db_parameters = {};
@@ -1110,7 +1110,7 @@ Disconnect from the POPFile database
 
 =cut
 
-method db_disconnect {
+method db_disconnect() {
     return
         unless ref $db_get_buckets;
     $db_get_buckets->finish();
@@ -1299,7 +1299,7 @@ upgrades it to the SQL database.  Data upgraded is removed.
 
 =cut
 
-method upgrade_predatabase_data {
+method upgrade_predatabase_data() {
     my $possible_colors = [qw(
         red green blue brown
         orange purple magenta gray
@@ -1835,8 +1835,7 @@ C<$pos> Start position
 C<$len> Word length
 
 =cut
-sub substr_euc {
-    my ($str, $pos, $len) = @_;
+sub substr_euc($str, $pos, $len) {
     my $result_str;
     my $char;
     my $count = 0;
@@ -1866,7 +1865,7 @@ in the api_sessions
 
 =cut
 
-method generate_unique_session_key {
+method generate_unique_session_key() {
     my @chars = ('A'..'Z', 0..9);
     my $session = '';
     do {

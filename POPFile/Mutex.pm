@@ -65,7 +65,7 @@ Releases the lock if it was previously acquired with L</acquire>.
 
 =cut
 
-    method release {
+    method release() {
         rmdir $lock_path;
         $locked = undef;
     }

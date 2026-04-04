@@ -1,5 +1,6 @@
 package POPFile::Log::Adapter;
 
+use feature 'signatures';
 use Log::Any::Adapter::Base;
 use Log::Any::Adapter::Util qw(logging_methods);
 use POSIX qw(strftime);
@@ -29,7 +30,7 @@ my %_required_popfile_level = (
 
 sub configure { my (undef, %args) = @_; $cfg{$_} = $args{$_} for keys %args }
 
-sub ring { $cfg{ring} }
+sub ring() { $cfg{ring} }
 
 for my $method (logging_methods()) {
     my $min_level = $_required_popfile_level{$method} // 0;
@@ -43,8 +44,7 @@ for my $method (logging_methods()) {
     *{"is_$method"} = sub { 1 };
 }
 
-sub _write {
-    my $msg = shift;
+sub _write($msg) {
     $msg =~ s/((--)?)(USER|PASS)\s+\S*(\1)/"$`$1$3 XXXXXX$4"/ei;
     $msg =~ s/([\x00-\x1f])/sprintf("[%2.2x]", ord($1))/eg;
     my $delim = $cfg{format} eq 'tabbed' ? "\t"

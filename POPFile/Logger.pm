@@ -17,7 +17,7 @@ class POPFile::Logger :isa(POPFile::Module) {
         $self->set_name('logger');
     }
 
-    method initialize {
+    method initialize() {
         $self->global_config('debug', 1);
         $self->config('logdir', $self->_default_log_dir());
         $self->config('format', 'default');
@@ -29,7 +29,7 @@ class POPFile::Logger :isa(POPFile::Module) {
         return 1
     }
 
-    method _default_log_dir {
+    method _default_log_dir() {
         if ($^O eq 'MSWin32') {
             my $base = $ENV{LOCALAPPDATA} // $ENV{APPDATA} // $ENV{USERPROFILE} // '.';
             return $base . '\\POPFile\\Logs\\';
@@ -45,7 +45,7 @@ class POPFile::Logger :isa(POPFile::Module) {
             if $type eq 'TICKD';
     }
 
-    method start {
+    method start() {
         my $dir = $self->get_user_path($self->config('logdir'), 0);
         make_path($dir) unless -d $dir;
         $self->calculate_today();
@@ -55,11 +55,11 @@ class POPFile::Logger :isa(POPFile::Module) {
         return 1
     }
 
-    method stop {
+    method stop() {
         Log::Any->get_logger(category => 'POPFile')->error('POPFile stopped');
     }
 
-    method service {
+    method service() {
         $self->calculate_today();
         if ( $self->time > ($last_tickd + 3600) ) {
             $self->_reconfigure_adapter();
@@ -69,9 +69,9 @@ class POPFile::Logger :isa(POPFile::Module) {
         return 1
     }
 
-    method time { return time }
+    method time() { return time }
 
-    method calculate_today {
+    method calculate_today() {
         my $new_today = int( $self->time / $seconds_per_day ) * $seconds_per_day;
         return if $new_today == $today;
         $today          = $new_today;
@@ -79,7 +79,7 @@ class POPFile::Logger :isa(POPFile::Module) {
             $self->config('logdir') . "popfile$today.log", 0);
     }
 
-    method _reconfigure_adapter {
+    method _reconfigure_adapter() {
         my $debug = $self->global_config('debug') // 0;
         POPFile::Log::Adapter->configure(
             to_file       => ($debug & 1) ? 1 : 0,
@@ -91,7 +91,7 @@ class POPFile::Logger :isa(POPFile::Module) {
         Log::Any::Adapter->set('+POPFile::Log::Adapter');
     }
 
-    method remove_debug_files {
+    method remove_debug_files() {
         my @files = glob( $self->get_user_path(
             $self->config('logdir') . 'popfile*.log', 0) );
         for my $f (@files) {
@@ -106,7 +106,7 @@ class POPFile::Logger :isa(POPFile::Module) {
             if $level <= ($self->config('level') // 0);
     }
 
-    method debug_filename { $debug_filename }
+    method debug_filename() { $debug_filename }
 
-    method last_ten { POPFile::Log::Adapter->ring()->@* }
+    method last_ten() { POPFile::Log::Adapter->ring()->@* }
 }

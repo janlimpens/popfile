@@ -41,7 +41,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
     }
 
     # ----------------------------------------------------------------------------
-    method initialize {
+    method initialize() {
         $self->config('enabled',        0 );
         $self->config('force_fork',     1 );
         $self->config('port',           119 );
@@ -60,7 +60,7 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
     }
 
     # ----------------------------------------------------------------------------
-    method start {
+    method start() {
         if ( $self->config('enabled' ) == 0 ) {
             return 2;
         }

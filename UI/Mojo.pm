@@ -44,7 +44,7 @@ once the server is ready (config key: C<mojo_ui_open_browser>).
 
 =cut
 
-    method initialize {
+    method initialize() {
         $self->config('port', 8080);
         $self->config('static_dir', 'public');
         $self->config('password', '');
@@ -64,7 +64,7 @@ Forks a child process running the Mojolicious daemon. Returns 1 on success.
 
 =cut
 
-    method _find_free_port {
+    method _find_free_port() {
         require IO::Socket::INET;
         my $sock = IO::Socket::INET->new(
             Listen => 1,
@@ -78,7 +78,7 @@ Forks a child process running the Mojolicious daemon. Returns 1 on success.
         return $port
     }
 
-    method start {
+    method start() {
         my $port = $self->config('port');
         if ($port == 0) {
             $port = $self->_find_free_port();
@@ -105,7 +105,7 @@ Sends SIGTERM to the child process and waits for it to exit.
 
 =cut
 
-    method stop {
+    method stop() {
         if ( defined $child_pid ) {
             kill 'TERM', $child_pid;
             waitpid( $child_pid, 0 );
@@ -120,7 +120,7 @@ unexpectedly. Returns 1.
 
 =cut
 
-    method service {
+    method service() {
         if ( defined $child_pid ) {
             my $gone = waitpid( $child_pid, WNOHANG );
             if ( $gone == $child_pid ) {
@@ -823,7 +823,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         return $app
     }
 
-    method run_server {
+    method run_server() {
         require Mojo::Server::Daemon;
 
         my $svc  = $service;

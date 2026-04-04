@@ -10,6 +10,7 @@ package TestHelper;
 
 use strict;
 use warnings;
+use feature 'signatures';
 use File::Temp qw(tempdir);
 use FindBin    qw($Bin);
 use Cwd        qw(abs_path);
@@ -47,8 +48,7 @@ sub setup {
 # ---------------------------------------------------------------------------
 # wire($module, $config, $mq)
 # ---------------------------------------------------------------------------
-sub wire {
-    my ($mod, $config, $mq) = @_;
+sub wire($mod, $config, $mq) {
     $mod->set_configuration($config);
     $mod->set_mq($mq);
     return $mod;
@@ -61,8 +61,7 @@ sub wire {
 # or a real DB if TEST_DBCONNECT is set in the environment.
 # Must be called after Classifier::Bayes->initialize() and before start().
 # ---------------------------------------------------------------------------
-sub configure_db {
-    my ($config) = @_;
+sub configure_db($config) {
     if ( defined $ENV{TEST_DBCONNECT} ) {
         $config->parameter('bayes_dbconnect', $ENV{TEST_DBCONNECT});
         $config->parameter('bayes_dbuser',    $ENV{TEST_DBUSER}   // '');
@@ -80,8 +79,7 @@ sub configure_db {
 # For Classifier::Bayes, also injects a stub history and configures the DB.
 # Does NOT call start() — call that yourself if needed.
 # ---------------------------------------------------------------------------
-sub make_module {
-    my ($class, $config, $mq) = @_;
+sub make_module($class, $config, $mq) {
     (my $file = $class) =~ s{::}{/}g;
     require "$file.pm";
     my $mod = $class->new();
@@ -105,8 +103,7 @@ sub make_module {
 # Convenience: create and start a WordMangle + Bayes pair.
 # Returns ($wm, $bayes).
 # ---------------------------------------------------------------------------
-sub setup_bayes {
-    my ($config, $mq) = @_;
+sub setup_bayes($config, $mq) {
     my $wm = make_module('Classifier::WordMangle', $config, $mq);
     $wm->start();
     my $bayes = make_module('Classifier::Bayes', $config, $mq);
@@ -122,8 +119,7 @@ sub setup_bayes {
 # the schema seed rows (admin user, pseudo-buckets, magnet sentinel, etc.).
 # Returns a fresh session key.
 # ---------------------------------------------------------------------------
-sub reset_db {
-    my ($bayes, $config) = @_;
+sub reset_db($bayes, $config) {
     my $db = $bayes->db();
     $db->do('delete from history');
     $db->do('delete from matrix');
@@ -146,8 +142,7 @@ sub reset_db {
 #
 # File paths in train lists are resolved relative to t/fixtures/.
 # ---------------------------------------------------------------------------
-sub load_fixture {
-    my ($bayes, $session, $fixture) = @_;
+sub load_fixture($bayes, $session, $fixture) {
     if ( !ref $fixture ) {
         my $path = "$REPO_ROOT/t/fixtures/$fixture.pl";
         $fixture = do $path
@@ -176,16 +171,14 @@ sub force_requery {}
 # ---------------------------------------------------------------------------
 package TestHelper::MQ;
 
-sub post {
-    my ($self, $type, @msg) = @_;
+sub post($self, $type, @msg) {
     push @{ $self->{posted} }, { type => $type, msg => \@msg };
     for my $waiter (@{ $self->{waiters}{$type} // [] }) {
         $waiter->deliver($type, @msg);
     }
 }
 
-sub register {
-    my ($self, $type, $obj) = @_;
+sub register($self, $type, $obj) {
     push @{ $self->{waiters}{$type} }, $obj;
 }
 

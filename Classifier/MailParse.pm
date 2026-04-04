@@ -320,7 +320,7 @@ C<$htmlfontcolor> fields via C<compute_rgb_distance>.
 
 =cut
 
-method compute_html_color_distance {
+method compute_html_color_distance() {
     # TODO: store front/back colors in a RGB hash/array
     #       converting to a hh hh hh format and back
     #       is a waste as is repeatedly decoding
@@ -1580,7 +1580,7 @@ method start_parse ($reset = undef) {
 # parse_line.
 #
 # ----------------------------------------------------------------------------
-method stop_parse {
+method stop_parse() {
     $colorized .= $self->clear_out_base64();
 
     $self->clear_out_qp();
@@ -1814,7 +1814,7 @@ method parse_line ($read) {
 # returns colorization information to be added to the colorized output
 #
 # ----------------------------------------------------------------------------
-method clear_out_base64 {
+method clear_out_base64() {
     my $colorized = '';
 
     if ( $base64 ne '' ) {
@@ -1862,7 +1862,7 @@ method clear_out_base64 {
 # If there's anything in the {prev__} then decode it and parse it
 #
 # ----------------------------------------------------------------------------
-method clear_out_qp {
+method clear_out_qp() {
     if ( ( $cur_encoding =~ /quoted\-printable/i ) &&
          ( $prev ne '' ) ) {
         my $line = decode_qp( $prev );
@@ -2472,15 +2472,15 @@ method splitline ($line, $encoding) {
 
 # GETTERS/SETTERS
 
-method first20 {
+method first20() {
     return $first20;
 }
 
-method quickmagnets {
+method quickmagnets() {
     return \%quickmagnets;
 }
 
-method words {
+method words() {
     return \%words;
 }
 
@@ -2497,9 +2497,7 @@ method words {
 #               defined
 # @candidates   Candidate encodings for guessing
 # ----------------------------------------------------------------------------
-sub convert_encoding
-{
-    my ( $string, $from, $to, $default, @candidates ) = @_;
+sub convert_encoding($string, $from, $to, $default, @candidates) {
 
     # If the string contains only ascii characters, do nothing.
     return $string if ( $string =~ /^[\r\n\t\x20-\x7E]*$/ );
@@ -2632,7 +2630,7 @@ sub init_kakasi
 # Create a new parser object of MeCab.
 #
 # ----------------------------------------------------------------------------
-method init_mecab {
+method init_mecab() {
     # Initialize MeCab (-F %M\s -U %M\s -E \n is passed to MeCab as argument).
     # Insert white spaces after words.
 
@@ -2657,7 +2655,7 @@ sub close_kakasi
 # Free the parser object of MeCab.
 #
 # ----------------------------------------------------------------------------
-method close_mecab {
+method close_mecab() {
     $nihongo_parser{obj_mecab} = undef;
 }
 

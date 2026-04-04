@@ -72,7 +72,7 @@ Returns 1 on success.
 
 =cut
 
-method initialize {
+method initialize() {
     # Keep the history for two days
 
     $self->config('history_days', 2 );
@@ -111,7 +111,7 @@ and disconnects the cloned database handle.
 
 =cut
 
-method stop {
+method stop() {
     # Commit any remaining history items.  This is needed because it's
     # possible that we get called with a stop after things have been
     # added to the queue and before service() is called
@@ -129,7 +129,7 @@ method stop {
 # database handle at start time.  So instead we access the db handle
 # through this method.
 # ---------------------------------------------------------------------------
-method db {
+method db() {
     $db //= $db_service->get_handle('history');
     return $db
 }
@@ -143,7 +143,7 @@ Returns 1.
 
 =cut
 
-method service {
+method service() {
     if ( $firsttime ) {
         $self->upgrade_history_files();
         $firsttime = 0;
@@ -448,7 +448,7 @@ method is_valid_slot ($slot) {
 # with a call to commit_slot to the database
 #
 #----------------------------------------------------------------------------
-method commit_history {
+method commit_history() {
     if ( $#{$commit_list} == -1 ) {
         return;
     }
@@ -673,7 +673,7 @@ method delete_slot ($slot, $archive) {
 # make this quick.
 #
 #----------------------------------------------------------------------------
-method start_deleting {
+method start_deleting() {
 #    $classifier->tweak_sqlite( 1, 1, $self->db() );
     $self->db()->begin_work;
 }
@@ -686,7 +686,7 @@ method start_deleting {
 # back into the Classifier::Bayes to untweak the database performance.
 #
 #----------------------------------------------------------------------------
-method stop_deleting {
+method stop_deleting() {
     $self->db()->commit;
 #    $classifier->tweak_sqlite( 1, 0, $self->db() );
 }
@@ -802,7 +802,7 @@ method get_slot_from_hash ($hash) {
 # stop_query.
 #
 #----------------------------------------------------------------------------
-method start_query {
+method start_query() {
     # Think of a large random number, make sure that it hasn't
     # been used and then return it
 
@@ -1085,7 +1085,7 @@ sub compare_mf__
 # Looks for old .MSG/.CLS history entries and sticks them in the database
 #
 # ---------------------------------------------------------------------------
-method upgrade_history_files {
+method upgrade_history_files() {
     # See if there are any .MSG files in the msgdir, and if there are
     # upgrade them by placing them in the database
 
@@ -1189,7 +1189,7 @@ method history_read_class ($filename) {
 # configured as history_days.
 #
 #----------------------------------------------------------------------------
-method cleanup_history {
+method cleanup_history() {
     my $seconds_per_day = 24 * 60 * 60;
     my $old = time - $self->config('history_days' ) * $seconds_per_day;
     my @ids;
@@ -1242,7 +1242,7 @@ method copy_file ($from, $to_dir, $to_name) {
 # open so that cached data is not returned and the database is requeried
 #
 # ---------------------------------------------------------------------------
-method force_requery {
+method force_requery() {
     # Force requery since the messages have changed
 
     for my $id (keys %queries) {

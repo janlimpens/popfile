@@ -114,7 +114,7 @@ delivers pending messages to registered waiters.
 
 =cut
 
-    method service {
+    method service() {
         # See if any of the children have passed up messages through their
         # pipes and deal with it now
 
@@ -149,7 +149,7 @@ all child pipe handles.
 
 =cut
 
-    method stop {
+    method stop() {
         # Call service() so that any remaining items are flushed and delivered
 
         $self->service();
@@ -212,7 +212,7 @@ C<waitpid()>, flushes its pipe, and removes it from the children map.
 
 =cut
 
-    method reaper {
+    method reaper() {
         # Look for children that have completed and then flush the data
         # from their associated pipe and see if any of our children have
         # data ready to read from their pipes,
