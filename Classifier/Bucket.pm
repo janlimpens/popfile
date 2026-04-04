@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 package Classifier::Bucket;
 
 use Object::Pad;

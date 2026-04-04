@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+# SPDX-License-Identifier: GPL-3.0-or-later
 # ----------------------------------------------------------------------------
 #
 # popfile.pl --- Message analyzer and sorter

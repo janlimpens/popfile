@@ -87,3 +87,8 @@ docker compose -f docker-compose.test.yml down -v
 ```
 
 The `-v` flag removes the `imap-mail` volume so the next run starts clean.
+
+## License
+
+POPFile is licensed under the **GNU General Public License v3.0 or later** (GPL-3.0-or-later).
+See the [LICENSE](LICENSE) file in the repository root for the full license text.

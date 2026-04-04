@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
 use Object::Pad;
 use Carp qw(confess);
 use IO::Socket::INET;

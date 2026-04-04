@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# SPDX-License-Identifier: GPL-3.0-or-later
 # ----------------------------------------------------------------------------
 #
 # insert.pl --- Inserts a mail message into a specific bucket

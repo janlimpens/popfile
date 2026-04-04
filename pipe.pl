@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# SPDX-License-Identifier: GPL-3.0-or-later
 # ----------------------------------------------------------------------------
 #
 # pipe.pl --- Read a message in on STDIN and write out the modified

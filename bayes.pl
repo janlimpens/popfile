@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# SPDX-License-Identifier: GPL-3.0-or-later
 # ----------------------------------------------------------------------------
 #
 # bayes.pl --- Classify a mail message manually
