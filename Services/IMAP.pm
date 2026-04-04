@@ -278,7 +278,7 @@ method disconnect_folders() {
     for my $folder (keys %folders) {
         my $imap = $folders{$folder}{imap};
         if (defined $imap && $imap->connected()) {
-            eval { $imap->logout($folder) };
+            eval { $imap->logout() };
         }
     }
     %folders = ();

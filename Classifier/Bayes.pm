@@ -2824,10 +2824,10 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # Add the XPL header
 
-    my $host = $self->module_config('html', 'local')
+    my $host = $self->module_config('mojo_ui', 'local')
         ? $self->config('localhostname') || '127.0.0.1'
         : $self->config('hostname');
-        my $port = $self->module_config('html', 'port');
+    my $port = $self->module_config('mojo_ui', 'port');
 
     my $xpl = "http://$host:$port/jump_to_message?view=$slot";
 
