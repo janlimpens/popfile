@@ -25,6 +25,23 @@ use locale;
 
 class Services::Classifier :isa(POPFile::Module);
 
+=head1 NAME
+
+Services::Classifier — session-less facade over the Bayes classifier
+
+=head1 DESCRIPTION
+
+C<Services::Classifier> wraps L<Classifier::Bayes> and manages a single
+long-lived admin session key so that proxy and UI modules can call
+classification, bucket, magnet, and stopword operations without tracking
+sessions themselves.
+
+The module acquires an admin session in C<start()> and releases it in
+C<stop()>.  Every public method delegates to the underlying Bayes engine,
+prepending the held session key.
+
+=cut
+
 field $classifier :writer(set_classifier) = undef;
     field $history :writer(set_history) = undef;
     field $session = '';
@@ -46,6 +63,15 @@ field $classifier :writer(set_classifier) = undef;
     }
 
 =head1 METHODS
+
+=head2 start()
+
+Acquires an admin session key from the Bayes classifier.  Returns 1 on
+success, 0 if the session key could not be obtained.
+
+=head2 stop()
+
+Releases the admin session key.
 
 =head2 Classification
 
