@@ -63,11 +63,11 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method initialize() {
-        $self->config('enabled', 1 );
-        $self->config('port',    0 );
+        $self->config('enabled', 1);
+        $self->config('port',    0);
 
-        $self->config('socks_server', '' );
-        $self->config('socks_port',   1080 );
+        $self->config('socks_server', '');
+        $self->config('socks_port',   1080);
 
         return 1;
     }
@@ -78,24 +78,24 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method start() {
-        $self->log_msg(1, "Opening listening socket on port " . $self->config('port') . '.' );
+        $self->log_msg(1, "Opening listening socket on port " . $self->config('port') . '.');
         $server = IO::Socket::INET->new(
             Proto => 'tcp',
-            ( $self->config('local' ) || 0 ) == 1 ? ( LocalAddr => 'localhost' ) : (),
-            LocalPort => $self->config('port' ),
+            ($self->config('local') || 0) == 1 ? (LocalAddr => 'localhost') : (),
+            LocalPort => $self->config('port'),
             Listen => SOMAXCONN,
-            Reuse => 1 );
+            Reuse => 1);
 
         my $name = $self->name();
 
-        if ( !defined( $server ) ) {
-            my $port = $self->config('port' );
-            $self->log_msg(0, "Couldn't start the $name proxy because POPFile could not bind to the listen port $port" );
+        if (!defined($server)) {
+            my $port = $self->config('port');
+            $self->log_msg(0, "Couldn't start the $name proxy because POPFile could not bind to the listen port $port");
             print STDERR "\nCouldn't start the $name proxy because POPFile could not bind to the\nlisten port $port. This could be because there is another service\nusing that port or because you do not have the right privileges on\nyour system (On Unix systems this can happen if you are not root\nand the port you specified is less than 1024).\n\n";
             return 0;
         }
 
-        $selector = IO::Select->new( $server );
+        $selector = IO::Select->new($server);
 
         return 1;
     }
@@ -106,7 +106,7 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method stop() {
-        close $server if ( defined( $server ) );
+        close $server if (defined($server));
     }
 
     # ----------------------------------------------------------------------------
@@ -115,27 +115,27 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method service() {
-        if ( ( defined( $selector->can_read(0) ) ) &&
-             ( $self->alive() ) ) {
-            if ( my $client = $server->accept() ) {
-                my ( $remote_port, $remote_host ) = sockaddr_in( $client->peername() );
+        if ((defined($selector->can_read(0))) &&
+             ($self->alive())) {
+            if (my $client = $server->accept()) {
+                my ($remote_port, $remote_host) = sockaddr_in($client->peername());
 
-                if ( ( ( $self->config('local' ) || 0 ) == 0 ) ||
-                       ( $remote_host eq inet_aton( "127.0.0.1" ) ) ) {
-                    binmode( $client );
+                if ((($self->config('local') || 0) == 0) ||
+                       ($remote_host eq inet_aton("127.0.0.1"))) {
+                    binmode($client);
 
-                    if ( $self->config('force_fork' ) ) {
-                        my ( $pid, $pipe ) = &{ $self->forker() };
+                    if ($self->config('force_fork')) {
+                        my ($pid, $pipe) = &{ $self->forker() };
 
-                        if ( !defined( $pid ) || ( $pid == 0 ) ) {
-                            $child->( $self, $client );
-                            if ( defined( $pid ) ) {
-                                &{ $self->setchildexit() }( 0 );
+                        if (!defined($pid) || ($pid == 0)) {
+                            $child->($self, $client);
+                            if (defined($pid)) {
+                                &{ $self->setchildexit() }(0);
                             }
                         }
                     } else {
                         pipe my $reader, my $writer;
-                        $child->( $self, $client );
+                        $child->($self, $client);
                         close $reader;
                     }
                 }
@@ -162,7 +162,7 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method tee ($socket, $text) {
-        $self->log_msg(1, $text );
+        $self->log_msg(1, $text);
         print $socket $text;
     }
 
@@ -172,18 +172,18 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method echo_to_regexp ($mail, $client, $regexp, $log = 0, $suppress = undef) {
-        while ( my $line = $self->slurp($mail ) ) {
-            if ( !defined($suppress) || !( $line =~ $suppress ) ) {
-                if ( !$log ) {
+        while (my $line = $self->slurp($mail)) {
+            if (!defined($suppress) || !($line =~ $suppress)) {
+                if (!$log) {
                     print $client $line;
                 } else {
-                    $self->tee($client, $line );
+                    $self->tee($client, $line);
                 }
             } else {
-                $self->log_msg(2, "Suppressed: $line" );
+                $self->log_msg(2, "Suppressed: $line");
             }
 
-            if ( $line =~ $regexp ) {
+            if ($line =~ $regexp) {
                 last;
             }
         }
@@ -195,7 +195,7 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method echo_to_dot ($mail, $client) {
-        $self->echo_to_regexp($mail, $client, qr/^\.(\r\n|\r|\n)$/ );
+        $self->echo_to_regexp($mail, $client, qr/^\.(\r\n|\r|\n)$/);
     }
 
     # ----------------------------------------------------------------------------
@@ -204,41 +204,41 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method get_response ($mail, $client, $command, $null_resp = 0, $suppress = 0) {
-        unless ( defined($mail) && $mail->connected ) {
-            $self->tee($client, "$connection_timeout_error$eol" );
-            return ( $connection_timeout_error, 0 );
+        unless (defined($mail) && $mail->connected) {
+            $self->tee($client, "$connection_timeout_error$eol");
+            return ($connection_timeout_error, 0);
         }
 
-        $self->tee($mail, $command . $eol );
+        $self->tee($mail, $command . $eol);
 
         my $response;
         my $can_read = 0;
 
-        if ( $mail =~ /ssl/i ) {
-            $can_read = ( $mail->pending() > 0 );
+        if ($mail =~ /ssl/i) {
+            $can_read = ($mail->pending() > 0);
         }
-        if ( !$can_read ) {
-            my $selector = IO::Select->new( $mail );
+        if (!$can_read) {
+            my $selector = IO::Select->new($mail);
             my ($ready) = $selector->can_read(
-                ( !$null_resp ? $self->global_config('timeout' ) : .5 ) );
-            $can_read = defined($ready) && ( $ready == $mail );
+                (!$null_resp ? $self->global_config('timeout') : .5));
+            $can_read = defined($ready) && ($ready == $mail);
         }
 
-        if ( $can_read ) {
-            $response = $self->slurp($mail );
+        if ($can_read) {
+            $response = $self->slurp($mail);
 
-            if ( $response ) {
-                $self->tee($client, $response ) if ( !$suppress );
-                return ( $response, 1 );
+            if ($response) {
+                $self->tee($client, $response) if (!$suppress);
+                return ($response, 1);
             }
         }
 
-        if ( !$null_resp ) {
-            $self->tee($client, "$connection_timeout_error$eol" );
-            return ( $connection_timeout_error, 0 );
+        if (!$null_resp) {
+            $self->tee($client, "$connection_timeout_error$eol");
+            return ($connection_timeout_error, 0);
         } else {
-            $self->tee($client, "" );
-            return ( "", 1 );
+            $self->tee($client, "");
+            return ("", 1);
         }
     }
 
@@ -248,10 +248,10 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method echo_response ($mail, $client, $command, $suppress = 0) {
-        my ( $response, $ok ) = $self->get_response($mail, $client, $command, 0, $suppress );
+        my ($response, $ok) = $self->get_response($mail, $client, $command, 0, $suppress);
 
-        if ( $ok == 1 ) {
-            if ( $response =~ /$good_response/ ) {
+        if ($ok == 1) {
+            if ($response =~ /$good_response/) {
                 return 0;
             } else {
                 return 1;
@@ -267,74 +267,74 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     #
     # ----------------------------------------------------------------------------
     method verify_connected ($mail, $client, $hostname, $port, $ssl = 0) {
-        return $mail if ( $mail && $mail->connected );
+        return $mail if ($mail && $mail->connected);
 
-        if ( $self->config('socks_server' ) ne '' ) {
+        if ($self->config('socks_server') ne '') {
             require IO::Socket::Socks;
             $self->log_msg(0, "Attempting to connect to socks server at "
-                        . $self->config('socks_server' ) . ":"
-                        . $self->config('socks_port' ) );
+                        . $self->config('socks_server') . ":"
+                        . $self->config('socks_port'));
 
             $mail = IO::Socket::Socks->new(
-                        ProxyAddr => $self->config('socks_server' ),
-                        ProxyPort => $self->config('socks_port' ),
+                        ProxyAddr => $self->config('socks_server'),
+                        ProxyPort => $self->config('socks_port'),
                         ConnectAddr => $hostname,
-                        ConnectPort => $port );
+                        ConnectPort => $port);
         } else {
-            if ( $ssl ) {
+            if ($ssl) {
                 eval { require IO::Socket::SSL; };
-                if ( $@ ) {
-                    $self->tee($client, "$ssl_not_supported_error$eol" );
+                if ($@) {
+                    $self->tee($client, "$ssl_not_supported_error$eol");
                     return undef;
                 }
 
-                $self->log_msg(0, "Attempting to connect to SSL server at $hostname:$port" );
+                $self->log_msg(0, "Attempting to connect to SSL server at $hostname:$port");
 
                 $mail = IO::Socket::SSL->new(
                             Proto => "tcp",
                             PeerAddr => $hostname,
                             PeerPort => $port,
-                            Timeout => $self->global_config('timeout' ),
-                            Domain => AF_INET );
+                            Timeout => $self->global_config('timeout'),
+                            Domain => AF_INET);
             } else {
-                $self->log_msg(0, "Attempting to connect to POP server at $hostname:$port" );
+                $self->log_msg(0, "Attempting to connect to POP server at $hostname:$port");
 
                 $mail = IO::Socket::INET->new(
                             Proto => "tcp",
                             PeerAddr => $hostname,
                             PeerPort => $port,
-                            Timeout => $self->global_config('timeout' ) );
+                            Timeout => $self->global_config('timeout'));
             }
         }
 
-        if ( $mail ) {
-            if ( $mail->connected ) {
-                $self->log_msg(0, "Connected to $hostname:$port timeout " . $self->global_config('timeout' ) );
+        if ($mail) {
+            if ($mail->connected) {
+                $self->log_msg(0, "Connected to $hostname:$port timeout " . $self->global_config('timeout'));
 
-                if ( !$ssl ) {
-                    binmode( $mail );
+                if (!$ssl) {
+                    binmode($mail);
                 }
 
-                if ( !$ssl || ( $mail->pending() == 0 ) ) {
-                    my $selector = IO::Select->new( $mail );
-                    last unless $selector->can_read( $self->global_config('timeout' ) );
+                if (!$ssl || ($mail->pending() == 0)) {
+                    my $selector = IO::Select->new($mail);
+                    last unless $selector->can_read($self->global_config('timeout'));
                 }
 
                 my $buf = '';
                 my $max_length = 8192;
-                my $n = sysread( $mail, $buf, $max_length, length $buf );
+                my $n = sysread($mail, $buf, $max_length, length $buf);
 
-                if ( !( $buf =~ /[\r\n]/ ) ) {
+                if (!($buf =~ /[\r\n]/)) {
                     my $hit_newline = 0;
                     my $temp_buf;
                     my $wait = 0;
 
-                    for my $i ( 0..( $self->global_config('timeout' ) * 100 ) ) {
-                        if ( !$hit_newline ) {
-                            $temp_buf = $self->flush_extra($mail, $client, 1 );
-                            $hit_newline = ( $temp_buf =~ /[\r\n]/ );
+                    for my $i (0..($self->global_config('timeout') * 100)) {
+                        if (!$hit_newline) {
+                            $temp_buf = $self->flush_extra($mail, $client, 1);
+                            $hit_newline = ($temp_buf =~ /[\r\n]/);
                             $buf        .= $temp_buf;
-                            if ( $wait && !length $temp_buf ) {
+                            if ($wait && !length $temp_buf) {
                                 select undef, undef, undef, 0.01;
                             }
                         } else {
@@ -343,25 +343,25 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
                     }
                 }
 
-                $self->log_msg(1, "Connection returned: $buf" );
+                $self->log_msg(1, "Connection returned: $buf");
 
-                if ( $buf eq '' ) {
+                if ($buf eq '') {
                     close $mail;
                     last;
                 }
 
                 $connect_banner = $buf;
 
-                for my $i ( 0..4 ) {
-                    $self->flush_extra($mail, $client, 1 );
+                for my $i (0..4) {
+                    $self->flush_extra($mail, $client, 1);
                 }
 
                 return $mail;
             }
         }
 
-        $self->log_msg(0, "IO::Socket::INET or IO::Socket::SSL gets an error: $@" );
-        $self->tee($client, "$connection_failed_error $hostname:$port$eol" );
+        $self->log_msg(0, "IO::Socket::INET or IO::Socket::SSL gets an error: $@");
+        $self->tee($client, "$connection_failed_error $hostname:$port$eol");
         return undef;
     }
 

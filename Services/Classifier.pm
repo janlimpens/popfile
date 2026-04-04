@@ -34,13 +34,13 @@ field $classifier :writer(set_classifier) = undef;
     }
 
     method start() {
-        $session = $classifier->get_session_key( 'admin', '' );
-        return defined( $session ) ? 1 : 0;
+        $session = $classifier->get_session_key('admin', '');
+        return defined($session) ? 1 : 0;
     }
 
     method stop() {
-        if ( $session ne '' ) {
-            $classifier->release_session_key( $session );
+        if ($session ne '') {
+            $classifier->release_session_key($session);
             $session = '';
         }
     }
@@ -55,12 +55,12 @@ Methods that classify or modify messages using the Bayes engine.
 
     method classify_message ($mail, $client, $nosave, $class, $slot, $echo, $crlf) {
         return $classifier->classify_and_modify(
-            $session, $mail, $client, $nosave, $class, $slot, $echo, $crlf );
+            $session, $mail, $client, $nosave, $class, $slot, $echo, $crlf);
     }
 
     # --- Classify only (no modification) ---
 
-    method classify ($file)     { $classifier->classify( $session, $file ) }
+    method classify ($file)     { $classifier->classify($session, $file) }
 
 =head2 Buckets
 
@@ -68,41 +68,41 @@ Methods to query and manage classification buckets.
 
 =cut
 
-    method get_buckets()          { $classifier->get_buckets( $session ) }
-    method get_all_buckets()      { $classifier->get_all_buckets( $session ) }
-    method get_pseudo_buckets()   { $classifier->get_pseudo_buckets( $session ) }
-    method is_bucket ($b)       { $classifier->is_bucket( $session, $b ) }
-    method is_pseudo_bucket ($b){ $classifier->is_pseudo_bucket( $session, $b ) }
-    method create_bucket ($b)   { $classifier->create_bucket( $session, $b ) }
-    method delete_bucket ($b)   { $classifier->delete_bucket( $session, $b ) }
-    method rename_bucket ($old, $new) { $classifier->rename_bucket( $session, $old, $new ) }
-    method clear_bucket ($b)    { $classifier->clear_bucket( $session, $b ) }
+    method get_buckets()          { $classifier->get_buckets($session) }
+    method get_all_buckets()      { $classifier->get_all_buckets($session) }
+    method get_pseudo_buckets()   { $classifier->get_pseudo_buckets($session) }
+    method is_bucket ($b)       { $classifier->is_bucket($session, $b) }
+    method is_pseudo_bucket ($b){ $classifier->is_pseudo_bucket($session, $b) }
+    method create_bucket ($b)   { $classifier->create_bucket($session, $b) }
+    method delete_bucket ($b)   { $classifier->delete_bucket($session, $b) }
+    method rename_bucket ($old, $new) { $classifier->rename_bucket($session, $old, $new) }
+    method clear_bucket ($b)    { $classifier->clear_bucket($session, $b) }
 
     # --- Bucket statistics ---
 
-    method get_bucket_word_count ($b)       { $classifier->get_bucket_word_count( $session, $b ) }
-    method get_bucket_unique_count ($b)     { $classifier->get_bucket_unique_count( $session, $b ) }
-    method get_word_count()                   { $classifier->get_word_count( $session ) }
-    method get_unique_word_count()            { $classifier->get_unique_word_count( $session ) }
-    method get_bucket_word_list ($b, $pfx)  { $classifier->get_bucket_word_list( $session, $b, $pfx ) }
-    method get_bucket_word_prefixes ($b)    { $classifier->get_bucket_word_prefixes( $session, $b ) }
-    method get_count_for_word ($b, $w)      { $classifier->get_count_for_word( $session, $b, $w ) }
+    method get_bucket_word_count ($b)       { $classifier->get_bucket_word_count($session, $b) }
+    method get_bucket_unique_count ($b)     { $classifier->get_bucket_unique_count($session, $b) }
+    method get_word_count()                   { $classifier->get_word_count($session) }
+    method get_unique_word_count()            { $classifier->get_unique_word_count($session) }
+    method get_bucket_word_list ($b, $pfx)  { $classifier->get_bucket_word_list($session, $b, $pfx) }
+    method get_bucket_word_prefixes ($b)    { $classifier->get_bucket_word_prefixes($session, $b) }
+    method get_count_for_word ($b, $w)      { $classifier->get_count_for_word($session, $b, $w) }
 
     # --- Bucket parameters / color ---
 
-    method get_bucket_parameter ($b, $p)        { $classifier->get_bucket_parameter( $session, $b, $p ) }
-    method set_bucket_parameter ($b, $p, $v)    { $classifier->set_bucket_parameter( $session, $b, $p, $v ) }
-    method get_bucket_color ($b)                { $classifier->get_bucket_color( $session, $b ) }
-    method set_bucket_color ($b, $c)            { $classifier->set_bucket_color( $session, $b, $c ) }
-    method get_color ($w)                       { $classifier->get_color( $session, $w ) }
-    method get_word_colors (@words)             { $classifier->get_word_colors( $session, @words ) }
-    method mangle_word ($w)                     { $classifier->parser()->mangle()->mangle( $w ) }
+    method get_bucket_parameter ($b, $p)        { $classifier->get_bucket_parameter($session, $b, $p) }
+    method set_bucket_parameter ($b, $p, $v)    { $classifier->set_bucket_parameter($session, $b, $p, $v) }
+    method get_bucket_color ($b)                { $classifier->get_bucket_color($session, $b) }
+    method set_bucket_color ($b, $c)            { $classifier->set_bucket_color($session, $b, $c) }
+    method get_color ($w)                       { $classifier->get_color($session, $w) }
+    method get_word_colors (@words)             { $classifier->get_word_colors($session, @words) }
+    method mangle_word ($w)                     { $classifier->parser()->mangle()->mangle($w) }
 
     # --- Training ---
 
-    method add_message_to_bucket ($b, $file)    { $classifier->add_message_to_bucket( $session, $b, $file ) }
-    method add_messages_to_bucket ($b, @files)  { $classifier->add_messages_to_bucket( $session, $b, @files ) }
-    method remove_message_from_bucket ($b, $f)  { $classifier->remove_message_from_bucket( $session, $b, $f ) }
+    method add_message_to_bucket ($b, $file)    { $classifier->add_message_to_bucket($session, $b, $file) }
+    method add_messages_to_bucket ($b, @files)  { $classifier->add_messages_to_bucket($session, $b, @files) }
+    method remove_message_from_bucket ($b, $f)  { $classifier->remove_message_from_bucket($session, $b, $f) }
 
 =head2 Magnets
 
@@ -110,14 +110,14 @@ Methods to query and manage magnets (forced-classification rules).
 
 =cut
 
-    method get_buckets_with_magnets()             { $classifier->get_buckets_with_magnets( $session ) }
-    method get_magnet_types()                     { $classifier->get_magnet_types( $session ) }
-    method get_magnet_types_in_bucket ($b)      { $classifier->get_magnet_types_in_bucket( $session, $b ) }
-    method get_magnets ($b, $t)                 { $classifier->get_magnets( $session, $b, $t ) }
-    method create_magnet ($b, $t, $text)        { $classifier->create_magnet( $session, $b, $t, $text ) }
-    method delete_magnet ($b, $t, $text)        { $classifier->delete_magnet( $session, $b, $t, $text ) }
-    method clear_magnets()                        { $classifier->clear_magnets( $session ) }
-    method magnet_count()                         { $classifier->magnet_count( $session ) }
+    method get_buckets_with_magnets()             { $classifier->get_buckets_with_magnets($session) }
+    method get_magnet_types()                     { $classifier->get_magnet_types($session) }
+    method get_magnet_types_in_bucket ($b)      { $classifier->get_magnet_types_in_bucket($session, $b) }
+    method get_magnets ($b, $t)                 { $classifier->get_magnets($session, $b, $t) }
+    method create_magnet ($b, $t, $text)        { $classifier->create_magnet($session, $b, $t, $text) }
+    method delete_magnet ($b, $t, $text)        { $classifier->delete_magnet($session, $b, $t, $text) }
+    method clear_magnets()                        { $classifier->clear_magnets($session) }
+    method magnet_count()                         { $classifier->magnet_count($session) }
 
 =head2 Stopwords
 
@@ -125,9 +125,9 @@ Methods to query and manage the stopword list.
 
 =cut
 
-    method get_stopword_list()    { $classifier->get_stopword_list( $session ) }
-    method add_stopword ($w)    { $classifier->add_stopword( $session, $w ) }
-    method remove_stopword ($w) { $classifier->remove_stopword( $session, $w ) }
+    method get_stopword_list()    { $classifier->get_stopword_list($session) }
+    method add_stopword ($w)    { $classifier->add_stopword($session, $w) }
+    method remove_stopword ($w) { $classifier->remove_stopword($session, $w) }
 
 =head2 Setters
 

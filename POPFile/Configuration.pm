@@ -75,33 +75,33 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
         # This is the location where we store the PID of POPFile in a file
         # called popfile.pid
 
-        $self->config('piddir', './' );
+        $self->config('piddir', './');
 
         # The default interval of checking pid file in seconds
         # To turn off checking, set this option to 0
 
-        $self->config('pidcheck_interval', 5 );
+        $self->config('pidcheck_interval', 5);
 
         # The default timeout in seconds for POP3 commands
 
-        $self->global_config('timeout', 60 );
+        $self->global_config('timeout', 60);
 
         # The default location for the message files
 
-        $self->global_config('msgdir', 'messages/' );
+        $self->global_config('msgdir', 'messages/');
 
         # The maximum number of characters to consider in a message during
         # classification, display or reclassification
 
-        $self->global_config('message_cutoff', 100000 );
+        $self->global_config('message_cutoff', 100000);
 
         # Checking for updates if off by default
 
-        $self->global_config('update_check', 0 );
+        $self->global_config('update_check', 0);
 
         # The last time we checked for an update using the local epoch
 
-        $self->global_config('last_update_check', 0 );
+        $self->global_config('last_update_check', 0);
 
         # Register for the TICKD message which is sent hourly by the
         # Logger module.   We use this to hourly save the configuration file
@@ -113,7 +113,7 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
         # disk unless a configuration parameter has been changed since the
         # last save.  (see parameter())
 
-        $self->mq_register('TICKD', $self );
+        $self->mq_register('TICKD', $self);
 
         return 1;
     }
@@ -133,7 +133,7 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
         # at the end means that we allow the piddir to be absolute and
         # outside the user sandbox
 
-        $pid_file = $self->get_user_path( $self->config('piddir' ) . 'popfile.pid', 0 );
+        $pid_file = $self->get_user_path($self->config('piddir') . 'popfile.pid', 0);
 
         if (defined($self->live_check())) {
             return 0;
@@ -160,13 +160,13 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     method service() {
         my $time = time;
 
-        if ( $self->config('pidcheck_interval' ) > 0 ) {
-            if ( $pid_check <= ( $time - $self->config('pidcheck_interval' ))) {
+        if ($self->config('pidcheck_interval') > 0) {
+            if ($pid_check <= ($time - $self->config('pidcheck_interval'))) {
                 $pid_check = $time;
 
-                if ( !$self->check_pid() ) {
+                if (!$self->check_pid()) {
                     $self->write_pid();
-                    $self->log_msg(0, "New POPFile instance detected and signalled" );
+                    $self->log_msg(0, "New POPFile instance detected and signalled");
                 }
             }
         }
@@ -195,7 +195,7 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     #
     # ----------------------------------------------------------------------------
     method deliver ($type, @message) {
-        if ( $type eq 'TICKD' ) {
+        if ($type eq 'TICKD') {
             $self->save_configuration();
         }
     }
@@ -209,9 +209,9 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     #
     # ----------------------------------------------------------------------------
     method live_check() {
-        if ( $self->check_pid() ) {
+        if ($self->check_pid()) {
             my $oldpid = $self->get_pid();
-            my $wait_time = $self->config('pidcheck_interval' ) * 2;
+            my $wait_time = $self->config('pidcheck_interval') * 2;
 
             my $error = "\n\nA copy of POPFile appears to be running.\n Attempting to signal the previous copy.\n Waiting $wait_time seconds for a reply.\n";
 
@@ -219,11 +219,11 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
 
             print STDERR $error;
 
-            select( undef, undef, undef, $wait_time );
+            select(undef, undef, undef, $wait_time);
 
             my $pid = $self->get_pid();
 
-            if ( defined($pid) ) {
+            if (defined($pid)) {
                 $error = "\n A copy of POPFile is running.\n It has signaled that it is alive with process ID: $pid\n";
                 print STDERR $error;
                 return $pid;
@@ -272,7 +272,7 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     #
     # ----------------------------------------------------------------------------
     method write_pid() {
-        if ( open my $pid_fh, '>', $pid_file ) {
+        if (open my $pid_fh, '>', $pid_file) {
             print $pid_fh "$$\n";
             close $pid_fh;
         }
@@ -286,7 +286,7 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     #
     # ----------------------------------------------------------------------------
     method delete_pid() {
-        unlink( $pid_file );
+        unlink($pid_file);
     }
 
     # ----------------------------------------------------------------------------
@@ -314,7 +314,7 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
         # --set bayes_param=value --set=-bayes_param=value
         # --set -bayes_param=value -- -bayes_param value
 
-        if ( !GetOptions( "set=s" => \@set_options ) ) {
+        if (!GetOptions("set=s" => \@set_options)) {
             return 0;
         }
 
@@ -327,13 +327,13 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
         for my $i (0..$#set_options) {
             $set_options[$i] =~ /-?(.+)=(.+)/;
 
-            if ( !defined( $1 ) ) {
+            if (!defined($1)) {
                 print STDERR "\nBad option: $set_options[$i]\n";
                 return 0;
             }
 
             push @options, ("-$1");
-            if ( defined( $2 ) ) {
+            if (defined($2)) {
                 push @options, ($2);
             }
         }
@@ -343,15 +343,15 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
         if (@options)  {
             my $i = 0;
 
-            while ( $i <= $#options )  {
+            while ($i <= $#options )  {
                 # A command line argument must start with a -
 
-                if ( $options[$i] =~ /^-(.+)$/ ) {
+                if ($options[$i] =~ /^-(.+)$/) {
                     my $parameter = $self->upgrade_parameter($1);
 
                     if (defined($configuration_parameters{$parameter})) {
-                        if ( $i < $#options ) {
-                            $self->parameter( $parameter, $options[$i+1] );
+                        if ($i < $#options ) {
+                            $self->parameter($parameter, $options[$i+1]);
                             $i += 2;
                         } else {
                             print STDERR "\nMissing argument for $options[$i]\n";
@@ -431,8 +431,8 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
 
                          html_update_check => 'GLOBAL_update_check',
                          html_last_update_check => 'GLOBAL_last_update_check',
-        );
-        if ( defined( $upgrades{$parameter} ) ) {
+);
+        if (defined($upgrades{$parameter})) {
             return $upgrades{$parameter};
         } else {
             return $parameter;
@@ -451,15 +451,15 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     method load_configuration() {
         $started = 1;
 
-        my $config_file = $self->get_user_path( 'popfile.cfg' );
+        my $config_file = $self->get_user_path('popfile.cfg');
 
-        if ( open my $config, '<', $config_file ) {
-            while ( <$config> ) {
+        if (open my $config, '<', $config_file) {
+            while (<$config>) {
                 s/(\015|\012)//g;
-                if ( /(\S+) (.+)?/ ) {
+                if (/(\S+) (.+)?/) {
                     my $parameter = $1;
                     my $value = $2;
-                    $value = '' if !defined( $value );
+                    $value = '' if !defined($value);
 
                     $parameter = $self->upgrade_parameter($parameter);
 
@@ -470,7 +470,7 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
                     # etc. which rely on knowing the language
 
                     if (defined($configuration_parameters{$parameter}) ||
-                        ( $parameter eq 'html_language' ) ) {
+                        ($parameter eq 'html_language')) {
                         $configuration_parameters{$parameter}{value} = $value;
                     } else {
                         $deprecated_parameters{$parameter} = $value;
@@ -480,8 +480,8 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
 
             close $config;
         } else {
-            if ( -e $config_file && !-r _ ) {
-                $self->log_msg(0, "Couldn't load from the configuration file $config_file" );
+            if (-e $config_file && !-r _) {
+                $self->log_msg(0, "Couldn't load from the configuration file $config_file");
             }
         }
 
@@ -497,18 +497,18 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     #
     # ----------------------------------------------------------------------------
     method save_configuration() {
-        if ( $save_needed == 0 ) {
+        if ($save_needed == 0) {
             return;
         }
 
-        my $config_file = $self->get_user_path( 'popfile.cfg' );
-        my $config_temp = $self->get_user_path( 'popfile.cfg.tmp' );
+        my $config_file = $self->get_user_path('popfile.cfg');
+        my $config_temp = $self->get_user_path('popfile.cfg.tmp');
 
-        if ( -e $config_file && !-w _ ) {
-            $self->log_msg(0, "Can't write to the configuration file $config_file" );
+        if (-e $config_file && !-w _) {
+            $self->log_msg(0, "Can't write to the configuration file $config_file");
         }
 
-        if ( open my $config, '>', $config_temp ) {
+        if (open my $config, '>', $config_temp) {
             $save_needed = 0;
 
             foreach my $key (sort keys %configuration_parameters) {
@@ -519,7 +519,7 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
 
             rename $config_temp, $config_file;
         } else {
-            $self->log_msg(0, "Couldn't open a temporary configuration file $config_temp" );
+            $self->log_msg(0, "Couldn't open a temporary configuration file $config_temp");
         }
     }
 
@@ -535,11 +535,11 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     #
     # ----------------------------------------------------------------------------
     method get_user_path ($path, $sandbox = undef) {
-        return $self->path_join( $popfile_user, $path, $sandbox );
+        return $self->path_join($popfile_user, $path, $sandbox);
     }
 
     method get_root_path ($path, $sandbox = undef) {
-        return $self->path_join( $popfile_root, $path, $sandbox );
+        return $self->path_join($popfile_root, $path, $sandbox);
     }
 
     # ----------------------------------------------------------------------------
@@ -555,11 +555,11 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     #
     # ----------------------------------------------------------------------------
     method path_join ($left, $right, $sandbox = undef) {
-        $sandbox = 1 if ( !defined( $sandbox ) );
+        $sandbox = 1 if (!defined($sandbox));
 
-        if ( ( $right =~ /^\// ) ||
-             ( $right =~ /^[A-Za-z]:[\/\\]/ ) ||
-             ( $right =~ /\\\\/ ) ) {
+        if (($right =~ /^\//) ||
+             ($right =~ /^[A-Za-z]:[\/\\]/) ||
+             ($right =~ /\\\\/ ) ) {
             if ( $sandbox ) {
                 $self->log_msg(0, "Attempt to access path $right outside sandbox" );
                 return undef;
@@ -568,8 +568,8 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
             }
         }
 
-        if ( $sandbox && ( $right =~ /\.\./ ) ) {
-            $self->log_msg(0, "Attempt to access path $right outside sandbox" );
+        if ( $sandbox && ( $right =~ /\.\./)) {
+            $self->log_msg(0, "Attempt to access path $right outside sandbox");
             return undef;
         }
 
@@ -592,17 +592,17 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     #
     # ----------------------------------------------------------------------------
     method parameter ($name, $value = undef) {
-        if ( defined( $value ) ) {
+        if (defined($value)) {
             $save_needed = 1;
             $configuration_parameters{$name}{value} = $value;
-            if ( $started == 0 ) {
+            if ($started == 0) {
                 $configuration_parameters{$name}{default} = $value;
             }
         }
 
         # If $configuration_parameters{$name} is undefined, simply
         # return undef to avoid auto-vivifying it.
-        if ( defined($configuration_parameters{$name}) ) {
+        if (defined($configuration_parameters{$name})) {
             return $configuration_parameters{$name}{value};
         } else {
             return undef;
@@ -621,8 +621,8 @@ class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by
     #
     # ----------------------------------------------------------------------------
     method is_default ($name) {
-        return ( $configuration_parameters{$name}{value} eq
-                 $configuration_parameters{$name}{default} );
+        return ($configuration_parameters{$name}{value} eq
+                 $configuration_parameters{$name}{default});
     }
 
     # GETTERS / SETTERS

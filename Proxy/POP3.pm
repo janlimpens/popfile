@@ -43,11 +43,11 @@ field $use_apop = 0;
     field $apop_banner = undef;
 
     BUILD {
-        $self->set_name( 'pop3' );
-        $self->set_child( \&child__ );
-        $self->set_connection_timeout_error( '-ERR no response from mail server' );
-        $self->set_connection_failed_error(  '-ERR can\'t connect to' );
-        $self->set_good_response( '^\+OK' );
+        $self->set_name('pop3');
+        $self->set_child(\&child__);
+        $self->set_connection_timeout_error('-ERR no response from mail server');
+        $self->set_connection_failed_error('-ERR can\'t connect to');
+        $self->set_good_response('^\+OK');
     }
 
     # ----------------------------------------------------------------------------
@@ -56,16 +56,16 @@ field $use_apop = 0;
     #
     # ----------------------------------------------------------------------------
     method initialize() {
-        $self->config('enabled', 1 );
-        $self->config('force_fork', 1 );
-        $self->config('port', 1110 );
-        $self->config('secure_server', '' );
-        $self->config('secure_port', 995 );
-        $self->config('local', 1 );
-        $self->config('toptoo', 0 );
-        $self->config('separator', ':' );
+        $self->config('enabled', 1);
+        $self->config('force_fork', 1);
+        $self->config('port', 1110);
+        $self->config('secure_server', '');
+        $self->config('secure_port', 995);
+        $self->config('local', 1);
+        $self->config('toptoo', 0);
+        $self->config('separator', ':');
         $self->config('welcome_string',
-            "POP3 POPFile ($self->version()) server ready" );
+            "POP3 POPFile ($self->version()) server ready");
 
         return $self->SUPER::initialize();
     }
@@ -76,14 +76,14 @@ field $use_apop = 0;
     #
     # ----------------------------------------------------------------------------
     method start() {
-        if ( $self->config('enabled' ) == 0 ) {
+        if ($self->config('enabled') == 0) {
             return 2;
         }
 
-        if ( $self->config('welcome_string' ) =~
-             /^POP3 POPFile \(v\d+\.\d+\.\d+\) server ready$/ ) {
+        if ($self->config('welcome_string') =~
+             /^POP3 POPFile \(v\d+\.\d+\.\d+\) server ready$/) {
             $self->config('welcome_string',
-                            "POP3 POPFile ($self->version()) server ready" );
+                            "POP3 POPFile ($self->version()) server ready");
         }
 
         return $self->SUPER::start();
@@ -108,68 +108,68 @@ field $use_apop = 0;
         $use_apop = 0;
         $apop_user = '';
 
-        $self->tee($client, "+OK " . $self->config('welcome_string' ) . "$eol" );
+        $self->tee($client, "+OK " . $self->config('welcome_string') . "$eol");
 
-        my $s = $self->config('separator' );
+        my $s = $self->config('separator');
         $s =~ s/(\$|\@|\[|\]|\(|\)|\||\?|\*|\.|\^|\+)/\\$1/;
 
         my $transparent = "^USER ([^$s]+)\$";
         my $user_command = "USER ([^$s]+)($s(\\d{1,5}))?$s([^$s]+)($s([^$s]+))?";
         my $apop_command = "APOP ([^$s]+)($s(\\d{1,5}))?$s([^$s]+) (.*?)";
 
-        $self->log_msg(2, "Regexps: $transparent, $user_command, $apop_command" );
+        $self->log_msg(2, "Regexps: $transparent, $user_command, $apop_command");
 
-        while ( <$client> ) {
+        while (<$client>) {
             my $command = $_;
             $command =~ s/(\015|\012)//g;
-            $self->log_msg(2, "Command: --$command--" );
+            $self->log_msg(2, "Command: --$command--");
 
-            if ( $command =~ /$transparent/i ) {
-                if ( $self->config('secure_server' ) ne '' ) {
-                    if ( $mail = $self->verify_connected($mail, $client,
-                            $self->config('secure_server' ),
-                            $self->config('secure_port' ) ) ) {
-                        last if ( $self->echo_response($mail, $client, $command ) == 2 );
+            if ($command =~ /$transparent/i) {
+                if ($self->config('secure_server') ne '') {
+                    if ($mail = $self->verify_connected($mail, $client,
+                            $self->config('secure_server'),
+                            $self->config('secure_port'))) {
+                        last if ($self->echo_response($mail, $client, $command) == 2);
                     } else {
                         next;
                     }
                 } else {
                     $self->tee($client,
-                        "-ERR Transparent proxying not configured: set secure server/port ( command you sent: '$command' )$eol" );
+                        "-ERR Transparent proxying not configured: set secure server/port ( command you sent: '$command' )$eol");
                 }
                 next;
             }
 
-            if ( $command =~ /$user_command/i ) {
-                if ( $1 ne '' ) {
-                    my ( $host, $port, $user, $options ) = ( $1, $3, $4, $6 );
+            if ($command =~ /$user_command/i) {
+                if ($1 ne '') {
+                    my ($host, $port, $user, $options) = ($1, $3, $4, $6);
 
-                    $self->mq_post('LOGIN', $user );
+                    $self->mq_post('LOGIN', $user);
 
-                    my $ssl = defined($options) && ( $options =~ /ssl/i );
-                    $port = $ssl ? 995 : 110 if ( !defined($port) );
+                    my $ssl = defined($options) && ($options =~ /ssl/i);
+                    $port = $ssl ? 995 : 110 if (!defined($port));
 
-                    if ( $mail = $self->verify_connected($mail, $client, $host, $port, $ssl ) ) {
-                        if ( defined($options) && ( $options =~ /apop/i ) ) {
+                    if ($mail = $self->verify_connected($mail, $client, $host, $port, $ssl)) {
+                        if (defined($options) && ($options =~ /apop/i)) {
                             $apop_banner = $1
                                 if $self->connect_banner() =~ /(<[^>]+>)/;
-                            $self->log_msg(2, "banner=" . $apop_banner )
-                                if defined( $apop_banner );
+                            $self->log_msg(2, "banner=" . $apop_banner)
+                                if defined($apop_banner);
 
-                            if ( defined( $apop_banner ) ) {
+                            if (defined($apop_banner)) {
                                 $use_apop = 1;
                                 $apop_user = $user;
-                                $self->tee($client, "+OK hello $user$eol" );
+                                $self->tee($client, "+OK hello $user$eol");
                                 next;
                             } else {
                                 $use_apop = 0;
                                 $self->tee($client,
-                                    "-ERR $host doesn't support APOP, aborting authentication$eol" );
+                                    "-ERR $host doesn't support APOP, aborting authentication$eol");
                                 next;
                             }
                         } else {
                             $use_apop = 0;
-                            last if ( $self->echo_response($mail, $client, 'USER ' . $user ) == 2 );
+                            last if ($self->echo_response($mail, $client, 'USER ' . $user) == 2);
                         }
                     } else {
                         next;
@@ -178,105 +178,105 @@ field $use_apop = 0;
                 next;
             }
 
-            if ( $command =~ /PASS (.*)/i ) {
-                if ( $use_apop ) {
+            if ($command =~ /PASS (.*)/i) {
+                if ($use_apop) {
                     my $md5 = Digest::MD5->new;
-                    $md5->add( $apop_banner, $1 );
+                    $md5->add($apop_banner, $1);
                     my $md5hex = $md5->hexdigest;
-                    $self->log_msg(2, "digest='$md5hex'" );
+                    $self->log_msg(2, "digest='$md5hex'");
 
-                    my ( $response, $ok ) = $self->get_response($mail, $client,
-                        "APOP $apop_user $md5hex", 0, 1 );
-                    if ( ( $ok == 1 ) && ( $response =~ /$self->good_response()/ ) ) {
-                        $self->tee($client, "+OK password ok$eol" );
+                    my ($response, $ok) = $self->get_response($mail, $client,
+                        "APOP $apop_user $md5hex", 0, 1);
+                    if (($ok == 1) && ($response =~ /$self->good_response()/)) {
+                        $self->tee($client, "+OK password ok$eol");
                     } else {
-                        $self->tee($client, $response );
+                        $self->tee($client, $response);
                     }
                 } else {
-                    last if ( $self->echo_response($mail, $client, $command ) == 2 );
+                    last if ($self->echo_response($mail, $client, $command) == 2);
                 }
                 next;
             }
 
-            if ( $command =~ /$apop_command/io ) {
+            if ($command =~ /$apop_command/io) {
                 $self->tee($client,
-                    "-ERR APOP not supported between mail client and POPFile.$eol" );
+                    "-ERR APOP not supported between mail client and POPFile.$eol");
                 next;
             }
 
-            if ( $command =~ /AUTH ([^ ]+)/i ) {
-                if ( $self->config('secure_server' ) ne '' ) {
-                    if ( $mail = $self->verify_connected($mail, $client,
-                            $self->config('secure_server' ),
-                            $self->config('secure_port' ) ) ) {
-                        my ( $response, $ok ) = $self->get_response($mail, $client, $command );
-                        while ( ( !( $response =~ /\+OK/ ) ) && ( !( $response =~ /-ERR/ ) ) ) {
+            if ($command =~ /AUTH ([^ ]+)/i) {
+                if ($self->config('secure_server') ne '') {
+                    if ($mail = $self->verify_connected($mail, $client,
+                            $self->config('secure_server'),
+                            $self->config('secure_port'))) {
+                        my ($response, $ok) = $self->get_response($mail, $client, $command);
+                        while ((!($response =~ /\+OK/)) && (!($response =~ /-ERR/))) {
                             my $auth = <$client>;
                             $auth =~ s/(\015|\012)$//g;
-                            ( $response, $ok ) = $self->get_response($mail, $client, $auth );
+                            ($response, $ok) = $self->get_response($mail, $client, $auth);
                         }
                     } else {
                         next;
                     }
                 } else {
-                    $self->tee($client, "-ERR No secure server specified$eol" );
+                    $self->tee($client, "-ERR No secure server specified$eol");
                 }
                 next;
             }
 
-            if ( $command =~ /AUTH/i ) {
-                if ( $self->config('secure_server' ) ne '' ) {
-                    if ( $mail = $self->verify_connected($mail, $client,
-                            $self->config('secure_server' ),
-                            $self->config('secure_port' ) ) ) {
-                        my $response = $self->echo_response($mail, $client, "AUTH" );
-                        last if ( $response == 2 );
-                        if ( $response == 0 ) {
-                            $self->echo_to_dot($mail, $client );
+            if ($command =~ /AUTH/i) {
+                if ($self->config('secure_server') ne '') {
+                    if ($mail = $self->verify_connected($mail, $client,
+                            $self->config('secure_server'),
+                            $self->config('secure_port'))) {
+                        my $response = $self->echo_response($mail, $client, "AUTH");
+                        last if ($response == 2);
+                        if ($response == 0) {
+                            $self->echo_to_dot($mail, $client);
                         }
                     } else {
                         next;
                     }
                 } else {
-                    $self->tee($client, "-ERR No secure server specified$eol" );
+                    $self->tee($client, "-ERR No secure server specified$eol");
                 }
                 next;
             }
 
-            if ( ( $command =~ /LIST ?(.*)?/i ) ||
-                 ( $command =~ /UIDL ?(.*)?/i ) ) {
-                my $response = $self->echo_response($mail, $client, $command );
-                last if ( $response == 2 );
-                if ( $response == 0 ) {
-                    $self->echo_to_dot($mail, $client ) if ( $1 eq '' );
+            if (($command =~ /LIST ?(.*)?/i) ||
+                 ($command =~ /UIDL ?(.*)?/i)) {
+                my $response = $self->echo_response($mail, $client, $command);
+                last if ($response == 2);
+                if ($response == 0) {
+                    $self->echo_to_dot($mail, $client) if ($1 eq '');
                 }
                 next;
             }
 
-            if ( $command =~ /TOP (.*) (.*)/i ) {
+            if ($command =~ /TOP (.*) (.*)/i) {
                 my $count = $1;
-                if ( $2 ne '99999999' ) {
-                    if ( $self->config('toptoo' ) == 1 ) {
-                        my $response = $self->echo_response($mail, $client, "RETR $count" );
-                        last if ( $response == 2 );
-                        if ( $response == 0 ) {
-                            my ( $class, $slot ) = $self->set_service()->classify_message(
-                                $mail, $client, 0, '', 0, 0, $eol );
+                if ($2 ne '99999999') {
+                    if ($self->config('toptoo') == 1) {
+                        my $response = $self->echo_response($mail, $client, "RETR $count");
+                        last if ($response == 2);
+                        if ($response == 0) {
+                            my ($class, $slot) = $self->set_service()->classify_message(
+                                $mail, $client, 0, '', 0, 0, $eol);
                             $downloaded{$count}{slot} = $slot;
                             $downloaded{$count}{class} = $class;
 
-                            $response = $self->echo_response($mail, $client, $command, 1 );
-                            last if ( $response == 2 );
-                            if ( $response == 0 ) {
+                            $response = $self->echo_response($mail, $client, $command, 1);
+                            last if ($response == 2);
+                            if ($response == 0) {
                                 $self->set_service()->classify_message(
-                                    $mail, $client, 1, $class, $slot, 1, $eol );
+                                    $mail, $client, 1, $class, $slot, 1, $eol);
                             }
                         }
                     } else {
-                        my $response = $self->echo_response($mail, $client, $command );
-                        last if ( $response == 2 );
-                        if ( $response == 0 ) {
-                            $self->echo_to_dot($mail, $client );
+                        my $response = $self->echo_response($mail, $client, $command);
+                        last if ($response == 2);
+                        if ($response == 0) {
+                            $self->echo_to_dot($mail, $client);
                         }
                     }
                     next;
@@ -284,67 +284,67 @@ field $use_apop = 0;
                 # fall through: TOP x 99999999 treated as RETR
             }
 
-            if ( $command =~ /CAPA/i ) {
-                if ( $mail || $self->config('secure_server' ) ne '' ) {
-                    if ( $mail || ( $mail = $self->verify_connected($mail, $client,
-                                       $self->config('secure_server' ),
-                                       $self->config('secure_port' ) ) ) ) {
-                        my $response = $self->echo_response($mail, $client, "CAPA" );
-                        last if ( $response == 2 );
-                        if ( $response == 0 ) {
-                            $self->echo_to_dot($mail, $client );
+            if ($command =~ /CAPA/i) {
+                if ($mail || $self->config('secure_server') ne '') {
+                    if ($mail || ($mail = $self->verify_connected($mail, $client,
+                                       $self->config('secure_server'),
+                                       $self->config('secure_port')))) {
+                        my $response = $self->echo_response($mail, $client, "CAPA");
+                        last if ($response == 2);
+                        if ($response == 0) {
+                            $self->echo_to_dot($mail, $client);
                         }
                     } else {
                         next;
                     }
                 } else {
-                    $self->tee($client, "-ERR No secure server specified$eol" );
+                    $self->tee($client, "-ERR No secure server specified$eol");
                 }
                 next;
             }
 
-            if ( $command =~ /HELO/i ) {
-                $self->tee($client, "+OK HELO POPFile Server Ready$eol" );
+            if ($command =~ /HELO/i) {
+                $self->tee($client, "+OK HELO POPFile Server Ready$eol");
                 next;
             }
 
-            if ( ( $command =~ /NOOP/i )         ||
-                 ( $command =~ /STAT/i )          ||
-                 ( $command =~ /XSENDER (.*)/i )  ||
-                 ( $command =~ /DELE (.*)/i )     ||
-                 ( $command =~ /RSET/i ) ) {
-                last if ( $self->echo_response($mail, $client, $command ) == 2 );
+            if (($command =~ /NOOP/i)         ||
+                 ($command =~ /STAT/i)          ||
+                 ($command =~ /XSENDER (.*)/i)  ||
+                 ($command =~ /DELE (.*)/i)     ||
+                 ($command =~ /RSET/i)) {
+                last if ($self->echo_response($mail, $client, $command) == 2);
                 next;
             }
 
-            if ( ( $command =~ /RETR (.*)/i ) || ( $command =~ /TOP (.*) 99999999/i ) ) {
+            if (($command =~ /RETR (.*)/i) || ($command =~ /TOP (.*) 99999999/i)) {
                 my $count = $1;
                 my $class;
 
                 my $history = $self->set_service()->history_obj();
                 my $file;
 
-                if ( defined( $downloaded{$count} ) &&
-                     ( $file = $history->get_slot_file( $downloaded{$count}{slot} ) ) &&
-                     ( open my $retrfile, '<', $file ) ) {
+                if (defined($downloaded{$count}) &&
+                     ($file = $history->get_slot_file($downloaded{$count}{slot})) &&
+                     (open my $retrfile, '<', $file)) {
                     binmode $retrfile;
-                    $self->log_msg(1, "Printing message from cache" );
+                    $self->log_msg(1, "Printing message from cache");
                     $self->tee($client,
-                        "+OK " . ( -s $file ) . " bytes from POPFile cache$eol" );
+                        "+OK " . (-s $file) . " bytes from POPFile cache$eol");
 
-                    ( $class, undef ) = $self->set_service()->classify_message(
+                    ($class, undef) = $self->set_service()->classify_message(
                         $retrfile, $client, 1,
                         $downloaded{$count}{class},
-                        $downloaded{$count}{slot}, undef, $eol );
+                        $downloaded{$count}{slot}, undef, $eol);
                     print $client ".$eol";
                     close $retrfile;
                 } else {
-                    my $response = $self->echo_response($mail, $client, $command );
-                    last if ( $response == 2 );
-                    if ( $response == 0 ) {
+                    my $response = $self->echo_response($mail, $client, $command);
+                    last if ($response == 2);
+                    if ($response == 0) {
                         my $slot;
-                        ( $class, $slot ) = $self->set_service()->classify_message(
-                            $mail, $client, 0, '', 0, undef, $eol );
+                        ($class, $slot) = $self->set_service()->classify_message(
+                            $mail, $client, 0, '', 0, undef, $eol);
                         $downloaded{$count}{slot} = $slot;
                         $downloaded{$count}{class} = $class;
                     }
@@ -352,33 +352,33 @@ field $use_apop = 0;
                 next;
             }
 
-            if ( $command =~ /QUIT/i ) {
-                if ( $mail ) {
-                    last if ( $self->echo_response($mail, $client, $command ) == 2 );
+            if ($command =~ /QUIT/i) {
+                if ($mail) {
+                    last if ($self->echo_response($mail, $client, $command) == 2);
                     close $mail;
                 } else {
-                    $self->tee($client, "+OK goodbye$eol" );
+                    $self->tee($client, "+OK goodbye$eol");
                 }
                 last;
             }
 
-            if ( $mail && $mail->connected ) {
-                last if ( $self->echo_response($mail, $client, $command ) == 2 );
+            if ($mail && $mail->connected) {
+                last if ($self->echo_response($mail, $client, $command) == 2);
                 next;
             } else {
-                $self->tee($client, "-ERR unknown command or bad syntax$eol" );
+                $self->tee($client, "-ERR unknown command or bad syntax$eol");
                 next;
             }
         }
 
-        if ( defined($mail) ) {
-            $self->done_slurp($mail );
+        if (defined($mail)) {
+            $self->done_slurp($mail);
             close $mail;
         }
 
         close $client;
-        $self->mq_post('CMPLT', $$ );
-        $self->log_msg(0, "POP3 proxy done" );
+        $self->mq_post('CMPLT', $$);
+        $self->log_msg(0, "POP3 proxy done");
     }
 
 

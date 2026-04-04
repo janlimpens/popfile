@@ -33,8 +33,8 @@ use POPFile::Role::SQL;
 use Query::Builder;
 
 use Date::Parse;
-use Digest::MD5 qw( md5_hex );
-use File::Path qw( make_path );
+use Digest::MD5 qw(md5_hex);
+use File::Path qw(make_path);
 
 my $fields_slot ='history.id, hdr_from, hdr_to, hdr_cc, hdr_subject, hdr_date, hash, inserted,
  buckets.name, usedtobe, history.bucketid, magnets.val, size';
@@ -77,17 +77,17 @@ Returns 1 on success.
 method initialize() {
     # Keep the history for two days
 
-    $self->config('history_days', 2 );
+    $self->config('history_days', 2);
 
     # If 1, Messages are saved to an archive when they are removed or expired
     # from the history cache
 
-    $self->config('archive', 0 );
+    $self->config('archive', 0);
 
     # The directory where messages will be archived to, in sub-directories for
     # each bucket
 
-    $self->config('archive_dir', 'archive' );
+    $self->config('archive_dir', 'archive');
 
     # This is an advanced setting which will save archived files to a
     # randomly numbered sub-directory, if set to greater than zero, otherwise
@@ -95,13 +95,13 @@ method initialize() {
     #
     # 0 <= directory name < archive_classes
 
-    $self->config('archive_classes', 0 );
+    $self->config('archive_classes', 0);
 
     # Need TICKD message for history clean up, COMIT when a message
     # is committed to the history
 
-    $self->mq_register('TICKD', $self );
-    $self->mq_register('COMIT', $self );
+    $self->mq_register('TICKD', $self);
+    $self->mq_register('COMIT', $self);
 
     return 1;
 }
@@ -146,7 +146,7 @@ Returns 1.
 =cut
 
 method service() {
-    if ( $firsttime ) {
+    if ($firsttime) {
         $self->upgrade_history_files();
         $firsttime = 0;
     }
@@ -173,12 +173,12 @@ There is no return value from this method.
 method deliver ($type, @message) {
     # If a day has passed then clean up the history
 
-    if ( $type eq 'TICKD' ) {
+    if ($type eq 'TICKD') {
         $self->cleanup_history();
     }
 
-    if ( $type eq 'COMIT' ) {
-        push ( @{$commit_list}, \@message );
+    if ($type eq 'COMIT') {
+        push (@{$commit_list}, \@message);
     }
 }
 
@@ -245,37 +245,37 @@ the caller specify the insertion timestamp (defaults to C<time()>).
 method reserve_slot ($inserted_time = undef) {
     $inserted_time //= time;
 
-    my $insert_sth = $self->db()->prepare( $self->normalize_sql(
+    my $insert_sth = $self->db()->prepare($self->normalize_sql(
         'INSERT INTO history ( userid, committed, inserted )
-         VALUES ( ?, ?, ? )' ) );
-    my $is_sqlite2 = ( $self->db()->{Driver}->{Name} =~ /SQLite2?/ ) &&
-                     ( $self->db()->{sqlite_version} =~ /^2\./ );
+         VALUES ( ?, ?, ? )'));
+    my $is_sqlite2 = ($self->db()->{Driver}->{Name} =~ /SQLite2?/) &&
+                     ($self->db()->{sqlite_version} =~ /^2\./);
     my $slot;
 
-    while ( !defined($slot) || $slot == 0 ) {
-        my $r = int(rand( 1000000000 )+2);
+    while (!defined($slot) || $slot == 0) {
+        my $r = int(rand(1000000000)+2);
 
-        $self->log_msg(2, "reserve_slot selected random number $r" );
+        $self->log_msg(2, "reserve_slot selected random number $r");
 
         # Get the date/time now which will be stored in the database
         # so that we can sort on the Date: header in the message and
         # when we received it
 
-        my $result = $insert_sth->execute( 1, $r, $inserted_time );
-        next if ( !defined( $result ) );
+        my $result = $insert_sth->execute(1, $r, $inserted_time);
+        next if (!defined($result));
 
-        if ( $is_sqlite2 ) {
-            $slot = $self->db()->func( 'last_insert_rowid' );
+        if ($is_sqlite2) {
+            $slot = $self->db()->func('last_insert_rowid');
         } else {
-            $slot = $self->db()->last_insert_id( undef, undef, 'history', 'id' );
+            $slot = $self->db()->last_insert_id(undef, undef, 'history', 'id');
         }
     }
 
     $insert_sth->finish;
 
-    $self->log_msg(2, "reserve_slot returning slot id $slot" );
+    $self->log_msg(2, "reserve_slot returning slot id $slot");
 
-    return ( $slot, $self->get_slot_file( $slot ) );
+    return ($slot, $self->get_slot_file($slot));
 }
 
 =head2 release_slot
@@ -291,12 +291,12 @@ method release_slot ($slot) {
     # Remove the entry from the database and delete the file
     # if present
 
-    my $delete = $self->normalize_sql( 'DELETE FROM history WHERE history.id = ?' );
+    my $delete = $self->normalize_sql('DELETE FROM history WHERE history.id = ?');
 
-    my $h = $self->db()->prepare( $delete );
-    $h->execute( $slot );
+    my $h = $self->db()->prepare($delete);
+    $h->execute($slot);
 
-    my $file = $self->get_slot_file( $slot );
+    my $file = $self->get_slot_file($slot);
 
     unlink $file;
 
@@ -309,8 +309,8 @@ method release_slot ($slot) {
 
     my $depth = 3;
 
-    while ( $depth > 0 ) {
-        if ( rmdir( $directory ) ) {
+    while ($depth > 0) {
+        if (rmdir($directory)) {
             $directory =~ s![a-f0-9]{2}/$!!i;
             $depth--;
         }
@@ -338,7 +338,7 @@ is the magnet used (or C<undef>).
 =cut
 
 method commit_slot ($session, $slot, $bucket, $magnet) {
-    $self->mq_post('COMIT', $session, $slot, $bucket, $magnet );
+    $self->mq_post('COMIT', $session, $slot, $bucket, $magnet);
 }
 
 #----------------------------------------------------------------------------
@@ -355,23 +355,23 @@ method commit_slot ($session, $slot, $bucket, $magnet) {
 #
 #----------------------------------------------------------------------------
 method change_slot_classification ($slot, $class, $session, $undo) {
-    $self->log_msg(0, "Change slot classification of $slot to $class" );
+    $self->log_msg(0, "Change slot classification of $slot to $class");
 
     # Get the bucket ID associated with the new classification
     # then retrieve the current classification for this slot
     # and update the database
 
-    my $bucketid = $classifier->get_bucket_id( $session, $class );
+    my $bucketid = $classifier->get_bucket_id($session, $class);
     my $oldbucketid = 0;
-    if ( !$undo ) {
-        my @fields = $self->get_slot_fields( $slot );
+    if (!$undo) {
+        my @fields = $self->get_slot_fields($slot);
         $oldbucketid = $fields[10];
     }
 
-    my $h = $self->db()->prepare( $self->normalize_sql(
+    my $h = $self->db()->prepare($self->normalize_sql(
         'UPDATE history SET bucketid = ?, usedtobe = ?
-         WHERE id = ?' ) );
-    $h->execute( $bucketid, $oldbucketid, $slot );
+         WHERE id = ?'));
+    $h->execute($bucketid, $oldbucketid, $slot);
     $self->force_requery();
 }
 
@@ -386,13 +386,13 @@ method change_slot_classification ($slot, $class, $session, $undo) {
 #
 #----------------------------------------------------------------------------
 method revert_slot_classification ($slot) {
-    my @fields = $self->get_slot_fields( $slot );
+    my @fields = $self->get_slot_fields($slot);
     my $oldbucketid = $fields[9];
 
-    my $h = $self->db()->prepare( $self->normalize_sql(
+    my $h = $self->db()->prepare($self->normalize_sql(
         'UPDATE history SET bucketid = ?, usedtobe = ?
-         WHERE id = ?' ) );
-    $h->execute( $oldbucketid, 0, $slot );
+         WHERE id = ?'));
+    $h->execute($oldbucketid, 0, $slot);
     $self->force_requery();
 }
 
@@ -407,15 +407,15 @@ method revert_slot_classification ($slot) {
 #
 #----------------------------------------------------------------------------
 method get_slot_fields ($slot) {
-    return undef if ( !defined( $slot ) || $slot !~ /^\d+$/ );
+    return undef if (!defined($slot) || $slot !~ /^\d+$/);
 
-    my $h = $self->db()->prepare( $self->normalize_sql(
+    my $h = $self->db()->prepare($self->normalize_sql(
         "SELECT $fields_slot FROM history, buckets, magnets
          WHERE history.id = ?
            AND buckets.id = history.bucketid
            AND magnets.id = magnetid
-           AND history.committed = 1" ) );
-    $h->execute( $slot );
+           AND history.committed = 1"));
+    $h->execute($slot);
     my @result = $h->fetchrow_array;
     return @result;
 }
@@ -430,16 +430,16 @@ method get_slot_fields ($slot) {
 #
 #----------------------------------------------------------------------------
 method is_valid_slot ($slot) {
-    return undef if ( !defined( $slot ) || $slot !~ /^\d+$/ );
+    return undef if (!defined($slot) || $slot !~ /^\d+$/);
 
-    my $h = $self->db()->prepare( $self->normalize_sql(
+    my $h = $self->db()->prepare($self->normalize_sql(
         'SELECT id FROM history
          WHERE history.id = ?
-           AND history.committed = 1' ) );
-    $h->execute( $slot );
+           AND history.committed = 1'));
+    $h->execute($slot);
     my @row = $h->fetchrow_array;
 
-    return ( ( @row ) && ( $row[0] == $slot ) );
+    return ((@row) && ($row[0] == $slot));
 }
 
 #----------------------------------------------------------------------------
@@ -455,7 +455,7 @@ method commit_history() {
         return;
     }
 
-    my $update_history = $self->db()->prepare( $self->normalize_sql(
+    my $update_history = $self->db()->prepare($self->normalize_sql(
         'UPDATE history SET
              hdr_from = ?,
              hdr_to = ?,
@@ -471,12 +471,12 @@ method commit_history() {
              magnetid = ?,
              hash = ?,
              size = ?
-         WHERE id = ?' ) );
+         WHERE id = ?'));
     $self->db()->begin_work;
     for my $entry (@{$commit_list}) {
-        my ( $session, $slot, $bucket, $magnet ) = @{$entry};
+        my ($session, $slot, $bucket, $magnet) = @{$entry};
 
-        my $file = $self->get_slot_file( $slot );
+        my $file = $self->get_slot_file($slot);
 
         # Committing to the history requires the following steps
         #
@@ -487,21 +487,21 @@ method commit_history() {
 
         my %header;
 
-        if ( open my $file_fh, '<', $file ) {
+        if (open my $file_fh, '<', $file) {
             my $last;
-            while ( <$file_fh> ) {
+            while (<$file_fh>) {
                 s/[\r\n]//g;
 
-                if ( /^$/ ) {
+                if (/^$/) {
                     last;
                 }
 
-                if ( /^([^ \t]+):[ \t]*(.*)$/ ) {
+                if (/^([^ \t]+):[ \t]*(.*)$/) {
                     $last = lc $1;
                     push @{$header{$last}}, $2;
 
                 } else {
-                    if ( defined $last ) {
+                    if (defined $last) {
                         ${$header{$last}}[$#{$header{$last}}] .= $_;
                     }
                 }
@@ -509,14 +509,14 @@ method commit_history() {
             close $file_fh;
         }
         else {
-            $self->log_msg(0, "Could not open history message file $file for reading." );
+            $self->log_msg(0, "Could not open history message file $file for reading.");
         }
 
         my $hash = $self->get_message_hash(
             ${$header{'message-id'}}[0],
             ${$header{'date'}}[0],
             ${$header{'subject'}}[0],
-            ${$header{'received'}}[0] );
+            ${$header{'received'}}[0]);
 
         # For sorting purposes the From, To and CC headers have special
         # cleaned up versions of themselves in the database.  The idea
@@ -531,7 +531,7 @@ method commit_history() {
 
         for my $h (@sortable) {
             $sort_headers{$h} = $classifier->parser()->decode_string(
-                ${$header{$h}}[0] );
+                ${$header{$h}}[0]);
             $sort_headers{$h} = lc($sort_headers{$h} || '');
             $sort_headers{$h} =~ s/[\"<>]//g;
             $sort_headers{$h} =~ s/^[ \t]+//g;
@@ -545,9 +545,9 @@ method commit_history() {
 
         for my $h (@required) {
             ${$header{$h}}[0] = $classifier->parser()->decode_string(
-                ${$header{$h}}[0] );
-            if ( !defined ${$header{$h}}[0] || ${$header{$h}}[0] =~ /^\s*$/ ) {
-                if ( $h ne 'cc' ) {
+                ${$header{$h}}[0]);
+            if (!defined ${$header{$h}}[0] || ${$header{$h}}[0] =~ /^\s*$/) {
+                if ($h ne 'cc') {
                     ${$header{$h}}[0] = "<$h header missing>";
                 } else {
                     ${$header{$h}}[0] = '';
@@ -562,17 +562,17 @@ method commit_history() {
         # using Date::Parse to interpret it and turn it into the
         # Unix epoch.
 
-        if ( !defined( ${$header{date}}[0] ) ) {
+        if (!defined(${$header{date}}[0])) {
             ${$header{date}}[0] = 0;
         } else {
-            ${$header{date}}[0] = str2time( ${$header{date}}[0] ) || 0;
+            ${$header{date}}[0] = str2time(${$header{date}}[0]) || 0;
         }
 
         # Figure out the ID of the bucket this message has been
         # classified into (and the same for the magnet if it is
         # defined)
 
-        my $bucketid = $classifier->get_bucket_id( $session, $bucket );
+        my $bucketid = $classifier->get_bucket_id($session, $bucket);
         my $msg_size = -s $file;
 
         # If we can't get the bucket ID because the bucket doesn't exist
@@ -580,7 +580,7 @@ method commit_history() {
         # has old bucket names in it then we will remove the entry from the
         # history and log the failure
 
-        if ( defined( $bucketid ) ) {
+        if (defined($bucketid)) {
             my $result = $update_history->execute(
                     ${$header{from}}[0],    # hdr_from
                     ${$header{to}}[0],      # hdr_to
@@ -597,10 +597,10 @@ method commit_history() {
                     $hash,                  # hash
                     $msg_size,              # size
                     $slot                   # id
-            );
+);
         } else {
-            $self->log_msg(0, "Couldn't find bucket ID for bucket $bucket when committing $slot" );
-            $self->release_slot( $slot );
+            $self->log_msg(0, "Couldn't find bucket ID for bucket $bucket when committing $slot");
+            $self->release_slot($slot);
         }
     }
     $self->db()->commit;
@@ -622,30 +622,30 @@ method commit_history() {
 #
 # ---------------------------------------------------------------------------
 method delete_slot ($slot, $archive) {
-    my $file = $self->get_slot_file( $slot );
-    $self->log_msg(2, "delete_slot called for slot $slot, file $file" );
+    my $file = $self->get_slot_file($slot);
+    $self->log_msg(2, "delete_slot called for slot $slot, file $file");
 
-    if ( $archive && $self->config('archive' ) ) {
-        my $path = $self->get_user_path($self->config('archive_dir' ), 0 );
+    if ($archive && $self->config('archive')) {
+        my $path = $self->get_user_path($self->config('archive_dir'), 0);
 
-        $self->make_directory( $path );
+        $self->make_directory($path);
 
         my $b = $self->db()->selectrow_arrayref(
             "select buckets.name from history, buckets
                  where history.bucketid = buckets.id and
-                       history.id = $slot;" );
+                       history.id = $slot;");
 
         my $bucket = $b->[0];
 
-        if ( ( $bucket ne 'unclassified' ) &&
-             ( $bucket ne 'unknown class' ) ) {
+        if (($bucket ne 'unclassified') &&
+             ($bucket ne 'unknown class')) {
             $path .= "\/" . $bucket;
-            $self->make_directory( $path );
+            $self->make_directory($path);
 
-            if ( $self->config('archive_classes' ) > 0) {
-                my $subdirectory = int( rand( $self->config('archive_classes' ) ) );
+            if ($self->config('archive_classes') > 0) {
+                my $subdirectory = int(rand($self->config('archive_classes')));
                 $path .= "\/" . $subdirectory;
-                $self->make_directory( $path );
+                $self->make_directory($path);
             }
 
             # Previous comment about this potentially being unsafe
@@ -654,7 +654,7 @@ method delete_slot ($slot, $archive) {
             # placed in the user directory, in the archive_dir
             # subdirectory
 
-            $self->copy_file( $file, $path, "popfile$slot.msg" );
+            $self->copy_file($file, $path, "popfile$slot.msg");
         }
     }
 
@@ -662,7 +662,7 @@ method delete_slot ($slot, $archive) {
     # and also invalidate the caches of any open queries since they
     # may have been affected
 
-    $self->release_slot( $slot );
+    $self->release_slot($slot);
     $self->force_requery();
 }
 
@@ -714,17 +714,17 @@ method get_slot_file ($slot) {
     #
     # Hence each directory can have up to 256 entries
 
-    my $hex_slot = sprintf( '%8.8x', $slot );
+    my $hex_slot = sprintf('%8.8x', $slot);
     my $path = $self->get_user_path(
-        $self->global_config('msgdir' ) .
-        substr( $hex_slot, 0, 2 ) . '/', 0 );
-    $self->make_directory( $path );
-    $path .= substr( $hex_slot, 2, 2 ) . '/';
-    $self->make_directory( $path );
-    $path .= substr( $hex_slot, 4, 2 ) . '/';
-    $self->make_directory( $path );
+        $self->global_config('msgdir') .
+        substr($hex_slot, 0, 2) . '/', 0);
+    $self->make_directory($path);
+    $path .= substr($hex_slot, 2, 2) . '/';
+    $self->make_directory($path);
+    $path .= substr($hex_slot, 4, 2) . '/';
+    $self->make_directory($path);
 
-    my $file = 'popfile' . substr( $hex_slot, 6, 2 ) . '.msg';
+    my $file = 'popfile' . substr($hex_slot, 6, 2) . '.msg';
     return $path . $file;
 }
 
@@ -747,12 +747,12 @@ method get_slot_file ($slot) {
 #
 #----------------------------------------------------------------------------
 method get_message_hash ($messageid, $date, $subject, $received) {
-    $messageid = '' if ( !defined( $messageid ) );
-    $date = '' if ( !defined( $date      ) );
-    $subject = '' if ( !defined( $subject   ) );
-    $received = '' if ( !defined( $received  ) );
+    $messageid = '' if (!defined($messageid));
+    $date = '' if (!defined($date));
+    $subject = '' if (!defined($subject));
+    $received = '' if (!defined($received));
 
-    return md5_hex( "[$messageid][$date][$subject][$received]" );
+    return md5_hex("[$messageid][$date][$subject][$received]");
 }
 
 #----------------------------------------------------------------------------
@@ -768,12 +768,12 @@ method get_message_hash ($messageid, $date, $subject, $received) {
 #
 #----------------------------------------------------------------------------
 method get_slot_from_hash ($hash) {
-    my $h = $self->db()->prepare( $self->normalize_sql(
-        'SELECT id FROM history WHERE hash = ? LIMIT 1' ) );
-    $h->execute( $hash );
+    my $h = $self->db()->prepare($self->normalize_sql(
+        'SELECT id FROM history WHERE hash = ? LIMIT 1'));
+    $h->execute($hash);
     my $result = $h->fetchrow_arrayref;
 
-    return defined( $result )?$result->[0]:'';
+    return defined($result)?$result->[0]:'';
 }
 
 #----------------------------------------------------------------------------
@@ -809,9 +809,9 @@ method start_query() {
     # been used and then return it
 
     while (1) {
-        my $id = sprintf( '%8.8x', int(rand(4294967295)) );
+        my $id = sprintf('%8.8x', int(rand(4294967295)));
 
-        if ( !defined( $queries{$id} ) ) {
+        if (!defined($queries{$id})) {
             $queries{$id}{query} = 0;
             $queries{$id}{count} = 0;
             $queries{$id}{cache} = ();
@@ -836,9 +836,9 @@ method stop_query ($id) {
 
     my $q = $queries{$id}{query};
 
-    if ( ( defined $q ) && ( $q != 0 ) ) {
-        if ( $#{$queries{$id}{cache}} !=
-             $queries{$id}{count} ) {
+    if ((defined $q) && ($q != 0)) {
+        if ($#{$queries{$id}{cache}} !=
+             $queries{$id}{count}) {
         $q->finish;
             undef $queries{$id}{query};
         }
@@ -863,13 +863,13 @@ method stop_query ($id) {
 #----------------------------------------------------------------------------
 method set_query ($id, $filter, $search, $sort, $not) {
     $search =~ s/\0//g;
-    $sort = '' if ( $sort !~ /^(\-)?(inserted|from|to|cc|subject|bucket|date|size)$/ );
+    $sort = '' if ($sort !~ /^(\-)?(inserted|from|to|cc|subject|bucket|date|size)$/);
 
     # If this query has already been done and is in the cache
     # then do no work here
 
-    if ( defined( $queries{$id}{fields} ) &&
-         ( $queries{$id}{fields} eq "$filter:$search:$sort:$not" ) ) {
+    if (defined($queries{$id}{fields}) &&
+         ($queries{$id}{fields} eq "$filter:$search:$sort:$not")) {
         return;
     }
 
@@ -890,7 +890,7 @@ method set_query ($id, $filter, $search, $sort, $not) {
     my $not_equal = $not ? '!='  : '=';
     my $equal = $not ? '='   : '!=';
 
-    if ( $search ne '' ) {
+    if ($search ne '') {
         my $qb = Query::Builder->new(dialect => $db_service->dialect());
         my $pat = '%' . $search . '%';
         my $like_expr = $qb->combine_or(
@@ -901,11 +901,11 @@ method set_query ($id, $filter, $search, $sort, $not) {
         push $queries{$id}{params}->@*, $expr->params()->@*;
     }
 
-    if ( $filter ne '' ) {
-        if ( $filter eq '__filter__magnet' ) {
+    if ($filter ne '') {
+        if ($filter eq '__filter__magnet') {
             $queries{$id}{base} .= " and history.magnetid $equal 0";
         } else {
-            if ( $filter eq '__filter__reclassified' ) {
+            if ($filter eq '__filter__reclassified') {
                 $queries{$id}{base} .= " and history.usedtobe $equal 0";
             } else {
                 my $qb = Query::Builder->new(dialect => $db_service->dialect());
@@ -919,16 +919,16 @@ method set_query ($id, $filter, $search, $sort, $not) {
 
     # Add the sort option (if there is one)
 
-    if ( $sort ne '' ) {
+    if ($sort ne '') {
         $sort =~ s/^(\-)//;
         my $direction = defined($1)?'desc':'asc';
-        if ( $sort eq 'bucket' ) {
+        if ($sort eq 'bucket') {
             $sort = 'buckets.name';
         } else {
-            if ( $sort =~ /from|to|cc/ ) {
+            if ($sort =~ /from|to|cc/) {
                 $sort = "sort_$sort";
             } else {
-                if ( $sort ne 'inserted' && $sort ne 'size' ) {
+                if ($sort ne 'inserted' && $sort ne 'size') {
                     $sort = "hdr_$sort";
                 }
             }
@@ -939,17 +939,17 @@ method set_query ($id, $filter, $search, $sort, $not) {
     }
 
     my $count = $queries{$id}{base};
-    $self->log_msg(2, "Base query is $count" );
+    $self->log_msg(2, "Base query is $count");
     $count =~ s/XXX/COUNT(*)/;
 
-    my $h = $self->db()->prepare( $count );
-    $h->execute( $queries{$id}{params}->@* );
+    my $h = $self->db()->prepare($count);
+    $h->execute($queries{$id}{params}->@*);
     $queries{$id}{count} = $h->fetchrow_arrayref->[0];
     $h->finish;
 
     my $select = $queries{$id}{base};
     $select =~ s/XXX/$fields_slot/;
-    $queries{$id}{query} = $self->db()->prepare( $select );
+    $queries{$id}{query} = $self->db()->prepare($select);
     $queries{$id}{cache} = ();
 }
 
@@ -967,17 +967,17 @@ method delete_query ($id) {
 
     my $delete = $queries{$id}{base};
     $delete =~ s/XXX/history.id/;
-    my $d = $self->db()->prepare( $delete );
-    $d->execute( $queries{$id}{params}->@* );
+    my $d = $self->db()->prepare($delete);
+    $d->execute($queries{$id}{params}->@*);
     my $history_id;
     my @row;
     my @ids;
-    $d->bind_columns( \$history_id );
-    while ( $d->fetchrow_arrayref ) {
-        push ( @ids, $history_id );
+    $d->bind_columns(\$history_id);
+    while ($d->fetchrow_arrayref) {
+        push (@ids, $history_id);
     }
     for my $id (@ids) {
-        $self->delete_slot( $id, 1 );
+        $self->delete_slot($id, 1);
     }
 
     $self->stop_deleting();
@@ -1021,20 +1021,20 @@ method get_query_rows ($id, $start, $count) {
 
     my $size = $#{$queries{$id}{cache}}+1;
 
-    $self->log_msg(2, "Request for rows $start ($count), current size $size" );
+    $self->log_msg(2, "Request for rows $start ($count), current size $size");
 
-    if ( ( $size < ( $start + $count - 1 ) ) ) {
+    if (($size < ($start + $count - 1))) {
         my $rows = $start + $count - $size;
-        $self->log_msg(2, "Getting $rows rows from database" );
-        $queries{$id}{query}->execute( $queries{$id}{params}->@* );
+        $self->log_msg(2, "Getting $rows rows from database");
+        $queries{$id}{query}->execute($queries{$id}{params}->@*);
         $queries{$id}{cache} = $queries{$id}{query}->fetchall_arrayref(
-            undef, $start + $count - 1 );
+            undef, $start + $count - 1);
         $queries{$id}{query}->finish;
     }
 
-    my ( $from, $to ) = ( $start-1, $start+$count-2 );
+    my ($from, $to) = ($start-1, $start+$count-2);
 
-    $self->log_msg(2, "Returning $from..$to" );
+    $self->log_msg(2, "Returning $from..$to");
 
     return @{$queries{$id}{cache}}[$from..$to];
 }
@@ -1054,8 +1054,8 @@ method get_query_rows ($id, $start, $count) {
 method make_directory ($path) {
     $path =~ s/[\\\/]$//;
 
-    return 1 if ( -d $path );
-    return make_path( $path );
+    return 1 if (-d $path);
+    return make_path($path);
 }
 
 # ---------------------------------------------------------------------------
@@ -1068,15 +1068,15 @@ method make_directory ($path) {
 sub compare_mf__
 {
     $a =~ /popfile(\d+)=(\d+)\.msg/;
-    my ( $ad, $am ) = ( $1, $2 );
+    my ($ad, $am) = ($1, $2);
 
     $b =~ /popfile(\d+)=(\d+)\.msg/;
-    my ( $bd, $bm ) = ( $1, $2 );
+    my ($bd, $bm) = ($1, $2);
 
-    if ( $ad == $bd ) {
-        return ( $bm <=> $am );
+    if ($ad == $bd) {
+        return ($bm <=> $am);
     } else {
-        return ( $bd <=> $ad );
+        return ($bd <=> $ad);
     }
 }
 
@@ -1092,16 +1092,16 @@ method upgrade_history_files() {
     # upgrade them by placing them in the database
 
     my @msgs = sort compare_mf__ glob $self->get_user_path(
-        $self->global_config('msgdir' ) . 'popfile*.msg', 0 );
+        $self->global_config('msgdir') . 'popfile*.msg', 0);
     if (@msgs) {
-        my $session = $classifier->get_session_key( 'admin', '' );
+        my $session = $classifier->get_session_key('admin', '');
 
         print "\nFound old history files, moving them into database\n    ";
 
         my $i = 0;
         $self->db()->begin_work;
         for my $msg (@msgs) {
-            if ( ( ++$i % 100 ) == 0 ) {
+            if ((++$i % 100) == 0) {
                 print "[$i]";
                 STDOUT->flush();
             }
@@ -1111,13 +1111,13 @@ method upgrade_history_files() {
             # in upgraded history.  Also the $magnet is ignored so
             # upgraded history will have no magnet information.
 
-            my ( $reclassified, $bucket, $usedtobe, $magnet ) =
-                $self->history_read_class( $msg );
-            if ( $bucket ne 'unknown_class' ) {
-                my ( $slot, $file ) = $self->reserve_slot();
+            my ($reclassified, $bucket, $usedtobe, $magnet) =
+                $self->history_read_class($msg);
+            if ($bucket ne 'unknown_class') {
+                my ($slot, $file) = $self->reserve_slot();
                 rename $msg, $file;
-                my @message = ( $session, $slot, $bucket, 0 );
-                push ( @{$commit_list}, \@message );
+                my @message = ($session, $slot, $bucket, 0);
+                push (@{$commit_list}, \@message);
             }
         }
         $self->db()->commit;
@@ -1125,10 +1125,10 @@ method upgrade_history_files() {
         print "\nDone upgrading history\n";
 
         $self->commit_history();
-        $classifier->release_session_key( $session );
+        $classifier->release_session_key($session);
 
         unlink $self->get_user_path(
-            $self->global_config('msgdir' ) . 'history_cache', 0 );
+            $self->global_config('msgdir') . 'history_cache', 0);
     }
 }
 
@@ -1156,31 +1156,31 @@ method history_read_class ($filename) {
     my $usedtobe;
     my $magnet = '';
 
-    if ( open my $class_fh, '<', $filename ) {
+    if (open my $class_fh, '<', $filename) {
         $bucket = <$class_fh>;
-        if ( defined( $bucket ) &&
-             ( $bucket =~ /([^ ]+) MAGNET ([^\r\n]+)/ ) ) {
+        if (defined($bucket) &&
+             ($bucket =~ /([^ ]+) MAGNET ([^\r\n]+)/)) {
             $bucket = $1;
             $magnet = $2;
         }
 
         $reclassified = 0;
-        if ( defined( $bucket ) && ( $bucket =~ /RECLASSIFIED/ ) ) {
+        if (defined($bucket) && ($bucket =~ /RECLASSIFIED/)) {
             $bucket = <$class_fh>;
             $usedtobe = <$class_fh>;
             $reclassified = 1;
             $usedtobe =~ s/[\r\n]//g;
         }
         close $class_fh;
-        $bucket =~ s/[\r\n]//g if defined( $bucket );
+        $bucket =~ s/[\r\n]//g if defined($bucket);
         unlink $filename;
     } else {
-        return ( undef, $bucket, undef, undef );
+        return (undef, $bucket, undef, undef);
     }
 
-    $bucket = 'unknown class' if ( !defined( $bucket ) );
+    $bucket = 'unknown class' if (!defined($bucket));
 
-    return ( $reclassified, $bucket, $usedtobe, $magnet );
+    return ($reclassified, $bucket, $usedtobe, $magnet);
 }
 
 #----------------------------------------------------------------------------
@@ -1193,19 +1193,19 @@ method history_read_class ($filename) {
 #----------------------------------------------------------------------------
 method cleanup_history() {
     my $seconds_per_day = 24 * 60 * 60;
-    my $old = time - $self->config('history_days' ) * $seconds_per_day;
+    my $old = time - $self->config('history_days') * $seconds_per_day;
     my @ids;
-    my $d = $self->db()->prepare( $self->normalize_sql(
-        'SELECT id FROM history WHERE inserted < ?' ) );
-    $d->execute( $old );
+    my $d = $self->db()->prepare($self->normalize_sql(
+        'SELECT id FROM history WHERE inserted < ?'));
+    $d->execute($old);
     my $id;
-    $d->bind_columns( \$id );
-    while ( $d->fetchrow_arrayref ) {
-        push ( @ids, $id );
+    $d->bind_columns(\$id);
+    while ($d->fetchrow_arrayref) {
+        push (@ids, $id);
     }
     $d->finish;
     for my $id (@ids) {
-        $self->delete_slot( $id, 1 );
+        $self->delete_slot($id, 1);
     }
 }
 
@@ -1222,8 +1222,8 @@ method cleanup_history() {
 #
 # ---------------------------------------------------------------------------
 method copy_file ($from, $to_dir, $to_name) {
-    if ( open( FROM, "<$from") ) {
-        if ( open( TO, ">$to_dir\/$to_name") ) {
+    if (open(FROM, "<$from")) {
+        if (open(TO, ">$to_dir\/$to_name")) {
             binmode FROM;
             binmode TO;
             while (<FROM>) {

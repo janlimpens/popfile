@@ -76,7 +76,7 @@ Forks a child process running the Mojolicious daemon. Returns 1 on success.
             LocalAddr => '0.0.0.0',
             LocalPort => 0,
             ReuseAddr => 1,
-        );
+);
         my $port = $sock->sockport();
         $sock->close();
         return $port
@@ -110,9 +110,9 @@ Sends SIGTERM to the child process and waits for it to exit.
 =cut
 
     method stop() {
-        if ( defined $child_pid ) {
+        if (defined $child_pid) {
             kill 'TERM', $child_pid;
-            waitpid( $child_pid, 0 );
+            waitpid($child_pid, 0);
             $child_pid = undef;
         }
     }
@@ -125,10 +125,10 @@ unexpectedly. Returns 1.
 =cut
 
     method service() {
-        if ( defined $child_pid ) {
-            my $gone = waitpid( $child_pid, WNOHANG );
-            if ( $gone == $child_pid ) {
-                $self->log_msg(0, "UI::Mojo child exited unexpectedly" );
+        if (defined $child_pid) {
+            my $gone = waitpid($child_pid, WNOHANG);
+            if ($gone == $child_pid) {
+                $self->log_msg(0, "UI::Mojo child exited unexpectedly");
                 $child_pid = undef;
             }
         }
@@ -141,7 +141,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
 
 =cut
 
-    method set_service ( $svc = undef ) {
+    method set_service ($svc = undef) {
         $service = $svc;
     }
 
@@ -161,11 +161,11 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         push @{ $app->static->paths }, $static;
 
         # Fall back to index.html for any non-API path (SPA routing)
-        $app->hook( before_dispatch => sub ($c) {
+        $app->hook(before_dispatch => sub ($c) {
             my $path = $c->req->url->path->to_string;
             return if $path =~ m{^/api/};
             return if $path =~ m{\.\w+$};   # has an extension → real asset
-            $c->req->url->path( Mojo::Path->new('/index.html') );
+            $c->req->url->path(Mojo::Path->new('/index.html'));
         });
 
         my $r = $app->routes;
@@ -174,9 +174,9 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         # GET /api/v1/buckets
         #   Returns [{name, pseudo, word_count, color}, ...]
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/buckets' => sub ($c) {
+        $r->get('/api/v1/buckets' => sub ($c) {
             my @result;
-            for my $b ( $svc->get_all_buckets() ) {
+            for my $b ($svc->get_all_buckets()) {
                 push @result, {
                     name => $b,
                     pseudo => $svc->is_pseudo_bucket($b) ? \1 : \0,
@@ -184,85 +184,85 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
                     color => $svc->get_bucket_color($b) // '#666666',
                 };
             }
-            $c->render( json => \@result );
+            $c->render(json => \@result);
         });
 
         #--------------------------------------------------------------------
         # POST /api/v1/buckets   { name, color? }
         #--------------------------------------------------------------------
-        $r->post( '/api/v1/buckets' => sub ($c) {
+        $r->post('/api/v1/buckets' => sub ($c) {
             my $body = $c->req->json // {};
             my $name = $body->{name} // '';
             my $color = $body->{color} // '';
-            return $c->render( status => 400, json => { error => 'name required' } )
+            return $c->render(status => 400, json => { error => 'name required' })
                 if $name eq '';
-            return $c->render( status => 422, json => { error => 'invalid name: use lowercase letters, digits, - and _ only' } )
+            return $c->render(status => 422, json => { error => 'invalid name: use lowercase letters, digits, - and _ only' })
                 if $name =~ /[^a-z\-_0-9]/;
-            my $ok = $svc->create_bucket( $name );
-            return $c->render( status => 409, json => { error => 'bucket already exists' } )
+            my $ok = $svc->create_bucket($name);
+            return $c->render(status => 409, json => { error => 'bucket already exists' })
                 unless $ok;
-            $svc->set_bucket_color( $name, $color )
+            $svc->set_bucket_color($name, $color)
                 if $color =~ /^#[0-9a-fA-F]{6}$/;
-            $c->render( json => { ok => \1 } );
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------
         # DELETE /api/v1/buckets/:name
         #--------------------------------------------------------------------
-        $r->delete( '/api/v1/buckets/:name' => sub ($c) {
-            $svc->delete_bucket( $c->param('name') );
-            $c->render( json => { ok => \1 } );
+        $r->delete('/api/v1/buckets/:name' => sub ($c) {
+            $svc->delete_bucket($c->param('name'));
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------
         # PUT /api/v1/buckets/:name/rename   { new_name }
         #--------------------------------------------------------------------
-        $r->put( '/api/v1/buckets/:name/rename' => sub ($c) {
+        $r->put('/api/v1/buckets/:name/rename' => sub ($c) {
             my $body = $c->req->json // {};
             my $new = $body->{new_name} // '';
-            if ( $new eq '' ) {
-                return $c->render( status => 400, json => { error => 'new_name required' } );
+            if ($new eq '') {
+                return $c->render(status => 400, json => { error => 'new_name required' });
             }
-            $svc->rename_bucket( $c->param('name'), $new );
-            $c->render( json => { ok => \1 } );
+            $svc->rename_bucket($c->param('name'), $new);
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------
         # DELETE /api/v1/buckets/:name/words  — clear all words
         #--------------------------------------------------------------------
-        $r->delete( '/api/v1/buckets/:name/words' => sub ($c) {
-            $svc->clear_bucket( $c->param('name') );
-            $c->render( json => { ok => \1 } );
+        $r->delete('/api/v1/buckets/:name/words' => sub ($c) {
+            $svc->clear_bucket($c->param('name'));
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------
         # PUT /api/v1/buckets/:name/params   { color }
         #--------------------------------------------------------------------
-        $r->put( '/api/v1/buckets/:name/params' => sub ($c) {
+        $r->put('/api/v1/buckets/:name/params' => sub ($c) {
             my $body = $c->req->json // {};
             my $bname = $c->param('name');
-            if ( defined $body->{color} ) {
-                $svc->set_bucket_color( $bname, $body->{color} );
+            if (defined $body->{color}) {
+                $svc->set_bucket_color($bname, $body->{color});
             }
-            $c->render( json => { ok => \1 } );
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------
         # GET /api/v1/buckets/:name/words?prefix=…
         #   Returns [{word, count}, ...]
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/buckets/:name/words' => sub ($c) {
+        $r->get('/api/v1/buckets/:name/words' => sub ($c) {
             my $prefix = $c->param('prefix') // '';
-            my @words = $svc->get_bucket_word_list( $c->param('name'), $prefix );
+            my @words = $svc->get_bucket_word_list($c->param('name'), $prefix);
             my @result = map { { word => $_->[0], count => $_->[1] + 0 } } @words;
-            $c->render( json => \@result );
+            $c->render(json => \@result);
         });
 
         #--------------------------------------------------------------------
         # GET /api/v1/buckets/:name
         #   Returns { name, color, word_count, pseudo, fpcount, fncount }
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/buckets/:name' => sub ($c) {
+        $r->get('/api/v1/buckets/:name' => sub ($c) {
             my $name = $c->param('name');
             unless ($svc->is_bucket($name) || $svc->is_pseudo_bucket($name)) {
                 return $c->render(status => 404, json => { error => 'not found' });
@@ -281,23 +281,23 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         # GET /api/v1/history?page=1&per_page=25&search=…
         #   Returns { items: [...], total: N }
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/history' => sub ($c) {
-            my $page = ( $c->param('page')     // 1  ) + 0;
-            my $per_page = ( $c->param('per_page') // 25 ) + 0;
+        $r->get('/api/v1/history' => sub ($c) {
+            my $page = ($c->param('page')     // 1) + 0;
+            my $per_page = ($c->param('per_page') // 25) + 0;
             my $search = $c->param('search') // '';
             $page = 1  if $page     < 1;
             $per_page = 25 if $per_page < 1 || $per_page > 200;
 
             my $hist = $svc->history_obj();
             my $qid = $hist->start_query();
-            $hist->set_query( $qid, '', $search, '-inserted', 0 );
-            my $total = $hist->get_query_size( $qid );
-            my $start = ( $page - 1 ) * $per_page + 1;
-            my @rows = $hist->get_query_rows( $qid, $start, $per_page );
-            $hist->stop_query( $qid );
+            $hist->set_query($qid, '', $search, '-inserted', 0);
+            my $total = $hist->get_query_size($qid);
+            my $start = ($page - 1) * $per_page + 1;
+            my @rows = $hist->get_query_rows($qid, $start, $per_page);
+            $hist->stop_query($qid);
 
             my @items;
-            for my $row ( @rows ) {
+            for my $row (@rows) {
                 next unless defined $row;
                 # fields: id(0) from(1) to(2) cc(3) subject(4) date(5)
                 #         hash(6) inserted(7) bucket_name(8) usedtobe(9)
@@ -309,11 +309,11 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
                     subject => $row->[4] // '',
                     date => $row->[5] // '',
                     bucket => $row->[8] // '',
-                    color => $svc->get_bucket_color( $row->[8] // '' ) // '#666666',
+                    color => $svc->get_bucket_color($row->[8] // '') // '#666666',
                     magnet => $row->[11] // '',
                 };
             }
-            $c->render( json => { items => \@items, total => $total + 0 } );
+            $c->render(json => { items => \@items, total => $total + 0 });
         });
 
         my $do_reclassify = sub ($slot, $bucket) {
@@ -337,7 +337,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #--------------------------------------------------------------------
         # POST /api/v1/history/reclassify-unclassified
         #--------------------------------------------------------------------
-        $r->post( '/api/v1/history/reclassify-unclassified' => sub ($c) {
+        $r->post('/api/v1/history/reclassify-unclassified' => sub ($c) {
             my $hist = $svc->history_obj();
             my $qid = $hist->start_query();
             $hist->set_query($qid, 'unclassified', '', '-inserted', 0);
@@ -361,7 +361,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #--------------------------------------------------------------------
         # POST /api/v1/history/bulk-reclassify   { slots: [...], bucket }
         #--------------------------------------------------------------------
-        $r->post( '/api/v1/history/bulk-reclassify' => sub ($c) {
+        $r->post('/api/v1/history/bulk-reclassify' => sub ($c) {
             my $body = $c->req->json // {};
             my $bucket = $body->{bucket} // '';
             my $slots = $body->{slots} // [];
@@ -385,7 +385,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #--------------------------------------------------------------------
         # POST /api/v1/history/:slot/reclassify   { bucket }
         #--------------------------------------------------------------------
-        $r->post( '/api/v1/history/:slot/reclassify' => sub ($c) {
+        $r->post('/api/v1/history/:slot/reclassify' => sub ($c) {
             my $slot = $c->param('slot');
             my $body = $c->req->json // {};
             my $bucket = $body->{bucket} // '';
@@ -403,24 +403,24 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         # GET /api/v1/history/:slot
         #   Returns message body and per-word bucket colors for highlighting.
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/history/:slot' => sub ($c) {
+        $r->get('/api/v1/history/:slot' => sub ($c) {
             my $slot = $c->param('slot');
-            return $c->render( status => 400, json => { error => 'invalid slot' } )
+            return $c->render(status => 400, json => { error => 'invalid slot' })
                 unless $slot =~ /^\d+$/;
 
             my $hist = $svc->history_obj();
-            my $file = $hist->get_slot_file( $slot );
-            return $c->render( status => 404, json => { error => 'not found' } )
+            my $file = $hist->get_slot_file($slot);
+            return $c->render(status => 404, json => { error => 'not found' })
                 unless defined $file && -f $file;
 
             open my $fh, '<', $file
-                or return $c->render( status => 500, json => { error => 'cannot read' } );
+                or return $c->render(status => 500, json => { error => 'cannot read' });
 
             my $in_headers = 1;
             my $body = '';
-            while ( <$fh> ) {
+            while (<$fh>) {
                 s/[\r\n]//g;
-                if ( $in_headers ) {
+                if ($in_headers) {
                     $in_headers = 0 if $_ eq '';
                     next;
                 }
@@ -429,69 +429,69 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             close $fh;
 
             my %orig_for;
-            for my $raw ( split /\W+/, $body ) {
+            for my $raw (split /\W+/, $body) {
                 next if $raw eq '';
-                my $mangled = $svc->mangle_word( $raw );
+                my $mangled = $svc->mangle_word($raw);
                 next if $mangled eq '' || exists $orig_for{$mangled};
                 $orig_for{$mangled} = lc $raw;
             }
 
-            my %mangled_colors = $svc->get_word_colors( keys %orig_for );
+            my %mangled_colors = $svc->get_word_colors(keys %orig_for);
             my %word_colors;
-            for my $mangled ( keys %mangled_colors ) {
+            for my $mangled (keys %mangled_colors) {
                 $word_colors{ $orig_for{$mangled} } = $mangled_colors{$mangled};
             }
 
-            $c->render( json => { body => $body, word_colors => \%word_colors } );
+            $c->render(json => { body => $body, word_colors => \%word_colors });
         });
 
         #--------------------------------------------------------------------
         # GET /api/v1/magnet-types
         #   Returns { type: header_display_name, ... }
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/magnet-types' => sub ($c) {
+        $r->get('/api/v1/magnet-types' => sub ($c) {
             my %types = $svc->get_magnet_types();
-            $c->render( json => \%types );
+            $c->render(json => \%types);
         });
 
         #--------------------------------------------------------------------
         # GET /api/v1/magnets
         #   Returns { bucket: { type: [values] } }
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/magnets' => sub ($c) {
+        $r->get('/api/v1/magnets' => sub ($c) {
             my %by_bucket;
-            for my $b ( $svc->get_buckets_with_magnets() ) {
-                for my $t ( $svc->get_magnet_types_in_bucket($b) ) {
-                    my @vals = $svc->get_magnets( $b, $t );
+            for my $b ($svc->get_buckets_with_magnets()) {
+                for my $t ($svc->get_magnet_types_in_bucket($b)) {
+                    my @vals = $svc->get_magnets($b, $t);
                     $by_bucket{$b}{$t} = \@vals if @vals;
                 }
             }
-            $c->render( json => \%by_bucket );
+            $c->render(json => \%by_bucket);
         });
 
         #--------------------------------------------------------------------
         # POST /api/v1/magnets   { bucket, type, value }
         #--------------------------------------------------------------------
-        $r->post( '/api/v1/magnets' => sub ($c) {
+        $r->post('/api/v1/magnets' => sub ($c) {
             my $body = $c->req->json // {};
             for my $k (qw(bucket type value)) {
-                unless ( defined $body->{$k} && $body->{$k} ne '' ) {
-                    return $c->render( status => 400,
-                        json => { error => "$k required" } );
+                unless (defined $body->{$k} && $body->{$k} ne '') {
+                    return $c->render(status => 400,
+                        json => { error => "$k required" });
                 }
             }
-            $svc->create_magnet( $body->{bucket}, $body->{type}, $body->{value} );
-            $c->render( json => { ok => \1 } );
+            $svc->create_magnet($body->{bucket}, $body->{type}, $body->{value});
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------
         # DELETE /api/v1/magnets   { bucket, type, value }
         #--------------------------------------------------------------------
-        $r->delete( '/api/v1/magnets' => sub ($c) {
+        $r->delete('/api/v1/magnets' => sub ($c) {
             my $body = $c->req->json // {};
             $svc->delete_magnet(
-                $body->{bucket} // '', $body->{type} // '', $body->{value} // '' );
-            $c->render( json => { ok => \1 } );
+                $body->{bucket} // '', $body->{type} // '', $body->{value} // '');
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------
@@ -553,7 +553,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             imap_training_mode => [imap => 'training_mode'],
             imap_uidnexts => [imap => 'uidnexts'],
             imap_uidvalidities => [imap => 'uidvalidities'],
-        );
+);
 
         my $languages_dir = $self->get_root_path('languages');
 
@@ -609,27 +609,27 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #--------------------------------------------------------------------
         # GET /api/v1/config  →  { key: value, ... }
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/config' => sub ($c) {
+        $r->get('/api/v1/config' => sub ($c) {
             my %cfg;
-            for my $key ( keys %CFG ) {
-                my ( $mod, $param ) = @{ $CFG{$key} };
-                $cfg{$key} = $self->module_config( $mod, $param ) // '';
+            for my $key (keys %CFG) {
+                my ($mod, $param) = @{ $CFG{$key} };
+                $cfg{$key} = $self->module_config($mod, $param) // '';
             }
-            $c->render( json => \%cfg );
+            $c->render(json => \%cfg);
         });
 
         #--------------------------------------------------------------------
         # PUT /api/v1/config  { key: value, ... }  →  persists to popfile.cfg
         #--------------------------------------------------------------------
-        $r->put( '/api/v1/config' => sub ($c) {
+        $r->put('/api/v1/config' => sub ($c) {
             my $body = $c->req->json // {};
-            for my $key ( keys %{$body} ) {
+            for my $key (keys %{$body}) {
                 next unless exists $CFG{$key};
-                my ( $mod, $param ) = @{ $CFG{$key} };
-                $self->module_config( $mod, $param, $body->{$key} );
+                my ($mod, $param) = @{ $CFG{$key} };
+                $self->module_config($mod, $param, $body->{$key});
             }
             $self->configuration()->save_configuration();
-            $c->render( json => { ok => \1 } );
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------
@@ -637,7 +637,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #   Returns { watched: [...], mappings: [{bucket, folder}, ...] }
         #--------------------------------------------------------------------
         my $imap_sep = '-->';
-        $r->get( '/api/v1/imap/folders' => sub ($c) {
+        $r->get('/api/v1/imap/folders' => sub ($c) {
             my $watched_raw = $self->module_config('imap', 'watched_folders')       // '';
             my $mapping_raw = $self->module_config('imap', 'bucket_folder_mappings') // '';
 
@@ -646,25 +646,25 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             my @mappings = map { { bucket => $_, folder => $map_hash{$_} } }
                            grep { $_ ne '' } keys %map_hash;
 
-            $c->render( json => { watched => \@watched, mappings => \@mappings } );
+            $c->render(json => { watched => \@watched, mappings => \@mappings });
         });
 
         #--------------------------------------------------------------------
         # PUT /api/v1/imap/folders
         #   Body: { watched: [...], mappings: [{bucket, folder}, ...] }
         #--------------------------------------------------------------------
-        $r->put( '/api/v1/imap/folders' => sub ($c) {
+        $r->put('/api/v1/imap/folders' => sub ($c) {
             my $body = $c->req->json // {};
 
-            if ( defined $body->{watched} ) {
+            if (defined $body->{watched}) {
                 my @w = grep { defined $_ && $_ ne '' } @{ $body->{watched} };
-                my $raw = join( $imap_sep, @w ) . ( @w ? $imap_sep : '' );
+                my $raw = join($imap_sep, @w) . (@w ? $imap_sep : '');
                 $self->module_config('imap', 'watched_folders', $raw);
             }
 
-            if ( defined $body->{mappings} ) {
+            if (defined $body->{mappings}) {
                 my $raw = '';
-                for my $m ( @{ $body->{mappings} } ) {
+                for my $m (@{ $body->{mappings} }) {
                     next unless defined $m->{bucket} && $m->{bucket} ne ''
                              && defined $m->{folder} && $m->{folder} ne '';
                     $raw .= "$m->{bucket}$imap_sep$m->{folder}$imap_sep";
@@ -673,14 +673,14 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
             }
 
             $self->configuration()->save_configuration();
-            $c->render( json => { ok => \1 } );
+            $c->render(json => { ok => \1 });
         });
 
         #--------------------------------------------------------------------
         # GET /api/v1/imap/server-folders
         #   Connects to the IMAP server and returns the live folder list
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/imap/server-folders' => sub ($c) {
+        $r->get('/api/v1/imap/server-folders' => sub ($c) {
             require Services::IMAP::Client;
             my $client = Services::IMAP::Client->new();
             $client->set_configuration($self->configuration());
@@ -702,7 +702,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         #   Returns health checks: IMAP connectivity, auth, watched folders,
         #   bucket→folder mapping validity
         #--------------------------------------------------------------------
-        $r->get( '/api/v1/status' => sub ($c) {
+        $r->get('/api/v1/status' => sub ($c) {
             require Services::IMAP::Client;
             my @checks;
             my $hostname = $self->module_config('imap', 'hostname') // '';
@@ -850,7 +850,7 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         my $daemon = Mojo::Server::Daemon->new(
             app => $app,
             listen => ["http://*:$port"],
-        );
+);
         $daemon->start();
 
         if ($self->config('open_browser')) {

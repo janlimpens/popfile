@@ -75,7 +75,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     # Initialize things only needed in CORE
     #------------------------------------------------------------------------
     method CORE_loader_init() {
-        if ( defined $ENV{POPFILE_ROOT} ) {
+        if (defined $ENV{POPFILE_ROOT}) {
             $popfile_root = $ENV{POPFILE_ROOT};
         }
 
@@ -91,17 +91,17 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         $warning = sub { $self->CORE_warning(@_) };
         $die_cb = sub { $self->CORE_die(@_) };
 
-        my $version_file = $self->root_path( 'VERSION' );
+        my $version_file = $self->root_path('VERSION');
 
-        if ( -e $version_file ) {
+        if (-e $version_file) {
             open my $fh, '<', $version_file;
             my $v = <$fh>;
             close $fh;
             chomp $v;
-            $self->CORE_version( $v );
+            $self->CORE_version($v);
         }
 
-        GetOptions( 'shutdown' => \$shutdown );
+        GetOptions('shutdown' => \$shutdown);
 
         print "\nPOPFile Engine loading\n" if $debug;
     }
@@ -130,9 +130,9 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         return 0 if !defined $pipe;
 
         my $rin = '';
-        vec( $rin, fileno($pipe), 1 ) = 1;
-        my $ready = select( $rin, undef, undef, 0.01 );
-        return ( $ready > 0 );
+        vec($rin, fileno($pipe), 1) = 1;
+        my $ready = select($rin, undef, undef, 0.01);
+        return ($ready > 0);
     }
 
     #------------------------------------------------------------------------
@@ -185,13 +185,13 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         pipe my $reader, my $writer;
         my $pid = fork();
 
-        if ( !defined $pid ) {
+        if (!defined $pid) {
             close $reader;
             close $writer;
             return (undef, undef);
         }
 
-        if ( $pid == 0 ) {
+        if ($pid == 0) {
             for my $type (@types) {
                 for my $name (sort keys %{$components{$type}}) {
                     $components{$type}{$name}->forked($writer);
@@ -218,7 +218,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     # Called on a Perl warning; logs it if debug level > 0.
     #------------------------------------------------------------------------
     method CORE_warning (@message) {
-        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0 ) {
+        if ($self->module_config('GLOBAL', 'debug') > 0) {
             Log::Any->get_logger(category => 'POPFile')->warning("Perl warning: @message");
             warn @message;
         }
@@ -234,7 +234,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
 
         print STDERR @message;
 
-        if ( $self->module_config( 'GLOBAL', 'debug' ) > 0 ) {
+        if ($self->module_config('GLOBAL', 'debug') > 0) {
             Log::Any->get_logger(category => 'POPFile')->error("Perl fatal error: @message");
         }
 
@@ -252,9 +252,9 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
 
         opendir my $dh, $self->root_path($directory);
 
-        while ( my $entry = readdir $dh ) {
-            if ( $entry =~ /\.pm$/ ) {
-                $self->CORE_load_module( "$directory/$entry", $type );
+        while (my $entry = readdir $dh) {
+            if ($entry =~ /\.pm$/) {
+                $self->CORE_load_module("$directory/$entry", $type);
             }
         }
 
@@ -272,7 +272,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     method CORE_load_module ($module, $type) {
         my $mod = $self->load_module($module);
 
-        if ( defined $mod ) {
+        if (defined $mod) {
             my $name = $mod->name();
             print " $name" if $debug;
             $components{$type}{$name} = $mod;
@@ -331,7 +331,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         $self->CORE_load_directory_modules(POPFile => 'core');
         $self->CORE_load_directory_modules(Classifier => 'classifier');
 
-        if ( !$noserver ) {
+        if (!$noserver) {
             $self->CORE_load_directory_modules(UI => 'interface');
             $self->CORE_load_directory_modules(Proxy => 'proxy');
             $self->CORE_load_directory_modules(Services => 'services');
@@ -351,11 +351,11 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         for my $type (sort keys %components) {
             for my $name (sort keys %{$components{$type}}) {
                 $components{$type}{$name}->set_version(
-                    scalar($self->CORE_version()) );
+                    scalar($self->CORE_version()));
                 $components{$type}{$name}->set_configuration(
-                    $components{core}{config} );
+                    $components{core}{config});
                 $components{$type}{$name}->set_mq(
-                    $components{core}{mq} );
+                    $components{core}{mq});
             }
         }
 
@@ -364,9 +364,9 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         for my $type (sort keys %components) {
             for my $name (sort keys %{$components{$type}}) {
                 my $mod = $components{$type}{$name};
-                $mod->set_classifier( $components{classifier}{bayes} )
+                $mod->set_classifier($components{classifier}{bayes})
                     if $mod->can('set_classifier');
-                $mod->set_history( $components{core}{history} )
+                $mod->set_history($components{core}{history})
                     if $mod->can('set_history');
             }
         }
@@ -374,7 +374,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         # Wire the classifier service to proxy and interface modules so they
         # can call it instead of reaching into Bayes directly.
 
-        if ( defined $components{services}{classifier_service} ) {
+        if (defined $components{services}{classifier_service}) {
             my $svc = $components{services}{classifier_service};
 
             for my $name (sort keys %{$components{proxy}}) {
@@ -390,16 +390,16 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         # Classifier::Bayes and POPFile::History are friends.
 
         $components{core}{history}->set_classifier(
-            $components{classifier}{bayes} );
+            $components{classifier}{bayes});
         $components{classifier}{bayes}->set_history(
-            $components{core}{history} );
+            $components{core}{history});
 
         $components{classifier}{bayes}->parser()->set_mangle(
-            $components{classifier}{wordmangle} );
+            $components{classifier}{wordmangle});
 
         # Inject Services::Database into any module that accepts it.
 
-        if ( defined $components{services}{database} ) {
+        if (defined $components{services}{database}) {
             my $db_svc = $components{services}{database};
             foreach my $type (sort keys %components) {
                 foreach my $name (sort keys %{$components{$type}}) {
@@ -419,7 +419,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
         print "\n\n    Initializing... " if $debug;
 
         # Core must be initialized first.
-        my @c = ( 'core', grep { !/^core$/ } sort keys %components );
+        my @c = ('core', grep { !/^core$/ } sort keys %components);
 
         for my $type (@c) {
             print "\n         {$type:" if $debug;
@@ -430,15 +430,15 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
                 my $mod = $components{$type}{$name};
                 my $code = $mod->initialize();
 
-                if ( $code == 0 ) {
+                if ($code == 0) {
                     die "Failed to start while initializing the $name module";
                 }
 
-                if ( $code == 1 ) {
+                if ($code == 1) {
                     $mod->set_alive(1);
-                    $mod->set_forker(       $forker    );
-                    $mod->setchildexit(     $childexit );
-                    $mod->set_pipeready(    $pipeready );
+                    $mod->set_forker($forker);
+                    $mod->setchildexit($childexit);
+                    $mod->set_pipeready($pipeready);
                 }
             }
             print '} ' if $debug;
@@ -464,19 +464,19 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     method CORE_start() {
         print "\n    Starting...     " if $debug;
 
-        my @c = ( 'core', 'classifier', 'services',
-                  grep { !/^(core|classifier|services)$/ } sort keys %components );
+        my @c = ('core', 'classifier', 'services',
+                  grep { !/^(core|classifier|services)$/ } sort keys %components);
 
         for my $type (@c) {
             print "\n         {$type:" if $debug;
             for my $name (sort keys %{$components{$type}}) {
                 my $code = $components{$type}{$name}->start();
 
-                if ( $code == 0 ) {
+                if ($code == 0) {
                     die "Failed to start while starting the $name module";
                 }
 
-                if ( $code == 2 ) {
+                if ($code == 2) {
                     delete $components{$type}{$name};
                 } else {
                     print " $name" if $debug;
@@ -498,10 +498,10 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     # $nowait — if 1, run once without sleeping and return.
     #------------------------------------------------------------------------
     method CORE_service ($nowait = 0) {
-        while ( $alive == 1 ) {
+        while ($alive == 1) {
             for my $type (sort keys %components) {
                 for my $name (sort keys %{$components{$type}}) {
-                    if ( $components{$type}{$name}->service() == 0 ) {
+                    if ($components{$type}{$name}->service() == 0) {
                         $alive = 0;
                         last;
                     }
@@ -512,7 +512,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
 
             last if $nowait;
 
-            if ( $shutdown == 1 ) {
+            if ($shutdown == 1) {
                 $alive = 0;
             }
         }
@@ -526,7 +526,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     # Loops across POPFile's modules and stops them.
     #------------------------------------------------------------------------
     method CORE_stop() {
-        if ( $debug ) {
+        if ($debug) {
             print "\n\nPOPFile Engine $version_string stopping\n";
             STDOUT->flush();
             print "\n    Stopping... ";
@@ -572,7 +572,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     #                   get_module($name, $type).
     #------------------------------------------------------------------------
     method get_module ($name, $type = undef) {
-        if ( !defined($type) && $name =~ /^(.*)::(.*)$/ ) {
+        if (!defined($type) && $name =~ /^(.*)::(.*)$/) {
             $type = lc $1;
             $name = lc $2;
             $type =~ s/^popfile$/core/i;
@@ -621,7 +621,7 @@ class POPFile::Loader;    # The POPFile classes are stored by reference in the c
     }
 
     method module_config ($module, $item, $value = undef) {
-        return $components{core}{config}->module_config($module, $item, $value );
+        return $components{core}{config}->module_config($module, $item, $value);
     }
 
 

@@ -6,7 +6,7 @@ use Log::Any ();
 role POPFile::Role::Logging {
     method log_msg ($level, $message) {
         my $log = Log::Any->get_logger(category => ref($self));
-        my ( undef, undef, $line ) = caller;
+        my (undef, undef, $line) = caller;
         my $msg = ref($self) . ": $line: $message";
         if ($level == 0) {
             $log->error($msg)

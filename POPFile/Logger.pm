@@ -64,7 +64,7 @@ field $debug_filename = '';
 
     method service() {
         $self->calculate_today();
-        if ( $self->time > ($last_tickd + 3600) ) {
+        if ($self->time > ($last_tickd + 3600)) {
             $self->_reconfigure_adapter();
             $self->mq_post('TICKD');
             $last_tickd = $self->time;
@@ -75,7 +75,7 @@ field $debug_filename = '';
     method time() { return time }
 
     method calculate_today() {
-        my $new_today = int( $self->time / $seconds_per_day ) * $seconds_per_day;
+        my $new_today = int($self->time / $seconds_per_day) * $seconds_per_day;
         return if $new_today == $today;
         $today = $new_today;
         $debug_filename = $self->get_user_path(
@@ -90,13 +90,13 @@ field $debug_filename = '';
             filename => $debug_filename,
             popfile_level => $self->config('level') // 0,
             format => $self->config('format') // 'default',
-        );
+);
         Log::Any::Adapter->set('+POPFile::Log::Adapter');
     }
 
     method remove_debug_files() {
-        my @files = glob( $self->get_user_path(
-            $self->config('logdir') . 'popfile*.log', 0) );
+        my @files = glob($self->get_user_path(
+            $self->config('logdir') . 'popfile*.log', 0));
         for my $f (@files) {
             if ($f =~ /popfile([0-9]+)\.log/) {
                 unlink $f if $1 < ($self->time - 3 * $seconds_per_day);

@@ -46,7 +46,7 @@ my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
 # These are used for Japanese support
 
-my %encoding_candidates = (    'Nihongo' => [ 'cp932', 'euc-jp', '7bit-jis' ]
+my %encoding_candidates = ('Nihongo' => [ 'cp932', 'euc-jp', '7bit-jis' ]
 );
 my $ascii = '[\x00-\x7F]';                                      # ASCII chars
 my $two_bytes_euc_jp = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';                   # 2bytes EUC-JP chars
@@ -90,7 +90,7 @@ my $euc_jp_word = '(' .    $euc_jp_alphanum .     '|' .
 # HTML entity mapping to character codes, this maps things like &amp;
 # to their corresponding character code
 
-my %entityhash = (          'aacute' => 225, 'Aacute' => 193, 'Acirc' => 194, 'acirc' => 226,
+my %entityhash = ('aacute' => 225, 'Aacute' => 193, 'Acirc' => 194, 'acirc' => 226,
           'acute' => 180, 'AElig' => 198, 'aelig' => 230, 'Agrave' => 192,
           'agrave' => 224, 'amp' => 38,  'Aring' => 197, 'aring' => 229,
           'atilde' => 227, 'Atilde' => 195, 'Auml' => 196, 'auml' => 228,
@@ -114,7 +114,7 @@ my %entityhash = (          'aacute' => 225, 'Aacute' => 193, 'Acirc' => 194, 'a
           'Uacute' => 218, 'uacute' => 250, 'ucirc' => 251, 'Ucirc' => 219,
           'ugrave' => 249, 'Ugrave' => 217, 'uml' => 168, 'Uuml' => 220,
           'uuml' => 252, 'Yacute' => 221, 'yacute' => 253, 'yen' => 165,
-          'yuml' => 255 );
+          'yuml' => 255);
 # All known HTML tags divided into two groups: tags that generate
 # whitespace as in 'foo<br></br>bar' and tags that don't such as
 # 'foo<b></b>bar'.  The first case shouldn't count as an empty pair
@@ -135,7 +135,7 @@ my $non_spacing_tags = "a|abbr|acronym|b|big|blink" .    "|cite|code|del|dfn|em|
 my $eol = "\015\012";
 
 # Mapping from HTML color names to hexadecimal values (static, shared across instances)
-my %color_map = (         'aliceblue',            'f0f8ff', 'antiquewhite',      'faebd7',
+my %color_map = ('aliceblue',            'f0f8ff', 'antiquewhite',      'faebd7',
          'aqua',                 '00ffff', 'aquamarine',        '7fffd4',
          'azure',                'f0ffff', 'beige',             'f5f5dc',
          'bisque',               'ffe4c4', 'black',             '000000',
@@ -300,15 +300,15 @@ method compute_rgb_distance ($left, $right) {
     # color (point from it) to get the vector
 
     $left =~ /^(..)(..)(..)$/;
-    my ( $rl, $gl, $bl ) = ( hex( $1 ), hex( $2 ), hex( $3 ) );
+    my ($rl, $gl, $bl) = (hex($1), hex($2), hex($3));
 
     $right =~ /^(..)(..)(..)$/;
-    my ( $r, $g, $b ) = ( $rl - hex( $1 ), $gl - hex( $2 ), $bl - hex( $3 ) );
+    my ($r, $g, $b) = ($rl - hex($1), $gl - hex($2), $bl - hex($3));
 
     # Now apply Pythagoras in 3D to get the distance between them, we
     # return the int because we don't need decimal level accuracy
 
-    my $distance = int( sqrt( $r*$r + $g*$g + $b*$b ) );
+    my $distance = int(sqrt($r*$r + $g*$g + $b*$b));
 
     print "rgb distance: $left -> $right = $distance" if $debug;
 
@@ -328,8 +328,8 @@ method compute_html_color_distance() {
     #       is a waste as is repeatedly decoding
     #       from hh hh hh format
 
-    if ( $htmlfontcolor ne '' && $htmlbackcolor ne '' ) {
-        $htmlcolordistance = $self->compute_rgb_distance(            $htmlfontcolor, $htmlbackcolor );    }
+    if ($htmlfontcolor ne '' && $htmlbackcolor ne '') {
+        $htmlcolordistance = $self->compute_rgb_distance($htmlfontcolor, $htmlbackcolor);    }
 }
 
 =head2 map_color
@@ -343,11 +343,11 @@ method map_color ($color) {
     # The canonical form is lowercase hexadecimal, so start by
     # lowercasing and stripping any initial #
 
-    $color = lc( $color );
+    $color = lc($color);
 
     # Map color names to hexadecimal values
 
-    if ( defined( $color_map{$color} ) ) {
+    if (defined($color_map{$color})) {
         return $color_map{$color};
     } else {
         # Do this after checking the color map, as there is no "#blue" color
@@ -368,7 +368,7 @@ method map_color ($color) {
         # We go one higher than the quotient if the length isn't an
         # even multiple of 3
 
-        my $quotient = int ( ( length( $color ) + 2 ) / 3 );
+        my $quotient = int ((length($color) + 2) / 3);
 
         # right-pad entire value to get past the next full multiple of
         # the quotient ("abc abc abc" needs at least one more
@@ -377,7 +377,7 @@ method map_color ($color) {
         $color .= "00" . "0" x $quotient;
 
         # even length RGB triplets
-        my ( $r, $g, $b ) =            ( $color =~ /(.{$quotient})(.{$quotient})(.{$quotient})/ );
+        my ($r, $g, $b) =            ($color =~ /(.{$quotient})(.{$quotient})(.{$quotient})/);
         print "$r $g $b\n" if $debug;
 
         # left-trim very long triplets to 4 bytes
@@ -391,22 +391,22 @@ method map_color ($color) {
         $b =~ s/(..).*/$1/;
 
         # left-pad short triplets (eg FFF -> 0F0F0F)
-        $r = '0' . $r if ( length( $r ) == 1 );
-        $g = '0' . $g if ( length( $g ) == 1 );
-        $b = '0' . $b if ( length( $b ) == 1 );
+        $r = '0' . $r if (length($r) == 1);
+        $g = '0' . $g if (length($g) == 1);
+        $b = '0' . $b if (length($b) == 1);
 
         $color = "$r$g$b"; # here is our real color value
 
         # Any non-hex values remaining get 0'd out
         $color =~ s/[^0-9a-f]/0/g;
 
-        if ( $debug ) {            print "hex color $color\n";
-            print "flex-hex detected\n" if ( $color ne $old_color );
+        if ($debug) {            print "hex color $color\n";
+            print "flex-hex detected\n" if ($color ne $old_color);
         }
         # Add pseudo-word anytime flex hex detected
 
-        if ( $color ne $old_color ) {
-            $self->update_pseudoword( 'trick:flexhex', $old_color, 0, '' );
+        if ($color ne $old_color) {
+            $self->update_pseudoword('trick:flexhex', $old_color, 0, '');
         }
 
         return $color;
@@ -435,20 +435,20 @@ pseudoword was accepted, 0 if filtered by a stopword.
 =cut
 
 method update_pseudoword ($prefix, $word, $encoded, $literal) {
-    my $mword = $mangle->mangle( "$prefix:$word", 1 );
+    my $mword = $mangle->mangle("$prefix:$word", 1);
 
-    if ( $mword ne '' ) {
-        if ( defined( $color_resolver ) ) {
-            if ( $encoded == 1 ) {
+    if ($mword ne '') {
+        if (defined($color_resolver)) {
+            if ($encoded == 1) {
                 $literal =~ s/</&lt;/g;
                 $literal =~ s/>/&gt;/g;
-                my $color = $self->get_color( $mword );
+                my $color = $self->get_color($mword);
                 my $to = "<b><font color=\"$color\"><a title=\"$mword\">$literal</a></font></b>";
                 $ut .= $to . ' ';
             }
         }
 
-        $self->increment_word( $mword );
+        $self->increment_word($mword);
         return 1;
     }
 
@@ -465,28 +465,28 @@ colorization anchoring, and C<$prefix> is prepended to the mangled word
 =cut
 
 method update_word ($word, $encoded, $before, $after, $prefix) {
-    my $mword = $mangle->mangle( $word );
+    my $mword = $mangle->mangle($word);
 
-    if ( $mword ne '' ) {
-        $mword = $prefix . ':' . $mword if ( $prefix ne '' );
+    if ($mword ne '') {
+        $mword = $prefix . ':' . $mword if ($prefix ne '');
 
-        if ( $prefix =~ /(from|to|cc|subject)/i ) {
+        if ($prefix =~ /(from|to|cc|subject)/i) {
             push @{ $quickmagnets{$prefix} }, $word;
         }
 
-        if ( defined( $color_resolver ) ) {
-            my $color = $self->get_color( $mword );
-            if ( $encoded == 0 ) {
-                $after = '&' if ( $after eq '>' );
-                if ( !( $ut =~                        s/($before)\Q$word\E($after)
-                         /$1<b><font color=\"$color\">$word<\/font><\/b>$2/x ) ) {                    print "Could not find $word for colorization\n" if $debug;
+        if (defined($color_resolver)) {
+            my $color = $self->get_color($mword);
+            if ($encoded == 0) {
+                $after = '&' if ($after eq '>');
+                if (!($ut =~                        s/($before)\Q$word\E($after)
+                         /$1<b><font color=\"$color\">$word<\/font><\/b>$2/x)) {                    print "Could not find $word for colorization\n" if $debug;
                 }
             } else {
                 $ut .= "<font color=\"$color\">$word<\/font> ";
             }
         }
 
-        $self->increment_word( $mword );
+        $self->increment_word($mword);
     }
 }
 
@@ -501,7 +501,7 @@ Words hidden by invisible-ink colors generate a pseudoword instead.
 method add_line ($bigline, $encoded, $prefix) {
     my $p = 0;
 
-    return if ( !defined( $bigline ) );
+    return if (!defined($bigline));
 
     print "add_line: [$bigline]\n" if $debug;
 
@@ -511,7 +511,7 @@ method add_line ($bigline, $encoded, $prefix) {
     # Check the HTML back and font colors to ensure that we are not
     # about to add words that are hidden inside invisible ink
 
-    if ( $htmlfontcolor ne $htmlbackcolor ) {
+    if ($htmlfontcolor ne $htmlbackcolor) {
         # If we are adding a line and the colors are different then we
         # will add a count for the color difference to make sure that
         # we catch camouflage attacks using similar colors, if the
@@ -521,12 +521,12 @@ method add_line ($bigline, $encoded, $prefix) {
         # 255.  100 seems like a reasonable upper bound for tracking
         # evil spammer tricks with similar colors
 
-        if ( $htmlcolordistance < 100 ) {
-            $self->update_pseudoword(                'html', "colordistance$htmlcolordistance",
-                $encoded, '' );        }
+        if ($htmlcolordistance < 100) {
+            $self->update_pseudoword('html', "colordistance$htmlcolordistance",
+                $encoded, '');        }
 
-        while ( $p < length( $bigline ) ) {
-            my $line = substr( $bigline, $p, 1024 );
+        while ($p < length($bigline)) {
+            my $line = substr($bigline, $p, 1024);
 
             # mangle up html character entities
             # these are just the low ISO-Latin1 entities
@@ -534,18 +534,18 @@ method add_line ($bigline, $encoded, $prefix) {
             # TODO: find a way to make this (and other similar stuff) highlight
             #       without using the encoded content printer or modifying $ut
 
-            while ( $line =~ m/(&(\w{3,6});)/g ) {
+            while ($line =~ m/(&(\w{3,6});)/g) {
                 my $from = $1;
                 my $to = $entityhash{$2};
 
-                if ( defined( $to ) ) {
+                if (defined($to)) {
                     # HTML entities confilict with DBCS and EUC-JP
                     # chars. Replace entities with blanks.
 
-                    if ( $lang =~ /^(Korean|Nihongo)$/ ) {
+                    if ($lang =~ /^(Korean|Nihongo)$/) {
                         $to = ' ';
                     } else {
-                        $to = chr( $to );
+                        $to = chr($to);
                     }
                     $line         =~ s/$from/$to/g;
                     $ut =~ s/$from/$to/g;
@@ -553,45 +553,45 @@ method add_line ($bigline, $encoded, $prefix) {
                 }
             }
 
-            while ( $line =~ m/(&#([\d]{1,3});)/g ) {
+            while ($line =~ m/(&#([\d]{1,3});)/g) {
                 # Don't decode odd (nonprintable) characters or < >'s.
 
-                if ( ( ( $2 < 255 ) && ( $2 > 63 ) ) ||                     ( $2 == 61 ) ||
-                     ( ( $2 < 60 ) && ( $2 > 31 ) ) ) {                    my $from = $1;
-                    my $to = chr( $2 );
+                if ((($2 < 255) && ($2 > 63)) ||                     ($2 == 61) ||
+                     (($2 < 60) && ($2 > 31))) {                    my $from = $1;
+                    my $to = chr($2);
 
-                    if ( defined( $to ) && ( $to ne '' ) ) {
+                    if (defined($to) && ($to ne '')) {
                         $line         =~ s/$from/$to/g;
                         $ut =~ s/$from/$to/g;
                         print "$from -> $to\n" if $debug;
-                        $self->update_pseudoword(                            'html', 'numericentity', $encoded, $from );                    }
+                        $self->update_pseudoword('html', 'numericentity', $encoded, $from);                    }
                 }
             }
 
             # Pull out any email addresses in the line that are marked
             # with <> and have an @ in them
 
-            while ( $line =~ s/(mailto:)?                               ([[:alpha:]0-9\-_\.]+?
+            while ($line =~ s/(mailto:)?                               ([[:alpha:]0-9\-_\.]+?
                                @
                                ([[:alpha:]0-9\-_\.]+\.[[:alpha:]0-9\-_]+))
-                               ([\"\&\)\?\:\/ >\&\;]|$)//x ) {                $self->update_word( $2, $encoded, ( $1 ? $1 : '' ),                                    '[\&\?\:\/ >\&\;]', $prefix );                $self->add_url( $3, $encoded, '\@', '[\&\?\:\/]', $prefix );
+                               ([\"\&\)\?\:\/ >\&\;]|$)//x) {                $self->update_word($2, $encoded, ($1 ? $1 : ''),                                    '[\&\?\:\/ >\&\;]', $prefix);                $self->add_url($3, $encoded, '\@', '[\&\?\:\/]', $prefix);
             }
 
             # Grab domain names (gTLD)
             # http://en.wikipedia.org/wiki/List_of_Internet_top-level_domains
 
-            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)
+            while ($line =~ s/(([[:alpha:]0-9\-_]+\.)+)
                                (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
                                 int|jobs|mil|mobi|museum|name|net|org|pro|tel|
                                 travel|xxx)
-                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {
-                $self->add_url( "$1$3", $encoded, '', '', $prefix );
+                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix) {
+                $self->add_url("$1$3", $encoded, '', '', $prefix);
             }
 
             # Grab country domain names (ccTLD)
             # http://en.wikipedia.org/wiki/List_of_Internet_top-level_domains
 
-            while ( $line =~ s/(([[:alpha:]0-9\-_]+\.)+)
+            while ($line =~ s/(([[:alpha:]0-9\-_]+\.)+)
                                (a[cdefgilmnoqrstuwxz]|
                                 b[abdefghijmnorstvwyz]|
                                 c[acdfghiklmnorsuvxyz]|
@@ -617,40 +617,40 @@ method add_line ($bigline, $encoded, $prefix) {
                                 w[fs]|
                                 y[et]|
                                 z[amw])
-                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {
-                $self->add_url( "$1$3", $encoded, '', '', $prefix );
+                               ([^[:alpha:]0-9\-_\.]|$)/$4/ix) {
+                $self->add_url("$1$3", $encoded, '', '', $prefix);
             }
 
             # Grab IP addresses
 
-            while ( $line =~ s/(?<![[:alpha:]\d.])
+            while ($line =~ s/(?<![[:alpha:]\d.])
                                (([12]?\d{1,2}\.){3}[12]?\d{1,2})
-                               (?![[:alpha:]\d])//x ) {
-                $self->update_word( $1, $encoded, '', '', $prefix );
+                               (?![[:alpha:]\d])//x) {
+                $self->update_word($1, $encoded, '', '', $prefix);
             }
 
             # Deal with runs of alternating spaces and letters
 
-            while ( $line =~ s/([ ]|^)
+            while ($line =~ s/([ ]|^)
                                ([A-Za-z]([\'\*^`&\. ]|[ ][ ])
                                 (?:[A-Za-z]\3){1,14}[A-Za-z])
-                               ([ ]|\3|[!\?,]|$)/ /x ) {
+                               ([ ]|\3|[!\?,]|$)/ /x) {
                 my $original = "$1$2$4";
                 my $word = $2;
                 print "$word ->" if $debug;
                 $word =~ s/[^A-Z]//gi;
                 print "$word\n" if $debug;
-                $self->update_word( $word, $encoded, ' ', ' ', $prefix );
-                $self->update_pseudoword( 'trick', 'spacedout',
-                                          $encoded, $original );
+                $self->update_word($word, $encoded, ' ', ' ', $prefix);
+                $self->update_pseudoword('trick', 'spacedout',
+                                          $encoded, $original);
             }
 
             # Deal with random insertion of . inside words
 
-            while ( $line =~ s/ ([A-Z]+)\.([A-Z]{2,}) / $1$2 /i ) {
-                $self->update_pseudoword( 'trick', 'dottedwords',                                          $encoded, "$1$2" );            }
+            while ($line =~ s/ ([A-Z]+)\.([A-Z]{2,}) / $1$2 /i) {
+                $self->update_pseudoword('trick', 'dottedwords',                                          $encoded, "$1$2");            }
 
-            if ( $lang eq 'Nihongo' ) {
+            if ($lang eq 'Nihongo') {
                 # In Japanese mode, non-symbol EUC-JP characters should be
                 # matched.
                 #
@@ -663,18 +663,18 @@ method add_line ($bigline, $encoded, $prefix) {
                 # In Japanese, one character words are common, so care about
                 # words between 2 and 45 characters
 
-                while ( $line =~ s/^$euc_jp*?                                   ([A-Za-z][A-Za-z\']{2,44}|
+                while ($line =~ s/^$euc_jp*?                                   ([A-Za-z][A-Za-z\']{2,44}|
                                     $non_symbol_euc_jp{2,45})
                                    (?:[_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
-                                  //ox ) {                    if ( ( $in_headers == 0 ) &&                         ( $first20count < 20 ) ) {                        $first20count += 1;
+                                  //ox) {                    if (($in_headers == 0) &&                         ($first20count < 20)) {                        $first20count += 1;
                         $first20 .= " $1";
                     }
 
-                    $self->update_word(                        $1, $encoded, '',
+                    $self->update_word($1, $encoded, '',
                         '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]|' . $symbol_euc_jp,
-                        $prefix );                }
+                        $prefix);                }
             } else {
-                if ( $lang eq 'Korean' ) {
+                if ($lang eq 'Korean') {
                     # In Korean mode, [[:alpha:]] in regular
                     # expression is changed to 2bytes chars to support
                     # 2 byte characters.
@@ -682,19 +682,19 @@ method add_line ($bigline, $encoded, $prefix) {
                     # In Korean, care about words between 2 and 45
                     # characters.
 
-                    while ( $line =~ s/(([A-Za-z]|$eksc)
+                    while ($line =~ s/(([A-Za-z]|$eksc)
                                         ([A-Za-z\']|$eksc){1,44})
                                         ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
-                                      //x ) {
-                        if ( ( $in_headers == 0 ) &&
-                             ( $first20count < 20 ) ) {
+                                      //x) {
+                        if (($in_headers == 0) &&
+                             ($first20count < 20)) {
                             $first20count += 1;
                             $first20 .= " $1";
                         }
 
-                        $self->update_word( $1, $encoded, '',
+                        $self->update_word($1, $encoded, '',
                                             '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
-                                            $prefix ) if ( length $1 >= 2 );
+                                            $prefix) if (length $1 >= 2);
                     }
                 } else {
                     # Only care about words between 3 and 45
@@ -703,18 +703,18 @@ method add_line ($bigline, $encoded, $prefix) {
                     # (according to the OED) is
                     # pneumonoultramicroscopicsilicovolcanoconiosis
 
-                    while ( $line =~ s/([[:alpha:]][[:alpha:]\']{1,44})
+                    while ($line =~ s/([[:alpha:]][[:alpha:]\']{1,44})
                                        ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
-                                      //x ) {
-                        if ( ( $in_headers == 0 ) &&
-                             ( $first20count < 20 ) ) {
+                                      //x) {
+                        if (($in_headers == 0) &&
+                             ($first20count < 20)) {
                             $first20count += 1;
                             $first20 .= " $1";
                         }
 
-                        $self->update_word( $1, $encoded, '',
+                        $self->update_word($1, $encoded, '',
                                             '[_\-,\.\"\'\)\?!:;\/ &\t\n\r]',
-                                            $prefix ) if ( length $1 >= 3 );
+                                            $prefix) if (length $1 >= 3);
                     }
                 }
             }
@@ -722,8 +722,8 @@ method add_line ($bigline, $encoded, $prefix) {
             $p += 1024;
         }
     } else {
-        if ( $bigline =~ /[^ \t]/ ) {
-            $self->update_pseudoword( 'trick', 'invisibleink',                                      $encoded, $bigline );        }
+        if ($bigline =~ /[^ \t]/) {
+            $self->update_pseudoword('trick', 'invisibleink',                                      $encoded, $bigline);        }
     }
 }
 
@@ -743,26 +743,26 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
     $tag =~ s/[\r\n]//g;
     $arg =~ s/[\r\n]//g;
 
-    print "HTML " . ( $end_tag ? "closing" : '' ) . " tag $tag with argument $arg\n" if $debug;
+    print "HTML " . ($end_tag ? "closing" : '') . " tag $tag with argument $arg\n" if $debug;
 
     # End tags do not require any argument decoding but we do look at
     # them to make sure that we handle /font to change the font color
 
-    if ( $end_tag ) {
-        if ( $tag =~ /^font$/i ) {
-            $htmlfontcolor = $self->map_color( 'black' );
+    if ($end_tag) {
+        if ($tag =~ /^font$/i) {
+            $htmlfontcolor = $self->map_color('black');
             $self->compute_html_color_distance();
         }
 
         # If we hit a table tag then any font information is lost
 
-        if ( $tag =~ /^(table|td|tr|th)$/i ) {
-            $htmlfontcolor = $self->map_color( 'black' );
+        if ($tag =~ /^(table|td|tr|th)$/i) {
+            $htmlfontcolor = $self->map_color('black');
             $htmlbackcolor = $htmlbodycolor;
             $self->compute_html_color_distance();
         }
 
-        if ( lc( $tag ) eq $cssbackcolortag ) {
+        if (lc($tag) eq $cssbackcolortag) {
             $htmlbackcolor = $htmlbodycolor;
             $cssbackcolortag = '';
 
@@ -771,8 +771,8 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             print "CSS back color reset to $htmlbackcolor (tag closed: $tag)\n" if $debug;
         }
 
-        if ( lc( $tag ) eq $cssfontcolortag ) {
-            $htmlfontcolor = $self->map_color( 'black' );
+        if (lc($tag) eq $cssfontcolortag) {
+            $htmlfontcolor = $self->map_color('black');
             $cssfontcolortag = '';
 
             $self->compute_html_color_distance();
@@ -784,8 +784,8 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
     }
 
     # Count the number of TD elements
-    if ( $tag =~ /^td$/i ) {
-        $self->update_pseudoword( 'html', 'td', $encoded, $tag );
+    if ($tag =~ /^td$/i) {
+        $self->update_pseudoword('html', 'td', $encoded, $tag);
     }
 
     my $attribute;
@@ -803,14 +803,14 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
     my $original;
 
-    while ( $arg =~ s/[ \t]*                      ((\w+)[ \t]*=[ \t]*
+    while ($arg =~ s/[ \t]*                      ((\w+)[ \t]*=[ \t]*
                        (([\"\'])(.*?)\4|([^ \t>]+)($|([ \t>])))
-                      )//x ) {        $original = $1;
+                      )//x) {        $original = $1;
         $attribute = $2;
         $value = $5 || $6 || '';
         $quote = '';
         $end_quote = '[\> \t\&\n]';
-        if ( defined $4 ) {
+        if (defined $4) {
             $quote = $4;
             $end_quote = $4;
         }
@@ -819,7 +819,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # Remove leading whitespace and leading value-less attributes
 
-        if ( $arg =~ s/^(([ \t]*(\w+)[\t ]+)+)([^=])/$4/ ) {
+        if ($arg =~ s/^(([ \t]*(\w+)[\t ]+)+)([^=])/$4/) {
             print "   attribute(s) $1 with no value\n" if $debug;
         }
 
@@ -831,34 +831,34 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # Tags with src attributes
 
-        if ( ( $attribute =~ /^src$/i ) &&             ( ( $tag =~ /^img|frame|iframe$/i ) ||
-               ( ( $tag =~ /^script$/i ) && $parse_script_uri ) ) ) {
+        if (($attribute =~ /^src$/i) &&             (($tag =~ /^img|frame|iframe$/i) ||
+               (($tag =~ /^script$/i) && $parse_script_uri))) {
             # "CID:" links refer to an origin-controlled attachment to
             # a html email.  Adding strings from these, even if they
             # appear to be hostnames, may or may not be beneficial
 
-            if ( $value =~ /^(cid)\:/i ) {
+            if ($value =~ /^(cid)\:/i) {
                 # Add a pseudo-word when CID source links are detected
 
-                $self->update_pseudoword( 'html', 'cidsrc',                                          $encoded, $original );
+                $self->update_pseudoword('html', 'cidsrc',                                          $encoded, $original);
                 # TODO: I've seen virus messages try to use a CID: href
 
 
             } else {
-                my $host = $self->add_url( $value, $encoded,                                           $quote, $end_quote, '' );
+                my $host = $self->add_url($value, $encoded,                                           $quote, $end_quote, '');
                 # If the host name is not blank (i.e. there was a
                 # hostname in the url and it was an image, then if the
                 # host was not this host then report an off machine
                 # image
 
-                if ( ( $host ne '' ) && ( $tag =~ /^img$/i ) ) {
-                    if ( $host ne 'localhost' ) {
-                        $self->update_pseudoword( 'html', 'imgremotesrc',                                                  $encoded, $original );                    }
+                if (($host ne '') && ($tag =~ /^img$/i)) {
+                    if ($host ne 'localhost') {
+                        $self->update_pseudoword('html', 'imgremotesrc',                                                  $encoded, $original);                    }
                 }
 
-                if ( ( $host ne '' ) && ( $tag =~ /^iframe$/i ) ) {
-                    if ( $host ne 'localhost' ) {
-                        $self->update_pseudoword( 'html', 'iframeremotesrc',                                                  $encoded, $original );                    }
+                if (($host ne '') && ($tag =~ /^iframe$/i)) {
+                    if ($host ne 'localhost') {
+                        $self->update_pseudoword('html', 'iframeremotesrc',                                                  $encoded, $original);                    }
                 }
             }
 
@@ -867,21 +867,21 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # Tags with href attributes
 
-        if ( ( $attribute =~ /^href$/i ) &&             ( $tag =~ /^(a|link|base|area)$/i ) ) {
+        if (($attribute =~ /^href$/i) &&             ($tag =~ /^(a|link|base|area)$/i)) {
             # Look for mailto:'s
 
-            if ( $value =~ /^mailto:/i ) {
-                if ( ( $tag =~ /^a$/ ) &&                     ( $value =~ /^mailto:
+            if ($value =~ /^mailto:/i) {
+                if (($tag =~ /^a$/) &&                     ($value =~ /^mailto:
                                   ([[:alpha:]0-9\-_\.]+?
                                    @
                                    ([[:alpha:]0-9\-_\.]+?))
-                                  ([>\&\?\:\/\" \t]|$)/ix ) )  {                    $self->update_word(                        $1, $encoded, 'mailto:',
-                        ( $3 ? '[\\\>\&\?\:\/]' : $end_quote ), '' );                    $self->add_url(                        $2, $encoded, '@',
-                        ( $3 ? '[\\\&\?\:\/]' : $end_quote ), '' );                }
+                                  ([>\&\?\:\/\" \t]|$)/ix))  {                    $self->update_word($1, $encoded, 'mailto:',
+                        ($3 ? '[\\\>\&\?\:\/]' : $end_quote), '');                    $self->add_url($2, $encoded, '@',
+                        ($3 ? '[\\\&\?\:\/]' : $end_quote), '');                }
             } else {
                 # Anything that isn't a mailto is probably an URL
 
-                $self->add_url( $value, $encoded, $quote, $end_quote, '' );
+                $self->add_url($value, $encoded, $quote, $end_quote, '');
             }
 
             next;
@@ -889,37 +889,37 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # Tags with alt attributes
 
-        if ( ( $attribute =~ /^alt$/i ) && ( $tag =~ /^img$/i ) ) {
-            $self->add_line( $value, $encoded, '' );
+        if (($attribute =~ /^alt$/i) && ($tag =~ /^img$/i)) {
+            $self->add_line($value, $encoded, '');
             next;
         }
 
         # Tags with working background attributes
 
-        if ( ( $attribute =~ /^background$/i ) &&             ( $tag =~ /^(td|table|body)$/i ) ) {            $self->add_url( $value, $encoded, $quote, $end_quote, '' );
+        if (($attribute =~ /^background$/i) &&             ($tag =~ /^(td|table|body)$/i)) {            $self->add_url($value, $encoded, $quote, $end_quote, '');
             next;
         }
 
         # Tags that load sounds
 
-        if ( $attribute =~ /^bgsound$/i && $tag =~ /^body$/i ) {
-            $self->add_url( $value, $encoded, $quote, $end_quote, '' );
+        if ($attribute =~ /^bgsound$/i && $tag =~ /^body$/i) {
+            $self->add_url($value, $encoded, $quote, $end_quote, '');
             next;
         }
 
         # Tags with colors in them
 
-        if ( ( $attribute =~ /^color$/i ) && ( $tag =~ /^font$/i ) ) {
-            $self->update_word( $value, $encoded, $quote, $end_quote, '' );
-            $self->update_pseudoword( 'html', "fontcolor$value",                                      $encoded, $original );            $htmlfontcolor = $self->map_color( $value );
+        if (($attribute =~ /^color$/i) && ($tag =~ /^font$/i)) {
+            $self->update_word($value, $encoded, $quote, $end_quote, '');
+            $self->update_pseudoword('html', "fontcolor$value",                                      $encoded, $original);            $htmlfontcolor = $self->map_color($value);
             $self->compute_html_color_distance();
             print "Set html font color to $htmlfontcolor\n" if $debug;
             next;
         }
 
-        if ( ( $attribute =~ /^text$/i ) && ( $tag =~ /^body$/i ) ) {
-            $self->update_pseudoword( 'html', "fontcolor$value",                                      $encoded, $original );            $self->update_word( $value, $encoded, $quote, $end_quote, '' );
-            $htmlfontcolor = $self->map_color( $value );
+        if (($attribute =~ /^text$/i) && ($tag =~ /^body$/i)) {
+            $self->update_pseudoword('html', "fontcolor$value",                                      $encoded, $original);            $self->update_word($value, $encoded, $quote, $end_quote, '');
+            $htmlfontcolor = $self->map_color($value);
             $self->compute_html_color_distance();
             print "Set html font color to $htmlfontcolor\n" if $debug;
             next;
@@ -927,27 +927,27 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # The width and height of images
 
-        if ( ( $attribute =~ /^(width|height)$/i ) && ( $tag =~ /^img$/i ) ) {
-            $attribute = lc( $attribute );
-            $self->update_pseudoword( 'html', "img$attribute$value",                                      $encoded, $original );            next;
+        if (($attribute =~ /^(width|height)$/i) && ($tag =~ /^img$/i)) {
+            $attribute = lc($attribute);
+            $self->update_pseudoword('html', "img$attribute$value",                                      $encoded, $original);            next;
         }
 
         # Font sizes
 
-        if ( ( $attribute =~ /^size$/i ) && ( $tag =~ /^font$/i ) ) {
+        if (($attribute =~ /^size$/i) && ($tag =~ /^font$/i)) {
             # TODO: unify font size scaling to use the same scale
             #       across size specifiers
 
-            $self->update_pseudoword( 'html', "fontsize$value",                                      $encoded, $original );            next;
+            $self->update_pseudoword('html', "fontsize$value",                                      $encoded, $original);            next;
         }
 
         # Tags with background colors
 
-        if ( ( $attribute =~ /^(bgcolor|back)$/i ) &&             ( $tag =~ /^(td|table|body|tr|th|font)$/i ) ) {            $self->update_word( $value, $encoded, $quote, $end_quote, '' );
-            $self->update_pseudoword( 'html', "backcolor$value",                                      $encoded, $original );            $htmlbackcolor = $self->map_color( $value );
+        if (($attribute =~ /^(bgcolor|back)$/i) &&             ($tag =~ /^(td|table|body|tr|th|font)$/i)) {            $self->update_word($value, $encoded, $quote, $end_quote, '');
+            $self->update_pseudoword('html', "backcolor$value",                                      $encoded, $original);            $htmlbackcolor = $self->map_color($value);
             print "Set html back color to $htmlbackcolor\n" if $debug;
 
-            if ( $tag =~ /^body$/i ) {
+            if ($tag =~ /^body$/i) {
                 $htmlbodycolor = $htmlbackcolor
             }
             $self->compute_html_color_distance();
@@ -956,127 +956,127 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         # Tags with a charset
 
-        if ( ( $attribute =~ /^content$/i ) && ( $tag =~ /^meta$/i ) ) {
-            if ( $value =~ /charset=([^\t\r\n ]{1,40})[\"\>]?/ ) {
-                $self->update_word( $1, $encoded, '', '', '' );
+        if (($attribute =~ /^content$/i) && ($tag =~ /^meta$/i)) {
+            if ($value =~ /charset=([^\t\r\n ]{1,40})[\"\>]?/) {
+                $self->update_word($1, $encoded, '', '', '');
             }
             next;
         }
 
         # CSS handling
 
-        if ( !exists( $HTML::Tagset::emptyElement->{ lc( $tag ) } ) &&
-             ( $attribute =~ /^style$/i ) ) {
+        if (!exists($HTML::Tagset::emptyElement->{ lc($tag) }) &&
+             ($attribute =~ /^style$/i)) {
             print "      Inline style tag found in $tag: $attribute=$value\n" if $debug;
 
-            my $style = $self->parse_css_style( $value );
+            my $style = $self->parse_css_style($value);
 
-            if ( $debug ) {
+            if ($debug) {
                 print "      CSS properties: ";
-                foreach my $key ( keys( %{$style} ) ) {
+                foreach my $key (keys(%{$style})) {
                     print "$key($style->{$key}), ";
                 }
                 print "\n";
             }
             # CSS font sizing
-            if ( defined( $style->{'font-size'} ) ) {
+            if (defined($style->{'font-size'})) {
                 my $size = $style->{'font-size'};
 
                 # TODO: unify font size scaling to use the same scale
                 #       across size specifiers approximate font sizes here:
                 # http://www.dejeu.com/web/tools/tech/css/variablefontsizes.asp
 
-                if ( $size =~ /(((\+|\-)?\d?\.?\d+)
+                if ($size =~ /(((\+|\-)?\d?\.?\d+)
                                (em|ex|px|%|pt|in|cm|mm|pt|pc))|
                                (xx-small|x-small|small|medium|large|x-large|
-                                xx-large)/x ) {
-                    $self->update_pseudoword( 'html', "cssfontsize$size",
-                                              $encoded, $original );
+                                xx-large)/x) {
+                    $self->update_pseudoword('html', "cssfontsize$size",
+                                              $encoded, $original);
                     print "     CSS font-size set to: $size\n" if $debug;
                 }
             }
 
             # CSS visibility
-            if ( defined( $style->{'visibility'} ) ) {
-                $self->update_pseudoword(                    'html', "cssvisibility" . $style->{'visibility'},
-                    $encoded, $original );            }
+            if (defined($style->{'visibility'})) {
+                $self->update_pseudoword('html', "cssvisibility" . $style->{'visibility'},
+                    $encoded, $original);            }
 
             # CSS display
-            if ( defined( $style->{'display'} ) ) {
-                $self->update_pseudoword(                    'html', "cssdisplay" . $style->{'display'},
-                    $encoded, $original );            }
+            if (defined($style->{'display'})) {
+                $self->update_pseudoword('html', "cssdisplay" . $style->{'display'},
+                    $encoded, $original);            }
 
 
             # CSS foreground coloring
 
-            if ( defined( $style->{'color'} ) ) {
+            if (defined($style->{'color'})) {
                 my $color = $style->{'color'};
 
                 print "      CSS color: $color\n" if $debug;
 
-                $color = $self->parse_css_color( $color );
+                $color = $self->parse_css_color($color);
 
-                if ( $color ne "error" ) {
+                if ($color ne "error") {
                     $htmlfontcolor = $color;
                     $self->compute_html_color_distance();
 
                     print "      CSS set html font color to $htmlfontcolor\n" if $debug;
-                    $self->update_pseudoword(                        'html', "cssfontcolor$htmlfontcolor",
-                        $encoded, $original );
-                    $cssfontcolortag = lc( $tag );
+                    $self->update_pseudoword('html', "cssfontcolor$htmlfontcolor",
+                        $encoded, $original);
+                    $cssfontcolortag = lc($tag);
                 }
             }
 
             # CSS background coloring
 
-            if ( defined( $style->{'background-color'} ) ) {
+            if (defined($style->{'background-color'})) {
                 my $background_color = $style->{'background-color'};
 
-                $background_color =                    $self->parse_css_color( $background_color );
-                if ( $background_color ne "error" ) {
+                $background_color =                    $self->parse_css_color($background_color);
+                if ($background_color ne "error") {
                     $htmlbackcolor = $background_color;
                     $self->compute_html_color_distance();
                     print "       CSS set html back color to $htmlbackcolor\n" if $debug;
 
                     $htmlbodycolor = $background_color
-                        if ( $tag =~ /^body$/i );
-                    $cssbackcolortag = lc( $tag );
+                        if ($tag =~ /^body$/i);
+                    $cssbackcolortag = lc($tag);
 
                     $self->update_pseudoword(
                         'html', "cssbackcolor$htmlbackcolor",
-                        $encoded, $original );
+                        $encoded, $original);
                 }
             }
 
             # CSS all-in one background declaration (ugh)
 
-            if ( defined( $style->{'background'} ) ) {
+            if (defined($style->{'background'})) {
                 my $expression;
                 my $background = $style->{'background'};
 
                 # Take the possibly multi-expression "background" property
 
-                while ( $background =~ s/^([^ \t\r\n\f]+)( |$)// ) {
+                while ($background =~ s/^([^ \t\r\n\f]+)( |$)//) {
                     # and examine each expression individually
 
                     $expression = $1;
                     print "       CSS expression $expression in background property\n" if $debug;
 
-                    my $background_color =                        $self->parse_css_color( $expression );
+                    my $background_color =                        $self->parse_css_color($expression);
                     # to see if it is a color
 
-                    if ( $background_color ne "error" ) {
+                    if ($background_color ne "error") {
                         $htmlbackcolor = $background_color;
                         $self->compute_html_color_distance();
                         print "       CSS set html back color to $htmlbackcolor\n" if $debug;
 
-                        if ( $tag =~ /^body$/i ) {
+                        if ($tag =~ /^body$/i) {
                             $htmlbodycolor = $background_color;
                         }
-                        $cssbackcolortag = lc( $tag );
+                        $cssbackcolortag = lc($tag);
 
-                        $self->update_pseudoword(                            'html', "cssbackcolor$htmlbackcolor",
-                            $encoded, $original );                    }
+                        $self->update_pseudoword('html', "cssbackcolor$htmlbackcolor",
+                            $encoded, $original);                    }
                 }
             }
         }
@@ -1088,29 +1088,29 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
         # background style may not be in a predictable location
         # (search the entire value)
 
-        if ( ( $attribute =~ /^style$/i ) &&
-             ( $tag =~ /^(body|td|tr|table|span|div|p)$/i ) ) {
-            $self->add_url( $1, $encoded, '[\']', '[\']', '' )
-                if ( $value =~ /background\-image:[ \t]?url\([ \t]?\'(.*)\'[ \t]?\)/i );
+        if (($attribute =~ /^style$/i) &&
+             ($tag =~ /^(body|td|tr|table|span|div|p)$/i)) {
+            $self->add_url($1, $encoded, '[\']', '[\']', '')
+                if ($value =~ /background\-image:[ \t]?url\([ \t]?\'(.*)\'[ \t]?\)/i);
             next;
         }
 
         # Tags with action attributes
 
-        if ( $attribute =~ /^action$/i && $tag =~ /^form$/i ) {
-            if ( $value =~ /^(ftp|http|https):\/\//i ) {
-                $self->add_url( $value, $encoded, $quote, $end_quote, '' );
+        if ($attribute =~ /^action$/i && $tag =~ /^form$/i) {
+            if ($value =~ /^(ftp|http|https):\/\//i) {
+                $self->add_url($value, $encoded, $quote, $end_quote, '');
                 next;
             }
 
             # mailto forms
 
-            if ( $value =~ /^mailto:                            ([[:alpha:]0-9\-_\.]+?
+            if ($value =~ /^mailto:                            ([[:alpha:]0-9\-_\.]+?
                              @
                              ([[:alpha:]0-9\-_\.]+?))
-                            ([>\&\?\:\/\" \t]|$)/ix )  {                $self->update_word(                    $1, $encoded, 'mailto:',
-                    ( $3 ? '[\\\>\&\?\:\/]' : $end_quote ), '' );                $self->add_url(                    $2, $encoded, '@',
-                    ( $3 ? '[\\\>\&\?\:\/]' : $end_quote ), '' );            }
+                            ([>\&\?\:\/\" \t]|$)/ix)  {                $self->update_word($1, $encoded, 'mailto:',
+                    ($3 ? '[\\\>\&\?\:\/]' : $end_quote), '');                $self->add_url($2, $encoded, '@',
+                    ($3 ? '[\\\>\&\?\:\/]' : $end_quote), '');            }
             next;
         }
     }
@@ -1140,42 +1140,42 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
     my $query;
     my $hash;
 
-    return undef if ( !defined( $url ) );
+    return undef if (!defined($url));
 
     # Strip the protocol part of a URL (e.g. http://)
 
-    $protocol = $1 if ( $url =~ s/^([^:]*)\:\/\/// );
+    $protocol = $1 if ($url =~ s/^([^:]*)\:\/\///);
 
     # Remove any URL encoding (protocol may not be URL encoded)
 
     my $oldurl = $url;
-    my $percents = ( $url =~ s/(%([0-9A-Fa-f]{2}))/chr(hex("0x$2"))/ge );
+    my $percents = ($url =~ s/(%([0-9A-Fa-f]{2}))/chr(hex("0x$2"))/ge);
 
-    if ( ( $percents > 0 ) && !defined( $noadd ) ) {
-        $self->update_pseudoword( 'html', 'encodedurl', $encoded, $oldurl );
+    if (($percents > 0) && !defined($noadd)) {
+        $self->update_pseudoword('html', 'encodedurl', $encoded, $oldurl);
     }
 
     # Extract authorization information from the URL
     # (e.g. http://foo@bar.com)
 
-    if ( $url =~ s/^(([[:alpha:]0-9\-_\.\;\:\&\=\+\$\,]+)(\@|\%40))+// ) {
+    if ($url =~ s/^(([[:alpha:]0-9\-_\.\;\:\&\=\+\$\,]+)(\@|\%40))+//) {
         $authinfo = $1;
 
-        if ( $authinfo ne '' ) {
-            $self->update_pseudoword( 'html', 'authorization', 
-                                      $encoded, $oldurl );
+        if ($authinfo ne '') {
+            $self->update_pseudoword('html', 'authorization', 
+                                      $encoded, $oldurl);
         }
     }
 
-    if ( $url =~ s/^(([[:alpha:]0-9\-_]+\.)+)
+    if ($url =~ s/^(([[:alpha:]0-9\-_]+\.)+)
                     (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
                      int|jobs|mil|mobi|museum|name|net|org|pro|tel|
                      travel|xxx|[a-z]{2})
-                    ([^[:alpha:]0-9\-_\.]|$)/$4/ix ) {
+                    ([^[:alpha:]0-9\-_\.]|$)/$4/ix) {
         $host = "$1$3";
         $hostform = "name";
     } else {
-        if ( $url =~ /(([^:\/])+)/ ) {
+        if ($url =~ /(([^:\/])+)/) {
             # Some other hostname format found, maybe
             # Read here for reference: http://www.pc-help.org/obscure.htm
             # Go here for comparison: http://www.samspade.org/t/url
@@ -1196,60 +1196,60 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
             # iterate through the possible hostname, build dotted quad
             # format
 
-            while ( $host_candidate =~                    s/\G^((0x)[0-9A-Fa-f]+|0[0-7]+|[0-9]+)(\.)?// ) {                my $hex = $2;
+            while ($host_candidate =~                    s/\G^((0x)[0-9A-Fa-f]+|0[0-7]+|[0-9]+)(\.)?//) {                my $hex = $2;
 
                 # possible IP quad(s)
 
                 my $quad_candidate = $1;
                 my $more_dots = $3;
 
-                if ( defined $hex ) {
+                if (defined $hex) {
                     # hex number
                     # trim arbitrary octets that are greater than most
                     # significant bit
 
                     $quad_candidate =~ s/.*(([0-9A-F][0-9A-F]){4})$/$1/i;
-                    $number = hex( $quad_candidate );
+                    $number = hex($quad_candidate);
                 } else {
-                    if ( $quad_candidate =~ /^0([0-7]+)/ ) {
+                    if ($quad_candidate =~ /^0([0-7]+)/) {
                         # octal number
 
-                        $number = oct( $1 );
+                        $number = oct($1);
                     } else {
                         # assume decimal number
                         # deviates from the obscure.htm document here,
                         # no current browsers overflow
 
-                        $number = int( $quad_candidate );
+                        $number = int($quad_candidate);
                     }
                 }
 
                 # No more IP dots?
 
-                if ( !defined( $more_dots ) ) {
+                if (!defined($more_dots)) {
                     # Expand final decimal/octal/hex to extra quads
 
-                    while ( $quad <= 4 ) {
-                        my $shift = ( ( 4 - $quad ) * 8 );
-                        $quads{$quad} =                            ( $number & ( hex( "0xFF" ) << $shift ) )
+                    while ($quad <= 4) {
+                        my $shift = ((4 - $quad) * 8);
+                        $quads{$quad} =                            ($number & (hex("0xFF") << $shift))
                                 >> $shift;                        $quad += 1;
                     }
                 } else {
                     # Just plug the quad in, no overflow allowed
 
-                    $quads{$quad} = $number if ( $number < 256 );
+                    $quads{$quad} = $number if ($number < 256);
                     $quad += 1;
                 }
 
-                last if ( $quad > 4 );
+                last if ($quad > 4);
             }
 
             $host_candidate =~ s/\r|\n|$//g;
-            if ( ( $host_candidate eq '' ) &&                 defined( $quads{1} )      &&
-                 defined( $quads{2} )      &&
-                 defined( $quads{3} )      &&
-                 defined( $quads{4} )      &&
-                 !defined( $quads{5} ) ) {
+            if (($host_candidate eq '') &&                 defined($quads{1})      &&
+                 defined($quads{2})      &&
+                 defined($quads{3})      &&
+                 defined($quads{4})      &&
+                 !defined($quads{5})) {
                 # we did actually find an IP address, and not some fake
 
                 $hostform = "ip";
@@ -1259,47 +1259,47 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
         }
     }
 
-    if ( !defined( $host ) || ( $host eq '' ) ) {
+    if (!defined($host) || ($host eq '')) {
         print "no hostname found: [$temp_url]\n" if $debug;
         return '';
     }
 
-    $port = $1 if ( $url =~ s/^\:(\d+)// );
-    $path = $1 if ( $url =~ s/^([\\\/][^\#\?\n]*)($)?// );
-    $query = $1 if ( $url =~ s/^[\?]([^\#\n]*|$)?// );
-    $hash = $1 if ( $url =~ s/^[\#](.*)$// );
+    $port = $1 if ($url =~ s/^\:(\d+)//);
+    $path = $1 if ($url =~ s/^([\\\/][^\#\?\n]*)($)?//);
+    $query = $1 if ($url =~ s/^[\?]([^\#\n]*|$)?//);
+    $hash = $1 if ($url =~ s/^[\#](.*)$//);
 
-    if ( !defined( $protocol ) || ( $protocol =~ /^(http|https)$/ ) ) {
+    if (!defined($protocol) || ($protocol =~ /^(http|https)$/)) {
         $temp_before = $before;
-        $temp_before = "\:\/\/" if ( defined $protocol );
-        $temp_before = "[\@]" if ( defined $authinfo );
+        $temp_before = "\:\/\/" if (defined $protocol);
+        $temp_before = "[\@]" if (defined $authinfo);
 
         $temp_after = $after;
-        $temp_after = "[\#]" if ( defined $hash );
-        $temp_after = "[\?]" if ( defined $query );
-        $temp_after = "[\\\\\/]" if ( defined $path );
-        $temp_after = "[\:]" if ( defined $port );
+        $temp_after = "[\#]" if (defined $hash);
+        $temp_after = "[\?]" if (defined $query);
+        $temp_after = "[\\\\\/]" if (defined $path);
+        $temp_after = "[\:]" if (defined $port);
 
         # add the entire domain
 
-        $self->update_word(            $host, $encoded,
-            $temp_before, $temp_after, $prefix ) if ( !defined( $noadd ) );
+        $self->update_word($host, $encoded,
+            $temp_before, $temp_after, $prefix) if (!defined($noadd));
         # decided not to care about tld's beyond the verification
         # performed when grabbing $host special subTLD's can just get
         # their own classification weight (eg, .bc.ca)
         # http://www.0dns.org has a good reference of ccTLD's and
         # their sub-tld's if desired
 
-        if ( $hostform eq 'name' ) {
+        if ($hostform eq 'name') {
             # recursively add the roots of the domain
 
-            while ( $host =~ s/^([^\.]+\.)?(([^\.]+\.?)*)(\.[^\.]+)$/$2$4/ ) {
-                if ( !defined( $1 ) ) {
-                    $self->update_word(                        $4, $encoded,
-                        $2, '[<]', $prefix) if ( !defined( $noadd ) );                    last;
+            while ($host =~ s/^([^\.]+\.)?(([^\.]+\.?)*)(\.[^\.]+)$/$2$4/) {
+                if (!defined($1)) {
+                    $self->update_word($4, $encoded,
+                        $2, '[<]', $prefix) if (!defined($noadd));                    last;
                 }
-                $self->update_word(                    $host, $encoded,
-                    $1 || $2, '[<]', $prefix) if ( !defined( $noadd ) );            }
+                $self->update_word($host, $encoded,
+                    $1 || $2, '[<]', $prefix) if (!defined($noadd));            }
         }
     }
 
@@ -1328,8 +1328,8 @@ method parse_html ($line, $encoded) {
 
     # Remove HTML comments and other tags that begin !
 
-    while ( $line =~ s/(<!.*?>)// ) {
-        $self->update_pseudoword( 'html', 'comment', $encoded, $1 );
+    while ($line =~ s/(<!.*?>)//) {
+        $self->update_pseudoword('html', 'comment', $encoded, $1);
         print "$line\n" if $debug;
     }
 
@@ -1342,7 +1342,7 @@ method parse_html ($line, $encoded) {
     # effected.  The correct fix seams to be to look at the
     # Content-Type header and only process mails of type text/html.
 
-    while ( $line =~ s/(<\/?(?!(?:$spacing_tags|$non_spacing_tags)\W)                        [a-z0-9]+(?:\s+.*?)?\/?>)//iox ) {        $self->update_pseudoword( 'html', 'invalidtag', $encoded, $1 );
+    while ($line =~ s/(<\/?(?!(?:$spacing_tags|$non_spacing_tags)\W)                        [a-z0-9]+(?:\s+.*?)?\/?>)//iox) {        $self->update_pseudoword('html', 'invalidtag', $encoded, $1);
         print "html:invalidtag: $1\n" if $debug;
     }
 
@@ -1351,25 +1351,25 @@ method parse_html ($line, $encoded) {
 
     # TODO: What about combined open and close tags such as <b />?
 
-    while ( $line =~ s/(<($non_spacing_tags)(?:\s+[^>]*?)?><\/\2>)//io ) {
-        $self->update_pseudoword( 'html', 'emptypair', $encoded, $1 );
+    while ($line =~ s/(<($non_spacing_tags)(?:\s+[^>]*?)?><\/\2>)//io) {
+        $self->update_pseudoword('html', 'emptypair', $encoded, $1);
         print "html:emptypair: $1\n" if $debug;
     }
 
-    while ( $found && ( $line ne '' ) ) {
+    while ($found && ($line ne '')) {
         $found = 0;
 
         # If we are in an HTML tag then look for the close of the tag,
         # if we get it then handle the tag, if we don't then keep
         # building up the arguments of the tag
 
-        if ( $in_html_tag ) {
-            if ( $line =~ s/^([^>]*?)>// ) {
+        if ($in_html_tag) {
+            if ($line =~ s/^([^>]*?)>//) {
                 $html_arg .= $1;
                 $in_html_tag = 0;
                 $html_tag =~ s/=\n ?//g;
                 $html_arg =~ s/=\n ?//g;
-                $self->update_tag( $html_tag, $html_arg,                                   $html_end, $encoded );                $html_tag = '';
+                $self->update_tag($html_tag, $html_arg,                                   $html_end, $encoded);                $html_tag = '';
                 $html_arg = '';
                 $found = 1;
                 next;
@@ -1383,8 +1383,8 @@ method parse_html ($line, $encoded) {
         # both the < and the > present)?  If so then handle that tag
         # immediately and continue
 
-        if ( $line =~ s/^<([\/]?)([A-Za-z]+)([^>]*?)>// ) {
-            $self->update_tag( $2, $3, ( $1 eq '/' ), $encoded );
+        if ($line =~ s/^<([\/]?)([A-Za-z]+)([^>]*?)>//) {
+            $self->update_tag($2, $3, ($1 eq '/'), $encoded);
             $found = 1;
             next;
         }
@@ -1393,8 +1393,8 @@ method parse_html ($line, $encoded) {
         # then set up the global vars that record the tag and return 1
         # to indicate to the caller that we have an unclosed tag
 
-        if ( $line =~ /^<([\/]?)([A-Za-z][^ >]+)([^>]*)$/ ) {
-            $html_end = ( $1 eq '/' );
+        if ($line =~ /^<([\/]?)([A-Za-z][^ >]+)([^>]*)$/) {
+            $html_end = ($1 eq '/');
             $html_tag = $2;
             $html_arg = $3;
             $in_html_tag = 1;
@@ -1407,9 +1407,9 @@ method parse_html ($line, $encoded) {
         # the line to the end or the first < and pass it to the line
         # parser
 
-        if ( $line =~ s/^([^<]+)(<|$)/$2/ ) {
+        if ($line =~ s/^([^<]+)(<|$)/$2/) {
             $found = 1;
-            $self->add_line( $1, $encoded, '' );
+            $self->add_line($1, $encoded, '');
         }
     }
 
@@ -1432,13 +1432,13 @@ method parse_html ($line, $encoded) {
 #
 # ----------------------------------------------------------------------------
 method parse_file ($file, $max_size = undef, $reset = undef) {
-    $reset = 1 if ( !defined( $reset    ) );
-    $max_size = 0 if ( !defined( $max_size ) || ( $max_size =~ /\D/ ) );
+    $reset = 1 if (!defined($reset));
+    $max_size = 0 if (!defined($max_size) || ($max_size =~ /\D/));
 
-    if ( defined $mangle && $mangle->config('auto_detect_language') ) {
+    if (defined $mangle && $mangle->config('auto_detect_language')) {
         open my $sample_fh, '<', $file;
         my $sample = '';
-        while ( <$sample_fh> ) {
+        while (<$sample_fh>) {
             $sample .= $_;
             last if length($sample) >= 1000;
         }
@@ -1448,7 +1448,7 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
             if defined $detected;
     }
 
-    $self->start_parse( $reset );
+    $self->start_parse($reset);
 
     my $size_read = 0;
 
@@ -1458,10 +1458,10 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
     # Read each line and find each "word" which we define as a
     # sequence of alpha characters
 
-    while ( <$msg> ) {
-        $size_read += length( $_ );
-        $self->parse_line( $_ );
-        if ( ( $max_size > 0 ) &&             ( $size_read > $max_size ) ) {            last;
+    while (<$msg>) {
+        $size_read += length($_);
+        $self->parse_line($_);
+        if (($max_size > 0) &&             ($size_read > $max_size)) {            last;
         }
     }
 
@@ -1469,8 +1469,8 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
 
     $self->stop_parse();
 
-    if ( defined( $color_resolver ) ) {
-        $colorized .= $ut if ( $ut ne '' );
+    if (defined($color_resolver)) {
+        $colorized .= $ut if ($ut ne '');
 
         $colorized .= "</tt>";
         $colorized =~ s/(\r\n\r\n|\r\r|\n\n)/__BREAK____BREAK__/g;
@@ -1497,7 +1497,7 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
 #
 # ----------------------------------------------------------------------------
 method start_parse ($reset = undef) {
-    $reset = 1 if ( !defined( $reset ) );
+    $reset = 1 if (!defined($reset));
 
     # This will contain the mime boundary information in a mime message
 
@@ -1529,7 +1529,7 @@ method start_parse ($reset = undef) {
     $html_tag = '';
     $html_arg = '';
 
-    if ( $reset ) {
+    if ($reset) {
         %words = ();
     }
 
@@ -1541,9 +1541,9 @@ method start_parse ($reset = undef) {
     $ut = '';
     %quickmagnets = ();
 
-    $htmlbodycolor = $self->map_color( 'white' );
-    $htmlbackcolor = $self->map_color( 'white' );
-    $htmlfontcolor = $self->map_color( 'black' );
+    $htmlbodycolor = $self->map_color('white');
+    $htmlbackcolor = $self->map_color('white');
+    $htmlfontcolor = $self->map_color('black');
     $self->compute_html_color_distance();
 
     $in_headers = 1;
@@ -1554,22 +1554,22 @@ method start_parse ($reset = undef) {
     # Used to return a colorize page
 
     $colorized = '';
-    $colorized .= "<tt>" if ( defined( $color_resolver ) );
+    $colorized .= "<tt>" if (defined($color_resolver));
 
     # Clear the character set to avoid using the wrong charsets
     $charset = '';
 
-    if ( $lang eq 'Nihongo' ) {
+    if ($lang eq 'Nihongo') {
         # Since Text::Kakasi is not thread-safe, we use it under the
         # control of a Mutex to avoid a crash if we are running on
         # Windows.
-        if ( $need_kakasi_mutex ) {
+        if ($need_kakasi_mutex) {
             require POPFile::Mutex;
             $kakasi_mutex->acquire();
         }
 
         # Initialize Nihongo (Japanese) parser
-        $nihongo_parser{init}( $self );
+        $nihongo_parser{init}($self);
     }
 }
 
@@ -1592,8 +1592,8 @@ method stop_parse() {
     # a < in the text messing things up) and so we dump whatever is
     # stored in the HTML tag out
 
-    if ( $in_html_tag ) {
-        $self->add_line( "$html_tag $html_arg", 0, '' );
+    if ($in_html_tag) {
+        $self->add_line("$html_tag $html_arg", 0, '');
     }
 
     # if we are here, and still have headers stored, we must have a
@@ -1601,18 +1601,18 @@ method stop_parse() {
 
     # TODO: Fix me
 
-    if ( $cur_header ne '' ) {
-        $self->parse_header( $cur_header, $cur_argument,                             $cur_mime, $cur_encoding );        $cur_header = '';
+    if ($cur_header ne '') {
+        $self->parse_header($cur_header, $cur_argument,                             $cur_mime, $cur_encoding);        $cur_header = '';
         $cur_argument = '';
     }
 
     $in_html_tag = 0;
 
-    if ( $lang eq 'Nihongo' ) {
+    if ($lang eq 'Nihongo') {
         # Close Nihongo (Japanese) parser
-        $nihongo_parser{close}( $self );
+        $nihongo_parser{close}($self);
 
-        if ( $need_kakasi_mutex ) {
+        if ($need_kakasi_mutex) {
             require POPFile::Mutex;
             $kakasi_mutex->release();
         }
@@ -1631,20 +1631,20 @@ method stop_parse() {
 #
 # ----------------------------------------------------------------------------
 method parse_line ($read) {
-    if ( $read ne '' ) {
+    if ($read ne '') {
         # For the Mac we do further splitting of the line at the CR
         # characters
 
-        while ( $read =~ s/(.*?)[\r\n]+// ) {
+        while ($read =~ s/(.*?)[\r\n]+//) {
             my $line = "$1\r\n";
 
-            next if ( !defined( $line ) );
+            next if (!defined($line));
 
             print ">>> $line" if $debug;
 
             # Decode quoted-printable
 
-            if ( !$in_headers &&                 ( $cur_encoding =~ /quoted\-printable/i ) ) {                if ( $line =~ s/=\r\n$// ) {
+            if (!$in_headers &&                 ($cur_encoding =~ /quoted\-printable/i)) {                if ($line =~ s/=\r\n$//) {
                     # Encoded in multiple lines
 
                     $prev .= $line;
@@ -1653,31 +1653,31 @@ method parse_line ($read) {
                     $line = $prev . $line;
                     $prev = '';
                 }
-                $line = decode_qp( $line );
+                $line = decode_qp($line);
                 $line =~ s/\x00/NUL/g;
             }
 
-            if ( ( $lang eq 'Nihongo' ) &&                 !$in_headers &&
-                 ( $cur_encoding !~ /base64/i ) ) {
+            if (($lang eq 'Nihongo') &&                 !$in_headers &&
+                 ($cur_encoding !~ /base64/i)) {
                 # Decode \x??
                 $line =~ s/\\x([8-9A-F][A-F0-9])/pack("C", hex($1))/eig;
 
                 $line = convert_encoding(
                     $line, $charset, 'euc-jp', '7bit-jis',
-                    @{ $encoding_candidates{ $lang } } );
-                $line = $nihongo_parser{parse}( $self, $line );
+                    @{ $encoding_candidates{ $lang } });
+                $line = $nihongo_parser{parse}($self, $line);
             }
 
-            if ( defined( $color_resolver ) ) {
-                if ( !$in_html_tag ) {
+            if (defined($color_resolver)) {
+                if (!$in_html_tag) {
                     $colorized .= $ut;
                     $ut = '';
                 }
 
-                $ut .= $self->splitline( $line, $cur_encoding );
+                $ut .= $self->splitline($line, $cur_encoding);
             }
 
-            if ( $in_headers ) {
+            if ($in_headers) {
                 # temporary colorization while in headers is handled
                 # within parse_header
 
@@ -1685,16 +1685,16 @@ method parse_line ($read) {
 
                 # Check for blank line signifying end of headers
 
-                if ( $line =~ /^(\r\n|\r|\n)/ ) {
+                if ($line =~ /^(\r\n|\r|\n)/) {
                     # Parse the last header
-                    ( $cur_mime, $cur_encoding ) =                        $self->parse_header(
+                    ($cur_mime, $cur_encoding) =                        $self->parse_header(
                             $cur_header, $cur_argument,
-                            $cur_mime, $cur_encoding );
+                            $cur_mime, $cur_encoding);
                     # Clear the saved headers
                     $cur_header = '';
                     $cur_argument = '';
 
-                    $ut .= $self->splitline( "\015\012", 0 );
+                    $ut .= $self->splitline("\015\012", 0);
                     $ut .= "<a name=\"message_body\" />";
 
                     $in_headers = 0;
@@ -1706,7 +1706,7 @@ method parse_line ($read) {
                 # Append to argument if the next line begins with
                 # whitespace (isn't a new header)
 
-                if ( $line =~ /^([\t ])([^\r\n]+)/ ) {
+                if ($line =~ /^([\t ])([^\r\n]+)/) {
                     $cur_argument .= "$eol$1$2";
                     next;
                 }
@@ -1714,13 +1714,13 @@ method parse_line ($read) {
                 # If we have an email header then split it into the
                 # header and its argument
 
-                if ( $line =~ /^([A-Za-z\-]+):[ \t]*([^\n\r]*)/ ) {
+                if ($line =~ /^([A-Za-z\-]+):[ \t]*([^\n\r]*)/) {
                     # Parse the last header
 
-                    ( $cur_mime, $cur_encoding ) =                        $self->parse_header(
+                    ($cur_mime, $cur_encoding) =                        $self->parse_header(
                             $cur_header, $cur_argument,
-                            $cur_mime, $cur_encoding )
-                        if ( $cur_header ne '' );
+                            $cur_mime, $cur_encoding)
+                        if ($cur_header ne '');
                     # Save the new information for the current header
 
                     $cur_header = $1;
@@ -1733,12 +1733,12 @@ method parse_line ($read) {
 
             # If we are in a mime document then spot the boundaries
 
-            if ( ( $cur_mime ne '' ) &&                 ( $line =~ /^\-\-($cur_mime)(\-\-)?/ ) ) {
+            if (($cur_mime ne '') &&                 ($line =~ /^\-\-($cur_mime)(\-\-)?/)) {
                 # approach each mime part with fresh eyes
 
                 $cur_encoding = '';
 
-                if ( !defined( $2 ) ) {
+                if (!defined($2)) {
                     # This means there was no trailing -- on the mime
                     # boundary (which would have indicated the end of
                     # a boundary, so now we have a new part of the
@@ -1773,10 +1773,10 @@ method parse_line ($read) {
 
                     my $temp_mime = '';
 
-                    foreach my $aboundary ( split( /\|/, $cur_mime ) ) {
-                        if ( $boundary ne $aboundary ) {
-                            if ( $temp_mime ne '' ) {
-                                $temp_mime = join( '|',                                                   $temp_mime, $aboundary );                            } else {
+                    foreach my $aboundary (split(/\|/, $cur_mime)) {
+                        if ($boundary ne $aboundary) {
+                            if ($temp_mime ne '') {
+                                $temp_mime = join('|',                                                   $temp_mime, $aboundary);                            } else {
                                 $temp_mime = $aboundary;
                             }
                         }
@@ -1793,7 +1793,7 @@ method parse_line ($read) {
             # If we are doing base64 decoding then look for suitable
             # lines and remove them for decoding
 
-            if ( $cur_encoding =~ /base64/i ) {
+            if ($cur_encoding =~ /base64/i) {
                 $line =~ s/[\r\n]//g;
                 $line =~ s/!$//;
                 $base64 .= $line;
@@ -1801,9 +1801,9 @@ method parse_line ($read) {
                 next;
             }
 
-            next if ( !defined( $line ) );
+            next if (!defined($line));
 
-            $self->parse_html( $line, 0 );
+            $self->parse_html($line, 0);
         }
     }
 }
@@ -1819,33 +1819,33 @@ method parse_line ($read) {
 method clear_out_base64() {
     my $colorized = '';
 
-    if ( $base64 ne '' ) {
+    if ($base64 ne '') {
         my $decoded = '';
 
-        $ut = '' if ( defined( $color_resolver ) );
+        $ut = '' if (defined($color_resolver));
         $base64 =~ s/ //g;
 
         print "Base64 data: " . $base64 . "\n" if $debug;
 
-        $decoded = decode_base64( $base64 );
+        $decoded = decode_base64($base64);
 
-        if ( $lang eq 'Nihongo' ) {
+        if ($lang eq 'Nihongo') {
             $decoded = convert_encoding(
                 $decoded, $charset, 'euc-jp', '7bit-jis',
-                @{ $encoding_candidates{ $lang } } );
-            $decoded = $nihongo_parser{parse}( $self, $decoded );
+                @{ $encoding_candidates{ $lang } });
+            $decoded = $nihongo_parser{parse}($self, $decoded);
         }
 
-        $self->parse_html( $decoded, 1 );
+        $self->parse_html($decoded, 1);
 
         print "Decoded: " . $decoded . "\n" if $debug;
 
-        if ( defined( $color_resolver ) ) {
+        if (defined($color_resolver)) {
             $ut = "<b>Found in encoded data:</b> " . $ut;
         }
 
-        if ( defined( $color_resolver ) ) {
-            if ( $ut ne '' ) {
+        if (defined($color_resolver)) {
+            if ($ut ne '') {
                 $colorized = $ut;
                 $ut = '';
             }
@@ -1865,21 +1865,21 @@ method clear_out_base64() {
 #
 # ----------------------------------------------------------------------------
 method clear_out_qp() {
-    if ( ( $cur_encoding =~ /quoted\-printable/i ) &&
-         ( $prev ne '' ) ) {
-        my $line = decode_qp( $prev );
+    if (($cur_encoding =~ /quoted\-printable/i) &&
+         ($prev ne '')) {
+        my $line = decode_qp($prev);
         $line =~ s/\x00/NUL/g;
 
-        if ( $lang eq 'Nihongo' ) {
+        if ($lang eq 'Nihongo') {
             $line = convert_encoding(
                 $line, $charset, 'euc-jp', '7bit-jis',
-                @{ $encoding_candidates{ $lang } } );
-            $line = $nihongo_parser{parse}( $self, $line );
+                @{ $encoding_candidates{ $lang } });
+            $line = $nihongo_parser{parse}($self, $line);
         }
 
-        $ut .= $self->splitline( $line, '' );
+        $ut .= $self->splitline($line, '');
 
-        $self->parse_html( $line, 0 );
+        $self->parse_html($line, 0);
         $prev = '';
     }
 }
@@ -1909,39 +1909,39 @@ method decode_string ($mystring, $lang = undef) {
 
     my $charset = '';
 
-    return '' if ( !defined( $mystring ) );
+    return '' if (!defined($mystring));
 
-    $lang = $lang if ( !defined( $lang ) || ( $lang eq '' ) );
+    $lang = $lang if (!defined($lang) || ($lang eq ''));
 
     my $output = '';
     my $last_is_encoded = 0;
 
-    while ( $mystring =~ m/(.*?)(=\?([\w-]+)\?(B|Q)\?(.*?)\?=)/igc ) {
-        my ( $pre, $atom, $encoding, $value );
-        ( $pre, $atom, $charset, $encoding, $value ) = ( $1, $2, $3, $4, $5 );
+    while ($mystring =~ m/(.*?)(=\?([\w-]+)\?(B|Q)\?(.*?)\?=)/igc) {
+        my ($pre, $atom, $encoding, $value);
+        ($pre, $atom, $charset, $encoding, $value) = ($1, $2, $3, $4, $5);
 
-        $output .= $pre unless ( $last_is_encoded && defined( $atom )                                    && ( $pre =~ /^[\t ]+$/ ) );      # PROFILE BLOCK STOP( Per RFC 2047 section 6.2 )
+        $output .= $pre unless ($last_is_encoded && defined($atom)                                    && ($pre =~ /^[\t ]+$/));      # PROFILE BLOCK STOP( Per RFC 2047 section 6.2 )
 
-        if ( defined( $atom ) ) {
-            if ( $encoding =~ /^[bB]$/ ) {
-                $value = decode_base64( $value );
+        if (defined($atom)) {
+            if ($encoding =~ /^[bB]$/) {
+                $value = decode_base64($value);
 
                 # for Japanese header
 
-                if ( $lang eq 'Nihongo' ) {
-                    $value = convert_encoding(                        $value, $charset, 'euc-jp', '7bit-jis',
-                        @{ $encoding_candidates{ $lang } } );                }
+                if ($lang eq 'Nihongo') {
+                    $value = convert_encoding($value, $charset, 'euc-jp', '7bit-jis',
+                        @{ $encoding_candidates{ $lang } });                }
                 $last_is_encoded = 1;
-            } elsif ( $encoding =~ /^[qQ]$/ ) {
+            } elsif ($encoding =~ /^[qQ]$/) {
                 $value =~ s/\_/=20/g;
-                $value = decode_qp( $value );
+                $value = decode_qp($value);
                 $value =~ s/\x00/NUL/g;
 
                 # for Japanese header
 
-                if ( $lang eq 'Nihongo' ) {
-                    $value = convert_encoding(                        $value, $charset, 'euc-jp', '7bit-jis',
-                        @{ $encoding_candidates{ $lang } } );                }
+                if ($lang eq 'Nihongo') {
+                    $value = convert_encoding($value, $charset, 'euc-jp', '7bit-jis',
+                        @{ $encoding_candidates{ $lang } });                }
                 $last_is_encoded = 1;
             }
         } else {
@@ -1952,7 +1952,7 @@ method decode_string ($mystring, $lang = undef) {
 
     # grab the unmatched tail (thanks to /gc and \G)
 
-    $output .= $1 if ( $mystring =~ m/\G(.*)/g );
+    $output .= $1 if ($mystring =~ m/\G(.*)/g);
 
     return $output;
 }
@@ -1998,21 +1998,21 @@ method parse_header ($header, $argument, $mime, $encoding) {
     $argument =~ s/(\r\n|\r|\n)//g;
     $argument =~ s/^[ \t]+//;
 
-    if ( $self->update_pseudoword( 'header', $header, 0, $header ) ) {
-        if ( defined( $color_resolver ) ) {
-            my $color = $self->get_color( "header:$header" );
+    if ($self->update_pseudoword('header', $header, 0, $header)) {
+        if (defined($color_resolver)) {
+            my $color = $self->get_color("header:$header");
             $ut = "<b><font color=\"$color\">$header</font></b>: $fix_argument\015\012";
         }
     } else {
-        if ( defined( $color_resolver ) ) {
+        if (defined($color_resolver)) {
             $ut = "$header: $fix_argument\015\012";
         }
     }
 
     # Check the encoding type in all RFC 2047 encoded headers
 
-    if ( $argument =~ /=\?([^\r\n\t ]{1,40})\?(Q|B)/i ) {
-        $self->update_word( $1, 0, '', '', 'charset' );
+    if ($argument =~ /=\?([^\r\n\t ]{1,40})\?(Q|B)/i) {
+        $self->update_word($1, 0, '', '', 'charset');
     }
 
     # Handle the From, To and Cc headers and extract email addresses
@@ -2029,65 +2029,65 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
     my $prefix = '';
 
-    if ( $header =~ /^(From|To|Cc|Reply\-To)$/i ) {
+    if ($header =~ /^(From|To|Cc|Reply\-To)$/i) {
         # These headers at least can be decoded
 
-        $argument = $self->decode_string( $argument, $lang );
+        $argument = $self->decode_string($argument, $lang);
 
-        if ( $header =~ /^From$/i ) {
+        if ($header =~ /^From$/i) {
             $prefix = 'from';
-            if ( $from eq '' ) {
+            if ($from eq '') {
                 $from = $argument;
                 $from =~ s/[\t\r\n]//g;
             }
         }
 
-        if ( $header =~ /^To$/i ) {
+        if ($header =~ /^To$/i) {
             $prefix = 'to';
-            if ( $to eq '' ) {
+            if ($to eq '') {
                 $to = $argument;
                 $to =~ s/[\t\r\n]//g;
             }
         }
 
-        if ( $header =~ /^Cc$/i ) {
+        if ($header =~ /^Cc$/i) {
             $prefix = 'cc';
-            if ( $cc eq '' ) {
+            if ($cc eq '') {
                 $cc = $argument;
                 $cc =~ s/[\t\r\n]//g;
             }
         }
 
-        while ( $argument =~ s/<([[:alpha:]0-9\-_\.]+?@([[:alpha:]0-9\-_\.]+?))>// ) {
-            $self->update_word( $1, 0, ';', '&', $prefix );
-            $self->add_url( $2, 0, '@', '[&<]', $prefix );
+        while ($argument =~ s/<([[:alpha:]0-9\-_\.]+?@([[:alpha:]0-9\-_\.]+?))>//) {
+            $self->update_word($1, 0, ';', '&', $prefix);
+            $self->add_url($2, 0, '@', '[&<]', $prefix);
         }
 
-        while ( $argument =~ s/([[:alpha:]0-9\-_\.]+?@([[:alpha:]0-9\-_\.]+))// ) {
-            $self->update_word( $1, 0, '', '', $prefix );
-            $self->add_url( $2, 0, '@', '', $prefix );
+        while ($argument =~ s/([[:alpha:]0-9\-_\.]+?@([[:alpha:]0-9\-_\.]+))//) {
+            $self->update_word($1, 0, '', '', $prefix);
+            $self->add_url($2, 0, '@', '', $prefix);
         }
 
-        $self->add_line( $argument, 0, $prefix );
-        return ( $mime, $encoding );
+        $self->add_line($argument, 0, $prefix);
+        return ($mime, $encoding);
     }
 
-    if ( $header =~ /^Subject$/i ) {
+    if ($header =~ /^Subject$/i) {
         $prefix = 'subject';
-        $argument = $self->decode_string( $argument, $lang );
-        if ( $subject eq '' ) {
+        $argument = $self->decode_string($argument, $lang);
+        if ($subject eq '') {
             # In Japanese mode, parse subject with Nihongo (Japanese) parser
 
-            $argument = $nihongo_parser{parse}( $self, $argument )
-                if ( ( $lang eq 'Nihongo' ) && ( $argument ne '' ) );
+            $argument = $nihongo_parser{parse}($self, $argument)
+                if (($lang eq 'Nihongo') && ($argument ne ''));
             $subject = $argument;
             $subject =~ s/[\t\r\n]//g;
         }
     }
 
-    $date = $argument if ( $header =~ /^Date$/i );
+    $date = $argument if ($header =~ /^Date$/i);
 
-    if ( $header =~ /^X-Spam-Status$/i ) {
+    if ($header =~ /^X-Spam-Status$/i) {
         # We have found a header added by SpamAssassin. We expect to
         # find keywords in here that will help us classify our
         # messages
@@ -2095,23 +2095,23 @@ method parse_header ($header, $argument, $mime, $encoding) {
         # We will find the keywords after the phrase "tests=" and
         # before SpamAssassin's version number or autolearn= string
 
-        ( my $sa_keywords = $argument ) =~ s/[\r\n ]//sg;
+        (my $sa_keywords = $argument) =~ s/[\r\n ]//sg;
         $sa_keywords =~ s/^.+tests=(.+)/$1/;
         $sa_keywords =~ s/(.+)autolearn.+$/$1/ or
             $sa_keywords =~ s/(.+)version.+$/$1/;
         # remove all spaces that may still be present:
         $sa_keywords =~ s/[\t ]//g;
 
-        foreach ( split /,/, $sa_keywords ) {
-            $self->update_pseudoword( 'spamassassin', lc( $_ ), 0, $argument );
+        foreach (split /,/, $sa_keywords) {
+            $self->update_pseudoword('spamassassin', lc($_), 0, $argument);
         }
     }
 
-    if ( $header =~ /^X-SpamViper-Score$/ ) {
+    if ($header =~ /^X-SpamViper-Score$/) {
         # This is a header that was added by SpamViper. Works just
         # like the SpamAssassin header.
 
-        ( my $sv_keywords = $argument ) =~ s/[\r\n]//g;
+        (my $sv_keywords = $argument) =~ s/[\r\n]//g;
 
         # The keywords can be found after the phrase "Mail scored X
         # points":
@@ -2119,90 +2119,90 @@ method parse_header ($header, $argument, $mime, $encoding) {
         $sv_keywords =~ s/Mail scored \d+ points //;
         $sv_keywords =~ s/[\t ]//g;
 
-        foreach ( split /,/, $sv_keywords ) {
-            $self->update_pseudoword( 'spamviper', lc( $_ ), 0, $argument );
+        foreach (split /,/, $sv_keywords) {
+            $self->update_pseudoword('spamviper', lc($_), 0, $argument);
         }
     }
 
-    if ( $header =~ /^X-Spam-Level$/i ) {
-        my $count = ( $argument =~ tr/*// );
-        for ( 1 .. $count ) {
-            $self->update_pseudoword( 'spamassassinlevel', 'spam',                                      0, $argument );        }
+    if ($header =~ /^X-Spam-Level$/i) {
+        my $count = ($argument =~ tr/*//);
+        for (1 .. $count) {
+            $self->update_pseudoword('spamassassinlevel', 'spam',                                      0, $argument);        }
     }
 
     # Look for MIME
 
-    if ( $header =~ /^Content-Type$/i ) {
-        if ( $argument =~ /charset=\"?([^\"\r\n\t ]{1,40})\"?/ ) {
+    if ($header =~ /^Content-Type$/i) {
+        if ($argument =~ /charset=\"?([^\"\r\n\t ]{1,40})\"?/) {
             $charset = $1;
-            $self->update_word( $1, 0, '', '', 'charset' );
+            $self->update_word($1, 0, '', '', 'charset');
         }
 
-        if ( $argument =~ /^(.*?)(;)/ ) {
+        if ($argument =~ /^(.*?)(;)/) {
             print "Set content type to $1\n" if $debug;
             $content_type = $1;
         }
 
-        if ( $argument =~ /multipart\//i ) {
+        if ($argument =~ /multipart\//i) {
             my $boundary = $argument;
 
-            if ( $boundary =~ /boundary=[ ]?                               (\"([A-Z0-9\'\(\)\+\_\,\-\.\/\:\=\?]
+            if ($boundary =~ /boundary=[ ]?                               (\"([A-Z0-9\'\(\)\+\_\,\-\.\/\:\=\?]
                                    [A-Z0-9\'\(\)\+_,\-\.\/:=\? \@]{0,69})\"|
                                 ([^\(\)\<\>\@\,\;\:\\\"\/\[\]\?\=]{1,70})
-                               )/ix ) {
-                $boundary = ( $2 || $3 );
+                               )/ix) {
+                $boundary = ($2 || $3);
 
                 $boundary =~ s/(.*)/\Q$1\E/g;
 
-                if ( $mime ne '' ) {
+                if ($mime ne '') {
                     # Fortunately the pipe character isn't a valid
                     # mime boundary character!
 
-                    $mime = join( '|', $mime, $boundary );
+                    $mime = join('|', $mime, $boundary);
                 } else {
                     $mime = $boundary;
                 }
                 print "Set mime boundary to $mime\n" if $debug;
-                return ( $mime, $encoding );
+                return ($mime, $encoding);
             }
         }
 
-        if ( $argument =~ /name=\"(.*)\"/i ) {
-            $self->add_attachment_filename( $1 );
+        if ($argument =~ /name=\"(.*)\"/i) {
+            $self->add_attachment_filename($1);
         }
 
-        return ( $mime, $encoding );
+        return ($mime, $encoding);
     }
 
     # Look for the different encodings in a MIME document, when we hit
     # base64 we will do a special parse here since words might be
     # broken across the boundaries
 
-    if ( $header =~ /^Content-Transfer-Encoding$/i ) {
+    if ($header =~ /^Content-Transfer-Encoding$/i) {
         $encoding = $argument;
         print "Setting encoding to $encoding\n" if $debug;
         my $compact_encoding = $encoding;
         $compact_encoding =~ s/[^A-Za-z0-9]//g;
-        $self->update_pseudoword( 'encoding', $compact_encoding,                                  0, $encoding );        return ( $mime, $encoding );
+        $self->update_pseudoword('encoding', $compact_encoding,                                  0, $encoding);        return ($mime, $encoding);
     }
 
     # Some headers to discard
 
-    return ( $mime, $encoding )
-        if ( $header =~ /^(Thread-Index|X-UIDL|Message-ID|
-                           X-Text-Classification|X-Mime-Key)$/ix );
+    return ($mime, $encoding)
+        if ($header =~ /^(Thread-Index|X-UIDL|Message-ID|
+                           X-Text-Classification|X-Mime-Key)$/ix);
     # Some headers should never be RFC 2047 decoded
 
-    $argument = $self->decode_string( $argument, $lang )
-        if ( $header !~ /^(Received|Content\-Type|Content\-Disposition)$/i );
-    if ( $header =~ /^Content-Disposition$/i ) {
-        $self->handle_disposition( $argument );
-        return ( $mime, $encoding );
+    $argument = $self->decode_string($argument, $lang)
+        if ($header !~ /^(Received|Content\-Type|Content\-Disposition)$/i);
+    if ($header =~ /^Content-Disposition$/i) {
+        $self->handle_disposition($argument);
+        return ($mime, $encoding);
     }
 
-    $self->add_line( $argument, 0, $prefix );
+    $self->add_line($argument, 0, $prefix);
 
-    return ( $mime, $encoding );
+    return ($mime, $encoding);
 }
 
 # ----------------------------------------------------------------------------
@@ -2220,17 +2220,17 @@ method parse_header ($header, $argument, $mime, $encoding) {
 method parse_css_style ($line, $braces) {
     # http://www.w3.org/TR/CSS2/grammar.html
 
-    $braces = 0 if ( !defined( $braces ) );
+    $braces = 0 if (!defined($braces));
 
     # A reference is used to return data
 
     my $hash = {};
 
-    if ( $braces ) {
+    if ($braces) {
         $line =~ s/\{(.*?)\}/$1/;
     }
-    while ( $line =~ s/^[ \t\r\n\f]*                       ([a-z][a-z0-9\-]+)[ \t\r\n\f]*:
-                       [ \t\r\n\f]*(.*?)[ \t\r\n\f]?(;|$)//ix ) {        $hash->{ lc( $1 ) } = $2;
+    while ($line =~ s/^[ \t\r\n\f]*                       ([a-z][a-z0-9\-]+)[ \t\r\n\f]*:
+                       [ \t\r\n\f]*(.*?)[ \t\r\n\f]?(;|$)//ix) {        $hash->{ lc($1) } = $2;
     }
     return $hash;
 }
@@ -2253,9 +2253,9 @@ method parse_css_color ($color) {
 
     # http://www.w3.org/TR/CSS2/syndata.html#color-units
 
-    my ( $r, $g, $b, $error, $found ) = ( 0, 0, 0, 0, 0 );
+    my ($r, $g, $b, $error, $found) = (0, 0, 0, 0, 0);
 
-    if ( $color =~ /^rgb\( ?(.*?) ?\, ?(.*?) ?\, ?(.*?) ?\)$/ ) {
+    if ($color =~ /^rgb\( ?(.*?) ?\, ?(.*?) ?\, ?(.*?) ?\)$/) {
         # rgb(r,g,b) can be expressed as values 0-255 or percentages 0%-100%,
         # numbers outside this range are allowed and should be clipped into
         # this range
@@ -2265,49 +2265,49 @@ method parse_css_color ($color) {
         #       is a waste as is repeatedly decoding
         #       from hh hh hh format
 
-        ( $r, $g, $b ) = ( $1, $2, $3 );
+        ($r, $g, $b) = ($1, $2, $3);
 
         my $ispercent = 0;
 
         my $value_re = qr/^((-[1-9]\d*)|([1-9]\d*|0))$/;
         my $percent_re = qr/^([1-9]\d+|0)%$/;
 
-        my ( $r_temp, $g_temp, $b_temp );
+        my ($r_temp, $g_temp, $b_temp);
 
-        if ( ( ($r_temp) = ($r =~ $percent_re) ) &&             ( ($g_temp) = ($g =~ $percent_re) ) &&
-             ( ($b_temp) = ($b =~ $percent_re) ) ) {
+        if ((($r_temp) = ($r =~ $percent_re)) &&             (($g_temp) = ($g =~ $percent_re)) &&
+             (($b_temp) = ($b =~ $percent_re))) {
             $ispercent = 1;
 
             # clip to 0-100
-            $r_temp = 100 if ( $r_temp > 100 );
-            $g_temp = 100 if ( $g_temp > 100 );
-            $b_temp = 100 if ( $b_temp > 100 );
+            $r_temp = 100 if ($r_temp > 100);
+            $g_temp = 100 if ($g_temp > 100);
+            $b_temp = 100 if ($b_temp > 100);
 
             # convert into 0-255 range
-            $r = int( ( ( $r_temp / 100 ) * 255 ) + .5 );
-            $g = int( ( ( $g_temp / 100 ) * 255 ) + .5 );
-            $b = int( ( ( $b_temp / 100 ) * 255 ) + .5 );
+            $r = int((($r_temp / 100) * 255) + .5);
+            $g = int((($g_temp / 100) * 255) + .5);
+            $b = int((($b_temp / 100) * 255) + .5);
 
             $found = 1;
         }
 
-        if ( ( $r =~ $value_re ) &&             ( $g =~ $value_re ) &&
-             ( $b =~ $value_re ) ) {
+        if (($r =~ $value_re) &&             ($g =~ $value_re) &&
+             ($b =~ $value_re)) {
             $ispercent = 0;
 
             #clip to 0-255
 
-            $r =   0 if ( $r <=   0 );
-            $r = 255 if ( $r >= 255 );
-            $g =   0 if ( $g <=   0 );
-            $g = 255 if ( $g >= 255 );
-            $b =   0 if ( $b <=   0 );
-            $b = 255 if ( $b >= 255 );
+            $r =   0 if ($r <=   0);
+            $r = 255 if ($r >= 255);
+            $g =   0 if ($g <=   0);
+            $g = 255 if ($g >= 255);
+            $b =   0 if ($b <=   0);
+            $b = 255 if ($b >= 255);
 
             $found = 1;
         }
 
-        if ( !$found ) {
+        if (!$found) {
             # here we have a combination of percentages and integers
             # or some other oddity
             $ispercent = 0;
@@ -2316,53 +2316,53 @@ method parse_css_color ($color) {
 
         print "        CSS rgb($r, $g, $b) percent: $ispercent\n" if $debug;
     }
-    if ( $color =~ /^#(([0-9a-f]{3})|([0-9a-f]{6}))$/i ) {
+    if ($color =~ /^#(([0-9a-f]{3})|([0-9a-f]{6}))$/i) {
         # #rgb or #rrggbb
         print "        CSS numeric form: $color\n" if $debug;
 
         $color = $2 || $3;
 
-        if ( defined( $2 ) ) {
+        if (defined($2)) {
             # in 3 value form, the value is computed by doubling each digit
 
-            ( $r, $g, $b ) = ( hex( $1 x 2 ), hex( $2 x 2 ), hex( $3 x 2 ) )
-                if ( $color =~ /^(.)(.)(.)$/ );
+            ($r, $g, $b) = (hex($1 x 2), hex($2 x 2), hex($3 x 2))
+                if ($color =~ /^(.)(.)(.)$/);
         } else {
-            ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )
-                if ( $color =~ /^(..)(..)(..)$/ );
+            ($r, $g, $b) = (hex($1), hex($2), hex($3))
+                if ($color =~ /^(..)(..)(..)$/);
         }
         $found = 1;
     }
-    if ( $color =~ /^(aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|                      olive|purple|red|silver|teal|white|yellow)$/i ) {
+    if ($color =~ /^(aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|                      olive|purple|red|silver|teal|white|yellow)$/i) {
         # these are the only CSS defined colours
 
         print "       CSS textual color form: $color\n" if $debug;
 
-        my $new_color = $self->map_color( $color );
+        my $new_color = $self->map_color($color);
 
         # our color map may have failed
 
-        $error = 1 if ( $new_color eq $color );
-        ( $r, $g, $b ) = ( hex( $1 ), hex( $2 ), hex( $3 ) )
-            if ( $new_color =~ /^(..)(..)(..)$/ );
+        $error = 1 if ($new_color eq $color);
+        ($r, $g, $b) = (hex($1), hex($2), hex($3))
+            if ($new_color =~ /^(..)(..)(..)$/);
         $found = 1;
     }
 
-    $found = 0 if ( $error );
+    $found = 0 if ($error);
 
-    if ( $found &&
-         defined( $r ) && ( 0 <= $r ) && ( $r <= 255 ) &&
-         defined( $g ) && ( 0 <= $g ) && ( $g <= 255 ) &&
-         defined( $b ) && ( 0 <= $b ) && ( $b <= 255 ) ) {
-        if ( wantarray ) {
-            return ( $r, $g, $b );
+    if ($found &&
+         defined($r) && (0 <= $r) && ($r <= 255) &&
+         defined($g) && (0 <= $g) && ($g <= 255) &&
+         defined($b) && (0 <= $b) && ($b <= 255)) {
+        if (wantarray) {
+            return ($r, $g, $b);
         } else {
-            $color = sprintf( '%1$02x%2$02x%3$02x', $r, $g, $b );
+            $color = sprintf('%1$02x%2$02x%3$02x', $r, $g, $b);
             return $color;
         }
     } else {
-        if ( wantarray ) {
-            return ( -1, -1, -1 );
+        if (wantarray) {
+            return (-1, -1, -1);
         } else {
             return "error";
         }
@@ -2382,7 +2382,7 @@ method parse_css_color ($color) {
 method match_attachment_filename ($line) {
     $line =~ /\s*(.*);\s*filename=\"(.*)\"/;
 
-    return ( $1, $2 );
+    return ($1, $2);
 }
 
 # ----------------------------------------------------------------------------
@@ -2395,10 +2395,10 @@ method match_attachment_filename ($line) {
 #
 # ----------------------------------------------------------------------------
 method file_extension ($filename) {
-    if ( $filename =~ m/(.*)\.(.*)$/ ) {
-        return ( $1, $2 );
+    if ($filename =~ m/(.*)\.(.*)$/) {
+        return ($1, $2);
     } else {
-        return ( $filename, '' );
+        return ($filename, '');
     }
 }
 
@@ -2411,20 +2411,20 @@ method file_extension ($filename) {
 #
 # ----------------------------------------------------------------------------
 method add_attachment_filename ($filename) {
-    if ( defined( $filename ) && ( $filename ne '' ) ) {
+    if (defined($filename) && ($filename ne '')) {
         print "Add filename $filename\n" if $debug;
 
         # Decode the filename
-        $filename = $self->decode_string( $filename );
+        $filename = $self->decode_string($filename);
 
-        my ( $name, $ext ) = $self->file_extension( $filename );
+        my ($name, $ext) = $self->file_extension($filename);
 
-        if ( defined( $name ) && ( $name ne '' ) ) {
-            $self->update_pseudoword( 'mimename', $name, 0, $name );
+        if (defined($name) && ($name ne '')) {
+            $self->update_pseudoword('mimename', $name, 0, $name);
         }
 
-        if ( defined( $ext ) && ( $ext ne '' ) ) {
-            $self->update_pseudoword( 'mimeextension', $ext, 0, $ext );
+        if (defined($ext) && ($ext ne '')) {
+            $self->update_pseudoword('mimeextension', $ext, 0, $ext);
         }
     }
 }
@@ -2439,10 +2439,10 @@ method add_attachment_filename ($filename) {
 #
 # ----------------------------------------------------------------------------
 method handle_disposition ($params) {
-    my ( $attachment, $filename ) = $self->match_attachment_filename( $params );
+    my ($attachment, $filename) = $self->match_attachment_filename($params);
 
-    if ( defined( $attachment ) && ( $attachment eq 'attachment' ) ) {
-        $self->add_attachment_filename( $filename );
+    if (defined($attachment) && ($attachment eq 'attachment')) {
+        $self->add_attachment_filename($filename);
     }
 }
 
@@ -2462,7 +2462,7 @@ method splitline ($line, $encoding) {
     $line =~ s/</&lt;/g;
     $line =~ s/>/&gt;/g;
 
-    if ( $encoding =~ /quoted\-printable/i ) {
+    if ($encoding =~ /quoted\-printable/i) {
         $line =~ s/=3C/&lt;/g;
         $line =~ s/=3E/&gt;/g;
     }
@@ -2502,40 +2502,40 @@ method words() {
 sub convert_encoding($string, $from, $to, $default, @candidates) {
 
     # If the string contains only ascii characters, do nothing.
-    return $string if ( $string =~ /^[\r\n\t\x20-\x7E]*$/ );
+    return $string if ($string =~ /^[\r\n\t\x20-\x7E]*$/);
 
     require Encode;
     require Encode::Guess;
 
     # First, guess the encoding.
 
-    my $enc = Encode::Guess::guess_encoding( $string, @candidates );
+    my $enc = Encode::Guess::guess_encoding($string, @candidates);
 
-    if ( ref $enc ) {
+    if (ref $enc) {
         $from = $enc->name;
     } else {
         # If guess does not work, check whether $from is valid.
 
-        if ( !( Encode::resolve_alias( $from ) ) ) {
+        if (!(Encode::resolve_alias($from))) {
             # Use $default as $from when $from is invalid.
 
             $from = $default;
         }
     }
 
-    if ( $from ne $to ) {
-        my ( $orig_string ) = $string;
+    if ($from ne $to) {
+        my ($orig_string) = $string;
 
         # Workaround for Encode::Unicode error bug.
         eval {
             no warnings 'utf8';
-            if ( ref $enc ) {
-                $string = Encode::encode( $to, $enc->decode( $string ) );
+            if (ref $enc) {
+                $string = Encode::encode($to, $enc->decode($string));
             } else {
-                Encode::from_to( $string, $from, $to );
+                Encode::from_to($string, $from, $to);
             }
         };
-        $string = $orig_string if ( $@ );
+        $string = $orig_string if ($@);
     }
     return $string;
 }
@@ -2555,10 +2555,10 @@ sub convert_encoding($string, $from, $to, $default, @candidates) {
 # ----------------------------------------------------------------------------
 method parse_line_with_kakasi ($line) {
     # If the line does not contain Japanese characters, do nothing
-    return $line if ( $line =~ /^[\x00-\x7F]*$/ );
+    return $line if ($line =~ /^[\x00-\x7F]*$/);
 
     # Split Japanese line into words using Kakasi Wakachigaki mode
-    $line = Text::Kakasi::do_kakasi( $line );
+    $line = Text::Kakasi::do_kakasi($line);
 
     return $line;
 }
@@ -2577,10 +2577,10 @@ method parse_line_with_kakasi ($line) {
 # ----------------------------------------------------------------------------
 method parse_line_with_mecab ($line) {
     # If the line does not contain Japanese characters, do nothing
-    return $line if ( $line =~ /^[\x00-\x7F]*$/ );
+    return $line if ($line =~ /^[\x00-\x7F]*$/);
 
     # Split Japanese line into words using MeCab
-    $line = $nihongo_parser{obj_mecab}->parse( $line );
+    $line = $nihongo_parser{obj_mecab}->parse($line);
 
     # Remove the unnecessary white spaces
     $line =~ s/([\x00-\x1f\x21-\x7f]) (?=[\x00-\x1f\x21-\x7f])/$1/g;
@@ -2601,7 +2601,7 @@ method parse_line_with_mecab ($line) {
 # ----------------------------------------------------------------------------
 method parse_line_with_internal_parser ($line) {
     # If the line does not contain Japanese characters, do nothing
-    return $line if ( $line =~ /^[\x00-\x7F]*$/ );
+    return $line if ($line =~ /^[\x00-\x7F]*$/);
 
     # Split Japanese line into words by the kind of characters
     $line =~ s/\G$euc_jp_word/$1 /og;
@@ -2622,7 +2622,7 @@ sub init_kakasi
     # Kakasi as argument). Both input and ouput encoding are
     # EUC-JP.
 
-    Text::Kakasi::getopt_argv( 'kakasi', '-w', '-ieuc', '-oeuc' );
+    Text::Kakasi::getopt_argv('kakasi', '-w', '-ieuc', '-oeuc');
 }
 
 # ----------------------------------------------------------------------------
@@ -2636,7 +2636,7 @@ method init_mecab() {
     # Initialize MeCab (-F %M\s -U %M\s -E \n is passed to MeCab as argument).
     # Insert white spaces after words.
 
-    $nihongo_parser{obj_mecab} = MeCab::Tagger->new( '-F %M\s -U %M\s -E \n' );}
+    $nihongo_parser{obj_mecab} = MeCab::Tagger->new('-F %M\s -U %M\s -E \n');}
 
 # ----------------------------------------------------------------------------
 #
@@ -2673,39 +2673,39 @@ method close_mecab() {
 # ----------------------------------------------------------------------------
 method setup_nihongo_parser ($nihongo_parser) {
     # If MeCab is installed, use MeCab.
-    if ( $nihongo_parser eq 'mecab' ) {
+    if ($nihongo_parser eq 'mecab') {
         my $has_mecab = 0;
 
-        foreach my $prefix ( @INC ) {
+        foreach my $prefix (@INC) {
             my $realfilename = "$prefix/MeCab.pm";
-            if ( -f $realfilename ) {
+            if (-f $realfilename) {
                 $has_mecab = 1;
                 last;
             }
         }
 
         # If MeCab is not installed, try to use Text::Kakasi.
-        $nihongo_parser = 'kakasi' if ( !$has_mecab );
+        $nihongo_parser = 'kakasi' if (!$has_mecab);
     }
 
     # If Text::Kakasi is installed, use Text::Kakasi.
-    if ( $nihongo_parser eq 'kakasi' ) {
+    if ($nihongo_parser eq 'kakasi') {
         my $has_kakasi = 0;
 
-        foreach my $prefix ( @INC ) {
+        foreach my $prefix (@INC) {
             my $realfilename = "$prefix/Text/Kakasi.pm";
-            if ( -f $realfilename ) {
+            if (-f $realfilename) {
                 $has_kakasi = 1;
                 last;
             }
         }
 
         # If Kakasi is not installed, use the internal parser.
-        $nihongo_parser = 'internal' if ( !$has_kakasi );
+        $nihongo_parser = 'internal' if (!$has_kakasi);
     }
 
     # Setup perser's subroutines
-    if ( $nihongo_parser eq 'mecab' ) {
+    if ($nihongo_parser eq 'mecab') {
         # Import MeCab module
         require MeCab;
         MeCab->import();
@@ -2713,7 +2713,7 @@ method setup_nihongo_parser ($nihongo_parser) {
         $nihongo_parser{init} = \&init_mecab;
         $nihongo_parser{parse} = \&parse_line_with_mecab;
         $nihongo_parser{close} = \&close_mecab;
-    } elsif ( $nihongo_parser eq 'kakasi' ) {
+    } elsif ($nihongo_parser eq 'kakasi') {
         # Import Text::Kakasi module
         require Text::Kakasi;
         Text::Kakasi->import();

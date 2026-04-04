@@ -44,7 +44,7 @@ if (@ARGV) {
     $POPFile->debug(0);
     $POPFile->CORE_loader_init();
     $POPFile->CORE_signals();
-    $POPFile->CORE_load( 1 );
+    $POPFile->CORE_load(1);
     $POPFile->CORE_link_components();
     $POPFile->CORE_initialize();
 
@@ -58,30 +58,30 @@ if (@ARGV) {
 
     @ARGV = ();
 
-    if ( $POPFile->CORE_config() ) {
+    if ($POPFile->CORE_config()) {
 
         # Prevent the tool from finding another copy of POPFile running
 
         my $c = $POPFile->get_module('POPFile::Config');
-        my $current_piddir = $c->config('piddir' );
-        $c->config('piddir', $c->config('piddir' ) . 'bayes.pl.' );
+        my $current_piddir = $c->config('piddir');
+        $c->config('piddir', $c->config('piddir') . 'bayes.pl.');
 
         $POPFile->CORE_start();
 
         my $b = $POPFile->get_module('Classifier::Bayes');
-        my $session = $b->get_session_key( 'admin', '' );
+        my $session = $b->get_session_key('admin', '');
 
         foreach my $file (@files) {
-            if ( !(-e $file) ) {
+            if (!(-e $file)) {
                 print STDERR "Error: File `$file' does not exist, classification aborted.\n";
                 $code = 1;
                 last;
             }
         }
 
-        if ( $code == 0 ) {
+        if ($code == 0) {
             foreach my $file (@files) {
-                print "`$file' is `" . $b->classify( $session, $file ) . "'\n";
+                print "`$file' is `" . $b->classify($session, $file) . "'\n";
             }
 
             foreach my $word (sort keys %{$b->{parser__}->{words__}}) {
@@ -89,13 +89,13 @@ if (@ARGV) {
             }
         }
 
-        $c->config('piddir', $current_piddir );
+        $c->config('piddir', $current_piddir);
 
         # Reload configuration file ( to avoid updating configurations )
 
         $c->load_configuration();
 
-        $b->release_session_key( $session );
+        $b->release_session_key($session);
         $POPFile->CORE_stop();
     }
 }

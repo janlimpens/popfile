@@ -42,10 +42,10 @@ $packing_list .= '/popfile.pck';
 my $fatal = 0;
 my @log;
 
-if ( open PACKING, "<$packing_list" ) {
+if (open PACKING, "<$packing_list") {
     while (<PACKING>) {
-        if ( /^(REQUIRED|OPTIONAL-([^\t]+))\t([^\t]+)\t([^\r\n]+)/ ) {
-            my ( $required, $why, $version, $module ) = ( $1, $2, $3, $4 );
+        if (/^(REQUIRED|OPTIONAL-([^\t]+))\t([^\t]+)\t([^\r\n]+)/) {
+            my ($required, $why, $version, $module) = ($1, $2, $3, $4);
 
             # Find the module and set $ver to the loaded version, or -1 if
             # the module was not found
@@ -57,8 +57,8 @@ if ( open PACKING, "<$packing_list" ) {
             $ver = ${"${module}::VERSION"} || ${"${module}::VERSION"} || 0;
             $ver = -1 if $@;
 
-            if ( $ver == -1 ) {
-                if ( $required eq 'REQUIRED' ) {
+            if ($ver == -1) {
+                if ($required eq 'REQUIRED') {
                     $fatal = 1;
                     print STDERR "ERROR: POPFile needs Perl module $module, please install it.\n";
                 } else {
@@ -74,8 +74,8 @@ if ( open PACKING, "<$packing_list" ) {
 
 use strict;
 use locale;
-use lib defined( $ENV{POPFILE_ROOT} ) ? $ENV{POPFILE_ROOT} : '.';
-use lib (defined( $ENV{POPFILE_ROOT} ) ? $ENV{POPFILE_ROOT} : '.') . '/lib';
+use lib defined($ENV{POPFILE_ROOT}) ? $ENV{POPFILE_ROOT} : '.';
+use lib (defined($ENV{POPFILE_ROOT}) ? $ENV{POPFILE_ROOT} : '.') . '/lib';
 use POPFile::Loader;
 
 # POPFile is actually loaded by the POPFile::Loader object which does all
@@ -103,10 +103,10 @@ $POPFile->CORE_load();
 $POPFile->CORE_link_components();
 $POPFile->CORE_initialize();
 print "POPFile " . $POPFile->CORE_version() . "\n";
-if ( $POPFile->CORE_config() ) {
+if ($POPFile->CORE_config()) {
     $POPFile->CORE_start();
 
-    my $ui = $POPFile->get_module( 'mojo_ui', 'interface' );
+    my $ui = $POPFile->get_module('mojo_ui', 'interface');
     print "POPFile UI: http://localhost:" . $ui->config('port') . "/\n"
         if defined $ui;
 
@@ -115,11 +115,11 @@ if ( $POPFile->CORE_config() ) {
 
     if (@log) {
         foreach my $m (@log) {
-            $POPFile->get_module( 'POPFile::Logger' )->debug( 0, $m );
+            $POPFile->get_module('POPFile::Logger')->debug(0, $m);
         }
     }
 
-    $POPFile->get_module( 'POPFile::Logger' )->debug( 0, "POPFile successfully started" );
+    $POPFile->get_module('POPFile::Logger')->debug(0, "POPFile successfully started");
 
     # This is the main POPFile loop that services requests, it will
     # exit only when we need to exit

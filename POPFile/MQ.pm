@@ -121,22 +121,22 @@ delivers pending messages to registered waiters.
         # pipes and deal with it now
 
         for my $kid (keys %children) {
-            $self->flush_child_data($children{$kid} );
+            $self->flush_child_data($children{$kid});
         }
 
         # Iterate through all the messages in all the queues
 
         for my $type (sort keys %queue) {
-             while ( my $ref = shift @{$queue{$type}} ) {
+             while (my $ref = shift @{$queue{$type}}) {
                  my @message = @$ref;
                  my $flat = join(':', @message);
 
-                 $self->log_msg(2, "Message $type ($flat) ready for delivery" );
+                 $self->log_msg(2, "Message $type ($flat) ready for delivery");
 
                  for my $waiter (@{$waiters{$type}}) {
                     $self->log_msg(2, "Delivering message $type ($flat) to " .
-                        $waiter->name() );
-                    $waiter->deliver( $type, @message );
+                        $waiter->name());
+                    $waiter->deliver($type, @message);
                 }
             }
         }
@@ -162,7 +162,7 @@ all child pipe handles.
         }
     }
 
-=head2 yield( $pipe, $pid )
+=head2 yield($pipe, $pid)
 
 Called by a child process to allow the parent to do work. Only does
 anything when the child was not forked (i.e. C<$pid != 0>).
@@ -170,12 +170,12 @@ anything when the child was not forked (i.e. C<$pid != 0>).
 =cut
 
     method yield ($pipe, $pid) {
-        if ( $pid != 0 ) {
-            $self->flush_child_data( $pipe )
+        if ($pid != 0) {
+            $self->flush_child_data($pipe)
         }
     }
 
-=head2 forked( $pipe_writer )
+=head2 forked($pipe_writer)
 
 Called when some module forks POPFile, within the context of the child
 process, so that this module can close any duplicated file handles that
@@ -195,7 +195,7 @@ messages up to the parent.
         }
     }
 
-=head2 postfork( $pid, $reader )
+=head2 postfork($pid, $reader)
 
 Called in the parent process immediately after forking. Registers the
 child's pipe reader handle keyed by C<$pid>.
@@ -260,18 +260,18 @@ as a message and re-posting it into the queue.
         my $stats_changed = 0;
         my $message;
 
-        while ( defined ( $message = $self->read_pipe($handle ) ) )
+        while (defined ($message = $self->read_pipe($handle)))
         {
-            if ( $message =~ /([^:]+):([^\r\n]*)/ ) {
-                my @parameters = split( ':', $2 || '' );
-                $self->post( $1, @parameters );
+            if ($message =~ /([^:]+):([^\r\n]*)/) {
+                my @parameters = split(':', $2 || '');
+                $self->post($1, @parameters);
             } else {
-                $self->log_msg(2, "Recieved invalid message from child: $message" );
+                $self->log_msg(2, "Recieved invalid message from child: $message");
             }
         }
     }
 
-=head2 register( $type, $callback )
+=head2 register($type, $callback)
 
 Register to receive messages of C<$type>. C<$callback> must be an
 object whose C<deliver()> method will be called with the type and
@@ -280,10 +280,10 @@ message parameters.
 =cut
 
     method register ($type, $callback) {
-        push @{$waiters{$type}}, ( $callback );
+        push @{$waiters{$type}}, ($callback);
     }
 
-=head2 post( $type, @message )
+=head2 post($type, @message)
 
 Post a message of C<$type> with optional C<@message> parameters. In
 the parent process the message is queued; in a child process it is
@@ -292,24 +292,24 @@ written up the pipe to the parent.
 =cut
 
     method post ($type, @message) {
-        my $flat = join( ':', @message );
-        $self->log_msg(2, "post $type ($flat)" );
+        my $flat = join(':', @message);
+        $self->log_msg(2, "post $type ($flat)");
 
         # If we are in the parent process then just stick this on the queue,
         # otherwise write it up the pipe.
 
-        if ( $$ == $pid ) {
-            if ( exists( $waiters{$type} ) ) {
-                $self->log_msg(2, "queuing post $type ($flat)" );
+        if ($$ == $pid) {
+            if (exists($waiters{$type})) {
+                $self->log_msg(2, "queuing post $type ($flat)");
                 push @{$queue{$type}}, \@message;
                 $self->log_msg(2, "$type queue length now " . $#{$queue{$type}} );
             } else {
-                $self->log_msg(2, "dropping post $type ($flat)" );
+                $self->log_msg(2, "dropping post $type ($flat)");
             }
         } else {
             return
                 unless defined $writer;
-            $self->log_msg(2, "sending post $type ($flat) to parent $writer" );
+            $self->log_msg(2, "sending post $type ($flat) to parent $writer");
             print $writer "$type:$flat\n";
         }
     }

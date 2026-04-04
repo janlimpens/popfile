@@ -55,7 +55,7 @@ for my $i (1 .. $count) {
     my $msg = $templates[$i % scalar @templates];
     $msg =~ s/^(Date:)[^\n]*/Date: ${\scalar localtime}/m;
     my $mid = sprintf('<seed-%d-%d@popfile.test>', $i, time());
-    if ( $msg =~ /^Message-ID:/mi ) {
+    if ($msg =~ /^Message-ID:/mi) {
         $msg =~ s/^(Message-ID:)[^\n]*/$1 $mid/mi;
     } else {
         $msg = "Message-ID: $mid\n$msg";

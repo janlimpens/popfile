@@ -45,12 +45,12 @@ my %CORPUS = (
                 click subscribe limited urgent alert warning immediately
                 earn profit invest speculate scheme doubling tripling
                 cheap affordable medication pill prescription pharmacy
-            )],
+)],
             test_variants => [qw(
                 buying purchased offers bargains discounts deals coupons
                 freely prizes lotteries wins rewards clicks subscribing
                 earnings profitable investing speculating schemes doubles
-            )],
+)],
         },
         ham => {
             train => [qw(
@@ -59,13 +59,13 @@ my %CORPUS = (
                 report analysis summary findings recommendation proposal
                 budget forecast revenue estimate approval review
                 colleague manager director team member stakeholder
-            )],
+)],
             test_variants => [qw(
                 meetings scheduled agendas standups syncing retrospectives
                 projects milestones deadlines deliverables sprints
                 reports analyzed summarized findings recommends proposals
                 budgets forecasting revenues estimates approvals reviewing
-            )],
+)],
         },
         stopwords_train => [qw(the a an is are was were be been being
                                have has had do does did will would could
@@ -79,12 +79,12 @@ my %CORPUS = (
                 klicken abonnieren begrenzt dringend sofort
                 verdienen gewinn investieren spekulation verdoppeln
                 billig günstig medikament pille rezept apotheke
-            )],
+)],
             test_variants => [qw(
                 kaufte angebote rabatte gutscheine angeboten sonderangebote
                 gewonnen lotterien gewinnt belohnungen klickte abonniert
                 verdient gewinne investiert spekuliert verdoppelt
-            )],
+)],
         },
         ham => {
             train => [qw(
@@ -93,13 +93,13 @@ my %CORPUS = (
                 bericht analyse zusammenfassung empfehlung vorschlag
                 budget prognose umsatz schätzung genehmigung überprüfung
                 kollege manager direktor team mitglied stakeholder
-            )],
+)],
             test_variants => [qw(
                 besprechungen zeitpläne tagesordnungen standups
                 projekte meilensteine fristen liefergegenstände sprints
                 berichte analysen zusammenfassungen empfehlungen vorschläge
                 budgets prognosen umsätze schätzungen genehmigungen
-            )],
+)],
         },
     },
     fr => {
@@ -110,12 +110,12 @@ my %CORPUS = (
                 cliquer abonner limité urgent immédiatement
                 gagner profit investir spéculer doubler
                 pas-cher médicament pilule ordonnance pharmacie
-            )],
+)],
             test_variants => [qw(
                 achetant acheté offres remises coupons promotions
                 gagnez loteries gagne récompenses cliqué abonné
                 gagnant profits investissant spécule doublant
-            )],
+)],
         },
         ham => {
             train => [qw(
@@ -124,13 +124,13 @@ my %CORPUS = (
                 rapport analyse résumé recommandation proposition
                 budget prévision revenus estimation approbation révision
                 collègue responsable directeur équipe membre partie-prenante
-            )],
+)],
             test_variants => [qw(
                 réunions calendriers ordres-du-jour standups
                 projets jalons délais livrables sprints
                 rapports analyses résumés recommandations propositions
                 budgets prévisions revenus estimations approbations
-            )],
+)],
         },
     },
 );
@@ -172,12 +172,12 @@ sub make_email($lang, $class, $use_variants, $idx) {
         en => { spam => 'Important offer for you', ham => 'Project update' },
         de => { spam => 'Wichtiges Angebot',        ham => 'Projektaktualisierung' },
         fr => { spam => 'Offre importante',         ham => 'Mise à jour projet' },
-    );
+);
     my %from = (
         en => { spam => 'deals@promo.example.com',       ham => 'alice@work.example.com' },
         de => { spam => 'angebot@promo.example.de',      ham => 'anna@arbeit.example.de' },
         fr => { spam => 'offre@promo.example.fr',        ham => 'marie@travail.example.fr' },
-    );
+);
 
     my $body = join(' ', shuffle(@body));
     return "From: $from{$lang}{$class}\nTo: me\@example.com\n" .

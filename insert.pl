@@ -44,7 +44,7 @@ if (@ARGV > 1) {
     $POPFile->debug(0);
     $POPFile->CORE_loader_init();
     $POPFile->CORE_signals();
-    $POPFile->CORE_load( 1 );
+    $POPFile->CORE_load(1);
     $POPFile->CORE_link_components();
     $POPFile->CORE_initialize();
 
@@ -60,47 +60,47 @@ if (@ARGV > 1) {
 
     @ARGV = ();
 
-    if ( $POPFile->CORE_config() ) {
+    if ($POPFile->CORE_config()) {
 
         # Prevent the tool from finding another copy of POPFile running
 
-        my $c = $POPFile->get_module( 'POPFile::Config' );
-        my $current_piddir = $c->config('piddir' );
-        $c->config('piddir', $c->config('piddir' ) . 'insert.pl.' );
+        my $c = $POPFile->get_module('POPFile::Config');
+        my $current_piddir = $c->config('piddir');
+        $c->config('piddir', $c->config('piddir') . 'insert.pl.');
 
         $POPFile->CORE_start();
 
-        my $b = $POPFile->get_module( 'Classifier::Bayes' );
-        my $session = $b->get_session_key( 'admin', '' );
+        my $b = $POPFile->get_module('Classifier::Bayes');
+        my $session = $b->get_session_key('admin', '');
 
         # Check for the existence of each file first because the API
         # call we use does not care if a file is missing
 
         foreach my $file (@files) {
-            if ( !(-e $file) ) {
+            if (!(-e $file)) {
                 print STDERR "Error: File `$file' does not exist, insert aborted.\n";
                 $code = 1;
                 last;
             }
         }
 
-        if ( $code == 0 ) {
-            if ( !$b->is_bucket( $session, $bucket ) ) {
+        if ($code == 0) {
+            if (!$b->is_bucket($session, $bucket)) {
                 print STDERR "Error: Bucket `$bucket' does not exist, insert aborted.\n";
                 $code = 1;
             } else {
-                $b->add_messages_to_bucket( $session, $bucket, @files );
+                $b->add_messages_to_bucket($session, $bucket, @files);
                 print "Added ", scalar @files, " files to `$bucket'\n";
             }
         }
 
-        $c->config('piddir', $current_piddir );
+        $c->config('piddir', $current_piddir);
 
         # Reload configuration file ( to avoid updating configurations )
 
         $c->load_configuration();
 
-        $b->release_session_key( $session );
+        $b->release_session_key($session);
         $POPFile->CORE_stop();
     }
 } else {

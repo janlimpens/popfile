@@ -45,32 +45,32 @@ unless (@ARGV) {
     $POPFile->debug(0);
     $POPFile->CORE_loader_init();
     $POPFile->CORE_signals();
-    $POPFile->CORE_load( 1 );
+    $POPFile->CORE_load(1);
     $POPFile->CORE_link_components();
     $POPFile->CORE_initialize();
 
     # Ugly hack which is needed because Bayes::classify_and_modify looks up
-    if ( $POPFile->CORE_config() ) {
+    if ($POPFile->CORE_config()) {
 
         # Prevent the tool from finding another copy of POPFile running
 
-        my $current_piddir = $c->config('piddir' );
-        $c->config('piddir', $c->config('piddir' ) . 'pipe.pl.' );
+        my $current_piddir = $c->config('piddir');
+        $c->config('piddir', $c->config('piddir') . 'pipe.pl.');
 
         $POPFile->CORE_start();
 
         my $b = $POPFile->get_module('Classifier::Bayes');
-        my $session = $b->get_session_key( 'admin', '' );
+        my $session = $b->get_session_key('admin', '');
 
-        $b->classify_and_modify( $session, \*STDIN, \*STDOUT, 1, '', 0, 1, "\n" );
+        $b->classify_and_modify($session, \*STDIN, \*STDOUT, 1, '', 0, 1, "\n");
 
-        $c->config('piddir', $current_piddir );
+        $c->config('piddir', $current_piddir);
 
         # Reload configuration file ( to avoid updating configurations )
 
         $c->load_configuration();
 
-        $b->release_session_key( $session );
+        $b->release_session_key($session);
         $POPFile->CORE_stop();
     }
 

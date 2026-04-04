@@ -40,7 +40,7 @@ my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';
 my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)";
 
 my %snowball_languages = map { $_ => 1 }
-    qw( da nl en fi fr de hu it no pt ro ru es sv tr );
+    qw(da nl en fi fr de hu it no pt ro ru es sv tr);
 
 my %ui_to_iso = (
     English => 'en', German => 'de', French => 'fr',
@@ -78,15 +78,15 @@ Load the stop word list from the stopwords file.
 
 =cut
     method load_stopwords() {
-        if ( open my $stops, '<', $self->get_user_path('stopwords') ) {
+        if (open my $stops, '<', $self->get_user_path('stopwords')) {
             %stop__ = ();
-            while ( <$stops> ) {
+            while (<$stops>) {
                 s/[\r\n]//g;
                 $stop__{$_} = 1;
             }
             close $stops;
         } else {
-            $self->log_msg(0, 'Failed to open stopwords file' );
+            $self->log_msg(0, 'Failed to open stopwords file');
         }
     }
 
@@ -97,8 +97,8 @@ Save the stop word list to the stopwords file.
 
 =cut
     method save_stopwords() {
-        if ( open my $stops, '>', $self->get_user_path('stopwords') ) {
-            for my $word ( keys %stop__ ) {
+        if (open my $stops, '>', $self->get_user_path('stopwords')) {
+            for my $word (keys %stop__) {
                 print $stops "$word\n";
             }
             close $stops;
@@ -109,7 +109,7 @@ Save the stop word list to the stopwords file.
         $language = $lang;
 
         $stemmer = undef;
-        if ( $self->config('stemming') && $snowball_languages{$lang} ) {
+        if ($self->config('stemming') && $snowball_languages{$lang}) {
             $stemmer = Lingua::Stem::Snowball->new(lang => $lang, encoding => 'UTF-8');
         }
 
@@ -132,8 +132,8 @@ Save the stop word list to the stopwords file.
 
         return '' unless $lcword;
 
-        return '' if ( ( $stop__{$lcword} || $stop__{$word} )
-                       && !defined($ignore_stops) );
+        return '' if (($stop__{$lcword} || $stop__{$word})
+                       && !defined($ignore_stops));
 
         $lcword =~ s/(\+|\/|\?|\*|\||\(|\)|\[|\]|\{|\}|\^|\$|\.|\\)/\./g;
 
@@ -143,9 +143,9 @@ Save the stop word list to the stopwords file.
 
         $lcword =~ s/://g if !defined($allow_colon);
 
-        my $result = ( $lcword =~ /:/ ) ? $word : $lcword;
+        my $result = ($lcword =~ /:/) ? $word : $lcword;
 
-        if ( defined $stemmer && $result !~ /:/ ) {
+        if (defined $stemmer && $result !~ /:/) {
             my $stemmed = $stemmer->stem($result);
             $result = $stemmed if defined $stemmed && $stemmed ne '';
         }
@@ -162,16 +162,16 @@ C<$stopword> The word to add.  C<$lang> The current language.
 
 =cut
     method add_stopword ($stopword, $lang = '') {
-        if ( $lang eq 'Nihongo' ) {
+        if ($lang eq 'Nihongo') {
             return 0 if $stopword !~ /^($euc_jp)+$/o;
         } else {
-            return 0 if ( $stopword !~ /:/ )
-                     && ( $stopword =~ /[^[:alpha:]\-_\.\@0-9]/i );
+            return 0 if ($stopword !~ /:/)
+                     && ($stopword =~ /[^[:alpha:]\-_\.\@0-9]/i);
         }
 
-        $stopword = $self->mangle( $stopword, 1, 1 );
+        $stopword = $self->mangle($stopword, 1, 1);
 
-        if ( $stopword ne '' ) {
+        if ($stopword ne '') {
             $stop__{$stopword} = 1;
             $self->save_stopwords();
             return 1;
@@ -189,16 +189,16 @@ C<$stopword> The word to remove.  C<$lang> The current language.
 
 =cut
     method remove_stopword ($stopword, $lang = '') {
-        if ( $lang eq 'Nihongo' ) {
+        if ($lang eq 'Nihongo') {
             return 0 if $stopword !~ /^($euc_jp)+$/o;
         } else {
-            return 0 if ( $stopword !~ /:/ )
-                     && ( $stopword =~ /[^[:alpha:]\-_\.\@0-9]/i );
+            return 0 if ($stopword !~ /:/)
+                     && ($stopword =~ /[^[:alpha:]\-_\.\@0-9]/i);
         }
 
-        $stopword = $self->mangle( $stopword, 1, 1 );
+        $stopword = $self->mangle($stopword, 1, 1);
 
-        if ( $stopword ne '' ) {
+        if ($stopword ne '') {
             delete $stop__{$stopword};
             $self->save_stopwords();
             return 1;

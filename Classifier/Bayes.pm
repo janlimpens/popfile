@@ -522,32 +522,32 @@ method get_word_colors ($session, @words) {
                      keys %{ $db_bucketid->{$userid} // {} };
 
     my $placeholders = join ',', ('?') x scalar @words;
-    my $sth = $self->db()->prepare( $self->normalize_sql(
+    my $sth = $self->db()->prepare($self->normalize_sql(
         "SELECT w.word, m.bucketid, m.times
          FROM words w
          JOIN matrix m ON m.wordid = w.id
          JOIN buckets b ON b.id = m.bucketid
                         AND b.userid = ?
                         AND b.pseudo = 0
-         WHERE w.word IN ($placeholders)" ) );
-    $sth->execute( $userid, @words );
+         WHERE w.word IN ($placeholders)"));
+    $sth->execute($userid, @words);
 
     my %best_prob;
     my %best_name;
-    while ( my ( $word, $bucketid, $times ) = $sth->fetchrow_array() ) {
+    while (my ($word, $bucketid, $times) = $sth->fetchrow_array()) {
         my $name = $id_to_name{$bucketid} // next;
-        my $total = $self->get_bucket_word_count( $session, $name );
+        my $total = $self->get_bucket_word_count($session, $name);
         next unless $total;
         my $prob = $times / $total;
-        if ( !exists $best_prob{$word} || $prob > $best_prob{$word} ) {
+        if (!exists $best_prob{$word} || $prob > $best_prob{$word}) {
             $best_prob{$word} = $prob;
             $best_name{$word} = $name;
         }
     }
 
     my %colors;
-    for my $word ( keys %best_name ) {
-        $colors{$word} = $self->get_bucket_color( $session, $best_name{$word} );
+    for my $word (keys %best_name) {
+        $colors{$word} = $self->get_bucket_color($session, $best_name{$word});
     }
     return %colors
 }
@@ -2778,9 +2778,9 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
         ? $class
         : $self->classify($session, undef);
 
-    my $subject_modification = $self->get_bucket_parameter($session, $classification, 'subject'   );
-    my $xtc_insertion = $self->get_bucket_parameter($session, $classification, 'xtc'       );
-    my $xpl_insertion = $self->get_bucket_parameter($session, $classification, 'xpl'       );
+    my $subject_modification = $self->get_bucket_parameter($session, $classification, 'subject');
+    my $xtc_insertion = $self->get_bucket_parameter($session, $classification, 'xtc');
+    my $xpl_insertion = $self->get_bucket_parameter($session, $classification, 'xpl');
     my $quarantine = $self->get_bucket_parameter($session, $classification, 'quarantine');
 
     my $modification = $self->config('subject_mod_left') . $classification . $self->config('subject_mod_right');

@@ -40,7 +40,7 @@ Attempts to grab the mutex. Blocks until the lock is obtained or the optional
 timeout (in seconds) expires. Returns 1 on success, 0 on failure.
 
     $mutex->acquire();           # block indefinitely
-    $mutex->acquire( $timeout ); # timeout in seconds
+    $mutex->acquire($timeout); # timeout in seconds
 
 =cut
 
@@ -51,12 +51,12 @@ timeout (in seconds) expires. Returns 1 on success, 0 on failure.
         my $now = time;
 
         do {
-            if ( mkdir( $lock_path, 0755 ) ) {
+            if (mkdir($lock_path, 0755)) {
                 $locked = 1;
                 return 1;
             }
-            select( undef, undef, undef, 0.01 );
-        } while ( time < ( $now + $timeout ) );
+            select(undef, undef, undef, 0.01);
+        } while (time < ($now + $timeout));
 
         return 0;
     }
