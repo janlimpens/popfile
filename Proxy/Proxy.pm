@@ -38,8 +38,7 @@ use IO::Select;
 # A handy variable containing the value of an EOL for networks
 my $eol = "\015\012";
 
-class Proxy::Proxy :isa(POPFile::Module) {
-    # Reference to the classifier service facade
+class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier service facade
     field $service = undef;
 
     # Code reference called to handle each proxy connection
@@ -371,6 +370,5 @@ class Proxy::Proxy :isa(POPFile::Module) {
         return $service
     }
 
-} # end class Proxy::Proxy
 
 1;

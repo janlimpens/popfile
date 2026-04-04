@@ -10,8 +10,9 @@ use POPFile::Log::Adapter;
 
 my $seconds_per_day = 60 * 60 * 24;
 
-class POPFile::Logger :isa(POPFile::Module) {
-    field $debug_filename = '';
+class POPFile::Logger :isa(POPFile::Module);
+
+field $debug_filename = '';
     field $last_tickd = 0;
     field $today = 0;
 
@@ -111,4 +112,5 @@ class POPFile::Logger :isa(POPFile::Module) {
     method debug_filename() { $debug_filename }
 
     method last_ten() { POPFile::Log::Adapter->ring()->@* }
-}
+
+1;

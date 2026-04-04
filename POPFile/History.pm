@@ -38,8 +38,7 @@ use File::Path qw( make_path );
 
 my $fields_slot ='history.id, hdr_from, hdr_to, hdr_cc, hdr_subject, hdr_date, hash, inserted,
  buckets.name, usedtobe, history.bucketid, magnets.val, size';
-class POPFile::History :isa(POPFile::Module) :does(POPFile::Role::SQL) {
-    # List of committed history items waiting to be committed
+class POPFile::History :isa(POPFile::Module) :does(POPFile::Role::SQL);    # List of committed history items waiting to be committed
     # into the database, it consists of lists containing three
     # elements: the slot id, the bucket classified to and the
     # magnet if used
@@ -1255,7 +1254,6 @@ method force_requery() {
 
 # SETTER
 
-} # end class POPFile::History
 
 1;
 #----------------------------------------------------------------------------

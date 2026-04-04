@@ -23,8 +23,9 @@ package Services::Classifier;
 use Object::Pad;
 use locale;
 
-class Services::Classifier :isa(POPFile::Module) {
-    field $classifier :writer(set_classifier) = undef;
+class Services::Classifier :isa(POPFile::Module);
+
+field $classifier :writer(set_classifier) = undef;
     field $history :writer(set_history) = undef;
     field $session = '';
 
@@ -145,6 +146,5 @@ Direct access to internal objects for XML-RPC and legacy callers.
     method bayes()        { $classifier }
     method history_obj()  { $history }
 
-} # end class Services::Classifier
 
 1;

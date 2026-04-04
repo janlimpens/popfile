@@ -4,8 +4,9 @@ use Object::Pad;
 use Fcntl ();
 use Services::IMAP::Client;
 
-class Services::IMAP :isa(POPFile::Module) {
-    field $classifier :writer(set_classifier) = 0;
+class Services::IMAP :isa(POPFile::Module);
+
+field $classifier :writer(set_classifier) = 0;
     field $history :writer(set_history) = 0;
     field %folders;
     field @mailboxes;
@@ -447,4 +448,5 @@ class Services::IMAP :isa(POPFile::Module) {
         %folders = ();
         $self->config('training_mode', 0 );
     }
-}
+
+1;

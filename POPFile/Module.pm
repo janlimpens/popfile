@@ -27,8 +27,7 @@ use POPFile::Role::Logging;
 
 my %slurp_data;
 
-class POPFile::Module :repr(HASH) :does(POPFile::Loadable) :does(POPFile::Role::Logging) {
-    # References to core infrastructure (injected by Loader::CORE_link_components)
+class POPFile::Module :repr(HASH) :does(POPFile::Loadable) :does(POPFile::Role::Logging);    # References to core infrastructure (injected by Loader::CORE_link_components)
     field $configuration :reader :writer = 0;
     field $mq :reader :writer = 0;
 
@@ -304,6 +303,5 @@ C<setchildexit> is a combined getter/setter for the loader's child-exit callback
     method childexit() {}
     method reaper() {}
     method deliver ($type, @message) {}
-}
 
 1;

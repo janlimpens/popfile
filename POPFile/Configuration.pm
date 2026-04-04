@@ -34,8 +34,7 @@ use locale;
 
 use Getopt::Long;
 
-class POPFile::Configuration :isa(POPFile::Module) {
-    # This hash is indexed by parameter name and has two sub-keys:
+class POPFile::Configuration :isa(POPFile::Module);    # This hash is indexed by parameter name and has two sub-keys:
     #   value    — the current value
     #   default  — the default value
     field %configuration_parameters;
@@ -635,6 +634,5 @@ class POPFile::Configuration :isa(POPFile::Module) {
     method deprecated_parameter ($name) {
         return $deprecated_parameters{$name};
     }
-}
 
 1;

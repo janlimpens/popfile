@@ -42,8 +42,7 @@ use Getopt::Long qw(:config pass_through);
 use IO::Handle;
 use Log::Any ();
 
-class POPFile::Loader {
-    # The POPFile classes are stored by reference in the components hash;
+class POPFile::Loader;    # The POPFile classes are stored by reference in the components hash;
     # the top level key is the component type, the second key is its name.
     field %components;
 
@@ -625,6 +624,5 @@ class POPFile::Loader {
         return $components{core}{config}->module_config($module, $item, $value );
     }
 
-} # end class POPFile::Loader
 
 1;

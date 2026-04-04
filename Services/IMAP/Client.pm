@@ -7,8 +7,9 @@ use IO::Socket::SSL;
 use IO::Select;
 use Socket ();
 
-class Services::IMAP::Client :isa(POPFile::Module) {
-    field $socket = undef;
+class Services::IMAP::Client :isa(POPFile::Module);
+
+field $socket = undef;
     field $folder = undef;
     field $tag = 0;
     field $last_response = '';
@@ -352,4 +353,5 @@ class Services::IMAP::Client :isa(POPFile::Module) {
         $self->log_msg(0, $msg );
         die "POPFILE-IMAP-EXCEPTION: $msg ($filename ($line))"
     }
-}
+
+1;

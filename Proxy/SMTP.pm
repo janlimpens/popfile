@@ -32,8 +32,9 @@ use locale;
 # A handy variable containing the value of an EOL for networks
 my $eol = "\015\012";
 
-class Proxy::SMTP :isa(Proxy::Proxy) {
-    BUILD {
+class Proxy::SMTP :isa(Proxy::Proxy);
+
+BUILD {
         $self->set_name( 'smtp' );
         $self->set_child( \&child__ );
         $self->set_connection_timeout_error( '554 Transaction failed' );
@@ -181,6 +182,5 @@ class Proxy::SMTP :isa(Proxy::Proxy) {
         return ( $response =~ /$self->good_response()/ );
     }
 
-} # end class Proxy::SMTP
 
 1;

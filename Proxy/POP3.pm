@@ -36,8 +36,9 @@ use Digest::MD5;
 # A handy variable containing the value of an EOL for networks
 my $eol = "\015\012";
 
-class Proxy::POP3 :isa(Proxy::Proxy) {
-    field $use_apop = 0;
+class Proxy::POP3 :isa(Proxy::Proxy);
+
+field $use_apop = 0;
     field $apop_user = '';
     field $apop_banner = undef;
 
@@ -380,6 +381,5 @@ class Proxy::POP3 :isa(Proxy::Proxy) {
         $self->log_msg(0, "POP3 proxy done" );
     }
 
-} # end class Proxy::POP3
 
 1;

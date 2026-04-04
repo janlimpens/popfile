@@ -4,8 +4,9 @@ package Classifier::Bucket;
 
 use Object::Pad;
 
-class Classifier::Bucket {
-    field %props;
+class Classifier::Bucket;
+
+field %props;
     field $prior = 0;
 
     method new_from_db ($row) {
@@ -28,4 +29,5 @@ class Classifier::Bucket {
     method prior() { return $prior }
 
     method set_prior ($v) { $prior = $v }
-}
+
+1;

@@ -5,8 +5,9 @@ package Services::Database;
 use Object::Pad;
 use locale;
 
-class Services::Database :isa(POPFile::Module) {
-    use DBI;
+class Services::Database :isa(POPFile::Module);
+
+use DBI;
 
     field %handles;
     field $dsn :writer = '';
@@ -45,4 +46,5 @@ class Services::Database :isa(POPFile::Module) {
             for values %handles;
         %handles = ();
     }
-}
+
+1;

@@ -34,8 +34,9 @@ use locale;
 # A handy variable containing the value of an EOL for networks
 my $eol = "\015\012";
 
-class Proxy::NNTP :isa(Proxy::Proxy) {
-    BUILD {
+class Proxy::NNTP :isa(Proxy::Proxy);
+
+BUILD {
         $self->set_name( 'nntp' );
         $self->set_child( \&child__ );
         $self->set_connection_timeout_error( '500 no response from mail server' );
@@ -389,6 +390,5 @@ class Proxy::NNTP :isa(Proxy::Proxy) {
         }
     }
 
-} # end class Proxy::NNTP
 
 1;

@@ -30,8 +30,9 @@ use locale;
 use POSIX ':sys_wait_h';
 use Scalar::Util qw(looks_like_number);
 
-class UI::Mojo :isa(POPFile::Module) {
-    field $service = undef;
+class UI::Mojo :isa(POPFile::Module);
+
+field $service = undef;
     field $child_pid = undef;
 
     BUILD {
@@ -860,6 +861,5 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
         $daemon->ioloop->start();
     }
 
-} # end class UI::Mojo
 
 1;

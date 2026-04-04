@@ -50,8 +50,9 @@ my %ui_to_iso = (
     Romanian => 'ro', Russian => 'ru', Turkish => 'tr',
 );
 
-class Classifier::WordMangle :isa(POPFile::Module) {
-    field %stop__;
+class Classifier::WordMangle :isa(POPFile::Module);
+
+field %stop__;
     field $language = 'en';
     field $stemmer  = undef;
 
@@ -216,6 +217,5 @@ Returns the list of current stop words.  If C<$value> is a hashref, replaces the
         %stop__ = %{$value} if defined $value;
         return keys %stop__;
     }
-}
 
 1;

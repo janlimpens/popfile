@@ -20,8 +20,7 @@ package POPFile::Mutex;
 
 use Object::Pad;
 
-class POPFile::Mutex {
-
+class POPFile::Mutex;
     # Full filesystem path used as the lock directory
     field $lock_path;
 
@@ -72,6 +71,5 @@ Releases the lock if it was previously acquired with L</acquire>.
         rmdir $lock_path;
         $locked = undef;
     }
-}
 
 1;

@@ -206,8 +206,7 @@ my %color_map = (         'aliceblue',            'f0f8ff', 'antiquewhite',     
              'white',                'ffffff', 'whitesmoke',        'f5f5f5',
              'yellow',               'ffff00', 'yellowgreen',       '9acd32'
 );
-class Classifier::MailParse {
-    # Hash of word frequencies
+class Classifier::MailParse;    # Hash of word frequencies
     field %words;
     field $msg_total = 0;
 
@@ -2732,6 +2731,5 @@ method setup_nihongo_parser ($nihongo_parser) {
     return $nihongo_parser;
 }
 
-} # end class Classifier::MailParse
 
 1;

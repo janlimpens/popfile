@@ -88,8 +88,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 =cut
 
-class POPFile::MQ :isa(POPFile::Module) {
-    # Individual queues of messages, indexed by type, written to by post().
+class POPFile::MQ :isa(POPFile::Module);    # Individual queues of messages, indexed by type, written to by post().
     field %queue;
 
     # Registered objects for each message type.
@@ -314,6 +313,5 @@ written up the pipe to the parent.
             print $writer "$type:$flat\n";
         }
     }
-}
 
 1;
