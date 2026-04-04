@@ -102,6 +102,10 @@ $POPFile->CORE_initialize();
 if ( $POPFile->CORE_config() ) {
     $POPFile->CORE_start();
 
+    my $ui = $POPFile->get_module( 'mojo_ui', 'interface' );
+    print "POPFile UI: http://localhost:" . $ui->config('port') . "/\n"
+        if defined $ui;
+
     # If there were any log messages from the packing list check then
     # log them now
 
