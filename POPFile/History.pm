@@ -291,10 +291,7 @@ method release_slot ($slot) {
     # Remove the entry from the database and delete the file
     # if present
 
-    my $delete = $self->normalize_sql('DELETE FROM history WHERE history.id = ?');
-
-    my $h = $self->db()->prepare($delete);
-    $h->execute($slot);
+    $self->validate_sql_prepare_and_execute('DELETE FROM history WHERE history.id = ?', $slot);
 
     my $file = $self->get_slot_file($slot);
 
@@ -368,10 +365,10 @@ method change_slot_classification ($slot, $class, $session, $undo) {
         $oldbucketid = $fields[10];
     }
 
-    my $h = $self->db()->prepare($self->normalize_sql(
+    $self->validate_sql_prepare_and_execute(
         'UPDATE history SET bucketid = ?, usedtobe = ?
-         WHERE id = ?'));
-    $h->execute($bucketid, $oldbucketid, $slot);
+         WHERE id = ?',
+        $bucketid, $oldbucketid, $slot);
     $self->force_requery();
 }
 
@@ -389,10 +386,10 @@ method revert_slot_classification ($slot) {
     my @fields = $self->get_slot_fields($slot);
     my $oldbucketid = $fields[9];
 
-    my $h = $self->db()->prepare($self->normalize_sql(
+    $self->validate_sql_prepare_and_execute(
         'UPDATE history SET bucketid = ?, usedtobe = ?
-         WHERE id = ?'));
-    $h->execute($oldbucketid, 0, $slot);
+         WHERE id = ?',
+        $oldbucketid, 0, $slot);
     $self->force_requery();
 }
 
@@ -409,15 +406,14 @@ method revert_slot_classification ($slot) {
 method get_slot_fields ($slot) {
     return undef if (!defined($slot) || $slot !~ /^\d+$/);
 
-    my $h = $self->db()->prepare($self->normalize_sql(
+    my $h = $self->validate_sql_prepare_and_execute(
         "SELECT $fields_slot FROM history, buckets, magnets
          WHERE history.id = ?
            AND buckets.id = history.bucketid
            AND magnets.id = magnetid
-           AND history.committed = 1"));
-    $h->execute($slot);
-    my @result = $h->fetchrow_array;
-    return @result;
+           AND history.committed = 1",
+        $slot);
+    return $h->fetchrow_array
 }
 
 #----------------------------------------------------------------------------
@@ -432,11 +428,11 @@ method get_slot_fields ($slot) {
 method is_valid_slot ($slot) {
     return undef if (!defined($slot) || $slot !~ /^\d+$/);
 
-    my $h = $self->db()->prepare($self->normalize_sql(
+    my $h = $self->validate_sql_prepare_and_execute(
         'SELECT id FROM history
          WHERE history.id = ?
-           AND history.committed = 1'));
-    $h->execute($slot);
+           AND history.committed = 1',
+        $slot);
     my @row = $h->fetchrow_array;
 
     return ((@row) && ($row[0] == $slot));
@@ -768,9 +764,9 @@ method get_message_hash ($messageid, $date, $subject, $received) {
 #
 #----------------------------------------------------------------------------
 method get_slot_from_hash ($hash) {
-    my $h = $self->db()->prepare($self->normalize_sql(
-        'SELECT id FROM history WHERE hash = ? LIMIT 1'));
-    $h->execute($hash);
+    my $h = $self->validate_sql_prepare_and_execute(
+        'SELECT id FROM history WHERE hash = ? LIMIT 1',
+        $hash);
     my $result = $h->fetchrow_arrayref;
 
     return defined($result)?$result->[0]:'';
@@ -942,8 +938,7 @@ method set_query ($id, $filter, $search, $sort, $not) {
     $self->log_msg(2, "Base query is $count");
     $count =~ s/XXX/COUNT(*)/;
 
-    my $h = $self->db()->prepare($count);
-    $h->execute($queries{$id}{params}->@*);
+    my $h = $self->validate_sql_prepare_and_execute($count, $queries{$id}{params}->@*);
     $queries{$id}{count} = $h->fetchrow_arrayref->[0];
     $h->finish;
 
@@ -967,8 +962,7 @@ method delete_query ($id) {
 
     my $delete = $queries{$id}{base};
     $delete =~ s/XXX/history.id/;
-    my $d = $self->db()->prepare($delete);
-    $d->execute($queries{$id}{params}->@*);
+    my $d = $self->validate_sql_prepare_and_execute($delete, $queries{$id}{params}->@*);
     my $history_id;
     my @row;
     my @ids;
@@ -1195,9 +1189,9 @@ method cleanup_history() {
     my $seconds_per_day = 24 * 60 * 60;
     my $old = time - $self->config('history_days') * $seconds_per_day;
     my @ids;
-    my $d = $self->db()->prepare($self->normalize_sql(
-        'SELECT id FROM history WHERE inserted < ?'));
-    $d->execute($old);
+    my $d = $self->validate_sql_prepare_and_execute(
+        'SELECT id FROM history WHERE inserted < ?',
+        $old);
     my $id;
     $d->bind_columns(\$id);
     while ($d->fetchrow_arrayref) {
