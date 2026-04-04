@@ -57,11 +57,32 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
     field $server = undef;
     field $selector = undef;
 
-    # ----------------------------------------------------------------------------
-    #
-    # initialize
-    #
-    # ----------------------------------------------------------------------------
+=head1 NAME
+
+Proxy::Proxy — base class for POPFile proxy modules
+
+=head1 DESCRIPTION
+
+C<Proxy::Proxy> is the common foundation for all POPFile protocol proxies
+(POP3, SMTP, NNTP).  A proxy sits between the mail client and the real mail
+server: it listens on a local TCP port, accepts a client connection, opens a
+corresponding connection to the upstream server, and relays commands and
+responses in both directions.
+
+Subclasses override the C<$child> coderef to implement protocol-specific
+command handling.  The base class provides the listening socket lifecycle
+(C<initialize>, C<start>, C<stop>, C<service>), connection helpers, and
+low-level I/O utilities used by all proxy implementations.
+
+=head1 METHODS
+
+=head2 initialize()
+
+Registers configuration parameters: C<enabled>, C<port>, C<socks_server>,
+and C<socks_port>.  Returns 1.
+
+=cut
+
     method initialize() {
         $self->config('enabled', 1);
         $self->config('port',    0);
@@ -72,11 +93,15 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
         return 1;
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # start
-    #
-    # ----------------------------------------------------------------------------
+=head2 start()
+
+Opens the TCP listening socket on the configured C<port>.  If the C<local>
+config flag is set only connections from C<localhost> are accepted.  Prints a
+diagnostic to C<STDERR> and returns 0 if the socket cannot be bound; returns 1
+on success.
+
+=cut
+
     method start() {
         $self->log_msg(1, "Opening listening socket on port " . $self->config('port') . '.');
         $server = IO::Socket::INET->new(
@@ -100,20 +125,25 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
         return 1;
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # stop
-    #
-    # ----------------------------------------------------------------------------
+=head2 stop()
+
+Closes the listening socket.
+
+=cut
+
     method stop() {
         close $server if (defined($server));
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # service
-    #
-    # ----------------------------------------------------------------------------
+=head2 service()
+
+Called once per main-loop tick.  If a client is waiting on the listening
+socket and the module is still alive, accepts the connection and dispatches it
+to the C<$child> coderef — either in a forked child process (when
+C<force_fork> is configured) or inline.  Returns 1.
+
+=cut
+
     method service() {
         if ((defined($selector->can_read(0))) &&
              ($self->alive())) {
@@ -147,30 +177,37 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
         return 1;
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # forked
-    #
-    # ----------------------------------------------------------------------------
+=head2 forked($writer)
+
+Called in the child process immediately after C<fork()>.  Closes the inherited
+listening socket so the child does not hold it open.
+
+=cut
+
     method forked ($writer = undef) {
         close $server;
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # tee_
-    #
-    # ----------------------------------------------------------------------------
+=head2 tee($socket, $text)
+
+Logs C<$text> at info level and sends it to C<$socket>.
+
+=cut
+
     method tee ($socket, $text) {
         $self->log_msg(1, $text);
         print $socket $text;
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # echo_to_regexp_
-    #
-    # ----------------------------------------------------------------------------
+=head2 echo_to_regexp($mail, $client, $regexp, $log, $suppress)
+
+Reads lines from C<$mail> and forwards them to C<$client> until a line
+matching C<$regexp> is seen.  If C<$log> is true, each line is sent via
+C<tee()> (logged) rather than a bare C<print>.  Lines matching C<$suppress>
+are dropped silently.
+
+=cut
+
     method echo_to_regexp ($mail, $client, $regexp, $log = 0, $suppress = undef) {
         while (my $line = $self->slurp($mail)) {
             if (!defined($suppress) || !($line =~ $suppress)) {
@@ -189,20 +226,27 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
         }
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # echo_to_dot_
-    #
-    # ----------------------------------------------------------------------------
+=head2 echo_to_dot($mail, $client)
+
+Relays lines from C<$mail> to C<$client> until the SMTP/POP3 dot-stuffed
+terminator (a bare C<.>) is received.  Delegates to C<echo_to_regexp>.
+
+=cut
+
     method echo_to_dot ($mail, $client) {
         $self->echo_to_regexp($mail, $client, qr/^\.(\r\n|\r|\n)$/);
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # get_response_
-    #
-    # ----------------------------------------------------------------------------
+=head2 get_response($mail, $client, $command, $null_resp, $suppress)
+
+Sends C<$command> to C<$mail> (the upstream server) and reads back one line of
+response, forwarding it to C<$client> unless C<$suppress> is set.  Waits up
+to the global C<timeout> for a reply; if C<$null_resp> is true a short timeout
+is used and an empty response is treated as success.  Returns
+C<($response, 1)> on success or C<($connection_timeout_error, 0)> on failure.
+
+=cut
+
     method get_response ($mail, $client, $command, $null_resp = 0, $suppress = 0) {
         unless (defined($mail) && $mail->connected) {
             $self->tee($client, "$connection_timeout_error$eol");
@@ -242,11 +286,14 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
         }
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # echo_response_
-    #
-    # ----------------------------------------------------------------------------
+=head2 echo_response($mail, $client, $command, $suppress)
+
+Sends C<$command> and checks the single-line response against
+C<$good_response>.  Returns 0 if the response matches (success), 1 if it
+does not match, or 2 if no response was received.
+
+=cut
+
     method echo_response ($mail, $client, $command, $suppress = 0) {
         my ($response, $ok) = $self->get_response($mail, $client, $command, 0, $suppress);
 
@@ -261,11 +308,15 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
         }
     }
 
-    # ----------------------------------------------------------------------------
-    #
-    # verify_connected_
-    #
-    # ----------------------------------------------------------------------------
+=head2 verify_connected($mail, $client, $hostname, $port, $ssl)
+
+Returns C<$mail> unchanged if it is already connected.  Otherwise opens a new
+TCP (or SSL) connection to C<$hostname:$port>, optionally via a SOCKS proxy.
+Reads and stores the server's connect banner in C<$connect_banner>.  Returns
+the connected socket on success, C<undef> on failure.
+
+=cut
+
     method verify_connected ($mail, $client, $hostname, $port, $ssl = 0) {
         return $mail if ($mail && $mail->connected);
 
@@ -364,6 +415,13 @@ class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier servi
         $self->tee($client, "$connection_failed_error $hostname:$port$eol");
         return undef;
     }
+
+=head2 set_service($svc)
+
+Sets the classifier service reference used by subclasses to classify messages.
+Returns the current service.
+
+=cut
 
     method set_service ($svc = undef) {
         $service = $svc if defined $svc;
