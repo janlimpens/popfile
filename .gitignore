@@ -19,6 +19,10 @@ legacy/
 lib
 !lib/Query/
 !lib/Query/**
+!lib/Query/Expression/
+!lib/Query/Expression/**
+!lib/Query/Role/
+!lib/Query/Role/**
 !ui/src/lib
 popfile.db.backup
 tools/cleanup.pl

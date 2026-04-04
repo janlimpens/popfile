@@ -525,8 +525,8 @@ method get_word_colors ($session, @words) {
          JOIN buckets b ON b.id = m.bucketid
                         AND b.userid = ?
                         AND b.pseudo = 0
-         WHERE " . $word_expr->to_string()));
-    $sth->execute($userid, $word_expr->params()->@*);
+         WHERE " . $word_expr->as_sql()));
+    $sth->execute($userid, $word_expr->params());
 
     my %best_prob;
     my %best_name;
@@ -1694,8 +1694,8 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     my $word_expr = $self->qb()
         ->compare('word', [sort keys $parser->words()->%*]);
     $get_wordids = $self->validate_sql_prepare_and_execute(
-        "SELECT id, word FROM words WHERE " . $word_expr->to_string(),
-        $word_expr->params()->@*);
+        "SELECT id, word FROM words WHERE " . $word_expr->as_sql(),
+        $word_expr->params());
     my @id_list;
     my %wordmap;
     my ($wordid, $word);
@@ -1716,7 +1716,7 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
             $qb->compare('matrix.bucketid', $db_bucketid->{$userid}{$bucket}{id}));
         $db_getwords = $self->validate_sql_prepare_and_execute(
             "SELECT matrix.times, matrix.wordid FROM matrix WHERE "
-            . $expr->to_string(), $expr->params()->@*);
+            . $expr->as_sql(), $expr->params());
         my $count;
         my $wid;
         $db_getwords->bind_columns(\$count, \$wid);
@@ -2173,8 +2173,8 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     my $words_expr = $self->qb()->compare('word', \@words);
     $get_wordids = $self->validate_sql_prepare_and_execute(
         "SELECT id, word FROM words
-         WHERE " . $words_expr->to_string() . "
-         ORDER BY id", $words_expr->params()->@*);
+         WHERE " . $words_expr->as_sql() . "
+         ORDER BY id", $words_expr->params());
     my @id_list;
     my %temp_idmap;
     my ($wordid, $word);
@@ -2196,10 +2196,10 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     $db_classify = $self->validate_sql_prepare_and_execute(
         "SELECT matrix.times, matrix.wordid, buckets.name
          FROM matrix, buckets
-         WHERE (" . $ids_expr->to_string() . ")
+         WHERE " . $ids_expr->as_sql() . "
            AND matrix.bucketid = buckets.id
            AND buckets.userid = ?",
-        $ids_expr->params()->@*,
+        $ids_expr->params(),
         $userid);
     # %matrix maps wordids and bucket names to counts
     # $matrix{$wordid}{$bucket} == $count

@@ -883,8 +883,8 @@ method set_query ($id, $filter, $search, $sort, $not) {
             $qb->like('hdr_from', $pat),
             $qb->like('hdr_subject', $pat));
         my $expr = $not ? $qb->negate($like_expr) : $like_expr;
-        $queries{$id}{base} .= ' and ' . $expr->to_string();
-        push $queries{$id}{params}->@*, $expr->params()->@*;
+        $queries{$id}{base} .= ' and ' . $expr->as_sql();
+        push $queries{$id}{params}->@*, $expr->params();
     }
 
     if ($filter ne '') {
@@ -897,8 +897,8 @@ method set_query ($id, $filter, $search, $sort, $not) {
                 my $qb = Query::Builder->new(dialect => $db_service->dialect());
                 my $expr = $qb->compare('buckets.name', $filter,
                     comparator => $not_equal);
-                $queries{$id}{base} .= ' and ' . $expr->to_string();
-                push $queries{$id}{params}->@*, $expr->params()->@*;
+                $queries{$id}{base} .= ' and ' . $expr->as_sql();
+                push $queries{$id}{params}->@*, $expr->params();
             }
         }
     }
