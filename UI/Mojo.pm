@@ -864,6 +864,7 @@ the server is running.
 =cut
 
     method run_server() {
+        $ENV{MOJO_NO_SOCKS} = 1;
         require Mojo::Server::Daemon;
 
         my $svc = $service;

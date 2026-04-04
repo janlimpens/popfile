@@ -123,14 +123,15 @@ method service() {
             }
         }
     };
-    if ($@) {
+    my $err = $@;
+    if ($err) {
         $self->disconnect_folders();
         $self->config('training_mode', 0);
-        if ($@ =~ /^POPFILE-IMAP-EXCEPTION: (.+\)\))/s) {
+        if ($err =~ /^POPFILE-IMAP-EXCEPTION: (.+\)\))/s) {
             $self->log_msg(0, $1);
         }
         else {
-            die $@;
+            $self->log_msg(0, "Unexpected IMAP error: $err");
         }
     }
     $last_update = time;
