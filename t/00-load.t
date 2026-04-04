@@ -26,6 +26,7 @@ my @modules = qw(
     Proxy::NNTP
     UI::Mojo
     Services::Classifier
+    Services::Database
     POPFile::Loader
 );
 
