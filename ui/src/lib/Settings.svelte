@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { loadLocale } from './locale.svelte.js';
+  import { initLocale } from './locale.svelte.js';
 
   let config = $state({});
   let active = $state('ui');
@@ -186,7 +186,7 @@
       status = 'ok';
       dirty = false;
       setTimeout(() => { status = ''; }, 2500);
-      if (config.mojo_ui_locale) loadLocale(config.mojo_ui_locale);
+      await initLocale(config.mojo_ui_locale || '');
     } else {
       status = 'error';
     }
