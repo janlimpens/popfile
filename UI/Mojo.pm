@@ -313,12 +313,13 @@ by all request handlers.
             my $page = ($c->param('page')     // 1) + 0;
             my $per_page = ($c->param('per_page') // 25) + 0;
             my $search = $c->param('search') // '';
+            my $bucket = $c->param('bucket') // '';
             $page = 1  if $page     < 1;
             $per_page = 25 if $per_page < 1 || $per_page > 200;
 
             my $hist = $svc->history_obj();
             my $qid = $hist->start_query();
-            $hist->set_query($qid, '', $search, '-inserted', 0);
+            $hist->set_query($qid, $bucket, $search, '-inserted', 0);
             my $total = $hist->get_query_size($qid);
             my $start = ($page - 1) * $per_page + 1;
             my @rows = $hist->get_query_rows($qid, $start, $per_page);

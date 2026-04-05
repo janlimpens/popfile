@@ -10,6 +10,7 @@
   let total = $state(0);
   let page  = $state(1);
   let search = $state('');
+  let bucket = $state('');
   let loading = $state(false);
   let reclassifying = $state(false);
 
@@ -53,7 +54,7 @@
   async function load() {
     loading = true;
     try {
-      const params = new URLSearchParams({ page, per_page: pageSize, search });
+      const params = new URLSearchParams({ page, per_page: pageSize, search, bucket });
       const res = await fetch('/api/v1/history?' + params);
       if (res.ok) {
         const data = await res.json();
@@ -166,7 +167,7 @@
   });
   $effect(() => {
     if (!ready) return;
-    page; search; pageSize;
+    page; search; pageSize; bucket;
     load();
   });
 </script>
@@ -187,6 +188,12 @@
       <button class="clear-btn" onclick={() => { search = ''; page = 1; }} aria-label="Clear search">×</button>
     {/if}
   </div>
+  <select bind:value={bucket} onchange={() => { page = 1; }}>
+    <option value="">All buckets</option>
+    {#each buckets as b}
+      <option value={b.name}>{b.name}</option>
+    {/each}
+  </select>
   <span>{total} messages</span>
   <button onclick={reclassifyAll} disabled={reclassifying}>
     {reclassifying ? 'Reclassifying…' : 'Reclassify unclassified'}
