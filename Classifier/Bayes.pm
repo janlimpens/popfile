@@ -30,7 +30,8 @@ package Classifier::Bayes;
 #----------------------------------------------------------------------------
 
 use Object::Pad;
-use feature 'state';
+use feature qw(state try);
+no warnings 'experimental::try';
 use locale;
 use Classifier::Bucket;
 use Classifier::MailParse;
@@ -769,10 +770,11 @@ method db_connect() {
             # Test DBD::SQLite version
 
             my $ver = -1;
-            eval {
+            try {
                 require DBD::SQLite;
                 $ver = $DBD::SQLite::VERSION;
-            };
+            }
+            catch ($e) {}
 
             if ($ver ge '1.00') {
                 $self->log_msg(0, "DBD::SQLite $ver found");

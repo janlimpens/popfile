@@ -42,6 +42,8 @@ C<public/> directory (configurable via the C<static_dir> config key).
 =cut
 
 use Object::Pad;
+use feature 'try';
+no warnings 'experimental::try';
 use locale;
 use utf8;
 
@@ -112,8 +114,8 @@ Forks a child process running the Mojolicious daemon. Returns 1 on success.
             return 0;
         }
         if ($pid == 0) {
-            eval { $self->run_server() };
-            $self->log_msg(0, "UI::Mojo child error: $@") if $@;
+            try { $self->run_server() }
+            catch ($e) { $self->log_msg(0, "UI::Mojo child error: $e") }
             exit 0;
         }
         $child_pid = $pid;
@@ -823,7 +825,7 @@ by all request handlers.
             $client->config('password', $body->{password} // '');
             $client->config('use_ssl',  $body->{use_ssl}  // 0);
             my $err = '';
-            eval {
+            try {
                 unless ($client->connect()) {
                     die 'connect';
                 }
@@ -831,15 +833,15 @@ by all request handlers.
                     die 'login';
                 }
                 $client->logout();
-            };
-            if ($@) {
-                if ($@ =~ /^connect/) {
+            }
+            catch ($e) {
+                if ($e =~ /^connect/) {
                     $err = 'Could not connect to server';
                 }
-                elsif ($@ =~ /^login/) {
+                elsif ($e =~ /^login/) {
                     $err = 'Login failed';
                 }
-                elsif ($@ =~ /POPFILE-IMAP-EXCEPTION: (.+?) \(/) {
+                elsif ($e =~ /POPFILE-IMAP-EXCEPTION: (.+?) \(/) {
                     $err = $1;
                 }
                 else {

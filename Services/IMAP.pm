@@ -2,6 +2,8 @@
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
 use Fcntl ();
+use feature 'try';
+no warnings 'experimental::try';
 use Services::IMAP::Client;
 
 class Services::IMAP :isa(POPFile::Module);
@@ -105,7 +107,7 @@ if an exception is thrown.  Returns 1.
 method service() {
     return 1 if $self->config('enabled') == 0;
     return 1 if time - $last_update < $self->config('update_interval');
-    eval {
+    try {
         local $SIG{PIPE} = 'IGNORE';
         local $SIG{__DIE__};
         if ($self->config('training_mode') == 1) {
@@ -122,9 +124,8 @@ method service() {
                     if exists $folders{$folder}{imap};
             }
         }
-    };
-    my $err = $@;
-    if ($err) {
+    }
+    catch ($err) {
         $self->disconnect_folders();
         $self->config('training_mode', 0);
         if ($err =~ /^POPFILE-IMAP-EXCEPTION: (.+\)\))/s) {
@@ -279,7 +280,7 @@ method disconnect_folders() {
     for my $folder (keys %folders) {
         my $imap = $folders{$folder}{imap};
         if (defined $imap && $imap->connected()) {
-            eval { $imap->logout() };
+            try { $imap->logout() } catch ($e) {}
         }
     }
     %folders = ();

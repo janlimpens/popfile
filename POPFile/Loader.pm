@@ -21,6 +21,8 @@ POPFile-based utilities that need to load a subset of modules.
 =cut
 
 use Object::Pad;
+use feature 'try';
+no warnings 'experimental::try';
 use locale;
 
 use Getopt::Long qw(:config pass_through);
@@ -299,9 +301,10 @@ method load_module ($module) {
     require $module;
     (my $class = $module) =~ s/\//::/g;
     $class =~ s/\.pm$//;
-    my $mod = eval { $class->new() };
-    return
-        if $@;
+    my $mod = do {
+        try { $class->new() }
+        catch ($e) { return }
+    };
     return $mod->DOES('POPFile::Loadable') ? $mod : undef
 }
 
