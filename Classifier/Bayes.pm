@@ -62,6 +62,23 @@ my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
 class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::DBAccess) :does(POPFile::Role::SQL);
 
+=head1 NAME
+
+Classifier::Bayes - Naive Bayes email classifier
+
+=head1 DESCRIPTION
+
+Implements a Naive Bayes classifier for email messages.  Manages per-user
+buckets, a word-frequency corpus stored in SQLite (or MySQL/PostgreSQL),
+and a session-key API that proxies and the UI use to perform classification,
+training, and corpus management.
+
+The main entry points are C<classify_and_modify> (classify a message and
+inject the C<X-Text-Classification> header) and the bucket/word management
+methods (C<create_bucket>, C<add_message_to_bucket>, etc.).
+
+=cut
+
 # Set this to 1 to get scores for individual words in message detail
 field $wordscores :reader :writer = 0;
 
@@ -144,16 +161,22 @@ BUILD {
     $self->set_name('bayes');
 }
 
-=head2 forked
+=head2 db
 
-This is called inside a child process that has just forked, since
-the child needs access to the database we open it
+Returns the active database handle, opening it via C<db_connect> if necessary.
 
 =cut
 
 method db() {
     return $self->_db()
 }
+
+=head2 forked
+
+Called in a child process after C<fork()>.  Reconnects to the database so
+the child has its own independent handle.
+
+=cut
 
 method forked ($writer = undef) {
     $db_service->forked();
@@ -509,6 +532,16 @@ method get_color ($session, $word) {
     return $color;
 }
 
+=head2 get_word_colors
+
+    my %colors = $self->get_word_colors($session, @words);
+
+Returns a hash mapping each word in C<@words> to the display color of the
+bucket that has the highest probability for that word.  Words not seen in
+any bucket are omitted from the result.
+
+=cut
+
 method get_word_colors ($session, @words) {
     my $userid = $self->valid_session_key($session);
     return () unless defined $userid && @words;
@@ -582,6 +615,15 @@ method get_value ($session, $bucket, $word) {
         return 0;
     }
 }
+
+=head2 get_base_value
+
+    my $n = $self->get_base_value($session, $bucket, $word);
+
+Returns the raw training count for C<$word> in C<$bucket>, or 0 if the word
+is not present.  Unlike C<get_value>, no logarithm is applied.
+
+=cut
 
 method get_base_value ($session, $bucket, $word) {
     my $value = $self->db_get_word_count($session, $bucket, $word);
@@ -3906,6 +3948,14 @@ method create_magnet ($session, $bucket, $type, $text) {
     return 1
 }
 
+=head2 delete_magnet
+
+    $self->delete_magnet($session, $bucket, $type, $text);
+
+Removes the magnet with type C<$type> and value C<$text> from C<$bucket>.
+
+=cut
+
 method delete_magnet ($session, $bucket, $type, $text) {
     my $userid = $self->valid_session_key($session);
     return
@@ -4040,6 +4090,14 @@ method db_quote ($string) {
     return $self->db()->quote($string);
 }
 
+
+=head2 set_history
+
+    $self->set_history($history_obj);
+
+Injects the C<POPFile::History> object used to record classified messages.
+
+=cut
 
 method set_history($h) {
     $history = $h;
