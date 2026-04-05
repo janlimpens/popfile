@@ -1345,17 +1345,16 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
     return $host;
 }
 
-# ----------------------------------------------------------------------------
-#
-# parse_html
-#
-# Parse a line that might contain HTML information, returns 1 if we
-# are still inside an unclosed HTML tag
-#
-# $line     A line of text
-# $encoded  1 if this HTML was found inside encoded (base64) text
-#
-# ----------------------------------------------------------------------------
+=head2 parse_html
+
+    $self->parse_html($line, $encoded);
+
+Parses a line that may contain HTML, extracting pseudo-words from tags, CSS
+styles, and colors.  C<$encoded> is 1 when the line came from a base64-decoded
+block.  Returns 1 if the parser is still inside an unclosed HTML tag.
+
+=cut
+
 method parse_html ($line, $encoded) {
     my $found = 1;
 
@@ -1850,10 +1849,13 @@ method parse_line ($read) {
 #
 # clear_out_base64
 #
-# If there's anything in the {base64__} then decode it and parse it,
-# returns colorization information to be added to the colorized output
-#
-# ----------------------------------------------------------------------------
+=head2 clear_out_base64
+
+Decodes any accumulated base64 data and passes it to C<parse_html>.
+Returns colorization markup to be appended to the colorized output.
+
+=cut
+
 method clear_out_base64() {
     my $colorized = '';
 
@@ -1897,11 +1899,12 @@ method clear_out_base64() {
 
 # ----------------------------------------------------------------------------
 #
-# clear_out_qp
-#
-# If there's anything in the {prev__} then decode it and parse it
-#
-# ----------------------------------------------------------------------------
+=head2 clear_out_qp
+
+Decodes any accumulated quoted-printable data and passes it to C<parse_html>.
+
+=cut
+
 method clear_out_qp() {
     if (($cur_encoding =~ /quoted\-printable/i) &&
          ($prev ne '')) {
@@ -1924,19 +1927,17 @@ method clear_out_qp() {
 
 # ----------------------------------------------------------------------------
 #
-# decode_string - Decode MIME encoded strings used in the header lines
-# in email messages
-#
-# $mystring     - The string that neeeds decode
-#
-# Return the decoded string, this routine recognizes lines of the form
-#
-# =?charset?[BQ]?text?=
-#
-# $lang Pass in the current interface language for language specific
-# encoding conversion A B indicates base64 encoding, a Q indicates
-# quoted printable encoding
-# ----------------------------------------------------------------------------
+=head2 decode_string
+
+    my $decoded = $self->decode_string($string);
+    my $decoded = $self->decode_string($string, $lang);
+
+Decodes a MIME-encoded header string of the form C<=?charset?[BQ]?text?=>.
+Handles both base64 (B) and quoted-printable (Q) transfer encodings and
+applies charset conversion for the given C<$lang>.
+
+=cut
+
 method decode_string ($mystring, $lang = undef) {
     # I choose not to use "$mystring = MIME::Base64::decode( $1 );"
     # because some spam mails have subjects like: "Subject: adjpwpekm
@@ -2013,14 +2014,17 @@ method get_header ($header) {
 
 # ----------------------------------------------------------------------------
 #
-# parse_header - Performs parsing operations on a message header
-#
-# $header       Name of header being processed
-# $argument     Value of header being processed
-# $mime         The presently saved mime boundaries list
-# $encoding     Current message encoding
-#
-# ----------------------------------------------------------------------------
+=head2 parse_header
+
+    my ($mime, $encoding) = $self->parse_header($header, $argument, $mime, $encoding);
+
+Processes one message header line.  Updates the MIME-boundary stack and
+current encoding for C<Content-Type> and C<Content-Transfer-Encoding>
+headers; extracts pseudo-words from other headers.  Returns the (possibly
+updated) C<$mime> and C<$encoding> values.
+
+=cut
+
 method parse_header ($header, $argument, $mime, $encoding) {
     print "Header ($header) ($argument)\n" if $debug;
 
@@ -2246,15 +2250,16 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
 # ----------------------------------------------------------------------------
 #
-# parse_css_ruleset - Parses text for CSS declarations
-#                     Uses the second part of the "ruleset" grammar
-#
-# $line         The line to match
-# $braces       1 if braces are included, 0 if excluded. Defaults to 0.
-#               (optional)
-# Returns       A hash of properties containing their expressions
-#
-# ----------------------------------------------------------------------------
+=head2 parse_css_style
+
+    my $props = $self->parse_css_style($line);
+    my $props = $self->parse_css_style($line, 1);   # 1 = braces included
+
+Parses a CSS declaration block and returns a hashref mapping property names
+to their values.  Pass C<$braces> as 1 if the string includes the surrounding
+C<{...}>.
+
+=cut
 
 method parse_css_style ($line, $braces) {
     # http://www.w3.org/TR/CSS2/grammar.html
@@ -2276,16 +2281,16 @@ method parse_css_style ($line, $braces) {
 
 # ----------------------------------------------------------------------------
 #
-# parse_css_color - Parses a CSS color string
-#
-# $color        The string to parse
-# Returns       (r,g,b) triplet in list context, rrggbb (hex) color in scalar
-#               context
-#
-# In case of an error: (-1,-1,-1) in list context, "error" in scalar
-# context
-#
-# ----------------------------------------------------------------------------
+=head2 parse_css_color
+
+    my ($r, $g, $b) = $self->parse_css_color($color);   # list context
+    my $hex         = $self->parse_css_color($color);   # scalar context
+
+Parses a CSS color string (C<rgb(r,g,b)>, C<#rrggbb>, C<#rgb>, or a named
+color).  Returns an C<(r, g, b)> triplet in list context or a C<rrggbb> hex
+string in scalar context.  Returns C<(-1,-1,-1)> / C<"error"> on failure.
+
+=cut
 
 method parse_css_color ($color) {
     # CSS colors can be in a rgb(r,g,b), #hhh, #hhhhhh or a named color form
@@ -2410,14 +2415,16 @@ method parse_css_color ($color) {
 
 # ----------------------------------------------------------------------------
 #
-# match_attachment_filename - Matches a line like 'attachment;
-# filename="<filename>"
-#
-# $line         The line to match
-# Returns       The first match (= "attchment" if found)
-#               The second match (= name of the file if found)
-#
-# ----------------------------------------------------------------------------
+=head2 match_attachment_filename
+
+    my ($disposition, $filename) = $self->match_attachment_filename($line);
+
+Parses a C<Content-Disposition>-style parameter string such as
+C<attachment; filename="foo.pdf">.  Returns the disposition type and the
+filename (both may be C<undef> if the line does not match).
+
+=cut
+
 method match_attachment_filename ($line) {
     $line =~ /\s*(.*);\s*filename=\"(.*)\"/;
 
@@ -2426,13 +2433,15 @@ method match_attachment_filename ($line) {
 
 # ----------------------------------------------------------------------------
 #
-# file_extension - Splits a filename into name and extension
-#
-# $filename     The filename to split
-# Returns       The name of the file
-#               The extension of the file
-#
-# ----------------------------------------------------------------------------
+=head2 file_extension
+
+    my ($name, $ext) = $self->file_extension($filename);
+
+Splits a filename into its base name and extension.  Returns C<($filename, '')>
+if no extension is present.
+
+=cut
+
 method file_extension ($filename) {
     if ($filename =~ m/(.*)\.(.*)$/) {
         return ($1, $2);
@@ -2443,12 +2452,15 @@ method file_extension ($filename) {
 
 # ----------------------------------------------------------------------------
 #
-# add_attachment_filename - Adds a file name and extension as pseudo
-#                           words attchment_name and attachment_ext
-#
-# $filename     The filename to add to the list of words
-#
-# ----------------------------------------------------------------------------
+=head2 add_attachment_filename
+
+    $self->add_attachment_filename($filename);
+
+Decodes C<$filename> and records its base name and extension as
+C<mimename:*> and C<mimeextension:*> pseudo-words.
+
+=cut
+
 method add_attachment_filename ($filename) {
     if (defined($filename) && ($filename ne '')) {
         print "Add filename $filename\n" if $debug;
@@ -2470,13 +2482,16 @@ method add_attachment_filename ($filename) {
 
 # ----------------------------------------------------------------------------
 #
-# handle_disposition - Parses Content-Disposition header to extract filename.
-#                      If filename found, at the file name and extension to
-#                      the word list
-#
-# $params     The parameters of the Content-Disposition header
-#
-# ----------------------------------------------------------------------------
+=head2 handle_disposition
+
+    $self->handle_disposition($params);
+
+Parses the parameters of a C<Content-Disposition> header.  If the disposition
+is C<attachment> and a filename is present, passes it to
+C<add_attachment_filename>.
+
+=cut
+
 method handle_disposition ($params) {
     my ($attachment, $filename) = $self->match_attachment_filename($params);
 
@@ -2487,13 +2502,16 @@ method handle_disposition ($params) {
 
 # ----------------------------------------------------------------------------
 #
-# splitline - Escapes characters so a line will print as plain-text
-#             within a HTML document.
-#
-# $line         The line to escape
-# $encoding     The value of any current encoding scheme
-#
-# ----------------------------------------------------------------------------
+=head2 splitline
+
+    my $escaped = $self->splitline($line, $encoding);
+
+HTML-escapes C<< < >> and C<< > >>, expands tabs, and wraps long lines.
+When C<$encoding> is C<quoted-printable>, also decodes C<=3C>/C<=3E> entities.
+Returns the escaped string.
+
+=cut
+
 method splitline ($line, $encoding) {
     $line =~ s/([^\r\n]{100,120} )/$1\r\n/g;
     $line =~ s/([^ \r\n]{120})/$1\r\n/g;
@@ -2612,6 +2630,16 @@ sub convert_encoding($string, $from, $to, $default, @candidates) {
 # $line          The line to be parsed
 #
 # ----------------------------------------------------------------------------
+=head2 parse_line_with_kakasi
+
+    my $spaced = $self->parse_line_with_kakasi($line);
+
+Splits Japanese text in C<$line> into space-separated words using Kakasi
+(Wakachigaki mode).  Returns the line unchanged if it contains no Japanese
+characters.
+
+=cut
+
 method parse_line_with_kakasi ($line) {
     # If the line does not contain Japanese characters, do nothing
     return $line if ($line =~ /^[\x00-\x7F]*$/);
@@ -2624,16 +2652,15 @@ method parse_line_with_kakasi ($line) {
 
 # ----------------------------------------------------------------------------
 #
-# parse_line_with_mecab
-#
-# Parse a line with MeCab
-#
-# Split Japanese words by spaces using "MeCab" - Yet Another Part-of-Speech
-# and Morphological Analyzer.
-#
-# $line          The line to be parsed
-#
-# ----------------------------------------------------------------------------
+=head2 parse_line_with_mecab
+
+    my $spaced = $self->parse_line_with_mecab($line);
+
+Splits Japanese text in C<$line> into space-separated words using MeCab.
+Returns the line unchanged if it contains no Japanese characters.
+
+=cut
+
 method parse_line_with_mecab ($line) {
     # If the line does not contain Japanese characters, do nothing
     return $line if ($line =~ /^[\x00-\x7F]*$/);
@@ -2649,15 +2676,16 @@ method parse_line_with_mecab ($line) {
 
 # ----------------------------------------------------------------------------
 #
-# parse_line_with_internal_parser
-#
-# Parse a line with an internal perser
-#
-# Split characters by kind of the character
-#
-# $line          The line to be parsed
-#
-# ----------------------------------------------------------------------------
+=head2 parse_line_with_internal_parser
+
+    my $spaced = $self->parse_line_with_internal_parser($line);
+
+Splits Japanese text in C<$line> into space-separated words by character
+class using a built-in EUC-JP regex.  Returns the line unchanged if it
+contains no Japanese characters.
+
+=cut
+
 method parse_line_with_internal_parser ($line) {
     # If the line does not contain Japanese characters, do nothing
     return $line if ($line =~ /^[\x00-\x7F]*$/);
@@ -2686,11 +2714,12 @@ sub init_kakasi
 
 # ----------------------------------------------------------------------------
 #
-# init_mecab
-#
-# Create a new parser object of MeCab.
-#
-# ----------------------------------------------------------------------------
+=head2 init_mecab
+
+Creates and stores a new MeCab parser object.
+
+=cut
+
 method init_mecab() {
     # Initialize MeCab (-F %M\s -U %M\s -E \n is passed to MeCab as argument).
     # Insert white spaces after words.
@@ -2711,25 +2740,28 @@ sub close_kakasi
 
 # ----------------------------------------------------------------------------
 #
-# close_mecab
-#
-# Free the parser object of MeCab.
-#
-# ----------------------------------------------------------------------------
+=head2 close_mecab
+
+Releases the MeCab parser object.
+
+=cut
+
 method close_mecab() {
     $nihongo_parser{obj_mecab} = undef;
 }
 
 # ----------------------------------------------------------------------------
 #
-# setup_nihongo_parser
-#
-# Check whether Nihongo (Japanese) parsers are available and setup subroutines.
-#
-# $nihongo_parser  Nihongo (Japanese) parser to use
-#                  ( kakasi / mecab / internal )
-#
-# ----------------------------------------------------------------------------
+=head2 setup_nihongo_parser
+
+    $self->setup_nihongo_parser($parser_name);
+
+Detects which Japanese parser is available (C<kakasi>, C<mecab>, or
+C<internal>) and wires the appropriate C<parse> and C<close> callbacks into
+the C<%nihongo_parser> dispatch table.
+
+=cut
+
 method setup_nihongo_parser ($nihongo_parser) {
     # If MeCab is installed, use MeCab.
     if ($nihongo_parser eq 'mecab') {
