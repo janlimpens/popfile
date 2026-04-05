@@ -26,7 +26,7 @@ ManualLanguage                          br
  
 # Common words that are used on their own all over the interface
 Apply                                   Aplicar
-ApplyChanges                            Aplicar AlteraÁıes
+ApplyChanges                            Aplicar Altera√ß√µes
 On                                      Ligado
 Off                                     Desligado
 TurnOn                                  Ligar
@@ -38,33 +38,33 @@ Next                                    Seguinte
 From                                    Originador
 Subject                                 Assunto
 Cc                                      Cc
-Classification                          ClassificaÁ„o
+Classification                          Classifica√ß√£o
 Reclassify                              Reclassificar
 Undo                                    Desfazer
 Close                                   Fechar
 Find                                    Procurar
 Filter                                  Filtrar
 Yes                                     Sim
-No                                      N„o
+No                                      N√£o
 ChangeToYes                             Alterar para Sim
-ChangeToNo                              Alterar para N„o
-Bucket                                  Recept·culo
-Magnet                                  Õman
+ChangeToNo                              Alterar para N√£o
+Bucket                                  Recept√°culo
+Magnet                                  √çman
 Delete                                  Apagar
 Create                                  Criar
 To                                      Para
 Total                                   Total
 Rename                                  Renomear
-Frequency                               FrequÍncia
+Frequency                               Frequ√™ncia
 Probability                             Probabilidade
-Score                                   PontuaÁ„o
+Score                                   Pontua√ß√£o
 Lookup                                  Procurar
 Refresh                                 Refrescar
 Word                                    Palavra
 Update                                  Actualizar
-Count                                   OcorrÍncias
-Scores                                  ClassificaÁıes
-QuickMagnets                             Criar Õman
+Count                                   Ocorr√™ncias
+Scores                                  Classifica√ß√µes
+QuickMagnets                             Criar √çman
 
 
 View_Title                              Detalhes da mensagem
@@ -72,81 +72,81 @@ View_Title                              Detalhes da mensagem
 # The header and footer that appear on every UI page
 Header_Title                            Centro de Controle POPFile
 Header_Shutdown                         Desligar POPFile
-Header_History                          HistÛrico
-Header_Buckets                          Recept·culos
-Header_Configuration                    ConfiguraÁ„o
-Header_Advanced                         AvanÁado
-Header_Security                         SeguranÁa
-Header_Magnets                          Õmans
+Header_History                          Hist√≥rico
+Header_Buckets                          Recept√°culos
+Header_Configuration                    Configura√ß√£o
+Header_Advanced                         Avan√ßado
+Header_Security                         Seguran√ßa
+Header_Magnets                          √çmans
 
 Footer_HomePage                         POPFile na internet
 Footer_Manual                           Manual
-Footer_Forums                           FÛrums
-Footer_FeedMe                           DoaÁıes
+Footer_Forums                           F√≥rums
+Footer_FeedMe                           Doa√ß√µes
 Footer_RequestFeature                   Pedir uma funcionalidade
 Footer_MailingList                      Lista de Email
 
-Configuration_Error1                    O caracter separador deve ser um ˙nico caracter
-Configuration_Error2                    O porta da interface do utilizador deve ser um n˙mero entre 1 e 65535
-Configuration_Error3                    A porta de escuta POP3 deve ser um n˙mero entre 1 e 65535
-Configuration_Error4                    O tamanho da p·gina deve ser um n˙mero entre 1 e 1000
-Configuration_Error5                    O n˙mero de dias no histÛrico deve ser um n˙mero entre 1 e 366
-Configuration_Error6                    O tempo limite TCP deve ser um n˙mero entre 10 e 1800
-Configuration_Error7                    A porta de escuta XML RPC deve ser um n˙mero entre 1 e 65535
+Configuration_Error1                    O caracter separador deve ser um √∫nico caracter
+Configuration_Error2                    O porta da interface do utilizador deve ser um n√∫mero entre 1 e 65535
+Configuration_Error3                    A porta de escuta POP3 deve ser um n√∫mero entre 1 e 65535
+Configuration_Error4                    O tamanho da p√°gina deve ser um n√∫mero entre 1 e 1000
+Configuration_Error5                    O n√∫mero de dias no hist√≥rico deve ser um n√∫mero entre 1 e 366
+Configuration_Error6                    O tempo limite TCP deve ser um n√∫mero entre 10 e 1800
+Configuration_Error7                    A porta de escuta XML RPC deve ser um n√∫mero entre 1 e 65535
 Configuration_POP3Port                  Porta de escuta POP3
-Configuration_POP3Update                Alterada a porta para %s; esta alteraÁ„o n„o ter· efeito atÈ que vocÍ reinicie o POPFile
+Configuration_POP3Update                Alterada a porta para %s; esta altera√ß√£o n√£o ter√° efeito at√© que voc√™ reinicie o POPFile
 Configuration_NNTPPort                  Porta de escuta NNTP
-Configuration_NNTPUpdate                Alterada a porta NNTP para %s; esta alteraÁ„o n„o ter· efeito atÈ que vocÍ reinicie o POPFile
+Configuration_NNTPUpdate                Alterada a porta NNTP para %s; esta altera√ß√£o n√£o ter√° efeito at√© que voc√™ reinicie o POPFile
 Configuration_SMTPPort                  Porta de escuta SMTP
-Configuration_SMTPUpdate                Alterada a porta SMTP para %s; esta alteraÁ„o n„o ter· efeito atÈ que vocÍ reinicie o POPFile
+Configuration_SMTPUpdate                Alterada a porta SMTP para %s; esta altera√ß√£o n√£o ter√° efeito at√© que voc√™ reinicie o POPFile
 Configuration_XMLRPCPort                Porta de escuta XML RPC
-Configuration_XMLRPCUpdate              Alterada a porta XML RPC para %s; esta alteraÁ„o n„o ter· efeito atÈ que vocÍ reinicie o POPFile
+Configuration_XMLRPCUpdate              Alterada a porta XML RPC para %s; esta altera√ß√£o n√£o ter√° efeito at√© que voc√™ reinicie o POPFile
 Configuration_POP3Separator             Caracter separador POP3 (host:port:user)
 Configuration_NNTPSeparator             Caracter separador NNTP (host:port:user)
 Configuration_POP3SepUpdate             Alterado o separador POP3 para %s
 Configuration_NNTPSepUpdate             Alterado o separador NNTP para %s
 Configuration_UI                        Porta da interface do utilizador (web)
-Configuration_UIUpdate                  Alterada a porta da interface web do utilizador para %s; esta alteraÁ„o n„o ter· efeito atÈ que vocÍ reinicie o POPFile
-Configuration_History                   N˙mero de emails por p·gina
-Configuration_HistoryUpdate             Alterado o n˙mero de emails por p·gina para %s
-Configuration_Days                      N˙mero de dias para manter no histÛrico
-Configuration_DaysUpdate                Alterado o n˙mero de dias para manter no histÛrico para %s
+Configuration_UIUpdate                  Alterada a porta da interface web do utilizador para %s; esta altera√ß√£o n√£o ter√° efeito at√© que voc√™ reinicie o POPFile
+Configuration_History                   N√∫mero de emails por p√°gina
+Configuration_HistoryUpdate             Alterado o n√∫mero de emails por p√°gina para %s
+Configuration_Days                      N√∫mero de dias para manter no hist√≥rico
+Configuration_DaysUpdate                Alterado o n√∫mero de dias para manter no hist√≥rico para %s
 Configuration_UserInterface             Interface do Utilizador
 Configuration_Skins                     Aspecto
 Configuration_SkinsChoose               Escolha o aspecto
-Configuration_Language                  LÌngua
-Configuration_LanguageChoose            Escolha a lÌngua
+Configuration_Language                  L√≠ngua
+Configuration_LanguageChoose            Escolha a l√≠ngua
 Configuration_ListenPorts               Portas de Escuta
-Configuration_HistoryView               Exibir HistÛrico
-Configuration_TCPTimeout                Tempo Limite de Conex„o TCP
-Configuration_TCPTimeoutSecs            Tempo limite de conex„o TCP em segundos
-Configuration_TCPTimeoutUpdate          Alterado o tempo limite de conex„o TCP para %s
-Configuration_ClassificationInsertion   InserÁ„o de ClassificaÁ„o
-Configuration_SubjectLine               ModificaÁ„o do assunto
-Configuration_XTCInsertion              InserÁ„o de X-Text-Classification
-Configuration_XPLInsertion              InserÁ„o de X-POPFile-Link
+Configuration_HistoryView               Exibir Hist√≥rico
+Configuration_TCPTimeout                Tempo Limite de Conex√£o TCP
+Configuration_TCPTimeoutSecs            Tempo limite de conex√£o TCP em segundos
+Configuration_TCPTimeoutUpdate          Alterado o tempo limite de conex√£o TCP para %s
+Configuration_ClassificationInsertion   Inser√ß√£o de Classifica√ß√£o
+Configuration_SubjectLine               Modifica√ß√£o do assunto
+Configuration_XTCInsertion              Inser√ß√£o de X-Text-Classification
+Configuration_XPLInsertion              Inser√ß√£o de X-POPFile-Link
 Configuration_Logging                   Registo de actividade
 Configuration_None                      em nenhum lado
-Configuration_ToScreen                  no ecr„
+Configuration_ToScreen                  no ecr√£
 Configuration_ToFile                    num ficheiro
-Configuration_ToScreenFile              no ecr„n e num ficheiro
+Configuration_ToScreenFile              no ecr√£n e num ficheiro
 Configuration_LoggerOutput              Registar actividade
 Configuration_GeneralSkins              Aspecto normal
 Configuration_SmallSkins                Aspecto pequeno
-Configuration_TinySkins                 Aspecto min˙sculo
+Configuration_TinySkins                 Aspecto min√∫sculo
 Configuration_CurrentLogFile            &lt;registo de actividade actual&gt;
 
-Advanced_Error1                         '%s' j· est· na lista de palavras ignoradas
-Advanced_Error2                         Palavras ignoradas podem somente conter caracteres alfanumÈricos, ., _, -, ou @
+Advanced_Error1                         '%s' j√° est√° na lista de palavras ignoradas
+Advanced_Error2                         Palavras ignoradas podem somente conter caracteres alfanum√©ricos, ., _, -, ou @
 Advanced_Error3                         '%s' adicionado na lista de palavras ignoradas
-Advanced_Error4                         '%s' n„o est„ na lista de palavras ignoradas
+Advanced_Error4                         '%s' n√£o est√£ na lista de palavras ignoradas
 Advanced_Error5                         '%s' removido da lista de palavras ignoradas
 Advanced_StopWords                      Palavras Ignoradas
-Advanced_Message1                       As seguintes palavras s„o ignoradas de todas as classificaÁıes porque ocorrem muito frequentemente.
+Advanced_Message1                       As seguintes palavras s√£o ignoradas de todas as classifica√ß√µes porque ocorrem muito frequentemente.
 Advanced_AddWord                        Adicionar palavra
 Advanced_RemoveWord                     Remover palavra
 
-History_Filter                          &nbsp;(apenas mostrando o recept·culo <font color="%s">%s</font>)
+History_Filter                          &nbsp;(apenas mostrando o recept√°culo <font color="%s">%s</font>)
 History_FilterBy                        Filtrar por
 History_ResetSearch                     Mostar todos
 History_Search                          &nbsp;(procurar pelo assunto %s)
@@ -157,114 +157,114 @@ History_ShouldBe                        Deveria ser
 History_NoFrom                          sem originador
 History_NoSubject                       sem assunto
 History_ClassifyAs                      Classificar como
-History_MagnetUsed                      Õman usado
-History_MagnetBecause                   <b>Õman usado</b><p>Classificado em <font color="%s">%s</font> por causa do Ìman %s </p>
+History_MagnetUsed                      √çman usado
+History_MagnetBecause                   <b>√çman usado</b><p>Classificado em <font color="%s">%s</font> por causa do √≠man %s </p>
 History_ChangedTo                       Alterado para <font color="%s">%s
-History_Already                         J· reclassificado como <font color="%s">%s</font>
+History_Already                         J√° reclassificado como <font color="%s">%s</font>
 History_RemoveAll                       Remover Tudo
-History_RemovePage                      Remover esta P·gina
-History_Remove                          Para remover entradas do histÛrico use
+History_RemovePage                      Remover esta P√°gina
+History_Remove                          Para remover entradas do hist√≥rico use
 History_SearchMessage                   Procurar Assunto
 History_NoMessages                      Nenhuma mensagem
 History_ShowMagnet                      Magnetizadas
-History_ShowNoMagnet                    N„o magnetizadas
-History_Magnet                          &nbsp;(mensagens classificadas por Ìman)
-History_NoMagnet                        &nbsp;(mensagens n„o classificadas por Ìman)
+History_ShowNoMagnet                    N√£o magnetizadas
+History_Magnet                          &nbsp;(mensagens classificadas por √≠man)
+History_NoMagnet                        &nbsp;(mensagens n√£o classificadas por √≠man)
 
 Password_Title                          Senha
 Password_Enter                          Digite a senha
 Password_Go                             Entrar!
 Password_Error1                         Senha incorreta
 
-Security_Error1                         A porta segura deve ser um n˙mero entre 1 e 65535
-Security_Stealth                        Modo Stealth/OperaÁ„o Servidor
-Security_NoStealthMode                  N„o (Modo Stealth)
-Security_ExplainStats                   (Com isto ligado o POPFile envia uma vez por dia os seguintes trÍs valores para um script em getpopfile.org: bc (o n˙mero total de recept·culos que vocÍ tem), mc (o n˙mero total de mensagens que o POPFile classificou) e ec (o n˙mero total de erros de classificaÁ„o).  Isto fica guardado num arquivo que eu vou usar para publicar algumas estatÌsticas sobre como as pessoas usam o POPFile e o qu„o bem ele funciona.  O meu servidor web mantÈm o seus arquivos de log por mais ou menos 5 dias antes de os apagar; Eu n„o guardo nenhuma ligaÁ„o entre as estatÌstcas e os endereÁos IP de cada um.)
-Security_ExplainUpdate                  (Com isto ligado o POPFile envia uma vez por dia os seguintes trÍs valores para um script em getpopfile.org: ma (o n˙mero maior da vers„o do seu POPFile), mi (o n˙mero menor da vers„o do seu POPFile) and bn (o n˙mero do build da sua vers„o do POPFile). O POPFile recebe uma resposta na forma de um gr·fico que aparece no topo da p·gina se uma nova vers„o estiver disponÌvel.  Meu servidor web mantÈm seus arquivos de log por mais ou menos 5 antes de os apagar; Eu n„o guardo nenhuma ligaÁ„o entre as verificaÁıes de vers„o e os endereÁos IP de cada um.)
+Security_Error1                         A porta segura deve ser um n√∫mero entre 1 e 65535
+Security_Stealth                        Modo Stealth/Opera√ß√£o Servidor
+Security_NoStealthMode                  N√£o (Modo Stealth)
+Security_ExplainStats                   (Com isto ligado o POPFile envia uma vez por dia os seguintes tr√™s valores para um script em getpopfile.org: bc (o n√∫mero total de recept√°culos que voc√™ tem), mc (o n√∫mero total de mensagens que o POPFile classificou) e ec (o n√∫mero total de erros de classifica√ß√£o).  Isto fica guardado num arquivo que eu vou usar para publicar algumas estat√≠sticas sobre como as pessoas usam o POPFile e o qu√£o bem ele funciona.  O meu servidor web mant√©m o seus arquivos de log por mais ou menos 5 dias antes de os apagar; Eu n√£o guardo nenhuma liga√ß√£o entre as estat√≠stcas e os endere√ßos IP de cada um.)
+Security_ExplainUpdate                  (Com isto ligado o POPFile envia uma vez por dia os seguintes tr√™s valores para um script em getpopfile.org: ma (o n√∫mero maior da vers√£o do seu POPFile), mi (o n√∫mero menor da vers√£o do seu POPFile) and bn (o n√∫mero do build da sua vers√£o do POPFile). O POPFile recebe uma resposta na forma de um gr√°fico que aparece no topo da p√°gina se uma nova vers√£o estiver dispon√≠vel.  Meu servidor web mant√©m seus arquivos de log por mais ou menos 5 antes de os apagar; Eu n√£o guardo nenhuma liga√ß√£o entre as verifica√ß√µes de vers√£o e os endere√ßos IP de cada um.)
 Security_PasswordTitle                  Senha da Interface de utilizador
 Security_Password                       Senha
 Security_PasswordUpdate                 Alterada a senha para %s
-Security_AUTHTitle                      AutenticaÁ„o Segura de Senha/AUTH
+Security_AUTHTitle                      Autentica√ß√£o Segura de Senha/AUTH
 Security_SecureServer                   Servidor Seguro
-Security_SecureServerUpdate             Alterado o servidor seguro para %s; esta alteraÁ„o n„o ter· efeito atÈ que vocÍ reinicie o POPFile
+Security_SecureServerUpdate             Alterado o servidor seguro para %s; esta altera√ß√£o n√£o ter√° efeito at√© que voc√™ reinicie o POPFile
 Security_SecurePort                     Porta segura
-Security_SecurePortUpdate               Alterada a porta para %s; esta alteraÁ„o n„o ter· efeito atÈ que vocÍ reinicie o POPFile
+Security_SecurePortUpdate               Alterada a porta para %s; esta altera√ß√£o n√£o ter√° efeito at√© que voc√™ reinicie o POPFile
 Security_SMTPServer                     Servidor SMTP real
-Security_SMTPServerUpdate               Alterado o servidor SMTP real para %s; esta alteraÁ„o n„o ter· efeito atÈ que vocÍ reinicie o POPFile
+Security_SMTPServerUpdate               Alterado o servidor SMTP real para %s; esta altera√ß√£o n√£o ter√° efeito at√© que voc√™ reinicie o POPFile
 Security_SMTPPort                       Porta do servidor SMTP real
-Security_SMTPPortUpdate                 Alterada a porta do servidor SMTP real para %s; esta alteraÁ„o n„o ter· efeito atÈ que vocÍ reinicie o POPFile
-Security_POP3                           Aceitar conexıes POP3 de m·quinas remotas
-Security_NNTP                           Aceitar conexıes NNTP de m·quinas remotas
-Security_XMLRPC                         Aceitar conexıes XMLRPC de m·quinas remotas
-Security_SMTP                           Aceitar conexıes SMTP de m·quinas remotas
-Security_UI                             Aceitar conexıes HTTP (Interface de utilizador) de m·quinas remotas
-Security_UpdateTitle                    VerificaÁ„o Autom·tica de AtualizaÁıes
-Security_Update                         Verificar diariamente atualizaÁıes para o POPFile
-Security_StatsTitle                     Reportar EstatÌsticas
-Security_Stats                          Enviar estatÌsticas para o John diariamente
+Security_SMTPPortUpdate                 Alterada a porta do servidor SMTP real para %s; esta altera√ß√£o n√£o ter√° efeito at√© que voc√™ reinicie o POPFile
+Security_POP3                           Aceitar conex√µes POP3 de m√°quinas remotas
+Security_NNTP                           Aceitar conex√µes NNTP de m√°quinas remotas
+Security_XMLRPC                         Aceitar conex√µes XMLRPC de m√°quinas remotas
+Security_SMTP                           Aceitar conex√µes SMTP de m√°quinas remotas
+Security_UI                             Aceitar conex√µes HTTP (Interface de utilizador) de m√°quinas remotas
+Security_UpdateTitle                    Verifica√ß√£o Autom√°tica de Atualiza√ß√µes
+Security_Update                         Verificar diariamente atualiza√ß√µes para o POPFile
+Security_StatsTitle                     Reportar Estat√≠sticas
+Security_Stats                          Enviar estat√≠sticas para o John diariamente
 
-Magnet_Error1                           Õman '%s' j· existe no recept·culo '%s'
-Magnet_Error2                           O novo Ìman '%s' colide com o Ìman '%s' no recept·culo '%s' e pode causar resultados ambÌguos.  O novo Ìman n„o foi adicionado.
-Magnet_Error3                           Criar novo Ìman '%s' no recept·culo '%s'
-Magnet_CurrentMagnets                   Õmans Actuais
-Magnet_Message1                         Os seguintes Ìmans atraem as mensagens para recept·culo especificado.
-Magnet_CreateNew                        Criar Novo Õman
-Magnet_Explanation                      TrÍs tipos de Ìman est„o disponÌveis: <ul><li>De um endereÁo ou nome:</b> Por exemplo: adriano@companhia.com para apanhar um endereÁo especÌfico, <br />companhia.com para apanhar todo mundo que manda mensagens de companhia.com, <br />Adriano Gomes para apanhar uma pessoa especÌfica, Adriano para apanhar todos os Adrianos</li><li><b>Para um endereÁo ou nome:</b> Como um Ìman Originador: mas para o endereÁo Para: de uma mensagem </li><li><b>Palavras no assunto:</b> Por exemplo: ol· para apanhar todas as mensagens com ol· no assunto</li></ul>
-Magnet_MagnetType                       Tipo do Ìman
+Magnet_Error1                           √çman '%s' j√° existe no recept√°culo '%s'
+Magnet_Error2                           O novo √≠man '%s' colide com o √≠man '%s' no recept√°culo '%s' e pode causar resultados amb√≠guos.  O novo √≠man n√£o foi adicionado.
+Magnet_Error3                           Criar novo √≠man '%s' no recept√°culo '%s'
+Magnet_CurrentMagnets                   √çmans Actuais
+Magnet_Message1                         Os seguintes √≠mans atraem as mensagens para recept√°culo especificado.
+Magnet_CreateNew                        Criar Novo √çman
+Magnet_Explanation                      Tr√™s tipos de √≠man est√£o dispon√≠veis: <ul><li>De um endere√ßo ou nome:</b> Por exemplo: adriano@companhia.com para apanhar um endere√ßo espec√≠fico, <br />companhia.com para apanhar todo mundo que manda mensagens de companhia.com, <br />Adriano Gomes para apanhar uma pessoa espec√≠fica, Adriano para apanhar todos os Adrianos</li><li><b>Para um endere√ßo ou nome:</b> Como um √≠man Originador: mas para o endere√ßo Para: de uma mensagem </li><li><b>Palavras no assunto:</b> Por exemplo: ol√° para apanhar todas as mensagens com ol√° no assunto</li></ul>
+Magnet_MagnetType                       Tipo do √≠man
 Magnet_Value                            Valor
-Magnet_Always                           Colocar sempre no recept·culo
-Magnet_Jump                             Detalhes do Ìman
+Magnet_Always                           Colocar sempre no recept√°culo
+Magnet_Jump                             Detalhes do √≠man
 
-Bucket_Error1                           Nomes de recept·culos apenas podem conter as letras de a atÈ z min˙sculas mais - e _
-Bucket_Error2                           O recept·culo %s j· existe
-Bucket_Error3                           Criado o recept·culo %s
-Bucket_Error4                           Por favor digite uma palavra que n„o seja em branco
-Bucket_Error5                           Renomeado o recept·culo %s para %s
-Bucket_Error6                           Apagado o recept·culo %s
-Bucket_Title                            Sum·rio
-Bucket_BucketName                       Nome do recept·culo
+Bucket_Error1                           Nomes de recept√°culos apenas podem conter as letras de a at√© z min√∫sculas mais - e _
+Bucket_Error2                           O recept√°culo %s j√° existe
+Bucket_Error3                           Criado o recept√°culo %s
+Bucket_Error4                           Por favor digite uma palavra que n√£o seja em branco
+Bucket_Error5                           Renomeado o recept√°culo %s para %s
+Bucket_Error6                           Apagado o recept√°culo %s
+Bucket_Title                            Sum√°rio
+Bucket_BucketName                       Nome do recept√°culo
 Bucket_WordCount                        Palavras
-Bucket_WordCounts                       DistribuiÁ„o de Palavras
-Bucket_UniqueWords                      Palavras ⁄nicas
-Bucket_SubjectModification              ModificaÁ„o do Assunto
+Bucket_WordCounts                       Distribui√ß√£o de Palavras
+Bucket_UniqueWords                      Palavras √önicas
+Bucket_SubjectModification              Modifica√ß√£o do Assunto
 Bucket_ChangeColor                      Alterar Cor
 Bucket_NotEnoughData                    Dados insuficientes
-Bucket_ClassificationAccuracy           Exactid„o da ClassificaÁ„o
+Bucket_ClassificationAccuracy           Exactid√£o da Classifica√ß√£o
 Bucket_EmailsClassified                 Mensagens classificadas
-Bucket_EmailsClassifiedUpper            DistribuiÁ„o de Mensagens
-Bucket_ClassificationErrors             Erros de classificaÁ„o
-Bucket_Accuracy                         Exactid„o
+Bucket_EmailsClassifiedUpper            Distribui√ß√£o de Mensagens
+Bucket_ClassificationErrors             Erros de classifica√ß√£o
+Bucket_Accuracy                         Exactid√£o
 Bucket_ClassificationCount              Mensagens
 Bucket_ClassificationFP                 Falsos Positivos
 Bucket_ClassificationFN                 Falsos Negativos
 Bucket_ResetStatistics                  Reiniciar contagem
-Bucket_LastReset                        InÌcio da contagem
-Bucket_CurrentColor                     A cÙr actual do recept·culo "%s" È "%s"
-Bucket_SetColorTo                       Alterar a cÙr do recept·culo "%s" para "%s"
-Bucket_Maintenance                      ManutenÁ„o
-Bucket_CreateBucket                     Criar um recept·culo com o nome
-Bucket_DeleteBucket                     Apagar o recept·culo chamado
-Bucket_RenameBucket                     Renomear o recept·culo chamado
+Bucket_LastReset                        In√≠cio da contagem
+Bucket_CurrentColor                     A c√¥r actual do recept√°culo "%s" √© "%s"
+Bucket_SetColorTo                       Alterar a c√¥r do recept√°culo "%s" para "%s"
+Bucket_Maintenance                      Manuten√ß√£o
+Bucket_CreateBucket                     Criar um recept√°culo com o nome
+Bucket_DeleteBucket                     Apagar o recept√°culo chamado
+Bucket_RenameBucket                     Renomear o recept√°culo chamado
 Bucket_Lookup                           Procurar
-Bucket_LookupMessage                    Procurar por palavra nos recept·culos
+Bucket_LookupMessage                    Procurar por palavra nos recept√°culos
 Bucket_LookupMessage2                   Procurar no resultado por
-Bucket_LookupMostLikely                 <b>%s</b> È mais prov·vel aparecer em <font color="%s">%s</font>
-Bucket_DoesNotAppear                    <p><b>%s</b> n„o aparece em nenhum dos recept·culos
+Bucket_LookupMostLikely                 <b>%s</b> √© mais prov√°vel aparecer em <font color="%s">%s</font>
+Bucket_DoesNotAppear                    <p><b>%s</b> n√£o aparece em nenhum dos recept√°culos
 Bucket_DisabledGlobally                 Desligado globalmente
 Bucket_To                               para
 Bucket_Quarantine                       Quarentena
 
-SingleBucket_Title                      Detalhes do recept·culo %s
-SingleBucket_WordCount                  Contagem de palavras do recept·culo
+SingleBucket_Title                      Detalhes do recept√°culo %s
+SingleBucket_WordCount                  Contagem de palavras do recept√°culo
 SingleBucket_TotalWordCount             Contagem total de palavras
 SingleBucket_Percentage                 Percentagem do total
-SingleBucket_WordTable                  Tabela de palavras do recept·culo %s
-SingleBucket_Message1                   Palavras com asterisco (*) foram usadas para classificaÁ„o durante esta sess„o do POPFile.  Clique em qualquer palavra para procurar sua probabilidade para todos os recept·culos.
-SingleBucket_Unique                     %s ˙nicas
-SingleBucket_ClearBucket                Apagar todas as palavras do recept·culo
+SingleBucket_WordTable                  Tabela de palavras do recept√°culo %s
+SingleBucket_Message1                   Palavras com asterisco (*) foram usadas para classifica√ß√£o durante esta sess√£o do POPFile.  Clique em qualquer palavra para procurar sua probabilidade para todos os recept√°culos.
+SingleBucket_Unique                     %s √∫nicas
+SingleBucket_ClearBucket                Apagar todas as palavras do recept√°culo
 
-Session_Title                           Sess„o Expirada
-Session_Error                           A sua sess„o POPFile expirou. Isto ocorre quando se reinicia o POPFile com o browser aberto. Por favor clique nos links do topo do ecran para continuar.
+Session_Title                           Sess√£o Expirada
+Session_Error                           A sua sess√£o POPFile expirou. Isto ocorre quando se reinicia o POPFile com o browser aberto. Por favor clique nos links do topo do ecran para continuar.
 
 Header_MenuSummary                      This table is the navigation menu which allows access to each of the different pages of the control center.
 History_MainTableSummary                This table shows the sender and subject of recently received messages and allows them to be reviewed and reclassified.  Clicking on the subject line will show the full message text, along with information about why it was classified as it was.  The 'Should be' column allows you to specify which bucket the message belongs in, or to undo that change.  The 'Delete' column allows you to delete specific messages from the history if you don't need them anymore.

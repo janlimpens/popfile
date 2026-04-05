@@ -367,7 +367,7 @@ Imap_Now                                ora!
 Imap_UpdateError1                       Login non riuscito. Verifica il nome per il login e la password.
 Imap_UpdateError2                       Connessione al server fallita. Controlla il nome dell'host e la porta ed assicurati di essere online.
 Imap_UpdateError3                       Configura prima i dettagli di connessione.
-Imap_NoConnectionMessage                Configura prima i dettagli di connessione. Fatto ci&ograve;, questa pagina mostrer‡ altre opzioni.
+Imap_NoConnectionMessage                Configura prima i dettagli di connessione. Fatto ci&ograve;, questa pagina mostrer√ì altre opzioni.
 Imap_WatchMore                          una cartella ad una lista di cartelle sotto controllo
 Imap_WatchedFolder                      Sotto controllo cartella numero
 

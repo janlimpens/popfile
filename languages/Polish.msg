@@ -27,259 +27,259 @@ ManualLanguage                          en
 
 # Common words that are used on their own all over the interface
 
-Apply                                   Zatwierd¼
-On                                      W³±czony
-Off                                     Wy³±czony
-TurnOn                                  W³±cz
-TurnOff                                 Wy³±cz
+Apply                                   ZatwierdÅº
+On                                      WÅ‚Ä…czony
+Off                                     WyÅ‚Ä…czony
+TurnOn                                  WÅ‚Ä…cz
+TurnOff                                 WyÅ‚Ä…cz
 Add                                     Dodaj
-Remove                                  Usuñ
+Remove                                  UsuÅ„
 Previous                                Poprzedni
-Next                                    Nastêpny
+Next                                    NastÄ™pny
 From                                    Od
 Subject                                 Temat
 Cc                                      CC
 Classification                          Klasyfikacja
 Reclassify                              Klasyfikuj
-Probability                             Prawdopodobieñstwo
+Probability                             PrawdopodobieÅ„stwo
 Scores                                  Punkty
 QuickMagnets                            Szybki Musik
 Undo                                    Cofnij
 Close                                   Zamknij
-Find                                    Znajd¼
+Find                                    ZnajdÅº
 Filter                                  Filtr
 Yes                                     Tak
 No                                      Nie
-ChangeToYes                             Zmieñ na tak
-ChangeToNo                              Zmieñ na nie
+ChangeToYes                             ZmieÅ„ na tak
+ChangeToNo                              ZmieÅ„ na nie
 Bucket                                  Folder
 Magnet                                  Musik
 Delete                                  Skasuj
-Create                                  Utwórz
+Create                                  UtwÃ³rz
 To                                      Do
-Total                                   Ca³kowity
-Rename                                  Zmieñ
-Frequency                               Czêstotliwo¶æ
-Probability                             Prawdopodobieñstwo
+Total                                   CaÅ‚kowity
+Rename                                  ZmieÅ„
+Frequency                               CzÄ™stotliwoÅ›Ä‡
+Probability                             PrawdopodobieÅ„stwo
 Score                                   Punkty
 Lookup                                  Szukaj
-Word                                    S³owo
+Word                                    SÅ‚owo
 Count                                   Licz
 Update                                  Aktualizuj
-Refresh                                 Od¶wie¿
+Refresh                                 OdÅ›wieÅ¼
 
 # The header and footer that appear on every UI page
 Header_Title                            Centrum Sterowania POPFile
-Header_Shutdown                         Wy³±cz daemona POPFile
+Header_Shutdown                         WyÅ‚Ä…cz daemona POPFile
 Header_History                          Historia
 Header_Buckets                          Foldery
 Header_Configuration                    Konfiguracja
 Header_Advanced                         Zaawansowane
-Header_Security                         Bezpieczeñstwo
+Header_Security                         BezpieczeÅ„stwo
 Header_Magnets                          Musiki
 
-Footer_HomePage                         Strona g³ówna POPFile
+Footer_HomePage                         Strona gÅ‚Ã³wna POPFile
 Footer_Manual                           Pomoc (angielski)
 Footer_Forums                           Forum dyskusyjne
-Footer_FeedMe                           Wspomo¿enie finansowe
-Footer_RequestFeature                   Zg³o¶ pomys³ udoskonalenia
+Footer_FeedMe                           WspomoÅ¼enie finansowe
+Footer_RequestFeature                   ZgÅ‚oÅ› pomysÅ‚ udoskonalenia
 Footer_MailingList                      Lista dyskusyjna
 
-Configuration_Error1                    Separator musi byæ jednym znakiem
-Configuration_Error2                    Numer portu musi siê mie¶ciæ miêdzy 1 a 65535
-Configuration_Error3                    Port POP3 musi siê zawieraæ miêdzy 1 a 65535
-Configuration_Error4                    Rozmiar strony musi siê zawieraæ miêdzy 1 a 1000
-Configuration_Error5                    Liczba dni historii musi siê zawieraæ miêdzy 1 a 366
-Configuration_Error6                    TCP timeout musi byæ miêdzy 10 a 1800
-Configuration_Error7                    Port XML RPC musi byæ miêdzy 1 i 65535
+Configuration_Error1                    Separator musi byÄ‡ jednym znakiem
+Configuration_Error2                    Numer portu musi siÄ™ mieÅ›ciÄ‡ miÄ™dzy 1 a 65535
+Configuration_Error3                    Port POP3 musi siÄ™ zawieraÄ‡ miÄ™dzy 1 a 65535
+Configuration_Error4                    Rozmiar strony musi siÄ™ zawieraÄ‡ miÄ™dzy 1 a 1000
+Configuration_Error5                    Liczba dni historii musi siÄ™ zawieraÄ‡ miÄ™dzy 1 a 366
+Configuration_Error6                    TCP timeout musi byÄ‡ miÄ™dzy 10 a 1800
+Configuration_Error7                    Port XML RPC musi byÄ‡ miÄ™dzy 1 i 65535
 Configuration_POP3Port                  Port POP3
-Configuration_POP3Update                Zmieniono port POP3 na %s; ta zmiana zadzia³a dopiero po restarcie POPFile'a.
-Configuration_XMLRPCUpdate              Zmieniono port XML-RPC na %s; ta zmiana zadzia³a dopiero po restarcie POPFile'a
+Configuration_POP3Update                Zmieniono port POP3 na %s; ta zmiana zadziaÅ‚a dopiero po restarcie POPFile'a.
+Configuration_XMLRPCUpdate              Zmieniono port XML-RPC na %s; ta zmiana zadziaÅ‚a dopiero po restarcie POPFile'a
 Configuration_XMLRPCPort                Port XML-RPC
 Configuration_SMTPPort                  Port SMTP
-Configuration_SMTPUpdate                Zmieniono port SMTP na %s; ta zmiana zadzia³a dopiero po restarcie POPFile'a
+Configuration_SMTPUpdate                Zmieniono port SMTP na %s; ta zmiana zadziaÅ‚a dopiero po restarcie POPFile'a
 Configuration_NNTPPort                  Port NNTP
-Configuration_NNTPUpdate                Zmieniono port NNTP na %s; ta zmiana zadzia³a dopiero po restarcie POPFile'a
-Configuration_POP3Separator             POP3 serwer:port:u¿ytkownik separator
-Configuration_NNTPSeparator             NNTP serwer:port:u¿ytkownik separator
+Configuration_NNTPUpdate                Zmieniono port NNTP na %s; ta zmiana zadziaÅ‚a dopiero po restarcie POPFile'a
+Configuration_POP3Separator             POP3 serwer:port:uÅ¼ytkownik separator
+Configuration_NNTPSeparator             NNTP serwer:port:uÅ¼ytkownik separator
 Configuration_POP3SepUpdate             Zmieniono separator POP3 na %s
 Configuration_NNTPSepUpdate             Zmieniono separator NNTP na %s
 Configuration_UI                        Port interface'u WWW
-Configuration_UIUpdate                  Zmieniono port interface'u WWW na %s; ta zmiana zadzia³a dopiero po restarcie POPFile'a
-Configuration_History                   Liczba wiadomo¶ci na stronê
-Configuration_HistoryUpdate             Zmieniono liczbê wiadomo¶ci na stronê na %s
+Configuration_UIUpdate                  Zmieniono port interface'u WWW na %s; ta zmiana zadziaÅ‚a dopiero po restarcie POPFile'a
+Configuration_History                   Liczba wiadomoÅ›ci na stronÄ™
+Configuration_HistoryUpdate             Zmieniono liczbÄ™ wiadomoÅ›ci na stronÄ™ na %s
 Configuration_Days                      Liczba dni zachowania historii
-Configuration_DaysUpdate                Zmieniono liczbê dni zachowania historii na %s
-Configuration_UserInterface             Interface u¿ytkownika
-Configuration_Skins                     Wygl±d
-Configuration_SkinsChoose               Wybierz wygl±d
-Configuration_Language                  Jêzyk
-Configuration_LanguageChoose            Wybierz jêzyk
-Configuration_ListenPorts               Opcje modu³u
+Configuration_DaysUpdate                Zmieniono liczbÄ™ dni zachowania historii na %s
+Configuration_UserInterface             Interface uÅ¼ytkownika
+Configuration_Skins                     WyglÄ…d
+Configuration_SkinsChoose               Wybierz wyglÄ…d
+Configuration_Language                  JÄ™zyk
+Configuration_LanguageChoose            Wybierz jÄ™zyk
+Configuration_ListenPorts               Opcje moduÅ‚u
 Configuration_HistoryView               Widok historii
-Configuration_TCPTimeout                Timeout po³±czenia
-Configuration_TCPTimeoutSecs            Timeout po³±czenia w sekundach
-Configuration_TCPTimeoutUpdate          Zmieniono timeout po³±czenia na %s
-Configuration_ClassificationInsertion   Modyfikacja nag³ówków
-Configuration_SubjectLine               Modyfikacja tematu wiadomo¶ci
-Configuration_XTCInsertion              Nag³ówek X-Text-Classification
-Configuration_XPLInsertion              Nag³ówek X-POPFile-Link
-Configuration_Logging                   Rejestracja czynno¶ci
+Configuration_TCPTimeout                Timeout poÅ‚Ä…czenia
+Configuration_TCPTimeoutSecs            Timeout poÅ‚Ä…czenia w sekundach
+Configuration_TCPTimeoutUpdate          Zmieniono timeout poÅ‚Ä…czenia na %s
+Configuration_ClassificationInsertion   Modyfikacja nagÅ‚Ã³wkÃ³w
+Configuration_SubjectLine               Modyfikacja tematu wiadomoÅ›ci
+Configuration_XTCInsertion              NagÅ‚Ã³wek X-Text-Classification
+Configuration_XPLInsertion              NagÅ‚Ã³wek X-POPFile-Link
+Configuration_Logging                   Rejestracja czynnoÅ›ci
 Configuration_None                      Brak
 Configuration_ToScreen                  Ekran
 Configuration_ToFile                    Plik
 Configuration_ToScreenFile              Ekran i plik
 Configuration_LoggerOutput              Rejestracja do:
-Configuration_GeneralSkins              Wygl±d
-Configuration_SmallSkins                Ma³e
-Configuration_TinySkins                 Bardzo ma³e
+Configuration_GeneralSkins              WyglÄ…d
+Configuration_SmallSkins                MaÅ‚e
+Configuration_TinySkins                 Bardzo maÅ‚e
 Configuration_CurrentLogFile            &lt;aktualny plik rejestru&gt;
 
-Advanced_Error1                         '%s' jest ju¿ na li¶cie ignorowanych s³ów
-Advanced_Error2                         S³owa ignorowane mog± zawieraæ znaki alfanumeryczne, ., _, -, lub @
-Advanced_Error3                         S³owo '%s' dodane do listy ignorowanych s³ów
-Advanced_Error4                         '%s' nie jest na li¶cie ignorowanych s³ów
-Advanced_Error5                         S³owo '%s' usuniête z listy ignorowanych s³ów
-Advanced_StopWords                      Ignorowane s³owa
-Advanced_Message1                       POPFile ignoruje nastêpuj±ce czêsto wystepuj±ce s³owa:
-Advanced_AddWord                        Dodaj s³owo
-Advanced_RemoveWord                     Usuñ s³owo
+Advanced_Error1                         '%s' jest juÅ¼ na liÅ›cie ignorowanych sÅ‚Ã³w
+Advanced_Error2                         SÅ‚owa ignorowane mogÄ… zawieraÄ‡ znaki alfanumeryczne, ., _, -, lub @
+Advanced_Error3                         SÅ‚owo '%s' dodane do listy ignorowanych sÅ‚Ã³w
+Advanced_Error4                         '%s' nie jest na liÅ›cie ignorowanych sÅ‚Ã³w
+Advanced_Error5                         SÅ‚owo '%s' usuniÄ™te z listy ignorowanych sÅ‚Ã³w
+Advanced_StopWords                      Ignorowane sÅ‚owa
+Advanced_Message1                       POPFile ignoruje nastÄ™pujÄ…ce czÄ™sto wystepujÄ…ce sÅ‚owa:
+Advanced_AddWord                        Dodaj sÅ‚owo
+Advanced_RemoveWord                     UsuÅ„ sÅ‚owo
 
-History_Filter                          &nbsp;(pokazujê folder <font color="%s">%s</font>)
-History_FilterBy                        Filtruj wed³ug
+History_Filter                          &nbsp;(pokazujÄ™ folder <font color="%s">%s</font>)
+History_FilterBy                        Filtruj wedÅ‚ug
 History_Search                          &nbsp;(wyszukiwanie wg pola Od/Temat %s)
-History_Title                           Ostatnie wiadomo¶ci
-History_Jump                            Id¼ do wiadomo¶ci
-History_ShowAll                         Poka¼ wszystko
-History_ShouldBe                        Powinno byæ
+History_Title                           Ostatnie wiadomoÅ›ci
+History_Jump                            IdÅº do wiadomoÅ›ci
+History_ShowAll                         PokaÅº wszystko
+History_ShouldBe                        Powinno byÄ‡
 History_NoFrom                          brak linii Od
 History_NoSubject                       brak linii Temat
 History_ClassifyAs                      Klasyfikuj jako
-History_MagnetUsed                      U¿yto Musik
-History_MagnetBecause                   <b>U¿yto Musik</b><p>Zaklasyfikowano do <font color="%s">%s</font> z powodu musika %s </p>
+History_MagnetUsed                      UÅ¼yto Musik
+History_MagnetBecause                   <b>UÅ¼yto Musik</b><p>Zaklasyfikowano do <font color="%s">%s</font> z powodu musika %s </p>
 History_ChangedTo                       Zmieniono na <font color="%s">%s
-History_Already                         Ju¿ przeklasyfikowano jako <font color="%s">%s</font>
-History_RemoveAll                       Usuñ wszystkie
-History_RemovePage                      Usuñ stronê
-History_Remove                          Aby usun±æ pola ze strony kliknij (nie usuwa bazy s³ów):
-History_SearchMessage                   Szukaj wg pól Od/Temat
-History_NoMessages                      Brak wiadomo¶ci
+History_Already                         JuÅ¼ przeklasyfikowano jako <font color="%s">%s</font>
+History_RemoveAll                       UsuÅ„ wszystkie
+History_RemovePage                      UsuÅ„ stronÄ™
+History_Remove                          Aby usunÄ…Ä‡ pola ze strony kliknij (nie usuwa bazy sÅ‚Ã³w):
+History_SearchMessage                   Szukaj wg pÃ³l Od/Temat
+History_NoMessages                      Brak wiadomoÅ›ci
 History_ShowMagnet                      musikowane
 History_ShowNoMagnet                    odmusikowane
-History_Magnet                          &nbsp;(pokazujê wiadomo¶ci z musikami)
-History_NoMagnet                        &nbsp;(pokazujê wiadomo¶ci bez musików)
+History_Magnet                          &nbsp;(pokazujÄ™ wiadomoÅ›ci z musikami)
+History_NoMagnet                        &nbsp;(pokazujÄ™ wiadomoÅ›ci bez musikÃ³w)
 History_ResetSearch                     Resetuj
 
-Password_Title                          Has³o
-Password_Enter                          Wpisz has³o
+Password_Title                          HasÅ‚o
+Password_Enter                          Wpisz hasÅ‚o
 Password_Go                             Dalej!
-Password_Error1                         Z³e has³o
+Password_Error1                         ZÅ‚e hasÅ‚o
 
-Security_Error1                         Port musi byæ miêdzy 1 a 65535
+Security_Error1                         Port musi byÄ‡ miÄ™dzy 1 a 65535
 Security_Stealth                        Operacje w trybie niewidocznym
 Security_NoStealthMode                  Nie (tryb niewidoczny)
-Security_ExplainStats                   (gdy to jest w³±czone POPFile wysy³a raz dziennie nastêpuj±ce trzy warto¶ci do skryptu na getpopfile.org: bc (liczba folderów, które posiadasz), mc (liczba klasyfikowanych wiadomo¶ci) i ec (liczba b³êdów klasyfikacji).  S± one gromadzone w pliku i wykorzystam je do publikacji o ludziach u¿ywaj±cych POPFile'a i jak on dzia³a.  Mój serwer przechowuje dane przez 5 dni a nastêpnie je kasuje; Nie przechowujê ¿adnych danych o adresach IP, itp.)
-Security_ExplainUpdate                  (gdy to jest w³±czone POPFile wysy³a raz dziennie nastêpuj±ce trzy warto¶ci do skryptu na getpopfile.org: ma (numer wersji POPFile'a), mi (numer podwersji POPFile'a) i bn (numer kompilacji POPFile'a).  POPFile otrzymuje graficzn± informacjê na g³ównej stronie je¶li pojawi siê nowa wersja.  Mój serwer przechowuje dane przez 5 dni a nastêpnie je kasuje; Nie przechowujê ¿adnych danych o adresach IP, itp.)
-Security_PasswordTitle                  Has³o interface'u u¿ytkownika
-Security_Password                       Has³o
-Security_PasswordUpdate                 Zmieniono has³o na %s
+Security_ExplainStats                   (gdy to jest wÅ‚Ä…czone POPFile wysyÅ‚a raz dziennie nastÄ™pujÄ…ce trzy wartoÅ›ci do skryptu na getpopfile.org: bc (liczba folderÃ³w, ktÃ³re posiadasz), mc (liczba klasyfikowanych wiadomoÅ›ci) i ec (liczba bÅ‚Ä™dÃ³w klasyfikacji).  SÄ… one gromadzone w pliku i wykorzystam je do publikacji o ludziach uÅ¼ywajÄ…cych POPFile'a i jak on dziaÅ‚a.  MÃ³j serwer przechowuje dane przez 5 dni a nastÄ™pnie je kasuje; Nie przechowujÄ™ Å¼adnych danych o adresach IP, itp.)
+Security_ExplainUpdate                  (gdy to jest wÅ‚Ä…czone POPFile wysyÅ‚a raz dziennie nastÄ™pujÄ…ce trzy wartoÅ›ci do skryptu na getpopfile.org: ma (numer wersji POPFile'a), mi (numer podwersji POPFile'a) i bn (numer kompilacji POPFile'a).  POPFile otrzymuje graficznÄ… informacjÄ™ na gÅ‚Ã³wnej stronie jeÅ›li pojawi siÄ™ nowa wersja.  MÃ³j serwer przechowuje dane przez 5 dni a nastÄ™pnie je kasuje; Nie przechowujÄ™ Å¼adnych danych o adresach IP, itp.)
+Security_PasswordTitle                  HasÅ‚o interface'u uÅ¼ytkownika
+Security_Password                       HasÅ‚o
+Security_PasswordUpdate                 Zmieniono hasÅ‚o na %s
 Security_AUTHTitle                      Zdalne serwery
 Security_SecureServer                   Serwer POP3 SPA/AUTH
-Security_SecureServerUpdate             Zmieniono bezpieczny serwer POP3 SPA/AUTH na %s; ta zmiania zadzia³a dopiero po restarcie POPFile'a
+Security_SecureServerUpdate             Zmieniono bezpieczny serwer POP3 SPA/AUTH na %s; ta zmiania zadziaÅ‚a dopiero po restarcie POPFile'a
 Security_SecurePort                     Port POP3 SPA/AUTH
-Security_SecurePortUpdate               Zmieniono port POP3 SPA/AUTH na %s; ta zmiania zadzia³a dopiero po restarcie POPFile'a
+Security_SecurePortUpdate               Zmieniono port POP3 SPA/AUTH na %s; ta zmiania zadziaÅ‚a dopiero po restarcie POPFile'a
 Security_SMTPServer                     Serwer SMTP
-Security_SMTPServerUpdate               Zmieniono serwer SMTP na %s; ta zmiania zadzia³a dopiero po restarcie POPFile'a
+Security_SMTPServerUpdate               Zmieniono serwer SMTP na %s; ta zmiania zadziaÅ‚a dopiero po restarcie POPFile'a
 Security_SMTPPort                       Port SMTP
-Security_SMTPPortUpdate                 Zmieniono port SMTP na %s; ta zmiania zadzia³a dopiero po restarcie POPFile'a
-Security_POP3                           Akceptuj po³±czenia POP3 ze zdalnych komputerów (wymaga restartu POPFile'a)
-Security_SMTP                           Akceptuj po³±czenia SMTP ze zdalnych komputerów (wymaga restartu POPFile'a)
-Security_NNTP                           Akceptuj po³±czenia NNTP ze zdalnych komputerów (wymaga restartu POPFile'a)
-Security_UI                             Akceptuj po³±czenia HTTP (Interface u¿ytkownika) ze zdalnych komputerów (wymaga restartu POPFile'a)
-Security_XMLRPC                         Akceptuj po³±czenia XML-RPC ze zdalnych komputerów (wymaga restartu POPFile'a)
+Security_SMTPPortUpdate                 Zmieniono port SMTP na %s; ta zmiania zadziaÅ‚a dopiero po restarcie POPFile'a
+Security_POP3                           Akceptuj poÅ‚Ä…czenia POP3 ze zdalnych komputerÃ³w (wymaga restartu POPFile'a)
+Security_SMTP                           Akceptuj poÅ‚Ä…czenia SMTP ze zdalnych komputerÃ³w (wymaga restartu POPFile'a)
+Security_NNTP                           Akceptuj poÅ‚Ä…czenia NNTP ze zdalnych komputerÃ³w (wymaga restartu POPFile'a)
+Security_UI                             Akceptuj poÅ‚Ä…czenia HTTP (Interface uÅ¼ytkownika) ze zdalnych komputerÃ³w (wymaga restartu POPFile'a)
+Security_XMLRPC                         Akceptuj poÅ‚Ä…czenia XML-RPC ze zdalnych komputerÃ³w (wymaga restartu POPFile'a)
 Security_UpdateTitle                    Sprawdzanie automatycznej aktualizacji
-Security_Update                         Sprawd¼ codziennie zmiany w POPFile'u
+Security_Update                         SprawdÅº codziennie zmiany w POPFile'u
 Security_StatsTitle                     Statystyki
-Security_Stats                          Wysy³aj statystyki codziennie
+Security_Stats                          WysyÅ‚aj statystyki codziennie
 
-Magnet_Error1                           Musik '%s' ju¿ wystêpuje w folderze '%s'
-Magnet_Error2                           Nowy musik '%s' jest niezgodny z musikiem '%s' w folderze '%s' i mo¿e spowodowaæ problemy. Nie dodano nowego musika.
-Magnet_Error3                           Utwórz nowy musik '%s' w folderze '%s'
+Magnet_Error1                           Musik '%s' juÅ¼ wystÄ™puje w folderze '%s'
+Magnet_Error2                           Nowy musik '%s' jest niezgodny z musikiem '%s' w folderze '%s' i moÅ¼e spowodowaÄ‡ problemy. Nie dodano nowego musika.
+Magnet_Error3                           UtwÃ³rz nowy musik '%s' w folderze '%s'
 Magnet_CurrentMagnets                   Aktualne musiki
-Magnet_Message1                         Nastêpuj±ce musiki spowoduj± klasyfikacjê listów zawsze w okre¶lonych folderach.
-Magnet_CreateNew                        Utwórz nowy musik
-Magnet_Explanation                      Nastêpuj±ce rodzaje musików s± dostêpne: <ul><li><b>Adres lub nazwa nadawcy:</b> na przyk³ad: john@company.com dotyczy konkretnego adresu, <br />company.com dotyczy wszystkich nadawców z company.com, <br />John Doe dotyczy konkretnej osoby, John dotyczy wszystkich Johnów</li><li><b>Adres lub nazwa Do/Cc:</b> Jak w przypadku pola Od, ale dotyczy pól Do:/Cc: </li> <li><b>S³owa w temacie:</b> na przyk³ad: hello dotyczy wszystkich wiadomo¶ci z hello w temacie</li></ul>
+Magnet_Message1                         NastÄ™pujÄ…ce musiki spowodujÄ… klasyfikacjÄ™ listÃ³w zawsze w okreÅ›lonych folderach.
+Magnet_CreateNew                        UtwÃ³rz nowy musik
+Magnet_Explanation                      NastÄ™pujÄ…ce rodzaje musikÃ³w sÄ… dostÄ™pne: <ul><li><b>Adres lub nazwa nadawcy:</b> na przykÅ‚ad: john@company.com dotyczy konkretnego adresu, <br />company.com dotyczy wszystkich nadawcÃ³w z company.com, <br />John Doe dotyczy konkretnej osoby, John dotyczy wszystkich JohnÃ³w</li><li><b>Adres lub nazwa Do/Cc:</b> Jak w przypadku pola Od, ale dotyczy pÃ³l Do:/Cc: </li> <li><b>SÅ‚owa w temacie:</b> na przykÅ‚ad: hello dotyczy wszystkich wiadomoÅ›ci z hello w temacie</li></ul>
 Magnet_MagnetType                       Rodzaj musika
-Magnet_Value                            Warto¶æ
+Magnet_Value                            WartoÅ›Ä‡
 Magnet_Always                           Zawsze idzie do folderu
-Magnet_Jump                             Id¼ do strony musików
+Magnet_Jump                             IdÅº do strony musikÃ³w
 
-Bucket_Error1                           Nazwy folderów mog± zawieraæ tylko ma³e litery od a do z, cyfry 0 do 9,  oraz - i _
-Bucket_Error2                           Folder %s ju¿ istnieje
+Bucket_Error1                           Nazwy folderÃ³w mogÄ… zawieraÄ‡ tylko maÅ‚e litery od a do z, cyfry 0 do 9,  oraz - i _
+Bucket_Error2                           Folder %s juÅ¼ istnieje
 Bucket_Error3                           Utworzono folder %s
-Bucket_Error4                           Proszê wpisaæ w³a¶ciwe s³owo
-Bucket_Error5                           Zmieniono nazwê folderu %s na %s
-Bucket_Error6                           Usuniêto folder %s
+Bucket_Error4                           ProszÄ™ wpisaÄ‡ wÅ‚aÅ›ciwe sÅ‚owo
+Bucket_Error5                           Zmieniono nazwÄ™ folderu %s na %s
+Bucket_Error6                           UsuniÄ™to folder %s
 Bucket_Title                            Podsumowanie
 Bucket_BucketName                       Nazwa folderu
-Bucket_WordCount                        Liczba s³ów
-Bucket_WordCounts                       Zliczanie s³ów
-Bucket_UniqueWords                      Unikatowe s³owa
-Bucket_SubjectModification              Modyfikacja tematu wiadomo¶ci
-Bucket_ChangeColor                      Zmieñ kolor
-Bucket_NotEnoughData                    Brak wystarczaj±cych danych
-Bucket_ClassificationAccuracy           Poprawno¶æ klasyfikacji
-Bucket_EmailsClassified                 Wiadomo¶ci zaklasyfikowane
-Bucket_EmailsClassifiedUpper            Wiadomo¶ci zaklasyfikowane
-Bucket_ClassificationErrors             B³êdy klasyfikacji
-Bucket_Accuracy                         Poprawno¶æ
+Bucket_WordCount                        Liczba sÅ‚Ã³w
+Bucket_WordCounts                       Zliczanie sÅ‚Ã³w
+Bucket_UniqueWords                      Unikatowe sÅ‚owa
+Bucket_SubjectModification              Modyfikacja tematu wiadomoÅ›ci
+Bucket_ChangeColor                      ZmieÅ„ kolor
+Bucket_NotEnoughData                    Brak wystarczajÄ…cych danych
+Bucket_ClassificationAccuracy           PoprawnoÅ›Ä‡ klasyfikacji
+Bucket_EmailsClassified                 WiadomoÅ›ci zaklasyfikowane
+Bucket_EmailsClassifiedUpper            WiadomoÅ›ci zaklasyfikowane
+Bucket_ClassificationErrors             BÅ‚Ä™dy klasyfikacji
+Bucket_Accuracy                         PoprawnoÅ›Ä‡
 Bucket_ClassificationCount              Liczba klasyfikacji
-Bucket_ClassificationFP                 B³±d dodania
-Bucket_ClassificationFN                 B³±d niedodania
+Bucket_ClassificationFP                 BÅ‚Ä…d dodania
+Bucket_ClassificationFN                 BÅ‚Ä…d niedodania
 Bucket_ResetStatistics                  Resetuj
 Bucket_LastReset                        Ostatni reset
 Bucket_CurrentColor                     %s obecny kolor to %s
 Bucket_SetColorTo                       Ustaw kolor %s na %s
 Bucket_Maintenance                      Utrzymanie
-Bucket_CreateBucket                     Utwórz folder o nazwie
-Bucket_DeleteBucket                     Usuñ folder o nazwie
-Bucket_RenameBucket                     Zmieñ nazwê folderu
+Bucket_CreateBucket                     UtwÃ³rz folder o nazwie
+Bucket_DeleteBucket                     UsuÅ„ folder o nazwie
+Bucket_RenameBucket                     ZmieÅ„ nazwÄ™ folderu
 Bucket_Lookup                           Szukaj
-Bucket_LookupMessage                    Szukaj s³owa w folderze
+Bucket_LookupMessage                    Szukaj sÅ‚owa w folderze
 Bucket_LookupMessage2                   Szukaj dla
-Bucket_LookupMostLikely                 List ze s³owem <b>%s</b> prawdopodobnie powinien siê znale¼æ w <font color="%s">%s</font>
-Bucket_DoesNotAppear                    <p><b>%s</b> nie wystepuje w ¿adnym folderze
+Bucket_LookupMostLikely                 List ze sÅ‚owem <b>%s</b> prawdopodobnie powinien siÄ™ znaleÅºÄ‡ w <font color="%s">%s</font>
+Bucket_DoesNotAppear                    <p><b>%s</b> nie wystepuje w Å¼adnym folderze
 Bucket_DisabledGlobally                 Zablokowane globalnie
 Bucket_To                               do
 Bucket_Quarantine                       Kwarantanna
 
-SingleBucket_Title                      Szczegó³y dla %s
-SingleBucket_WordCount                  Liczba s³ów w folderze
-SingleBucket_TotalWordCount             Ca³kowita liczba s³ów
-SingleBucket_Percentage                 Procent ca³o¶ci
-SingleBucket_WordTable                  Tabela s³ów dla %s
-SingleBucket_Message1                   Kliknij literê w indeksie, aby zobaczyæ listê s³ów rozpoczynaj±cych siê od tej litery.  Kliknij na dowolne s³owo, aby zobaczyæ jego rozk³ad prawdopodobieñstwa.
-SingleBucket_Unique                     S³owo %s jest unikatowe
-SingleBucket_ClearBucket                Usuñ wszystkie s³owa
+SingleBucket_Title                      SzczegÃ³Å‚y dla %s
+SingleBucket_WordCount                  Liczba sÅ‚Ã³w w folderze
+SingleBucket_TotalWordCount             CaÅ‚kowita liczba sÅ‚Ã³w
+SingleBucket_Percentage                 Procent caÅ‚oÅ›ci
+SingleBucket_WordTable                  Tabela sÅ‚Ã³w dla %s
+SingleBucket_Message1                   Kliknij literÄ™ w indeksie, aby zobaczyÄ‡ listÄ™ sÅ‚Ã³w rozpoczynajÄ…cych siÄ™ od tej litery.  Kliknij na dowolne sÅ‚owo, aby zobaczyÄ‡ jego rozkÅ‚ad prawdopodobieÅ„stwa.
+SingleBucket_Unique                     SÅ‚owo %s jest unikatowe
+SingleBucket_ClearBucket                UsuÅ„ wszystkie sÅ‚owa
 
-Session_Title                           Sesja POPFile'a zosta³a zakoñczona
-Session_Error                           Twoja sesja POPFile'a zosta³a zakoñczona.  Mog³o siê to zdarzyæ w wyniku restartu POPFile'a lub zamkniêcia przegl±darki. Kliknij na jeden z powy¿szych linków.
+Session_Title                           Sesja POPFile'a zostaÅ‚a zakoÅ„czona
+Session_Error                           Twoja sesja POPFile'a zostaÅ‚a zakoÅ„czona.  MogÅ‚o siÄ™ to zdarzyÄ‡ w wyniku restartu POPFile'a lub zamkniÄ™cia przeglÄ…darki. Kliknij na jeden z powyÅ¼szych linkÃ³w.
 
-View_Title                              Widok pojedynczej wiadomo¶ci
+View_Title                              Widok pojedynczej wiadomoÅ›ci
 
-Header_MenuSummary                      Ta tabela pozwala na dostêp do ró¿nych elementów centrum sterowania.
-History_MainTableSummary                Ta tabela pokazuje nadawców i tematy odstatnio odebranych wiadomo¶ci i pozwala na reklasyfikacjê.  Klikniêcie na temat spowoduje pokazanie ca³ej wiadomo¶ci, wraz z informacj± o powodach klasyfikacji.  Kolumna 'Powinno byæ' pozwala na okre¶lenie w³a¶ciwego folderu lub cofniêcie operacji. Kolumna 'Usuñ' pozwala usun±æ okre¶lone wiadomo¶ci z historii, je¶li ich ju¿ nie potrzebujesz.
-History_OpenMessageSummary              Ta tabela zawiera pe³ny tekst wiadomo¶ci, ze s³owami u¿ytymi do klasyfikacji pod¶wietlonymi w kolorze folderu, do którego najlepiej pasuj±.
-Bucket_MainTableSummary                 Ta tabela pokazuje przegl±d folderów klasyfikacyjnych.  Ka¿dy wiersz pokazuje nazwê folderu, liczbê s³ów w nim zawartych, liczbê niepowtarzalnych s³ów w folderze, mo¿liwo¶æ zmiany tematu wiadomo¶ci po zaklasyfikowaniu do folderu, opcjê kwarantanny oraz tabelê kolorów wy¶wietlania (do wyboru).
-Bucket_StatisticsTableSummary           Ta tabela przedstawia trzy rodzaje statystyk dzia³ania POPFile'a.  Pierwsza okre¶la poprawno¶æ klasyfikacji, druga liczbê zaklasyfikowanych wiadomo¶ci do poszczególnych folderów, a trzecia liczbê s³ów w folderach i ich udzia³ w ca³ej liczbie.
-Bucket_MaintenanceTableSummary          Ta tabela zawiera formularz do tworzenia, zmiany i usuwania folderów oraz wyszukiwania s³ów w folderach, a tak¿e pokazywania rozk³adów prawdopodobieñstwa.
-Bucket_AccuracyChartSummary             Ta tabela pokazuje graficznie poprawno¶æ klasyfikacji
-Bucket_BarChartSummary                  Ta tabela pokazuje graficznie rozk³ad procentowy dla ka¿dego folderu.  Jest wykorzystywana do pokazywania liczby wiadomo¶ci i liczby s³ów.
-Bucket_LookupResultsSummary             Ta tabela pokazuje rozk³ad prawdopodobieñstwa dla ka¿dego s³owa.  Dla ka¿dego folderu, pokazuje czêstotliwo¶æ wystêpowania s³owa, prawdopodobieñstwo wyst±pienia w folderze, oraz ogólny wp³yw na wynik, je¶li s³owo wyst±pi w wiadomo¶ci.
-Bucket_WordListTableSummary             Ta tabela przedstawia alfabetycznie listê s³ów w folderach.
-Magnet_MainTableSummary                 Ta tabela pokazuje listê musików klasyfikuj±cych automatycznie wiadomo¶ci zgodnie z przyjêtymi na sztywno zasadami.  W ka¿dym wierszu znajduje siê musik, przypisany folder oraz przycisk do usuniêcia musika.
+Header_MenuSummary                      Ta tabela pozwala na dostÄ™p do rÃ³Å¼nych elementÃ³w centrum sterowania.
+History_MainTableSummary                Ta tabela pokazuje nadawcÃ³w i tematy odstatnio odebranych wiadomoÅ›ci i pozwala na reklasyfikacjÄ™.  KlikniÄ™cie na temat spowoduje pokazanie caÅ‚ej wiadomoÅ›ci, wraz z informacjÄ… o powodach klasyfikacji.  Kolumna 'Powinno byÄ‡' pozwala na okreÅ›lenie wÅ‚aÅ›ciwego folderu lub cofniÄ™cie operacji. Kolumna 'UsuÅ„' pozwala usunÄ…Ä‡ okreÅ›lone wiadomoÅ›ci z historii, jeÅ›li ich juÅ¼ nie potrzebujesz.
+History_OpenMessageSummary              Ta tabela zawiera peÅ‚ny tekst wiadomoÅ›ci, ze sÅ‚owami uÅ¼ytymi do klasyfikacji podÅ›wietlonymi w kolorze folderu, do ktÃ³rego najlepiej pasujÄ….
+Bucket_MainTableSummary                 Ta tabela pokazuje przeglÄ…d folderÃ³w klasyfikacyjnych.  KaÅ¼dy wiersz pokazuje nazwÄ™ folderu, liczbÄ™ sÅ‚Ã³w w nim zawartych, liczbÄ™ niepowtarzalnych sÅ‚Ã³w w folderze, moÅ¼liwoÅ›Ä‡ zmiany tematu wiadomoÅ›ci po zaklasyfikowaniu do folderu, opcjÄ™ kwarantanny oraz tabelÄ™ kolorÃ³w wyÅ›wietlania (do wyboru).
+Bucket_StatisticsTableSummary           Ta tabela przedstawia trzy rodzaje statystyk dziaÅ‚ania POPFile'a.  Pierwsza okreÅ›la poprawnoÅ›Ä‡ klasyfikacji, druga liczbÄ™ zaklasyfikowanych wiadomoÅ›ci do poszczegÃ³lnych folderÃ³w, a trzecia liczbÄ™ sÅ‚Ã³w w folderach i ich udziaÅ‚ w caÅ‚ej liczbie.
+Bucket_MaintenanceTableSummary          Ta tabela zawiera formularz do tworzenia, zmiany i usuwania folderÃ³w oraz wyszukiwania sÅ‚Ã³w w folderach, a takÅ¼e pokazywania rozkÅ‚adÃ³w prawdopodobieÅ„stwa.
+Bucket_AccuracyChartSummary             Ta tabela pokazuje graficznie poprawnoÅ›Ä‡ klasyfikacji
+Bucket_BarChartSummary                  Ta tabela pokazuje graficznie rozkÅ‚ad procentowy dla kaÅ¼dego folderu.  Jest wykorzystywana do pokazywania liczby wiadomoÅ›ci i liczby sÅ‚Ã³w.
+Bucket_LookupResultsSummary             Ta tabela pokazuje rozkÅ‚ad prawdopodobieÅ„stwa dla kaÅ¼dego sÅ‚owa.  Dla kaÅ¼dego folderu, pokazuje czÄ™stotliwoÅ›Ä‡ wystÄ™powania sÅ‚owa, prawdopodobieÅ„stwo wystÄ…pienia w folderze, oraz ogÃ³lny wpÅ‚yw na wynik, jeÅ›li sÅ‚owo wystÄ…pi w wiadomoÅ›ci.
+Bucket_WordListTableSummary             Ta tabela przedstawia alfabetycznie listÄ™ sÅ‚Ã³w w folderach.
+Magnet_MainTableSummary                 Ta tabela pokazuje listÄ™ musikÃ³w klasyfikujÄ…cych automatycznie wiadomoÅ›ci zgodnie z przyjÄ™tymi na sztywno zasadami.  W kaÅ¼dym wierszu znajduje siÄ™ musik, przypisany folder oraz przycisk do usuniÄ™cia musika.
 Configuration_MainTableSummary          Ta tabela zawiera fomularze do konfigurowania POPFile'a.
-Configuration_InsertionTableSummary     Ta tabela zawiera prze³±czniki okreslaj±ce czy dokonywaæ zmian w nag³ówkach wiadomo¶ci przy przesy³aniu do programu pocztowego.
-Security_MainTableSummary               Ta tabela zawiera kontrolki ustawiaj±ce bezpieczeñstwo POPFile'a, mo¿liwo¶æ sprawdzania aktualizacji oraz mo¿liwo¶æ wysy³ania statystyk o dzia³aniu POPFile'a do centralnego rejestru programu znajduj±cego siê na serwerze autora.
-Advanced_MainTableSummary               Ta tabela zawiera listê s³ów ignorowanych przez POPFile'a w traksie klasyfikacji wiadomo¶ci z powodu ich czêstego wystêpowania.  S± one zorganizowane wierszami, alfabetycznie..
+Configuration_InsertionTableSummary     Ta tabela zawiera przeÅ‚Ä…czniki okreslajÄ…ce czy dokonywaÄ‡ zmian w nagÅ‚Ã³wkach wiadomoÅ›ci przy przesyÅ‚aniu do programu pocztowego.
+Security_MainTableSummary               Ta tabela zawiera kontrolki ustawiajÄ…ce bezpieczeÅ„stwo POPFile'a, moÅ¼liwoÅ›Ä‡ sprawdzania aktualizacji oraz moÅ¼liwoÅ›Ä‡ wysyÅ‚ania statystyk o dziaÅ‚aniu POPFile'a do centralnego rejestru programu znajdujÄ…cego siÄ™ na serwerze autora.
+Advanced_MainTableSummary               Ta tabela zawiera listÄ™ sÅ‚Ã³w ignorowanych przez POPFile'a w traksie klasyfikacji wiadomoÅ›ci z powodu ich czÄ™stego wystÄ™powania.  SÄ… one zorganizowane wierszami, alfabetycznie..
 

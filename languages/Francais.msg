@@ -29,17 +29,17 @@ Apply                                   Appliquer
 On                                      Actif
 Off                                     Inactif
 TurnOn                                  Activer
-TurnOff                                 Désactiver
+TurnOff                                 DÃ©sactiver
 Add                                     Ajouter
 Remove                                  Retirer
-Previous                                Précédent
+Previous                                PrÃ©cÃ©dent
 Next                                    Suivant
 From                                    De
 Subject                                 Sujet
 Cc                                      Cc
 Classification                          Classification
 Reclassify                              Reclassifier
-Probability                             Probabilité
+Probability                             ProbabilitÃ©
 Scores                                  Scores
 QuickMagnets                            Aimants rapides
 Undo                                    Annuler
@@ -48,27 +48,27 @@ Find                                    Chercher
 Filter                                  Filtrer
 Yes                                     Oui
 No                                      Non
-ChangeToYes                             Passer à Oui
-ChangeToNo                              Passer à Non
-Bucket                                  Catégorie
+ChangeToYes                             Passer Ã  Oui
+ChangeToNo                              Passer Ã  Non
+Bucket                                  CatÃ©gorie
 Magnet                                  Aimant
 Delete                                  Supprimer
-Create                                  Créer
+Create                                  CrÃ©er
 To                                      A
 Total                                   Total
 Rename                                  Renommer
-Frequency                               Fréquence
-Probability                             Probabilité
+Frequency                               FrÃ©quence
+Probability                             ProbabilitÃ©
 Score                                   Score
 Lookup                                  Consulter
 Word                                    Mot
 Count                                   Compteur
-Update                                  Mettre à jour
+Update                                  Mettre Ã  jour
 Refresh                                 Actualiser
 FAQ                                     FAQ
 ID                                      ID
 Date                                    Date
-Arrived                                 Arrivé
+Arrived                                 ArrivÃ©
 Size                                    Taille
 
 # This is a regular expression pattern that is used to convert
@@ -90,51 +90,51 @@ Locale_Date                             %d/%m %R | %d/%m/%Y %R
 
 # The header and footer that appear on every UI page
 Header_Title                            Centre de Commande de POPFile
-Header_Shutdown                         Arrêter POPFile
+Header_Shutdown                         ArrÃªter POPFile
 Header_History                          Historique
-Header_Buckets                          Catégories
+Header_Buckets                          CatÃ©gories
 Header_Configuration                    Configuration
-Header_Advanced                         Avancé
-Header_Security                         Sécurité
+Header_Advanced                         AvancÃ©
+Header_Security                         SÃ©curitÃ©
 Header_Magnets                          Aimants
 
 Footer_HomePage                         Site web de POPFile
 Footer_Manual                           Manuel
 Footer_Forums                           Forums
 Footer_FeedMe                           Encouragez-moi!
-Footer_RequestFeature                   Demande d'évolution
+Footer_RequestFeature                   Demande d'Ã©volution
 Footer_MailingList                      Liste de diffusion
 Footer_Wiki                             Documentation additionnelle
 
-Configuration_Error1                    Le caractère séparateur doit être un unique caractère
-Configuration_Error2                    Le port de l'interface utilisateur doit être un nombre compris entre 1 et 65535
-Configuration_Error3                    Le port d'écoute POP3 doit être un nombre compris entre 1 et 65535
-Configuration_Error4                    La taille de page doit être un nombre compris entre 1 et 1000
-Configuration_Error5                    Le nombre de jours d'historique doit être un nombre compris entre 1 et 366
-Configuration_Error6                    Le délai d'expiration TCP doit être un nombre compris entre 10 et 1800
-Configuration_Error7                    Le port d'écoute XML-RPC doit être un nombre compris entre 1 et 65535
-Configuration_Error8                    Le port du proxy SOCKS V doit être un nombre compris entre 1 et 65535
-Configuration_POP3Port                  Port d'écoute POP3
-Configuration_POP3Update                Port passé à %s; ce changement ne prendra effet qu'au prochain redémarrage de POPFile
-Configuration_XMLRPCUpdate              Le port XML-RPC est passé à %s; ce changement ne prendra effet qu'au prochain redémarrage de POPFile
-Configuration_XMLRPCPort                Port d'écoute XML-RPC
-Configuration_SMTPPort                  Port d'écoute SMTP
-Configuration_SMTPUpdate                Le port SMTP est passé à %s; ce changement ne prendra effet qu'au prochain redémarrage de POPFile
-Configuration_NNTPPort                  Port d'écoute NNTP
-Configuration_NNTPUpdate                Le port NNTP est passé à %s; ce changement ne prendra effet qu'au prochain redémarrage de POPFile
-Configuration_POPFork                   Autorise plusieurs connexions POP3 simultanées
-Configuration_SMTPFork                  Autorise plusieurs connexions SMTP simultanées
-Configuration_NNTPFork                  Autorise plusieurs connexions NNTP simultanées
-Configuration_POP3Separator             Caractère de séparation pour hôte:port:utilisateur POP3
-Configuration_NNTPSeparator             Caractère de séparation pour hôte:port:utilisateur NNTP
-Configuration_POP3SepUpdate             Le séparateur POP3 est passé à %s
-Configuration_NNTPSepUpdate             Le séparateur NNTP est passé à %s
+Configuration_Error1                    Le caractÃ¨re sÃ©parateur doit Ãªtre un unique caractÃ¨re
+Configuration_Error2                    Le port de l'interface utilisateur doit Ãªtre un nombre compris entre 1 et 65535
+Configuration_Error3                    Le port d'Ã©coute POP3 doit Ãªtre un nombre compris entre 1 et 65535
+Configuration_Error4                    La taille de page doit Ãªtre un nombre compris entre 1 et 1000
+Configuration_Error5                    Le nombre de jours d'historique doit Ãªtre un nombre compris entre 1 et 366
+Configuration_Error6                    Le dÃ©lai d'expiration TCP doit Ãªtre un nombre compris entre 10 et 1800
+Configuration_Error7                    Le port d'Ã©coute XML-RPC doit Ãªtre un nombre compris entre 1 et 65535
+Configuration_Error8                    Le port du proxy SOCKS V doit Ãªtre un nombre compris entre 1 et 65535
+Configuration_POP3Port                  Port d'Ã©coute POP3
+Configuration_POP3Update                Port passÃ© Ã  %s; ce changement ne prendra effet qu'au prochain redÃ©marrage de POPFile
+Configuration_XMLRPCUpdate              Le port XML-RPC est passÃ© Ã  %s; ce changement ne prendra effet qu'au prochain redÃ©marrage de POPFile
+Configuration_XMLRPCPort                Port d'Ã©coute XML-RPC
+Configuration_SMTPPort                  Port d'Ã©coute SMTP
+Configuration_SMTPUpdate                Le port SMTP est passÃ© Ã  %s; ce changement ne prendra effet qu'au prochain redÃ©marrage de POPFile
+Configuration_NNTPPort                  Port d'Ã©coute NNTP
+Configuration_NNTPUpdate                Le port NNTP est passÃ© Ã  %s; ce changement ne prendra effet qu'au prochain redÃ©marrage de POPFile
+Configuration_POPFork                   Autorise plusieurs connexions POP3 simultanÃ©es
+Configuration_SMTPFork                  Autorise plusieurs connexions SMTP simultanÃ©es
+Configuration_NNTPFork                  Autorise plusieurs connexions NNTP simultanÃ©es
+Configuration_POP3Separator             CaractÃ¨re de sÃ©paration pour hÃ´te:port:utilisateur POP3
+Configuration_NNTPSeparator             CaractÃ¨re de sÃ©paration pour hÃ´te:port:utilisateur NNTP
+Configuration_POP3SepUpdate             Le sÃ©parateur POP3 est passÃ© Ã  %s
+Configuration_NNTPSepUpdate             Le sÃ©parateur NNTP est passÃ© Ã  %s
 Configuration_UI                        Port web d'interface utilisateur
-Configuration_UIUpdate                  Port web d'interface utilisateur passé à %s; ce changement ne prendra effet qu'au prochain redémarrage de POPFile
+Configuration_UIUpdate                  Port web d'interface utilisateur passÃ© Ã  %s; ce changement ne prendra effet qu'au prochain redÃ©marrage de POPFile
 Configuration_History                   Nombre de messages par page
-Configuration_HistoryUpdate             Nombre de messages par page passé à %s
-Configuration_Days                      Nombre de jours d'historique à conserver
-Configuration_DaysUpdate                Nombre de jours d'historique passé à %s
+Configuration_HistoryUpdate             Nombre de messages par page passÃ© Ã  %s
+Configuration_Days                      Nombre de jours d'historique Ã  conserver
+Configuration_DaysUpdate                Nombre de jours d'historique passÃ© Ã  %s
 Configuration_UserInterface             Interface Utilisateur
 Configuration_Skins                     Apparences
 Configuration_SkinsChoose               Choisir une apparence
@@ -142,76 +142,76 @@ Configuration_Language                  Langue
 Configuration_LanguageChoose            Choisir une langue
 Configuration_ListenPorts               Ports d'Ecoute
 Configuration_HistoryView               Pages d'Historique
-Configuration_TCPTimeout                Délai d'Expiration de Connexion TCP
-Configuration_TCPTimeoutSecs            Délai d'expiration de connexion TCP en secondes
-Configuration_TCPTimeoutUpdate          Délai d'expiration de connexion TCP passé à %s
+Configuration_TCPTimeout                DÃ©lai d'Expiration de Connexion TCP
+Configuration_TCPTimeoutSecs            DÃ©lai d'expiration de connexion TCP en secondes
+Configuration_TCPTimeoutUpdate          DÃ©lai d'expiration de connexion TCP passÃ© Ã  %s
 Configuration_ClassificationInsertion   Informations de Classification
 Configuration_SubjectLine               Modification de la ligne Sujet
 Configuration_XTCInsertion              Insertion de X-Text-Classification
 Configuration_XPLInsertion              Insertion de X-POPFile-Link
 Configuration_Logging                   Journalisation
 Configuration_None                      aucune
-Configuration_ToScreen                  à l'écran
+Configuration_ToScreen                  Ã  l'Ã©cran
 Configuration_ToFile                    dans un fichier
-Configuration_ToScreenFile              écran et fichier
+Configuration_ToScreenFile              Ã©cran et fichier
 Configuration_LoggerOutput              Sortie
 Configuration_GeneralSkins              Habillages
 Configuration_SmallSkins                Habillages compacts
 Configuration_TinySkins                 Habillages ultra-compacts
-Configuration_CurrentLogFile            &lt;Télécharger le fichier journal en cours&gt;
-Configuration_SOCKSServer               Hôte du proxy SOCKS V
+Configuration_CurrentLogFile            &lt;TÃ©lÃ©charger le fichier journal en cours&gt;
+Configuration_SOCKSServer               HÃ´te du proxy SOCKS V
 Configuration_SOCKSPort                 Port du proxy SOCKS V
-Configuration_SOCKSPortUpdate           Le port du proxy SOCKS V est passé à %s
-Configuration_SOCKSServerUpdate         L'hôte du proxy SOCKS V est passé à %s
+Configuration_SOCKSPortUpdate           Le port du proxy SOCKS V est passÃ© Ã  %s
+Configuration_SOCKSServerUpdate         L'hÃ´te du proxy SOCKS V est passÃ© Ã  %s
 Configuration_Fields                    Colonnes de l'historique
 
-Advanced_Error1                         '%s' est déjà dans la liste des mots ignorés
-Advanced_Error2                         Les mots ignorés ne peuvent contenir que des caractères alphanumériques ou ., _, -, @
-Advanced_Error3                         '%s' ajouté à la liste des mots ignorés
-Advanced_Error4                         '%s' n'est pas dans la liste des mots ignorés
-Advanced_Error5                         '%s' retiré de la liste des mots ignorés
-Advanced_StopWords                      Mots ignorés
-Advanced_Message1                       Les mots suivants sont ignorés dans toutes les classifications car ils apparaissent très souvent.
+Advanced_Error1                         '%s' est dÃ©jÃ  dans la liste des mots ignorÃ©s
+Advanced_Error2                         Les mots ignorÃ©s ne peuvent contenir que des caractÃ¨res alphanumÃ©riques ou ., _, -, @
+Advanced_Error3                         '%s' ajoutÃ© Ã  la liste des mots ignorÃ©s
+Advanced_Error4                         '%s' n'est pas dans la liste des mots ignorÃ©s
+Advanced_Error5                         '%s' retirÃ© de la liste des mots ignorÃ©s
+Advanced_StopWords                      Mots ignorÃ©s
+Advanced_Message1                       Les mots suivants sont ignorÃ©s dans toutes les classifications car ils apparaissent trÃ¨s souvent.
 Advanced_AddWord                        Ajouter un mot
 Advanced_RemoveWord                     Retirer un mot
-Advanced_AllParameters                  Tous les paramètres de POPFile
-Advanced_Parameter                      Paramètre
+Advanced_AllParameters                  Tous les paramÃ¨tres de POPFile
+Advanced_Parameter                      ParamÃ¨tre
 Advanced_Value                          Valeur
-Advanced_Warning                        Ceci est la liste complète des paramètres de POPFile. Utilisateurs avertis seulement: vous pouvez modifier ceux que vous désirez et cliquer Actualiser. Aucune vérification de validité n'est effectuée. Les éléments différents des valeurs par défaut sont écrits en caractères gras.
+Advanced_Warning                        Ceci est la liste complÃ¨te des paramÃ¨tres de POPFile. Utilisateurs avertis seulement: vous pouvez modifier ceux que vous dÃ©sirez et cliquer Actualiser. Aucune vÃ©rification de validitÃ© n'est effectuÃ©e. Les Ã©lÃ©ments diffÃ©rents des valeurs par dÃ©faut sont Ã©crits en caractÃ¨res gras.
 Advanced_ConfigFile                     Fichier de configuration :
 
-History_Filter                          &nbsp;(ne montrant que la catégorie <font color="%s">%s</font>)
+History_Filter                          &nbsp;(ne montrant que la catÃ©gorie <font color="%s">%s</font>)
 History_FilterBy                        Filtrer selon
 History_Search                          &nbsp;(recherche du sujet %s)
-History_Title                           Messages récents
+History_Title                           Messages rÃ©cents
 History_Jump                            Aller au message
 History_ShowAll                         Tout afficher
-History_ShouldBe                        Devrait être
+History_ShouldBe                        Devrait Ãªtre
 History_NoFrom                          pas de ligne De
 History_NoSubject                       pas de ligne Sujet
-History_ClassifyAs                      Classifié comme
-History_MagnetUsed                      Aimant utilisé
-History_MagnetBecause                   <b>Aimant utilisé</b><p>Classifié comme <font color="%s">%s</font> par l'aimant %s </p>
-History_ChangedTo                       Changé en <font color="%s">%s
-History_Already                         Déjà reclassifié comme <font color="%s">%s</font>
+History_ClassifyAs                      ClassifiÃ© comme
+History_MagnetUsed                      Aimant utilisÃ©
+History_MagnetBecause                   <b>Aimant utilisÃ©</b><p>ClassifiÃ© comme <font color="%s">%s</font> par l'aimant %s </p>
+History_ChangedTo                       ChangÃ© en <font color="%s">%s
+History_Already                         DÃ©jÃ  reclassifiÃ© comme <font color="%s">%s</font>
 History_RemoveAll                       Supprimer tout
 History_RemovePage                      Supprimer page
-History_RemoveChecked                   Supprimer les messages cochés
-History_Remove                          Pour supprimer des entrées dans l'historique cliquez
+History_RemoveChecked                   Supprimer les messages cochÃ©s
+History_Remove                          Pour supprimer des entrÃ©es dans l'historique cliquez
 History_SearchMessage                   Chercher De/Sujet
 History_NoMessages                      Pas de messages
-History_ShowMagnet                      Aimanté
+History_ShowMagnet                      AimantÃ©
 History_Negate_Search                   Inverser la recherche ou le filtre
-History_Magnet                          &nbsp;(ne montrant que les messages classifiés par aimant)
-History_NoMagnet                        &nbsp;(ne montrant que les messages non classifiés par aimant)
+History_Magnet                          &nbsp;(ne montrant que les messages classifiÃ©s par aimant)
+History_NoMagnet                        &nbsp;(ne montrant que les messages non classifiÃ©s par aimant)
 History_ResetSearch                     Initialiser
-History_ChangedClass                    Devrait maintenant être classifié comme
+History_ChangedClass                    Devrait maintenant Ãªtre classifiÃ© comme
 History_Purge                           Supprimer maintenant
 History_Increase                        Croissant
-History_Decrease                        Décroissant
+History_Decrease                        DÃ©croissant
 History_Column_Characters               Changer la largeur des colonnes De, A, Cc et Sujet
 History_Automatic                       Automatique
-History_Reclassified                    Reclassifié
+History_Reclassified                    ReclassifiÃ©
 History_Size_Bytes                      %d&nbsp;octets
 History_Size_KiloBytes                  %.1f&nbsp;Ko
 History_Size_MegaBytes                  %.1f&nbsp;Mo
@@ -221,153 +221,153 @@ Password_Enter                          Entrez le mot de passe
 Password_Go                             Continuer
 Password_Error1                         Mot de passe incorrect
 
-Security_Error1                         Le port sécurisé doit être un nombre compris entre 1 et 65535
+Security_Error1                         Le port sÃ©curisÃ© doit Ãªtre un nombre compris entre 1 et 65535
 Security_Stealth                        Mode Furtif/Fonctionnement du Serveur
 Security_NoStealthMode                  Non (Mode Furtif)
 Security_StealthMode                    (Mode Furtif)
-Security_ExplainStats                   (Quand ceci est activé POPFile envoie une fois par jour les trois valeurs suivantes à un script à getpopfile.org: bc (le nombre total de vos catégories), mc (le nombre total de messages classifiés par POPFile) et ec (le nombre total d'erreurs de classification).  Elles sont alors stockées dans un fichier que j'utiliserai pour publier quelques statistiques sur comment les gens utilisent POPFile et si ça marche bien.  Mon serveur web conserve ses fichiers log pendant environ 5 jours puis les efface; je ne recueille aucun lien entre les statisques et les adresses IP individuelles.)
-Security_ExplainUpdate                  (Quand ceci est activé POPFile envoie une fois par jour les trois valeurs suivantes à un script à getpopfile.org: ma (le numéro de version principal de votre POPFile), mi (le numéro de version secondaire de votre POPFile) et bn (le numéro de compilation de votre POPFile).  POPFile reçoit une réponse sous la forme d'un graphique qui apparaît en haut de la page si une version plus récente est disponible.  Mon serveur web conserve ses fichiers log pendant environ 5 jours puis les efface; je ne recueille aucun lien entre les contrôles de mise à jour et les adresses IP individuelles.)
+Security_ExplainStats                   (Quand ceci est activÃ© POPFile envoie une fois par jour les trois valeurs suivantes Ã  un script Ã  getpopfile.org: bc (le nombre total de vos catÃ©gories), mc (le nombre total de messages classifiÃ©s par POPFile) et ec (le nombre total d'erreurs de classification).  Elles sont alors stockÃ©es dans un fichier que j'utiliserai pour publier quelques statistiques sur comment les gens utilisent POPFile et si Ã§a marche bien.  Mon serveur web conserve ses fichiers log pendant environ 5 jours puis les efface; je ne recueille aucun lien entre les statisques et les adresses IP individuelles.)
+Security_ExplainUpdate                  (Quand ceci est activÃ© POPFile envoie une fois par jour les trois valeurs suivantes Ã  un script Ã  getpopfile.org: ma (le numÃ©ro de version principal de votre POPFile), mi (le numÃ©ro de version secondaire de votre POPFile) et bn (le numÃ©ro de compilation de votre POPFile).  POPFile reÃ§oit une rÃ©ponse sous la forme d'un graphique qui apparaÃ®t en haut de la page si une version plus rÃ©cente est disponible.  Mon serveur web conserve ses fichiers log pendant environ 5 jours puis les efface; je ne recueille aucun lien entre les contrÃ´les de mise Ã  jour et les adresses IP individuelles.)
 Security_PasswordTitle                  Mot de passe de l'interface utilisateur
 Security_Password                       Mot de passe
-Security_PasswordUpdate                 Mot de passe changé en %s
-Security_AUTHTitle                      Authentification par mot de passe sécurisé/AUTH
-Security_SecureServer                   Serveur sécurisé
-Security_SecureServerUpdate             Serveur sécurisé passé à %s; ce changement ne prendra effet qu'au prochain redémarrage de POPFile
-Security_SecurePort                     Port sécurisé
-Security_SecurePortUpdate               Port sécurisé passé à %s; ce changement ne prendra effet qu'au prochain redémarrage de POPFile
+Security_PasswordUpdate                 Mot de passe changÃ© en %s
+Security_AUTHTitle                      Authentification par mot de passe sÃ©curisÃ©/AUTH
+Security_SecureServer                   Serveur sÃ©curisÃ©
+Security_SecureServerUpdate             Serveur sÃ©curisÃ© passÃ© Ã  %s; ce changement ne prendra effet qu'au prochain redÃ©marrage de POPFile
+Security_SecurePort                     Port sÃ©curisÃ©
+Security_SecurePortUpdate               Port sÃ©curisÃ© passÃ© Ã  %s; ce changement ne prendra effet qu'au prochain redÃ©marrage de POPFile
 Security_SMTPServer                     Serveur de chaine SMTP
-Security_SMTPServerUpdate               Serveur de chaine SMTP passé à %s; ce changement ne prendra effet qu'au prochain redémarrage de POPFile
+Security_SMTPServerUpdate               Serveur de chaine SMTP passÃ© Ã  %s; ce changement ne prendra effet qu'au prochain redÃ©marrage de POPFile
 Security_SMTPPort                       Port de la chaine SMTP
-Security_SMTPPortUpdate                 Port de la chaine SMTP passé à %s; ce changement ne prendra effet qu'au prochain redémarrage de POPFile
+Security_SMTPPortUpdate                 Port de la chaine SMTP passÃ© Ã  %s; ce changement ne prendra effet qu'au prochain redÃ©marrage de POPFile
 Security_POP3                           Accepter les connexions POP3 de machines distantes
-Security_SMTP                           Accepter les connexions SMTP de machines distantes (nécessite le redémarrage de POPFile)
-Security_NNTP                           Accepter les connexions NNTP de machines distantes (nécessite le redémarrage de POPFile)
+Security_SMTP                           Accepter les connexions SMTP de machines distantes (nÃ©cessite le redÃ©marrage de POPFile)
+Security_NNTP                           Accepter les connexions NNTP de machines distantes (nÃ©cessite le redÃ©marrage de POPFile)
 Security_UI                             Accepter les connexions HTTP (Interface Utilisateur) de machines distantes
-Security_XMLRPC                         Accepter les connexions XML-RPC de machines distantes (nécessite le redémarrage de POPFile)
-Security_UpdateTitle                    Contrôle automatique de mise à jour
-Security_Update                         Vérifier quotidiennement les mises à jour de POPFile
+Security_XMLRPC                         Accepter les connexions XML-RPC de machines distantes (nÃ©cessite le redÃ©marrage de POPFile)
+Security_UpdateTitle                    ContrÃ´le automatique de mise Ã  jour
+Security_Update                         VÃ©rifier quotidiennement les mises Ã  jour de POPFile
 Security_StatsTitle                     Compte-rendu de statistiques
-Security_Stats                          Envoyer quotidiennement des statistiques à John
+Security_Stats                          Envoyer quotidiennement des statistiques Ã  John
 
-Magnet_Error1                           L'aimant '%s' existe déjà pour la catégorie '%s'
-Magnet_Error2                           Le nouvel aimant '%s' interfère avec l'aimant '%s' de la catégorie '%s' et pourrait causer des résultats ambigüs.  Le nouvel aimant n'est pas ajouté.
-Magnet_Error3                           Nouvel aimant '%s' créé pour la catégorie '%s'
+Magnet_Error1                           L'aimant '%s' existe dÃ©jÃ  pour la catÃ©gorie '%s'
+Magnet_Error2                           Le nouvel aimant '%s' interfÃ¨re avec l'aimant '%s' de la catÃ©gorie '%s' et pourrait causer des rÃ©sultats ambigÃ¼s.  Le nouvel aimant n'est pas ajoutÃ©.
+Magnet_Error3                           Nouvel aimant '%s' crÃ©Ã© pour la catÃ©gorie '%s'
 Magnet_CurrentMagnets                   Aimants actuels
-Magnet_Message1                         Les aimants suivants entraînent la classification systématique d'un message dans la catégorie spécifiée.
-Magnet_CreateNew                        Créer un nouvel aimant
-Magnet_Explanation                      Trois types d'aimants sont disponibles: <ul><li><b>Adresse ou nom de l'expéditeur:</b> Par exemple: john@company.com pour capter une adresse spécifique, <br />company.com pour capter les messages de tous les expéditeurs de company.com, <br />John Doe pour capter une personne en particulier, John pour capter tous les John</li><li><b>Adresse ou nom du destinataire:</b> Comme un aimant De: mais pour l'adresse du destinataire du message</li><li><b>Mots du sujet:</b> Par exemple: bonjour pour capter tous les messages avec bonjour dans le sujet</li></ul>
+Magnet_Message1                         Les aimants suivants entraÃ®nent la classification systÃ©matique d'un message dans la catÃ©gorie spÃ©cifiÃ©e.
+Magnet_CreateNew                        CrÃ©er un nouvel aimant
+Magnet_Explanation                      Trois types d'aimants sont disponibles: <ul><li><b>Adresse ou nom de l'expÃ©diteur:</b> Par exemple: john@company.com pour capter une adresse spÃ©cifique, <br />company.com pour capter les messages de tous les expÃ©diteurs de company.com, <br />John Doe pour capter une personne en particulier, John pour capter tous les John</li><li><b>Adresse ou nom du destinataire:</b> Comme un aimant De: mais pour l'adresse du destinataire du message</li><li><b>Mots du sujet:</b> Par exemple: bonjour pour capter tous les messages avec bonjour dans le sujet</li></ul>
 Magnet_MagnetType                       Type d'aimant
 Magnet_Value                            Valeur
-Magnet_Always                           Toujours envoyer dans la catégorie
-Magnet_Jump                             Aller à la page des aimants
+Magnet_Always                           Toujours envoyer dans la catÃ©gorie
+Magnet_Jump                             Aller Ã  la page des aimants
 
-Bucket_Error1                           Les noms de catégories ne peuvent contenir que les minuscules de a à z ainsi que - et _
-Bucket_Error2                           La catégorie nommée %s existe déjà
-Bucket_Error3                           Catégorie nommée %s créée
+Bucket_Error1                           Les noms de catÃ©gories ne peuvent contenir que les minuscules de a Ã  z ainsi que - et _
+Bucket_Error2                           La catÃ©gorie nommÃ©e %s existe dÃ©jÃ 
+Bucket_Error3                           CatÃ©gorie nommÃ©e %s crÃ©Ã©e
 Bucket_Error4                           Veuillez entrer un mot non vide
-Bucket_Error5                           Catégorie %s renommée en %s
-Bucket_Error6                           Catégorie %s effacée
-Bucket_Title                            Résumé
-Bucket_BucketName                       Nom de catégorie
+Bucket_Error5                           CatÃ©gorie %s renommÃ©e en %s
+Bucket_Error6                           CatÃ©gorie %s effacÃ©e
+Bucket_Title                            RÃ©sumÃ©
+Bucket_BucketName                       Nom de catÃ©gorie
 Bucket_WordCount                        Nombre de mots
 Bucket_WordCounts                       Nombres de Mots
 Bucket_UniqueWords                      Mots distincts
 Bucket_SubjectModification              Modification du sujet
 Bucket_ChangeColor                      Changer la couleur
-Bucket_NotEnoughData                    Pas assez de données
+Bucket_NotEnoughData                    Pas assez de donnÃ©es
 Bucket_ClassificationAccuracy           Performance de Classification
-Bucket_EmailsClassified                 Messages classifiés
-Bucket_EmailsClassifiedUpper            Messages Classifiés
+Bucket_EmailsClassified                 Messages classifiÃ©s
+Bucket_EmailsClassifiedUpper            Messages ClassifiÃ©s
 Bucket_ClassificationErrors             Erreurs de classification
 Bucket_Accuracy                         Performance
 Bucket_ClassificationCount              Nombre de classifications
 Bucket_ClassificationFP                 Faux Positifs
-Bucket_ClassificationFN                 Faux Négatifs
+Bucket_ClassificationFN                 Faux NÃ©gatifs
 Bucket_ResetStatistics                  Initialiser les statisques
-Bucket_LastReset                        Dernière initialisation
+Bucket_LastReset                        DerniÃ¨re initialisation
 Bucket_CurrentColor                     La couleur actuelle de %s est %s
 Bucket_SetColorTo                       Changer la couleur de %s en %s
 Bucket_Maintenance                      Maintenance
-Bucket_CreateBucket                     Créer une catégorie nommée
-Bucket_DeleteBucket                     Effacer la catégorie nommée
-Bucket_RenameBucket                     Renommer la catégorie nommée
+Bucket_CreateBucket                     CrÃ©er une catÃ©gorie nommÃ©e
+Bucket_DeleteBucket                     Effacer la catÃ©gorie nommÃ©e
+Bucket_RenameBucket                     Renommer la catÃ©gorie nommÃ©e
 Bucket_Lookup                           Examiner
-Bucket_LookupMessage                    Examiner le mot dans les catégories
-Bucket_LookupMessage2                   Examiner le résultat pour
-Bucket_LookupMostLikely                 <b>%s</b> a le plus de chance d'apparaître dans <font color="%s">%s</font>
-Bucket_DoesNotAppear                    <p><b>%s</b> n'apparaît dans aucune catégorie
-Bucket_DisabledGlobally                 Désactivé globalement
+Bucket_LookupMessage                    Examiner le mot dans les catÃ©gories
+Bucket_LookupMessage2                   Examiner le rÃ©sultat pour
+Bucket_LookupMostLikely                 <b>%s</b> a le plus de chance d'apparaÃ®tre dans <font color="%s">%s</font>
+Bucket_DoesNotAppear                    <p><b>%s</b> n'apparaÃ®t dans aucune catÃ©gorie
+Bucket_DisabledGlobally                 DÃ©sactivÃ© globalement
 Bucket_To                               en
 Bucket_Quarantine                       Mise en quarantaine
 
-SingleBucket_Title                      Détail pour %s
-SingleBucket_WordCount                  Nombre de mots de la catégorie
+SingleBucket_Title                      DÃ©tail pour %s
+SingleBucket_WordCount                  Nombre de mots de la catÃ©gorie
 SingleBucket_TotalWordCount             Nombre total de mots
 SingleBucket_Percentage                 Pourcentage du total
 SingleBucket_WordTable                  Table des mots pour %s
-SingleBucket_Message1                   Les mots signalés (*) ont été utilisés pour la classification dans cette session POPFile.  Cliquez sur un mot pour examiner sa probabilité dans toutes les catégories.
+SingleBucket_Message1                   Les mots signalÃ©s (*) ont Ã©tÃ© utilisÃ©s pour la classification dans cette session POPFile.  Cliquez sur un mot pour examiner sa probabilitÃ© dans toutes les catÃ©gories.
 SingleBucket_Unique                     %s seul
 SingleBucket_ClearBucket                Supprimer tous les mots
 
-Session_Title                           Session POPFile expirée
-Session_Error                           Votre session POPFile a expiré.  Cela peut être dû à un arrêt/relance de POPFile alors que le navigateur est resté ouvert.  Veuillez cliquer sur l'un des liens ci-dessus pour continuer à utiliser POPFile.
+Session_Title                           Session POPFile expirÃ©e
+Session_Error                           Votre session POPFile a expirÃ©.  Cela peut Ãªtre dÃ» Ã  un arrÃªt/relance de POPFile alors que le navigateur est restÃ© ouvert.  Veuillez cliquer sur l'un des liens ci-dessus pour continuer Ã  utiliser POPFile.
 
 View_Title                              Vue d'un message
-View_ShowFrequencies                    Voir les fréquences des mots
-View_ShowProbabilities                  Voir les probabilités des mots
-View_ShowScores                         Voir les scores des mots et la table de décision
+View_ShowFrequencies                    Voir les frÃ©quences des mots
+View_ShowProbabilities                  Voir les probabilitÃ©s des mots
+View_ShowScores                         Voir les scores des mots et la table de dÃ©cision
 View_WordMatrix                         Matrice des mots
-View_WordProbabilities                  Probablité des mots
-View_WordFrequencies                    Fréquence des mots
+View_WordProbabilities                  ProbablitÃ© des mots
+View_WordFrequencies                    FrÃ©quence des mots
 View_WordScores                         Score des mots
-View_Chart                              Table de décision
+View_Chart                              Table de dÃ©cision
 
-Windows_TrayIcon                        Montrer l'icône de POPFile dans la zone de notification de Windows ?
-Windows_Console                         Lancer POPFile dans une fenêtre console ?
-Windows_NextTime                        <p><font color="red">Cette modification sera prise en compte après le prochain démarrage de POPFile</font>
+Windows_TrayIcon                        Montrer l'icÃ´ne de POPFile dans la zone de notification de Windows ?
+Windows_Console                         Lancer POPFile dans une fenÃªtre console ?
+Windows_NextTime                        <p><font color="red">Cette modification sera prise en compte aprÃ¨s le prochain dÃ©marrage de POPFile</font>
 
-Header_MenuSummary                      Cette page est le menu de navigation qui donne accès aux différentes pages du centre de contrôle.
-History_MainTableSummary                Cette table montre l'expéditeur et le sujet des messages reçus récemment, et permet de les visionner et de les reclassifier. Cliquez sur la ligne du sujet pour voir l'intégralité du message ainsi que des informations sur la classification qui a été effectuée. La colonne 'devrait être' vous permet de spécifier à quelle catégorie le message appartient, ou d'annuler cette modification. La colonne 'Supprimer' vous permet de supprimer de l'historique les messages dont vous n'avez plus besoin.
-History_OpenMessageSummary              Cette table contient le texte complet d'un message électronique, chaque mot utilisé lors de la classification étant coloré en fonction de la catégorie à laquelle il se rapporte le plus.
-Bucket_MainTableSummary                 Cette table fournit un aperçu des catégories. Sur chaque ligne, le nom de la catégorie, le total des compteurs des mots de la catégorie, le nombre de mots uniques, le réglage de la modification du sujet si un message est classifié dans cette catégorie, le réglage de la mise en quarantaine des messages classifiés dans cette catégorie, et une table permettant de choisir la couleur associée à cette catégorie, utilisée pour afficher tout ce qui est relatif à cette dernière dans le centre de contrôle.
-Bucket_StatisticsTableSummary           Cette table fournit trois valeurs statistiques sur les performance générales de POPFile. La première donne le taux de réussite de la classification, la seconde combien de messages ont été classifiés et dans quelles catégories, et la troisième combien de mots sont présents dans chaque catégorie, avec leurs pourcentages relatifs.
-Bucket_MaintenanceTableSummary          Cette table contient des formulaires qui vous permettent de créer, supprimer ou renommer les catégories, et rechercher un mot dans toutes les catégories pour vérifier ses probabilités relatives.
-Bucket_AccuracyChartSummary             Cette table représente graphiquement le taux de réussite de la classification des messages.
-Bucket_BarChartSummary                  Cette table représente graphiquement la taille relative de chaque catégorie. Elle est utilisée aussi bien pour le nombre de messages classifiés que pour le total des compteurs de mots.
-Bucket_LookupResultsSummary             Cette table montre les probabilités associées à chaque mot donné du corpus. Pour chaque catégorie, elle montre la fréquence à laquelle le mot est rencontré, la probabilité qu'il a d'appartenir à cette catégorie, et l'effet global sur le score de cette catégorie si le mot est rencontré dans un message.
-Bucket_WordListTableSummary             Cette table fournit une liste de tous les mots d'une catégorie donnée, classés en fonction de leur première lettre.
-Magnet_MainTableSummary                 Cette table montre la liste des aimants utilisés pour classifier automatiquement des messages en fonction de règles fixes. Chaque ligne montre comment l'aimant est défini, à quelle catégorie il est assigné, ainsi qu'un bouton permettant de supprimer l'aimant.
-Configuration_MainTableSummary          Cette table contient un certain nombre de formulaires vous permettant de contrôler la configuration de POPFile.
-Configuration_InsertionTableSummary     Cette table contient des boutons qui déterminent si certaines modifications doivent être apportées aux en-têtes ou à la ligne de sujet du message avant qu'il soit transmis au client de messagerie.
-Security_MainTableSummary               Cette table permet de contrôler les paramètres de sécurité de la configuration générale de POPFile, de décider s'il doit vérifier automatiquement les mises à jour du programme, et si les statistiques de performance de POPFile doivent être transmises au serveur de données central de l'auteur du programme à des fins d'information générale.
-Advanced_MainTableSummary               Cette table fournit une liste de mots que POPFile ignore lors de la classification des messages, étant donné leur trop grande possibilité de présence dans les messages de tout type. Ils sont classés en fonction de leur première lettre.
+Header_MenuSummary                      Cette page est le menu de navigation qui donne accÃ¨s aux diffÃ©rentes pages du centre de contrÃ´le.
+History_MainTableSummary                Cette table montre l'expÃ©diteur et le sujet des messages reÃ§us rÃ©cemment, et permet de les visionner et de les reclassifier. Cliquez sur la ligne du sujet pour voir l'intÃ©gralitÃ© du message ainsi que des informations sur la classification qui a Ã©tÃ© effectuÃ©e. La colonne 'devrait Ãªtre' vous permet de spÃ©cifier Ã  quelle catÃ©gorie le message appartient, ou d'annuler cette modification. La colonne 'Supprimer' vous permet de supprimer de l'historique les messages dont vous n'avez plus besoin.
+History_OpenMessageSummary              Cette table contient le texte complet d'un message Ã©lectronique, chaque mot utilisÃ© lors de la classification Ã©tant colorÃ© en fonction de la catÃ©gorie Ã  laquelle il se rapporte le plus.
+Bucket_MainTableSummary                 Cette table fournit un aperÃ§u des catÃ©gories. Sur chaque ligne, le nom de la catÃ©gorie, le total des compteurs des mots de la catÃ©gorie, le nombre de mots uniques, le rÃ©glage de la modification du sujet si un message est classifiÃ© dans cette catÃ©gorie, le rÃ©glage de la mise en quarantaine des messages classifiÃ©s dans cette catÃ©gorie, et une table permettant de choisir la couleur associÃ©e Ã  cette catÃ©gorie, utilisÃ©e pour afficher tout ce qui est relatif Ã  cette derniÃ¨re dans le centre de contrÃ´le.
+Bucket_StatisticsTableSummary           Cette table fournit trois valeurs statistiques sur les performance gÃ©nÃ©rales de POPFile. La premiÃ¨re donne le taux de rÃ©ussite de la classification, la seconde combien de messages ont Ã©tÃ© classifiÃ©s et dans quelles catÃ©gories, et la troisiÃ¨me combien de mots sont prÃ©sents dans chaque catÃ©gorie, avec leurs pourcentages relatifs.
+Bucket_MaintenanceTableSummary          Cette table contient des formulaires qui vous permettent de crÃ©er, supprimer ou renommer les catÃ©gories, et rechercher un mot dans toutes les catÃ©gories pour vÃ©rifier ses probabilitÃ©s relatives.
+Bucket_AccuracyChartSummary             Cette table reprÃ©sente graphiquement le taux de rÃ©ussite de la classification des messages.
+Bucket_BarChartSummary                  Cette table reprÃ©sente graphiquement la taille relative de chaque catÃ©gorie. Elle est utilisÃ©e aussi bien pour le nombre de messages classifiÃ©s que pour le total des compteurs de mots.
+Bucket_LookupResultsSummary             Cette table montre les probabilitÃ©s associÃ©es Ã  chaque mot donnÃ© du corpus. Pour chaque catÃ©gorie, elle montre la frÃ©quence Ã  laquelle le mot est rencontrÃ©, la probabilitÃ© qu'il a d'appartenir Ã  cette catÃ©gorie, et l'effet global sur le score de cette catÃ©gorie si le mot est rencontrÃ© dans un message.
+Bucket_WordListTableSummary             Cette table fournit une liste de tous les mots d'une catÃ©gorie donnÃ©e, classÃ©s en fonction de leur premiÃ¨re lettre.
+Magnet_MainTableSummary                 Cette table montre la liste des aimants utilisÃ©s pour classifier automatiquement des messages en fonction de rÃ¨gles fixes. Chaque ligne montre comment l'aimant est dÃ©fini, Ã  quelle catÃ©gorie il est assignÃ©, ainsi qu'un bouton permettant de supprimer l'aimant.
+Configuration_MainTableSummary          Cette table contient un certain nombre de formulaires vous permettant de contrÃ´ler la configuration de POPFile.
+Configuration_InsertionTableSummary     Cette table contient des boutons qui dÃ©terminent si certaines modifications doivent Ãªtre apportÃ©es aux en-tÃªtes ou Ã  la ligne de sujet du message avant qu'il soit transmis au client de messagerie.
+Security_MainTableSummary               Cette table permet de contrÃ´ler les paramÃ¨tres de sÃ©curitÃ© de la configuration gÃ©nÃ©rale de POPFile, de dÃ©cider s'il doit vÃ©rifier automatiquement les mises Ã  jour du programme, et si les statistiques de performance de POPFile doivent Ãªtre transmises au serveur de donnÃ©es central de l'auteur du programme Ã  des fins d'information gÃ©nÃ©rale.
+Advanced_MainTableSummary               Cette table fournit une liste de mots que POPFile ignore lors de la classification des messages, Ã©tant donnÃ© leur trop grande possibilitÃ© de prÃ©sence dans les messages de tout type. Ils sont classÃ©s en fonction de leur premiÃ¨re lettre.
 
-Imap_Bucket2Folder                      Les messages de la catégorie <b>%s</b> vont dans le dossier
-Imap_MapError                           Vous ne pouvez pas assigner plus d'une catégorie à un même dossier !
+Imap_Bucket2Folder                      Les messages de la catÃ©gorie <b>%s</b> vont dans le dossier
+Imap_MapError                           Vous ne pouvez pas assigner plus d'une catÃ©gorie Ã  un mÃªme dossier !
 Imap_Server                             Nom du serveur IMAP :
 Imap_ServerNameError                    Veuillez entrer le nom du serveur !
 Imap_Port                               Port du serveur IMAP
-Imap_PortError                          Veuillez entrer un numéro de port valide !
+Imap_PortError                          Veuillez entrer un numÃ©ro de port valide !
 Imap_Login                              Nom de compte IMAP :
 Imap_LoginError                         Veuillez entrer un nom de compte !
 Imap_Password                           Mot de passe du compte IMAP :
 Imap_PasswordError                      Veuillez entrer un mot de passe pour le serveur !
-Imap_Expunge                            Effacer les messages supprimés des dossiers surveillés
-Imap_Interval                           Période de rafraîchissement en secondes :
-Imap_IntervalError                      Veuillez entrer un délai compris entre 10 et 3600 secondes.
-Imap_Bytelimit                          Par message, nombre d'octets pris en compte pour la classification. Entrez 0 (zéro) pour le message complet :
+Imap_Expunge                            Effacer les messages supprimÃ©s des dossiers surveillÃ©s
+Imap_Interval                           PÃ©riode de rafraÃ®chissement en secondes :
+Imap_IntervalError                      Veuillez entrer un dÃ©lai compris entre 10 et 3600 secondes.
+Imap_Bytelimit                          Par message, nombre d'octets pris en compte pour la classification. Entrez 0 (zÃ©ro) pour le message complet :
 Imap_BytelimitError                     Veuillez entrer un nombre.
 Imap_RefreshFolders                     Actualiser la liste des dossiers
 Imap_Now                                maintenant !
-Imap_UpdateError1                       Impossible de s'identifier. Veuillez vérifier votre nom de compte et votre mot de passe.
-Imap_UpdateError2                       Impossible de se connecter au serveur. Veuillez vérifier le nom du serveur et le port, et vous assurer que vous être en ligne.
-Imap_UpdateError3                       Veuillez configurer préalablement les détails de la connexion.
-Imap_NoConnectionMessage                Veuillez configurer préalablement les détails de la connexion. Une fois cela fait, d'avantage d'options seront disponibles sur cette page.
-Imap_WatchMore                          un dossier à la liste des dossiers surveillés
-Imap_WatchedFolder                      Dossier surveillé n°
+Imap_UpdateError1                       Impossible de s'identifier. Veuillez vÃ©rifier votre nom de compte et votre mot de passe.
+Imap_UpdateError2                       Impossible de se connecter au serveur. Veuillez vÃ©rifier le nom du serveur et le port, et vous assurer que vous Ãªtre en ligne.
+Imap_UpdateError3                       Veuillez configurer prÃ©alablement les dÃ©tails de la connexion.
+Imap_NoConnectionMessage                Veuillez configurer prÃ©alablement les dÃ©tails de la connexion. Une fois cela fait, d'avantage d'options seront disponibles sur cette page.
+Imap_WatchMore                          un dossier Ã  la liste des dossiers surveillÃ©s
+Imap_WatchedFolder                      Dossier surveillÃ© nÂ°
 
-Shutdown_Message                        POPFile s'est arrêté
+Shutdown_Message                        POPFile s'est arrÃªtÃ©
 
-Help_Training                           Lorsque vous utilisez POPFile pour la première fois, il ne connait rien et a besoin d'un apprentissage. POPFile a besoin d'être entraîné avec des messages appartenant à chaque catégorie, cet apprentissage ayant lieu quand vous reclassifiez un message que POPFile a mal classé. Vous devez également configurer votre client de messagerie pour filtrer les messages en fonction de la classification effectuée par POPFile. Pour plus de renseignements sur la mise en place du filtrage dans les clients de messagerie, consultez : <a href="http://getpopfile.org/docs/FAQ:EmailSorting">POPFile Documentation Project</a> (en Anglais).
-Help_Bucket_Setup                       POPFile a besoin d'au moins deux catégories en plus de la pseudo-catégorie 'unclassified'. Ce qui rend POPFile unique est qu'il peut classifier les messages dans autant de catégorie que vous le désirez. Une configuration simple pourrait être une catégorie "spam", une autre "personnel" et une autre "professionnel"
+Help_Training                           Lorsque vous utilisez POPFile pour la premiÃ¨re fois, il ne connait rien et a besoin d'un apprentissage. POPFile a besoin d'Ãªtre entraÃ®nÃ© avec des messages appartenant Ã  chaque catÃ©gorie, cet apprentissage ayant lieu quand vous reclassifiez un message que POPFile a mal classÃ©. Vous devez Ã©galement configurer votre client de messagerie pour filtrer les messages en fonction de la classification effectuÃ©e par POPFile. Pour plus de renseignements sur la mise en place du filtrage dans les clients de messagerie, consultez : <a href="http://getpopfile.org/docs/FAQ:EmailSorting">POPFile Documentation Project</a> (en Anglais).
+Help_Bucket_Setup                       POPFile a besoin d'au moins deux catÃ©gories en plus de la pseudo-catÃ©gorie 'unclassified'. Ce qui rend POPFile unique est qu'il peut classifier les messages dans autant de catÃ©gorie que vous le dÃ©sirez. Une configuration simple pourrait Ãªtre une catÃ©gorie "spam", une autre "personnel" et une autre "professionnel"
 Help_No_More                            Ne plus montrer ceci

@@ -15,8 +15,8 @@
 #   along with POPFile; if not, write to the Free Software
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #
-# Translated by / Çeviri:
-# Zeynel Abidin Öztürk <ozturk@gmx.net>
+# Translated by / Ã‡eviri:
+# Zeynel Abidin Ã–ztÃ¼rk <ozturk@gmx.net>
 # POPFile 0.22.0 Turkish Translation
 
 # Identify the language and character set used for the interface
@@ -32,49 +32,49 @@ FAQLink                                 FAQ
 
 # Common words that are used on their own all over the interface
 Apply                                   Uygula
-On                                      Açık
-Off                                     Kapalı
-TurnOn                                  Aç
+On                                      AÃ§Ä±k
+Off                                     KapalÄ±
+TurnOn                                  AÃ§
 TurnOff                                 Kapat
 Add                                     Ekle
-Remove                                  Kaldır
-Previous                                Önceki
+Remove                                  KaldÄ±r
+Previous                                Ã–nceki
 Next                                    Sonraki
 From                                    Kimden
 Subject                                 Konu
 Cc                                      Bilgi 
-Classification                          Sınıflandırma
-Reclassify                              Tekrar Sınıflandır
-Probability                             Olasılık
+Classification                          SÄ±nÄ±flandÄ±rma
+Reclassify                              Tekrar SÄ±nÄ±flandÄ±r
+Probability                             OlasÄ±lÄ±k
 Scores                                  Puanlar 
-QuickMagnets                            HızlıMıknatıs
+QuickMagnets                            HÄ±zlÄ±MÄ±knatÄ±s
 Undo                                    Geri Al
 Close                                   Kapat
 Find                                    Bul
 Filter                                  Filtrele
 Yes                                     Evet
-No                                      Hayır
-ChangeToYes                             Evet olarak değiştir
-ChangeToNo                              Hayır olarak değiştir
+No                                      HayÄ±r
+ChangeToYes                             Evet olarak deÄŸiÅŸtir
+ChangeToNo                              HayÄ±r olarak deÄŸiÅŸtir
 Bucket                                  Kategori
-Magnet                                  Mıknatıs
+Magnet                                  MÄ±knatÄ±s
 Delete                                  Sil
-Create                                  Oluştur
+Create                                  OluÅŸtur
 To                                      Kime
 Total                                   Toplam
-Rename                                  Ad Değiştir
+Rename                                  Ad DeÄŸiÅŸtir
 Frequency                               Frekans
-Probability                             Olasılık
+Probability                             OlasÄ±lÄ±k
 Score                                   Puan
 Lookup                                  Arama
-Word                                    Sözcük
+Word                                    SÃ¶zcÃ¼k
 Count                                   Miktar
-Update                                  Güncelle
+Update                                  GÃ¼ncelle
 Refresh                                 Yenile
-FAQ                                     Sık Sorulan Sorular
+FAQ                                     SÄ±k Sorulan Sorular
 ID                                      Kimlik
 Date                                    Tarih
-Arrived                                 Alınma
+Arrived                                 AlÄ±nma
 Size                                    Boyut 
 
 # This is a regular expression pattern that is used to convert
@@ -96,284 +96,284 @@ Locale_Date                            %a %R | %D %R
 
 # The header and footer that appear on every UI page
 Header_Title                            POPFile Denetim Merkezi
-Header_Shutdown                         POPFile'ı Kapat
-Header_History                          Geçmiş
+Header_Shutdown                         POPFile'Ä± Kapat
+Header_History                          GeÃ§miÅŸ
 Header_Buckets                          Kategoriler
-Header_Configuration                    Yapılandırma
-Header_Advanced                         Gelişmiş
-Header_Security                         Güvenlik
-Header_Magnets                          Mıknatıslar
+Header_Configuration                    YapÄ±landÄ±rma
+Header_Advanced                         GeliÅŸmiÅŸ
+Header_Security                         GÃ¼venlik
+Header_Magnets                          MÄ±knatÄ±slar
 
-Footer_HomePage                         POPFile Web Sayfası
-Footer_Manual                           Kılavuz
+Footer_HomePage                         POPFile Web SayfasÄ±
+Footer_Manual                           KÄ±lavuz
 Footer_Forums                           Forumlar
-Footer_FeedMe                           Bağış Yap
-Footer_RequestFeature                   Özellik İsteğinde Bulun
+Footer_FeedMe                           BaÄŸÄ±ÅŸ Yap
+Footer_RequestFeature                   Ã–zellik Ä°steÄŸinde Bulun
 Footer_MailingList                      Posta Listesi
 Footer_Wiki                             Belgeler
 
-Configuration_Error1                    Ayırıcı karakter tek bir karakter olmalıdır
-Configuration_Error2                    Kullanıcı arayüzü portu 1 ile 65535 arasında bir sayı olmalıdır
-Configuration_Error3                    POP3 dinleme portu 1 ile 65535 arasında bir sayı olmalıdır
-Configuration_Error4                    Sayfa boyutu 1 ile 1000 arasında bir sayı olmalıdır
-Configuration_Error5                    Geçmişteki gün sayısı 1 ile 366 arasında bir sayı olmalıdır
-Configuration_Error6                    TCP zaman aşımı 10 ile 1800 arasında bir sayı olmalıdır
-Configuration_Error7                    XML RPC dinleme portu 1 ile 65535 arasında bir numara olmalıdır
-Configuration_Error8                    SOCKS V proxy port sayısı 1 ve 65535 arasında bir sayı olmalıdır
+Configuration_Error1                    AyÄ±rÄ±cÄ± karakter tek bir karakter olmalÄ±dÄ±r
+Configuration_Error2                    KullanÄ±cÄ± arayÃ¼zÃ¼ portu 1 ile 65535 arasÄ±nda bir sayÄ± olmalÄ±dÄ±r
+Configuration_Error3                    POP3 dinleme portu 1 ile 65535 arasÄ±nda bir sayÄ± olmalÄ±dÄ±r
+Configuration_Error4                    Sayfa boyutu 1 ile 1000 arasÄ±nda bir sayÄ± olmalÄ±dÄ±r
+Configuration_Error5                    GeÃ§miÅŸteki gÃ¼n sayÄ±sÄ± 1 ile 366 arasÄ±nda bir sayÄ± olmalÄ±dÄ±r
+Configuration_Error6                    TCP zaman aÅŸÄ±mÄ± 10 ile 1800 arasÄ±nda bir sayÄ± olmalÄ±dÄ±r
+Configuration_Error7                    XML RPC dinleme portu 1 ile 65535 arasÄ±nda bir numara olmalÄ±dÄ±r
+Configuration_Error8                    SOCKS V proxy port sayÄ±sÄ± 1 ve 65535 arasÄ±nda bir sayÄ± olmalÄ±dÄ±r
 Configuration_POP3Port                  POP3 dinleme portu
-Configuration_POP3Update                POP3 portu %s olarak güncellendi; bu değişiklik siz POPFile'ı yeniden başlatana kadar etkili olmayacaktır
-Configuration_XMLRPCUpdate              XML-RPC portu %s olarak güncellendi; bu değişiklik siz POPFile'ı yeniden başlatana kadar etkili olmayacaktır
+Configuration_POP3Update                POP3 portu %s olarak gÃ¼ncellendi; bu deÄŸiÅŸiklik siz POPFile'Ä± yeniden baÅŸlatana kadar etkili olmayacaktÄ±r
+Configuration_XMLRPCUpdate              XML-RPC portu %s olarak gÃ¼ncellendi; bu deÄŸiÅŸiklik siz POPFile'Ä± yeniden baÅŸlatana kadar etkili olmayacaktÄ±r
 Configuration_XMLRPCPort                XML-RPC dinleme portu
 Configuration_SMTPPort                  SMTP dinleme portu
-Configuration_SMTPUpdate                SMTP portu %s olarak güncellendi; bu değişiklik siz POPFile'ı yeniden başlatana kadar etkili olmayacaktır
+Configuration_SMTPUpdate                SMTP portu %s olarak gÃ¼ncellendi; bu deÄŸiÅŸiklik siz POPFile'Ä± yeniden baÅŸlatana kadar etkili olmayacaktÄ±r
 Configuration_NNTPPort                  NNTP dinleme portu
-Configuration_NNTPUpdate                NNTP portu %s olarak güncellendi; bu değişiklik siz POPFile'ı yeniden başlatana kadar etkili olmayacaktır
-Configuration_POPFork                   Aynı anda yapılan POP3 bağlantılarına izin ver
-Configuration_SMTPFork                  Aynı anda yapılan SMTP bağlantılarına izin ver
-Configuration_NNTPFork                  Aynı anda yapılan NNTP bağlantılarına izin ver
-Configuration_POP3Separator             POP3 sunucu:port:kullanıcı ayırıcı karakteri
-Configuration_NNTPSeparator             NNTP sunucu:port:kullanıcı ayırıcı karakteri
-Configuration_POP3SepUpdate             POP3 ayırıcısı %s olarak güncellendi
-Configuration_NNTPSepUpdate             NNTP ayırıcısı %s olarak güncellendi
-Configuration_UI                        Kullanıcı arayüzü web portu
-Configuration_UIUpdate                  Kullanıcı arayüzü web portu %s olarak güncellendi, bu değişiklik siz POPFile'ı yeniden başlatana kadar etkili olmayacaktır
-Configuration_History                   Sayfa başına mesaj sayısı
-Configuration_HistoryUpdate             Sayfa başına mesaj sayısı %s olarak güncellendi
-Configuration_Days                      Geçmişin saklanacağı gün sayısı
-Configuration_DaysUpdate                Geçmişin saklanacağı gün sayısı %s olarak güncellendi
-Configuration_UserInterface             Kullanıcı Arayüzü
-Configuration_Skins                     Dış Görünümler
-Configuration_SkinsChoose               Dış görünüm seçin
+Configuration_NNTPUpdate                NNTP portu %s olarak gÃ¼ncellendi; bu deÄŸiÅŸiklik siz POPFile'Ä± yeniden baÅŸlatana kadar etkili olmayacaktÄ±r
+Configuration_POPFork                   AynÄ± anda yapÄ±lan POP3 baÄŸlantÄ±larÄ±na izin ver
+Configuration_SMTPFork                  AynÄ± anda yapÄ±lan SMTP baÄŸlantÄ±larÄ±na izin ver
+Configuration_NNTPFork                  AynÄ± anda yapÄ±lan NNTP baÄŸlantÄ±larÄ±na izin ver
+Configuration_POP3Separator             POP3 sunucu:port:kullanÄ±cÄ± ayÄ±rÄ±cÄ± karakteri
+Configuration_NNTPSeparator             NNTP sunucu:port:kullanÄ±cÄ± ayÄ±rÄ±cÄ± karakteri
+Configuration_POP3SepUpdate             POP3 ayÄ±rÄ±cÄ±sÄ± %s olarak gÃ¼ncellendi
+Configuration_NNTPSepUpdate             NNTP ayÄ±rÄ±cÄ±sÄ± %s olarak gÃ¼ncellendi
+Configuration_UI                        KullanÄ±cÄ± arayÃ¼zÃ¼ web portu
+Configuration_UIUpdate                  KullanÄ±cÄ± arayÃ¼zÃ¼ web portu %s olarak gÃ¼ncellendi, bu deÄŸiÅŸiklik siz POPFile'Ä± yeniden baÅŸlatana kadar etkili olmayacaktÄ±r
+Configuration_History                   Sayfa baÅŸÄ±na mesaj sayÄ±sÄ±
+Configuration_HistoryUpdate             Sayfa baÅŸÄ±na mesaj sayÄ±sÄ± %s olarak gÃ¼ncellendi
+Configuration_Days                      GeÃ§miÅŸin saklanacaÄŸÄ± gÃ¼n sayÄ±sÄ±
+Configuration_DaysUpdate                GeÃ§miÅŸin saklanacaÄŸÄ± gÃ¼n sayÄ±sÄ± %s olarak gÃ¼ncellendi
+Configuration_UserInterface             KullanÄ±cÄ± ArayÃ¼zÃ¼
+Configuration_Skins                     DÄ±ÅŸ GÃ¶rÃ¼nÃ¼mler
+Configuration_SkinsChoose               DÄ±ÅŸ gÃ¶rÃ¼nÃ¼m seÃ§in
 Configuration_Language                  Dil
-Configuration_LanguageChoose            Dil seçin
-Configuration_ListenPorts               Modül Seçenekleri
-Configuration_HistoryView               Geçmiş Görünmü
-Configuration_TCPTimeout                Bağlantı Zaman Aşımı
-Configuration_TCPTimeoutSecs            Saniye olarak bağlantı zaman aşımı
-Configuration_TCPTimeoutUpdate          Zaman aşımı %s saniye olarak güncellendi
+Configuration_LanguageChoose            Dil seÃ§in
+Configuration_ListenPorts               ModÃ¼l SeÃ§enekleri
+Configuration_HistoryView               GeÃ§miÅŸ GÃ¶rÃ¼nmÃ¼
+Configuration_TCPTimeout                BaÄŸlantÄ± Zaman AÅŸÄ±mÄ±
+Configuration_TCPTimeoutSecs            Saniye olarak baÄŸlantÄ± zaman aÅŸÄ±mÄ±
+Configuration_TCPTimeoutUpdate          Zaman aÅŸÄ±mÄ± %s saniye olarak gÃ¼ncellendi
 Configuration_ClassificationInsertion   Mesaja Metin Ekleme
-Configuration_SubjectLine               Konu satırı değiştirilmesi
-Configuration_XTCInsertion              X-Text-Classification Üst bilgisi
-Configuration_XPLInsertion              X-POPFile-Link Üst bilgisi
-Configuration_Logging                   Günlük tutma
-Configuration_None                      Kapalı
+Configuration_SubjectLine               Konu satÄ±rÄ± deÄŸiÅŸtirilmesi
+Configuration_XTCInsertion              X-Text-Classification Ãœst bilgisi
+Configuration_XPLInsertion              X-POPFile-Link Ãœst bilgisi
+Configuration_Logging                   GÃ¼nlÃ¼k tutma
+Configuration_None                      KapalÄ±
 Configuration_ToScreen                  Ekrana
 Configuration_ToFile                    Dosyaya
 Configuration_ToScreenFile              Ekrana ve Dosyaya
-Configuration_LoggerOutput              Günlük çıktısı
-Configuration_GeneralSkins              Dış görünümler
-Configuration_SmallSkins                Küçük Dış Görünümler
-Configuration_TinySkins                 Daha Küçük Dış Görünümler
-Configuration_CurrentLogFile            &lt;şimdiki günlük dosyası&gt;
+Configuration_LoggerOutput              GÃ¼nlÃ¼k Ã§Ä±ktÄ±sÄ±
+Configuration_GeneralSkins              DÄ±ÅŸ gÃ¶rÃ¼nÃ¼mler
+Configuration_SmallSkins                KÃ¼Ã§Ã¼k DÄ±ÅŸ GÃ¶rÃ¼nÃ¼mler
+Configuration_TinySkins                 Daha KÃ¼Ã§Ã¼k DÄ±ÅŸ GÃ¶rÃ¼nÃ¼mler
+Configuration_CurrentLogFile            &lt;ÅŸimdiki gÃ¼nlÃ¼k dosyasÄ±&gt;
 Configuration_SOCKSServer               SOCKS V proxy sunucusu
 Configuration_SOCKSPort                 SOCKS V proxy port
-Configuration_SOCKSPortUpdate           SOCKS V proxy port %s olarak güncellendi
-Configuration_SOCKSServerUpdate         SOCKS V proxy sunucusu to %s olarak güncellendi
-Configuration_Fields                    Geçmiş sütunları
+Configuration_SOCKSPortUpdate           SOCKS V proxy port %s olarak gÃ¼ncellendi
+Configuration_SOCKSServerUpdate         SOCKS V proxy sunucusu to %s olarak gÃ¼ncellendi
+Configuration_Fields                    GeÃ§miÅŸ sÃ¼tunlarÄ±
 
-Advanced_Error1                         '%s' zaten Yoksayılan Sözcükler listesinde
-Advanced_Error2                         Yoksayılan kelimeler sadece harfleri, sayıları, ., _, -, veya @ karakterlerini içerebilir
-Advanced_Error3                         '%s' Yoksayılan Kelimeler listesine eklendi
-Advanced_Error4                         '%s' Yoksayılan Kelimeler içersinde bulunmuyor
-Advanced_Error5                         '%s' Yoksayılan Kelimeler listesinden silindi
-Advanced_StopWords                      Yoksayılan Kelimeler
-Advanced_Message1                       POPFile aşağıdaki sıkça kullanılan kelimeleri yok sayar:
+Advanced_Error1                         '%s' zaten YoksayÄ±lan SÃ¶zcÃ¼kler listesinde
+Advanced_Error2                         YoksayÄ±lan kelimeler sadece harfleri, sayÄ±larÄ±, ., _, -, veya @ karakterlerini iÃ§erebilir
+Advanced_Error3                         '%s' YoksayÄ±lan Kelimeler listesine eklendi
+Advanced_Error4                         '%s' YoksayÄ±lan Kelimeler iÃ§ersinde bulunmuyor
+Advanced_Error5                         '%s' YoksayÄ±lan Kelimeler listesinden silindi
+Advanced_StopWords                      YoksayÄ±lan Kelimeler
+Advanced_Message1                       POPFile aÅŸaÄŸÄ±daki sÄ±kÃ§a kullanÄ±lan kelimeleri yok sayar:
 Advanced_AddWord                        Kelime ekle
-Advanced_RemoveWord                     Kelime kaldır
-Advanced_AllParameters                  Tüm POPFile Parametreleri
+Advanced_RemoveWord                     Kelime kaldÄ±r
+Advanced_AllParameters                  TÃ¼m POPFile Parametreleri
 Advanced_Parameter                      Parametre
-Advanced_Value                          Değer
-Advanced_Warning                        Bu POPFile parametrelerinin tam bir listesidir. Sadece ileri seviye kullanıcılar içindir: herhangi bir şeyi değiştirebilir ve güncelleyebilirsiniz; geçerlilik kontrolü yapılmaz.
-Advanced_ConfigFile                     Yapılandırma dosyası:
+Advanced_Value                          DeÄŸer
+Advanced_Warning                        Bu POPFile parametrelerinin tam bir listesidir. Sadece ileri seviye kullanÄ±cÄ±lar iÃ§indir: herhangi bir ÅŸeyi deÄŸiÅŸtirebilir ve gÃ¼ncelleyebilirsiniz; geÃ§erlilik kontrolÃ¼ yapÄ±lmaz.
+Advanced_ConfigFile                     YapÄ±landÄ±rma dosyasÄ±:
 
-History_Filter                          &nbsp;(şu an <font color="%s">%s</font> kategorisi görüntüleniyor)
+History_Filter                          &nbsp;(ÅŸu an <font color="%s">%s</font> kategorisi gÃ¶rÃ¼ntÃ¼leniyor)
 History_FilterBy                        Filtreleme
-History_Search                          &nbsp;(kimden/konu %s için arandı)
+History_Search                          &nbsp;(kimden/konu %s iÃ§in arandÄ±)
 History_Title                           Son Mesajlar
 History_Jump                            Mesaja git
-History_ShowAll                         Tümünü Göster
-History_ShouldBe                        Böyle olmalı
-History_NoFrom                          kimden satırı bulunmuyor
-History_NoSubject                       konu satırı bulunmuyor
-History_ClassifyAs                      Sınıflandır
-History_MagnetUsed                      Mıknatıs kullanıldı
-History_MagnetBecause                   <b>Mıknatıs kullanıldı</b><p><font color="%s">%s</font> olarak sınıflandırıldı (mıknatıs %s nedeniyle)</p>
-History_ChangedTo                       <font color="%s">%s</font> olarak değiştirildi
-History_Already                         <font color="%s">%s</font> olarak tekrar sınıflandırıldı
-History_RemoveAll                       Tümünü Kaldır
-History_RemovePage                      Sayfayı Kaldır
-History_RemoveChecked                   Seçileni Kaldır
-History_Remove                          Geçmişteki girdileri kaldırmak için tıklayın:
+History_ShowAll                         TÃ¼mÃ¼nÃ¼ GÃ¶ster
+History_ShouldBe                        BÃ¶yle olmalÄ±
+History_NoFrom                          kimden satÄ±rÄ± bulunmuyor
+History_NoSubject                       konu satÄ±rÄ± bulunmuyor
+History_ClassifyAs                      SÄ±nÄ±flandÄ±r
+History_MagnetUsed                      MÄ±knatÄ±s kullanÄ±ldÄ±
+History_MagnetBecause                   <b>MÄ±knatÄ±s kullanÄ±ldÄ±</b><p><font color="%s">%s</font> olarak sÄ±nÄ±flandÄ±rÄ±ldÄ± (mÄ±knatÄ±s %s nedeniyle)</p>
+History_ChangedTo                       <font color="%s">%s</font> olarak deÄŸiÅŸtirildi
+History_Already                         <font color="%s">%s</font> olarak tekrar sÄ±nÄ±flandÄ±rÄ±ldÄ±
+History_RemoveAll                       TÃ¼mÃ¼nÃ¼ KaldÄ±r
+History_RemovePage                      SayfayÄ± KaldÄ±r
+History_RemoveChecked                   SeÃ§ileni KaldÄ±r
+History_Remove                          GeÃ§miÅŸteki girdileri kaldÄ±rmak iÃ§in tÄ±klayÄ±n:
 History_SearchMessage                   Kimden/Konu Ara
 History_NoMessages                      Mesaj yok
-History_ShowMagnet                      mıknatıslanmış
-History_Negate_Search                   Aramayı/filtreyi ters çevir
-History_Magnet                          &nbsp;(şu an mıknatıs ile sınıflandırılmış mesajlar görüntüleniyor)
-History_NoMagnet                        &nbsp;(şu an mıknatıs ile sınıflandırılmamış mesajlar görüntüleniyor)
-History_ResetSearch                     Aramayı Sıfırla
-History_ChangedClass                    Böyle sınıflandırılabilir
-History_Purge                           Şimdi Sil
-History_Increase                        Arttır
+History_ShowMagnet                      mÄ±knatÄ±slanmÄ±ÅŸ
+History_Negate_Search                   AramayÄ±/filtreyi ters Ã§evir
+History_Magnet                          &nbsp;(ÅŸu an mÄ±knatÄ±s ile sÄ±nÄ±flandÄ±rÄ±lmÄ±ÅŸ mesajlar gÃ¶rÃ¼ntÃ¼leniyor)
+History_NoMagnet                        &nbsp;(ÅŸu an mÄ±knatÄ±s ile sÄ±nÄ±flandÄ±rÄ±lmamÄ±ÅŸ mesajlar gÃ¶rÃ¼ntÃ¼leniyor)
+History_ResetSearch                     AramayÄ± SÄ±fÄ±rla
+History_ChangedClass                    BÃ¶yle sÄ±nÄ±flandÄ±rÄ±labilir
+History_Purge                           Åimdi Sil
+History_Increase                        ArttÄ±r
 History_Decrease                        Azalt
-History_Column_Characters               Kimden, Kime, Bilgi ve Konu sütunlarının genişliğini değiştir
+History_Column_Characters               Kimden, Kime, Bilgi ve Konu sÃ¼tunlarÄ±nÄ±n geniÅŸliÄŸini deÄŸiÅŸtir
 History_Automatic                       Otomatik
-History_Reclassified                    Tekrar sınıflandırılmış
+History_Reclassified                    Tekrar sÄ±nÄ±flandÄ±rÄ±lmÄ±ÅŸ
 History_Size_Bytes                      %d&nbsp;B
 History_Size_KiloBytes                  %.1f&nbsp;KB
 History_Size_MegaBytes                  %.1f&nbsp;MB 
 
 Password_Title                          Parola
-Password_Enter                          Parolayı girin
+Password_Enter                          ParolayÄ± girin
 Password_Go                             Tamam!
-Password_Error1                         Yanlış parola
+Password_Error1                         YanlÄ±ÅŸ parola
 
-Security_Error1                         Port 1 ile 65535 arasında bir numara olmalıdır
-Security_Stealth                        Gizli Mod/Sunucu Çalışması
-Security_NoStealthMode                  Hayır (Gizli Mod)
+Security_Error1                         Port 1 ile 65535 arasÄ±nda bir numara olmalÄ±dÄ±r
+Security_Stealth                        Gizli Mod/Sunucu Ã‡alÄ±ÅŸmasÄ±
+Security_NoStealthMode                  HayÄ±r (Gizli Mod)
 Security_StealthMode                    (Gizli Mod)
-Security_ExplainStats                   (Bu ayar açık olduğunda, POPFile günde bir kez olmak üzere şu değerleri getpopfile.org içindeki bir koda gönderir; bc (sahip olduğunuz toplam kategori sayısı), mc (POPFile'ın sınıflandırdığı toplam mesaj sayısı) ve ec (toplam sınıflandırma hatası sayısı). Bu bilgiler bir dosyada saklanır, bunları kullanıcıların POPFile'ı nasıl kullandığını ve ne kadar iyi çalıştığı hakkında istatistikler yayınlamak amacıyla kullanacağım.  Web sunucum günlük dosyalarını yaklaşık 5 gün saklar ve siler; istatistikler ve IP adresleri arasında herhangi bir bağlantı biriktirmemekteyim.)
-Security_ExplainUpdate                  (Bu ayar açık olduğunda, POPFile günde bir kez olmak üzere şu üç değeri getpopfile.org içindeki bir koda gönderir; ma (yüklediğiniz POPFile'ın büyük sürüm numarası), mi (yüklediğiniz POPFile'ın küçük sürüm numarası) ve bn (yüklediğiniz POPFile'ın yapı [build] numarası).  Yeni bir sürüm bulunduğunda POPFile, sayfanın üstünde gösterilen, grafik biçiminde bir cevap alır.  Web sunucum günlük dosyalarını yaklaşık 5 gün saklar ve siler; güncelleme kontrolleri ve IP adresleri arasında herhangi bir bağlantı biriktirmemekteyim.)
-Security_PasswordTitle                  Kullanıcı Arayüzü Parolası
+Security_ExplainStats                   (Bu ayar aÃ§Ä±k olduÄŸunda, POPFile gÃ¼nde bir kez olmak Ã¼zere ÅŸu deÄŸerleri getpopfile.org iÃ§indeki bir koda gÃ¶nderir; bc (sahip olduÄŸunuz toplam kategori sayÄ±sÄ±), mc (POPFile'Ä±n sÄ±nÄ±flandÄ±rdÄ±ÄŸÄ± toplam mesaj sayÄ±sÄ±) ve ec (toplam sÄ±nÄ±flandÄ±rma hatasÄ± sayÄ±sÄ±). Bu bilgiler bir dosyada saklanÄ±r, bunlarÄ± kullanÄ±cÄ±larÄ±n POPFile'Ä± nasÄ±l kullandÄ±ÄŸÄ±nÄ± ve ne kadar iyi Ã§alÄ±ÅŸtÄ±ÄŸÄ± hakkÄ±nda istatistikler yayÄ±nlamak amacÄ±yla kullanacaÄŸÄ±m.  Web sunucum gÃ¼nlÃ¼k dosyalarÄ±nÄ± yaklaÅŸÄ±k 5 gÃ¼n saklar ve siler; istatistikler ve IP adresleri arasÄ±nda herhangi bir baÄŸlantÄ± biriktirmemekteyim.)
+Security_ExplainUpdate                  (Bu ayar aÃ§Ä±k olduÄŸunda, POPFile gÃ¼nde bir kez olmak Ã¼zere ÅŸu Ã¼Ã§ deÄŸeri getpopfile.org iÃ§indeki bir koda gÃ¶nderir; ma (yÃ¼klediÄŸiniz POPFile'Ä±n bÃ¼yÃ¼k sÃ¼rÃ¼m numarasÄ±), mi (yÃ¼klediÄŸiniz POPFile'Ä±n kÃ¼Ã§Ã¼k sÃ¼rÃ¼m numarasÄ±) ve bn (yÃ¼klediÄŸiniz POPFile'Ä±n yapÄ± [build] numarasÄ±).  Yeni bir sÃ¼rÃ¼m bulunduÄŸunda POPFile, sayfanÄ±n Ã¼stÃ¼nde gÃ¶sterilen, grafik biÃ§iminde bir cevap alÄ±r.  Web sunucum gÃ¼nlÃ¼k dosyalarÄ±nÄ± yaklaÅŸÄ±k 5 gÃ¼n saklar ve siler; gÃ¼ncelleme kontrolleri ve IP adresleri arasÄ±nda herhangi bir baÄŸlantÄ± biriktirmemekteyim.)
+Security_PasswordTitle                  KullanÄ±cÄ± ArayÃ¼zÃ¼ ParolasÄ±
 Security_Password                       Parola
-Security_PasswordUpdate                 Parola %s olarak güncellendi
+Security_PasswordUpdate                 Parola %s olarak gÃ¼ncellendi
 Security_AUTHTitle                      Uzaktaki Sunucular
 Security_SecureServer                   POP3 SPA/AUTH sunucusu
-Security_SecureServerUpdate             POP3 SPA/AUTH güvenli sunucusu %s olarak güncellendi; bu değişiklik siz POPFile'ı yeniden başlatana kadar etkili olmayacaktır
+Security_SecureServerUpdate             POP3 SPA/AUTH gÃ¼venli sunucusu %s olarak gÃ¼ncellendi; bu deÄŸiÅŸiklik siz POPFile'Ä± yeniden baÅŸlatana kadar etkili olmayacaktÄ±r
 Security_SecurePort                     POP3 SPA/AUTH portu
-Security_SecurePortUpdate               POP3 SPA/AUTH portu %s olarak güncellendi; bu değişiklik siz POPFile'ı yeniden başlatana kadar etkili olmayacaktır
+Security_SecurePortUpdate               POP3 SPA/AUTH portu %s olarak gÃ¼ncellendi; bu deÄŸiÅŸiklik siz POPFile'Ä± yeniden baÅŸlatana kadar etkili olmayacaktÄ±r
 Security_SMTPServer                     SMTP zincir sunucusu
-Security_SMTPServerUpdate               SMTP zincir sunucusu %s olarak güncellendi, bu değişiklik siz POPFile'ı yeniden başlatana kadar etkili olmayacaktır
+Security_SMTPServerUpdate               SMTP zincir sunucusu %s olarak gÃ¼ncellendi, bu deÄŸiÅŸiklik siz POPFile'Ä± yeniden baÅŸlatana kadar etkili olmayacaktÄ±r
 Security_SMTPPort                       SMTP zincir portu
-Security_SMTPPortUpdate                 SMTP zincir portu %s olarak güncellendi, bu değişiklik siz POPFile'ı yeniden başlatana kadar etkili olmayacaktır
-Security_POP3                           Uzak bilgisayarlardan POP3 bağlantılarını kabul et (POPFile'ı yeniden başlatmak gerekir)
-Security_SMTP                           Uzak bilgisayarlardan SMTP bağlantılarını kabul et (POPFile'ı yeniden başlatmak gerekir)
-Security_NNTP                           Uzak bilgisayarlardan NNTP bağlantılarını kabul et (POPFile'ı yeniden başlatmak gerekir)
-Security_UI                             Uzak bilgisayarlardan HTTP (Kullanıcı Arayüzü) bağlantılarını kabul et (POPFile'ı yeniden başlatmak gerekir)
-Security_XMLRPC                         Uzak bilgisayarlardan XML-RPC bağlantılarını kabul et (POPFile'ı yeniden başlatmak gerekir)
-Security_UpdateTitle                    Otomatik Güncelleme Kontrolü
-Security_Update                         POPFile güncellemesi için her gün kontrol et
-Security_StatsTitle                     İstatistik Raporlama
-Security_Stats                          Her gün istatistik gönder
+Security_SMTPPortUpdate                 SMTP zincir portu %s olarak gÃ¼ncellendi, bu deÄŸiÅŸiklik siz POPFile'Ä± yeniden baÅŸlatana kadar etkili olmayacaktÄ±r
+Security_POP3                           Uzak bilgisayarlardan POP3 baÄŸlantÄ±larÄ±nÄ± kabul et (POPFile'Ä± yeniden baÅŸlatmak gerekir)
+Security_SMTP                           Uzak bilgisayarlardan SMTP baÄŸlantÄ±larÄ±nÄ± kabul et (POPFile'Ä± yeniden baÅŸlatmak gerekir)
+Security_NNTP                           Uzak bilgisayarlardan NNTP baÄŸlantÄ±larÄ±nÄ± kabul et (POPFile'Ä± yeniden baÅŸlatmak gerekir)
+Security_UI                             Uzak bilgisayarlardan HTTP (KullanÄ±cÄ± ArayÃ¼zÃ¼) baÄŸlantÄ±larÄ±nÄ± kabul et (POPFile'Ä± yeniden baÅŸlatmak gerekir)
+Security_XMLRPC                         Uzak bilgisayarlardan XML-RPC baÄŸlantÄ±larÄ±nÄ± kabul et (POPFile'Ä± yeniden baÅŸlatmak gerekir)
+Security_UpdateTitle                    Otomatik GÃ¼ncelleme KontrolÃ¼
+Security_Update                         POPFile gÃ¼ncellemesi iÃ§in her gÃ¼n kontrol et
+Security_StatsTitle                     Ä°statistik Raporlama
+Security_Stats                          Her gÃ¼n istatistik gÃ¶nder
 
-Magnet_Error1                           Mıknatıs '%s', kategori '%s' içersinde zaten var
-Magnet_Error2                           Yeni '%s' mıknatısı, '%s' mıknatısıyla ('%s' kategorisinde) çakışıyor. Bu belirsiz sonuçlara yol açabilir. Yeni mıknatıs eklenmedi.
-Magnet_Error3                           Yeni mıknatıs oluştur: '%s' Kategori: '%s'
-Magnet_CurrentMagnets                   Şu Anki Mıknatıslar
-Magnet_Message1                         Bu mıknatıslar, postanın her zaman belirtilen kategori olarak sınıflandırılmasını sağlayacaktır.
-Magnet_CreateNew                        Yeni Mıknatıs Oluştur
-Magnet_Explanation                      Şu tür mıknatıslar mevcuttur: <ul><li><b>Kimden adresi veya isim:</b> Örneğin: Belirli bir adresle eşleştirmek için zeynel@sirket.com, <br />sirket.com'dan gönderen herkes ile eşleştirmek için sirket.com, <br />belirli bir kişiyle eşleştirmek için Zeynel Abidin Öztürk, tüm Zeynel'ler ile eşleştirmek için Zeynel yazın</li><li><b>Kime/Bilgi adres veya adı:</b> Kimden: mıknatısı gibidir fakat mesajdaki Kime:/Bilgi: adresi içindir</li> <li><b>Konu sözcükleri:</b> Örneğin: Konusunda merhaba bulunan tüm mesajlarla eşleştirmek için merhaba yazın</li></ul>
-Magnet_MagnetType                       Mıknatıs türü
-Magnet_Value                            Değer
+Magnet_Error1                           MÄ±knatÄ±s '%s', kategori '%s' iÃ§ersinde zaten var
+Magnet_Error2                           Yeni '%s' mÄ±knatÄ±sÄ±, '%s' mÄ±knatÄ±sÄ±yla ('%s' kategorisinde) Ã§akÄ±ÅŸÄ±yor. Bu belirsiz sonuÃ§lara yol aÃ§abilir. Yeni mÄ±knatÄ±s eklenmedi.
+Magnet_Error3                           Yeni mÄ±knatÄ±s oluÅŸtur: '%s' Kategori: '%s'
+Magnet_CurrentMagnets                   Åu Anki MÄ±knatÄ±slar
+Magnet_Message1                         Bu mÄ±knatÄ±slar, postanÄ±n her zaman belirtilen kategori olarak sÄ±nÄ±flandÄ±rÄ±lmasÄ±nÄ± saÄŸlayacaktÄ±r.
+Magnet_CreateNew                        Yeni MÄ±knatÄ±s OluÅŸtur
+Magnet_Explanation                      Åu tÃ¼r mÄ±knatÄ±slar mevcuttur: <ul><li><b>Kimden adresi veya isim:</b> Ã–rneÄŸin: Belirli bir adresle eÅŸleÅŸtirmek iÃ§in zeynel@sirket.com, <br />sirket.com'dan gÃ¶nderen herkes ile eÅŸleÅŸtirmek iÃ§in sirket.com, <br />belirli bir kiÅŸiyle eÅŸleÅŸtirmek iÃ§in Zeynel Abidin Ã–ztÃ¼rk, tÃ¼m Zeynel'ler ile eÅŸleÅŸtirmek iÃ§in Zeynel yazÄ±n</li><li><b>Kime/Bilgi adres veya adÄ±:</b> Kimden: mÄ±knatÄ±sÄ± gibidir fakat mesajdaki Kime:/Bilgi: adresi iÃ§indir</li> <li><b>Konu sÃ¶zcÃ¼kleri:</b> Ã–rneÄŸin: Konusunda merhaba bulunan tÃ¼m mesajlarla eÅŸleÅŸtirmek iÃ§in merhaba yazÄ±n</li></ul>
+Magnet_MagnetType                       MÄ±knatÄ±s tÃ¼rÃ¼
+Magnet_Value                            DeÄŸer
 Magnet_Always                           Her zaman bu kategoriye gider
-Magnet_Jump                             Mıknatıs sayfasına git
+Magnet_Jump                             MÄ±knatÄ±s sayfasÄ±na git
 
-Bucket_Error1                           Kategori adları sadece a'dan z'ye küçük harfleri, 0'dan 9'a sayıları,  artı - ve _ karakterlerini içerebilir
-Bucket_Error2                           %s adlı kategori zaten var
-Bucket_Error3                           %s adında kategori oluşturuldu
-Bucket_Error4                           Lütfen boş olmayan bir sözcük girin
-Bucket_Error5                           Kategori adı değiştirildi, eski ad: %s yeni ad: %s
+Bucket_Error1                           Kategori adlarÄ± sadece a'dan z'ye kÃ¼Ã§Ã¼k harfleri, 0'dan 9'a sayÄ±larÄ±,  artÄ± - ve _ karakterlerini iÃ§erebilir
+Bucket_Error2                           %s adlÄ± kategori zaten var
+Bucket_Error3                           %s adÄ±nda kategori oluÅŸturuldu
+Bucket_Error4                           LÃ¼tfen boÅŸ olmayan bir sÃ¶zcÃ¼k girin
+Bucket_Error5                           Kategori adÄ± deÄŸiÅŸtirildi, eski ad: %s yeni ad: %s
 Bucket_Error6                           %s kategorisi silindi
-Bucket_Title                            Özet
-Bucket_BucketName                       Kategori Adı
-Bucket_WordCount                        Sözcük Sayısı
-Bucket_WordCounts                       Sözcük Sayıları
-Bucket_UniqueWords                      Eşsiz Sözcük
-Bucket_SubjectModification              Konu Değiştirilmesi
-Bucket_ChangeColor                      Renk Değiştir
+Bucket_Title                            Ã–zet
+Bucket_BucketName                       Kategori AdÄ±
+Bucket_WordCount                        SÃ¶zcÃ¼k SayÄ±sÄ±
+Bucket_WordCounts                       SÃ¶zcÃ¼k SayÄ±larÄ±
+Bucket_UniqueWords                      EÅŸsiz SÃ¶zcÃ¼k
+Bucket_SubjectModification              Konu DeÄŸiÅŸtirilmesi
+Bucket_ChangeColor                      Renk DeÄŸiÅŸtir
 Bucket_NotEnoughData                    Yetersiz veri
-Bucket_ClassificationAccuracy           Sınıflandırma Doğruluğu
-Bucket_EmailsClassified                 Sınıflandırılan mesaj
-Bucket_EmailsClassifiedUpper            Sınıflandırılan Mesajlar
-Bucket_ClassificationErrors             Sınıflandırma hataları
-Bucket_Accuracy                         Doğruluk
-Bucket_ClassificationCount              Sınıflandırma Sayısı
-Bucket_ClassificationFP                 Olumlu Yanlışlar
-Bucket_ClassificationFN                 Olumsuz Yanlışlar
-Bucket_ResetStatistics                  İstatistikleri Sıfırla
-Bucket_LastReset                        Son Sıfırlama
-Bucket_CurrentColor                     %s şu anki rengi %s
-Bucket_SetColorTo                       %s rengini %s rengi ile değiştir
-Bucket_Maintenance                      Bakım
-Bucket_CreateBucket                     Bu isimde kategori oluştur
+Bucket_ClassificationAccuracy           SÄ±nÄ±flandÄ±rma DoÄŸruluÄŸu
+Bucket_EmailsClassified                 SÄ±nÄ±flandÄ±rÄ±lan mesaj
+Bucket_EmailsClassifiedUpper            SÄ±nÄ±flandÄ±rÄ±lan Mesajlar
+Bucket_ClassificationErrors             SÄ±nÄ±flandÄ±rma hatalarÄ±
+Bucket_Accuracy                         DoÄŸruluk
+Bucket_ClassificationCount              SÄ±nÄ±flandÄ±rma SayÄ±sÄ±
+Bucket_ClassificationFP                 Olumlu YanlÄ±ÅŸlar
+Bucket_ClassificationFN                 Olumsuz YanlÄ±ÅŸlar
+Bucket_ResetStatistics                  Ä°statistikleri SÄ±fÄ±rla
+Bucket_LastReset                        Son SÄ±fÄ±rlama
+Bucket_CurrentColor                     %s ÅŸu anki rengi %s
+Bucket_SetColorTo                       %s rengini %s rengi ile deÄŸiÅŸtir
+Bucket_Maintenance                      BakÄ±m
+Bucket_CreateBucket                     Bu isimde kategori oluÅŸtur
 Bucket_DeleteBucket                     Bu isimdeki kategoriyi sil
-Bucket_RenameBucket                     Bu isimdeki kategorinin adını değiştir
+Bucket_RenameBucket                     Bu isimdeki kategorinin adÄ±nÄ± deÄŸiÅŸtir
 Bucket_Lookup                           Arama
-Bucket_LookupMessage                    Kategoriler içersinde sözcük arama
-Bucket_LookupMessage2                   Arama sonuçları:
-Bucket_LookupMostLikely                 <b>%s</b> daha çok <font color="%s">%s</font> içersinde görünüyor
-Bucket_DoesNotAppear                    <p><b>%s</b> hiçbir kategoride görünmüyor
-Bucket_DisabledGlobally                 Tamamen devre dışı
+Bucket_LookupMessage                    Kategoriler iÃ§ersinde sÃ¶zcÃ¼k arama
+Bucket_LookupMessage2                   Arama sonuÃ§larÄ±:
+Bucket_LookupMostLikely                 <b>%s</b> daha Ã§ok <font color="%s">%s</font> iÃ§ersinde gÃ¶rÃ¼nÃ¼yor
+Bucket_DoesNotAppear                    <p><b>%s</b> hiÃ§bir kategoride gÃ¶rÃ¼nmÃ¼yor
+Bucket_DisabledGlobally                 Tamamen devre dÄ±ÅŸÄ±
 Bucket_To                               Yeni Ad:
 Bucket_Quarantine                       Karantina
 
-SingleBucket_Title                      %s detayları
-SingleBucket_WordCount                  Kategori sözcük sayısı
-SingleBucket_TotalWordCount             Toplam sözcük sayısı
-SingleBucket_Percentage                 Toplama göre yüzdesi
-SingleBucket_WordTable                  %s için Sözcük Tablosu
-SingleBucket_Message1                   Herhangi bir harfle başlayan sözcükleri görmek için o harfe tıklayın.  Bir sözcüğün tüm kategorilerdeki olasılıklarını aramak için istediğiniz bir sözcüğe tıklayın.
-SingleBucket_Unique                     %s eşsiz
-SingleBucket_ClearBucket                Tüm Kelimeleri Kaldır
+SingleBucket_Title                      %s detaylarÄ±
+SingleBucket_WordCount                  Kategori sÃ¶zcÃ¼k sayÄ±sÄ±
+SingleBucket_TotalWordCount             Toplam sÃ¶zcÃ¼k sayÄ±sÄ±
+SingleBucket_Percentage                 Toplama gÃ¶re yÃ¼zdesi
+SingleBucket_WordTable                  %s iÃ§in SÃ¶zcÃ¼k Tablosu
+SingleBucket_Message1                   Herhangi bir harfle baÅŸlayan sÃ¶zcÃ¼kleri gÃ¶rmek iÃ§in o harfe tÄ±klayÄ±n.  Bir sÃ¶zcÃ¼ÄŸÃ¼n tÃ¼m kategorilerdeki olasÄ±lÄ±klarÄ±nÄ± aramak iÃ§in istediÄŸiniz bir sÃ¶zcÃ¼ÄŸe tÄ±klayÄ±n.
+SingleBucket_Unique                     %s eÅŸsiz
+SingleBucket_ClearBucket                TÃ¼m Kelimeleri KaldÄ±r
 
-Session_Title                           POPFile Oturum Süresi Doldu
-Session_Error                           POPFile Oturum süreniz doldu.  Bu, web penceresi açıkken POPFile'ı başlatıp durdurmak sebebiyle gerçekleşmiş olabilir. POPFile'ı kullanmaya devam etmek için lütfen bağlantılardan birini tıklayın.
+Session_Title                           POPFile Oturum SÃ¼resi Doldu
+Session_Error                           POPFile Oturum sÃ¼reniz doldu.  Bu, web penceresi aÃ§Ä±kken POPFile'Ä± baÅŸlatÄ±p durdurmak sebebiyle gerÃ§ekleÅŸmiÅŸ olabilir. POPFile'Ä± kullanmaya devam etmek iÃ§in lÃ¼tfen baÄŸlantÄ±lardan birini tÄ±klayÄ±n.
 
-View_Title                              Tek Mesaj Görünümü
-View_ShowFrequencies                    Sözcük frekanslarını göster
-View_ShowProbabilities                  Sözcük olasılıklarını göster
-View_ShowScores                         Sözcük puanlarını göster
-View_WordMatrix                         Sözcük matrisi
-View_WordProbabilities                  sözcük olasılıkları görüntüleniyor
-View_WordFrequencies                    sözcük frekansları görüntüleniyor
-View_WordScores                         sözcük puanları görüntüleniyor
-View_Chart                              Karar grafiği
+View_Title                              Tek Mesaj GÃ¶rÃ¼nÃ¼mÃ¼
+View_ShowFrequencies                    SÃ¶zcÃ¼k frekanslarÄ±nÄ± gÃ¶ster
+View_ShowProbabilities                  SÃ¶zcÃ¼k olasÄ±lÄ±klarÄ±nÄ± gÃ¶ster
+View_ShowScores                         SÃ¶zcÃ¼k puanlarÄ±nÄ± gÃ¶ster
+View_WordMatrix                         SÃ¶zcÃ¼k matrisi
+View_WordProbabilities                  sÃ¶zcÃ¼k olasÄ±lÄ±klarÄ± gÃ¶rÃ¼ntÃ¼leniyor
+View_WordFrequencies                    sÃ¶zcÃ¼k frekanslarÄ± gÃ¶rÃ¼ntÃ¼leniyor
+View_WordScores                         sÃ¶zcÃ¼k puanlarÄ± gÃ¶rÃ¼ntÃ¼leniyor
+View_Chart                              Karar grafiÄŸi
 
-Windows_TrayIcon                        POPFile simgesi Windows sistem çubuğunda gösterilsin mi?
-Windows_Console                         POPFile konsol penceresinde mi çalıştırılsın?
-Windows_NextTime                        <p><font color="red">Bu değişiklik, bir sonraki POPFile başlangıcına kadar etkili olmayacaktır</font>
+Windows_TrayIcon                        POPFile simgesi Windows sistem Ã§ubuÄŸunda gÃ¶sterilsin mi?
+Windows_Console                         POPFile konsol penceresinde mi Ã§alÄ±ÅŸtÄ±rÄ±lsÄ±n?
+Windows_NextTime                        <p><font color="red">Bu deÄŸiÅŸiklik, bir sonraki POPFile baÅŸlangÄ±cÄ±na kadar etkili olmayacaktÄ±r</font>
 
-Header_MenuSummary                      Bu tablo, denetim merkezinin farklı sayfalarına erişmeyi sağlayan bir gözatma menüsüdür
-History_MainTableSummary                Bu tablo son alınan mesajların gönderenlerini ve konularını görüntüler ve gözden geçirilip tekrar sınıflandırılmasını sağlar.  Konu satırına tıklamak, mesajın sınıflandırılması hakkında bilgi ile birlikte tam mesaj metnini gösterir.  'Böyle olmalı' sütunu, mesajın hangi kategoride olması gerektiğini seçmenizi veya bu değişikliği geri almanızı sağlar.  'Sil' sütunu, gerek duymadığınız mesajları geçmiş içerisinden seçerek silmenize izin verir.
-History_OpenMessageSummary              Bu tablo, sınıflandırma için kullanılan her kelimenin en çok uyuşan kategoriye göre vurgulandığı, mesajın tam metnini içerir.
-Bucket_MainTableSummary                 Bu tablo, sınıflandırma kategorileri hakkında bir özet sunar.  Her sıra kategori adını, kategori için toplam sözcük sayısını, her kategorideki tek sözcük sayısını, mesajın bu kategori ile sınıflandırıldığında konu satırının değiştirilip değiştirilmeyeceğini, bu kategoride alınan mesajların karantinaya alınıp alınmayacağını ve bu kategori ile ilgili Denetim Merkezinde kullanılacak rengi seçmenizi sağlar.
-Bucket_StatisticsTableSummary           Bu tablo POPFile'ın tüm performansı hakkında üç grup istatistik sunar.  Birincisi sınıflamanın ne kadar doğru olduğu, ikincisi kaç mesajın sınıflandırıldığı ve hangi kategorinin atandığını ve üçüncüsü her kategoride kaç sözcüğün bulunduğu ve ilgili yüzdelerinin kaç olduğunu gösterir.
-Bucket_MaintenanceTableSummary          Bu tablo, kategorileri oluşturabileceğiniz, silebileceğiniz veya adını değiştirebileceğiniz formları içerir ve tüm kategorilerde bir kelimeyi aratıp ilgili olasılıklarını görmebilmenizi sağlar.
-Bucket_AccuracyChartSummary             Bu tablo, mesaj sınıflandırmasının doğruluğunu grafik üzerinde gösterir.
-Bucket_BarChartSummary                  Bu tablo, her farklı kategori için ayrılan yüzdeyi grafik olarak görüntüler.  Bu hem sınıflandırılan mesaj sayısı hem de toplam sözcük sayıları için kullanılır.
-Bucket_LookupResultsSummary             Bu tablo, sözcük listesinden verilen herhangi bir sözcük ile ilişkili olasılıkları görüntüler.  Her kategori için, bu kelimenin meydana geldiği frekansı, bu kategoride meydana gelme olasılığı ve bu sözcük mesajda bulunuyorsa puan üzerindeki tam etkisini gösterir.
-Bucket_WordListTableSummary             Bu tablo, bir kategoriye özgü tüm sözcüklerin, her satır için ortak ilk harf ile düzenlenmiş listesini sunar.
-Magnet_MainTableSummary                 Bu tablo, mesajları sabit kurallara göre otomatik olarak sınıflandırmakta kullanılan mıknatısların listesini gösterir.  Her satır mıknatısın nasıl tanımlandığını, bunun için hangi kategorinin seçildiğini görüntüler ve mıknatısı silmek için bir düğme gösterir.
-Configuration_MainTableSummary          Bu tablo, POPFile'ın yapılandırmasını denetlemenize izin veren bazı formlar içerir.
-Configuration_InsertionTableSummary     Bu tablo, mesajın posta programına (client) iletilmeden önce üst bilgilerde veya konu satırında bazı değişikliklerinin yapılıp yapılmayacağını belirleyen düğmeler içerir.
-Security_MainTableSummary               Bu tablo, otomatik olarak program güncellemelerinin kontrol edilip edilmeyeceği, POPFile'ın performansı hakkındaki istatistiklerin genel bilgi için program yapımcısının veri deposu merkezine gönderilip gönderilmeyeceği hakkında POPFile'ın tüm yapılandırmasının güvenliğini etkileyecek denetim grupları sağlar.
-Advanced_MainTableSummary               Bu tablo, POPFile'ın genelde mesajdaki göreceli frekansları nedeniyle yoksaydığı sözcüklerin listesini sunar.  Bunlar her satırda sözcüğün ilk harfine göre düzenlenmiştir.
+Header_MenuSummary                      Bu tablo, denetim merkezinin farklÄ± sayfalarÄ±na eriÅŸmeyi saÄŸlayan bir gÃ¶zatma menÃ¼sÃ¼dÃ¼r
+History_MainTableSummary                Bu tablo son alÄ±nan mesajlarÄ±n gÃ¶nderenlerini ve konularÄ±nÄ± gÃ¶rÃ¼ntÃ¼ler ve gÃ¶zden geÃ§irilip tekrar sÄ±nÄ±flandÄ±rÄ±lmasÄ±nÄ± saÄŸlar.  Konu satÄ±rÄ±na tÄ±klamak, mesajÄ±n sÄ±nÄ±flandÄ±rÄ±lmasÄ± hakkÄ±nda bilgi ile birlikte tam mesaj metnini gÃ¶sterir.  'BÃ¶yle olmalÄ±' sÃ¼tunu, mesajÄ±n hangi kategoride olmasÄ± gerektiÄŸini seÃ§menizi veya bu deÄŸiÅŸikliÄŸi geri almanÄ±zÄ± saÄŸlar.  'Sil' sÃ¼tunu, gerek duymadÄ±ÄŸÄ±nÄ±z mesajlarÄ± geÃ§miÅŸ iÃ§erisinden seÃ§erek silmenize izin verir.
+History_OpenMessageSummary              Bu tablo, sÄ±nÄ±flandÄ±rma iÃ§in kullanÄ±lan her kelimenin en Ã§ok uyuÅŸan kategoriye gÃ¶re vurgulandÄ±ÄŸÄ±, mesajÄ±n tam metnini iÃ§erir.
+Bucket_MainTableSummary                 Bu tablo, sÄ±nÄ±flandÄ±rma kategorileri hakkÄ±nda bir Ã¶zet sunar.  Her sÄ±ra kategori adÄ±nÄ±, kategori iÃ§in toplam sÃ¶zcÃ¼k sayÄ±sÄ±nÄ±, her kategorideki tek sÃ¶zcÃ¼k sayÄ±sÄ±nÄ±, mesajÄ±n bu kategori ile sÄ±nÄ±flandÄ±rÄ±ldÄ±ÄŸÄ±nda konu satÄ±rÄ±nÄ±n deÄŸiÅŸtirilip deÄŸiÅŸtirilmeyeceÄŸini, bu kategoride alÄ±nan mesajlarÄ±n karantinaya alÄ±nÄ±p alÄ±nmayacaÄŸÄ±nÄ± ve bu kategori ile ilgili Denetim Merkezinde kullanÄ±lacak rengi seÃ§menizi saÄŸlar.
+Bucket_StatisticsTableSummary           Bu tablo POPFile'Ä±n tÃ¼m performansÄ± hakkÄ±nda Ã¼Ã§ grup istatistik sunar.  Birincisi sÄ±nÄ±flamanÄ±n ne kadar doÄŸru olduÄŸu, ikincisi kaÃ§ mesajÄ±n sÄ±nÄ±flandÄ±rÄ±ldÄ±ÄŸÄ± ve hangi kategorinin atandÄ±ÄŸÄ±nÄ± ve Ã¼Ã§Ã¼ncÃ¼sÃ¼ her kategoride kaÃ§ sÃ¶zcÃ¼ÄŸÃ¼n bulunduÄŸu ve ilgili yÃ¼zdelerinin kaÃ§ olduÄŸunu gÃ¶sterir.
+Bucket_MaintenanceTableSummary          Bu tablo, kategorileri oluÅŸturabileceÄŸiniz, silebileceÄŸiniz veya adÄ±nÄ± deÄŸiÅŸtirebileceÄŸiniz formlarÄ± iÃ§erir ve tÃ¼m kategorilerde bir kelimeyi aratÄ±p ilgili olasÄ±lÄ±klarÄ±nÄ± gÃ¶rmebilmenizi saÄŸlar.
+Bucket_AccuracyChartSummary             Bu tablo, mesaj sÄ±nÄ±flandÄ±rmasÄ±nÄ±n doÄŸruluÄŸunu grafik Ã¼zerinde gÃ¶sterir.
+Bucket_BarChartSummary                  Bu tablo, her farklÄ± kategori iÃ§in ayrÄ±lan yÃ¼zdeyi grafik olarak gÃ¶rÃ¼ntÃ¼ler.  Bu hem sÄ±nÄ±flandÄ±rÄ±lan mesaj sayÄ±sÄ± hem de toplam sÃ¶zcÃ¼k sayÄ±larÄ± iÃ§in kullanÄ±lÄ±r.
+Bucket_LookupResultsSummary             Bu tablo, sÃ¶zcÃ¼k listesinden verilen herhangi bir sÃ¶zcÃ¼k ile iliÅŸkili olasÄ±lÄ±klarÄ± gÃ¶rÃ¼ntÃ¼ler.  Her kategori iÃ§in, bu kelimenin meydana geldiÄŸi frekansÄ±, bu kategoride meydana gelme olasÄ±lÄ±ÄŸÄ± ve bu sÃ¶zcÃ¼k mesajda bulunuyorsa puan Ã¼zerindeki tam etkisini gÃ¶sterir.
+Bucket_WordListTableSummary             Bu tablo, bir kategoriye Ã¶zgÃ¼ tÃ¼m sÃ¶zcÃ¼klerin, her satÄ±r iÃ§in ortak ilk harf ile dÃ¼zenlenmiÅŸ listesini sunar.
+Magnet_MainTableSummary                 Bu tablo, mesajlarÄ± sabit kurallara gÃ¶re otomatik olarak sÄ±nÄ±flandÄ±rmakta kullanÄ±lan mÄ±knatÄ±slarÄ±n listesini gÃ¶sterir.  Her satÄ±r mÄ±knatÄ±sÄ±n nasÄ±l tanÄ±mlandÄ±ÄŸÄ±nÄ±, bunun iÃ§in hangi kategorinin seÃ§ildiÄŸini gÃ¶rÃ¼ntÃ¼ler ve mÄ±knatÄ±sÄ± silmek iÃ§in bir dÃ¼ÄŸme gÃ¶sterir.
+Configuration_MainTableSummary          Bu tablo, POPFile'Ä±n yapÄ±landÄ±rmasÄ±nÄ± denetlemenize izin veren bazÄ± formlar iÃ§erir.
+Configuration_InsertionTableSummary     Bu tablo, mesajÄ±n posta programÄ±na (client) iletilmeden Ã¶nce Ã¼st bilgilerde veya konu satÄ±rÄ±nda bazÄ± deÄŸiÅŸikliklerinin yapÄ±lÄ±p yapÄ±lmayacaÄŸÄ±nÄ± belirleyen dÃ¼ÄŸmeler iÃ§erir.
+Security_MainTableSummary               Bu tablo, otomatik olarak program gÃ¼ncellemelerinin kontrol edilip edilmeyeceÄŸi, POPFile'Ä±n performansÄ± hakkÄ±ndaki istatistiklerin genel bilgi iÃ§in program yapÄ±mcÄ±sÄ±nÄ±n veri deposu merkezine gÃ¶nderilip gÃ¶nderilmeyeceÄŸi hakkÄ±nda POPFile'Ä±n tÃ¼m yapÄ±landÄ±rmasÄ±nÄ±n gÃ¼venliÄŸini etkileyecek denetim gruplarÄ± saÄŸlar.
+Advanced_MainTableSummary               Bu tablo, POPFile'Ä±n genelde mesajdaki gÃ¶receli frekanslarÄ± nedeniyle yoksaydÄ±ÄŸÄ± sÃ¶zcÃ¼klerin listesini sunar.  Bunlar her satÄ±rda sÃ¶zcÃ¼ÄŸÃ¼n ilk harfine gÃ¶re dÃ¼zenlenmiÅŸtir.
 
-Imap_Bucket2Folder                      %s kategorisindeki posta %s klasörüne gider
-Imap_MapError                           Bir klasöre birden fazla kategori atayamazsınız!
+Imap_Bucket2Folder                      %s kategorisindeki posta %s klasÃ¶rÃ¼ne gider
+Imap_MapError                           Bir klasÃ¶re birden fazla kategori atayamazsÄ±nÄ±z!
 Imap_Server                             IMAP sunucusu:
-Imap_ServerNameError                    Lütfen sunucunun adını girin!
+Imap_ServerNameError                    LÃ¼tfen sunucunun adÄ±nÄ± girin!
 Imap_Port                               IMAP Sunucu portu:
-Imap_PortError                          Lütfen geçerli bir port numarası girin!
-Imap_Login                              IMAP hesabı oturum açma adı:
-Imap_LoginError                         Lütfen bir kullanıcı/oturum açma adı girin!
-Imap_Password                           IMAP hesabı parolası:
-Imap_PasswordError                      Lütfen sunucu için bir parola girin!
-Imap_Expunge                            Silinen mesajları izlenen klasörlerden kaldır.
-Imap_Interval                           Güncelleme aralığı, saniye:
-Imap_IntervalError                      Lütfen 10 ile 3600 saniye arasında bir sayı girin.
-Imap_Bytelimit                          Her mesajın sınıflandırılmasında kullanılacak bayt. Tüm mesaj için 0 girin:
-Imap_BytelimitError                     Lütfen bir sayı girin.
-Imap_RefreshFolders                     Klasör listesini yenile
-Imap_Now                                şimdi!
-Imap_UpdateError1                       Oturum açılamıyor. Lütfen oturum açma adını ve parolayı kontrol edin.
-Imap_UpdateError2                       Sunucuyla bağlantı kurulamıyor. Lütfen sunucu adını ve port numarasını kontrol edin ve ağa bağlı olduğunuzdan emin olun.
-Imap_UpdateError3                       Lütfen önce bağlantı detaylarını ayarlayın.
-Imap_NoConnectionMessage                Lütfen önce bağlantı detaylarını ayarlayın. Bunu yaptıktan sonra, bu sayfada daha fazla seçenek belirecektir.
+Imap_PortError                          LÃ¼tfen geÃ§erli bir port numarasÄ± girin!
+Imap_Login                              IMAP hesabÄ± oturum aÃ§ma adÄ±:
+Imap_LoginError                         LÃ¼tfen bir kullanÄ±cÄ±/oturum aÃ§ma adÄ± girin!
+Imap_Password                           IMAP hesabÄ± parolasÄ±:
+Imap_PasswordError                      LÃ¼tfen sunucu iÃ§in bir parola girin!
+Imap_Expunge                            Silinen mesajlarÄ± izlenen klasÃ¶rlerden kaldÄ±r.
+Imap_Interval                           GÃ¼ncelleme aralÄ±ÄŸÄ±, saniye:
+Imap_IntervalError                      LÃ¼tfen 10 ile 3600 saniye arasÄ±nda bir sayÄ± girin.
+Imap_Bytelimit                          Her mesajÄ±n sÄ±nÄ±flandÄ±rÄ±lmasÄ±nda kullanÄ±lacak bayt. TÃ¼m mesaj iÃ§in 0 girin:
+Imap_BytelimitError                     LÃ¼tfen bir sayÄ± girin.
+Imap_RefreshFolders                     KlasÃ¶r listesini yenile
+Imap_Now                                ÅŸimdi!
+Imap_UpdateError1                       Oturum aÃ§Ä±lamÄ±yor. LÃ¼tfen oturum aÃ§ma adÄ±nÄ± ve parolayÄ± kontrol edin.
+Imap_UpdateError2                       Sunucuyla baÄŸlantÄ± kurulamÄ±yor. LÃ¼tfen sunucu adÄ±nÄ± ve port numarasÄ±nÄ± kontrol edin ve aÄŸa baÄŸlÄ± olduÄŸunuzdan emin olun.
+Imap_UpdateError3                       LÃ¼tfen Ã¶nce baÄŸlantÄ± detaylarÄ±nÄ± ayarlayÄ±n.
+Imap_NoConnectionMessage                LÃ¼tfen Ã¶nce baÄŸlantÄ± detaylarÄ±nÄ± ayarlayÄ±n. Bunu yaptÄ±ktan sonra, bu sayfada daha fazla seÃ§enek belirecektir.
 Imap_WatchMore                          a folder to list of watched folders
-Imap_WatchedFolder                      İzlenilen klasör numarası
+Imap_WatchedFolder                      Ä°zlenilen klasÃ¶r numarasÄ±
 
-Shutdown_Message                        POPFile kapatıldı
+Shutdown_Message                        POPFile kapatÄ±ldÄ±
 
-Help_Training                           POPFile'ı ilk kullandığınızda o hiçbir bilgiye sahip değildir ve eğitime ihtiyacı vardır. POPFile her kategori için mesajlar ile eğitilmelidir. Eğitim, POPFile bir mesajı yanlış sınıflandırdığında bunu doğru kategori ile tekrar sınıflandırarak gerçekleştirilir. Bunun dışında, posta programınızın mesajları POPFile'ın sınıflandırmasına göre filtrelemesi için ayarlamalısınız. Posta programınızın filtelerini ayarlamak hakkında bilgi <a href="http://getpopfile.org/docs/FAQ:EmailSorting">POPFile Dökümantasyon Projesi</a> adresinde bulunabilir.
-Help_Bucket_Setup                       POPFile, sınıflandırılmamış pseudo-kategorisi dışında en az iki kategori gerektirir. POPFile'ı eşsiz yapan, ikiden fazla, istediğiniz sayıda kategoriye sahip olabilmenizdir. Basit bir kurulum, "spam", "kişisel", ve "iş" kategorileri gibi olabilir.
-Help_No_More                            Bunu bir daha gösterme 
+Help_Training                           POPFile'Ä± ilk kullandÄ±ÄŸÄ±nÄ±zda o hiÃ§bir bilgiye sahip deÄŸildir ve eÄŸitime ihtiyacÄ± vardÄ±r. POPFile her kategori iÃ§in mesajlar ile eÄŸitilmelidir. EÄŸitim, POPFile bir mesajÄ± yanlÄ±ÅŸ sÄ±nÄ±flandÄ±rdÄ±ÄŸÄ±nda bunu doÄŸru kategori ile tekrar sÄ±nÄ±flandÄ±rarak gerÃ§ekleÅŸtirilir. Bunun dÄ±ÅŸÄ±nda, posta programÄ±nÄ±zÄ±n mesajlarÄ± POPFile'Ä±n sÄ±nÄ±flandÄ±rmasÄ±na gÃ¶re filtrelemesi iÃ§in ayarlamalÄ±sÄ±nÄ±z. Posta programÄ±nÄ±zÄ±n filtelerini ayarlamak hakkÄ±nda bilgi <a href="http://getpopfile.org/docs/FAQ:EmailSorting">POPFile DÃ¶kÃ¼mantasyon Projesi</a> adresinde bulunabilir.
+Help_Bucket_Setup                       POPFile, sÄ±nÄ±flandÄ±rÄ±lmamÄ±ÅŸ pseudo-kategorisi dÄ±ÅŸÄ±nda en az iki kategori gerektirir. POPFile'Ä± eÅŸsiz yapan, ikiden fazla, istediÄŸiniz sayÄ±da kategoriye sahip olabilmenizdir. Basit bir kurulum, "spam", "kiÅŸisel", ve "iÅŸ" kategorileri gibi olabilir.
+Help_No_More                            Bunu bir daha gÃ¶sterme 
