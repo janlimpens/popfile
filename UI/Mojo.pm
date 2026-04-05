@@ -891,12 +891,16 @@ the server is running.
 );
         $daemon->start();
 
+        my $loop = $daemon->ioloop;
+        $SIG{INT}  = sub { $loop->stop() };
+        $SIG{TERM} = sub { $loop->stop() };
+
         if ($self->config('open_browser')) {
             require Browser::Open;
             Browser::Open::open_browser("http://localhost:$port/");
         }
 
-        $daemon->ioloop->start();
+        $loop->start();
     }
 
 
