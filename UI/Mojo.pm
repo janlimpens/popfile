@@ -43,6 +43,7 @@ C<public/> directory (configurable via the C<static_dir> config key).
 
 use Object::Pad;
 use locale;
+use utf8;
 
 use POSIX ':sys_wait_h';
 use Scalar::Util qw(looks_like_number);
