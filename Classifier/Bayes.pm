@@ -3856,42 +3856,6 @@ method get_magnets ($session, $bucket, $type) {
     return @result;
 }
 
-=head2 create_magnet
-
-Make a new magnet
-
-C<$session> A valid session key returned by a call to get_session_key
-C<$bucket> The bucket the magnet belongs in
-C<$type> The magnet type (e.g. from, to or subject)
-C<$text> The text of the magnet
-
-=cut
-
-method create_magne ($session, $bucket, $type, $text) {
-    my $userid = $self->valid_session_key($session);
-    return
-        unless defined $userid;
-
-    unless (defined($db_bucketid->{$userid}{$bucket})) {
-        return 0;
-    }
-
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $result = $self->validate_sql_prepare_and_execute(
-        'SELECT magnet_types.id FROM magnet_types
-         WHERE magnet_types.mtype = ?',
-        $type)->fetchrow_arrayref;
-    my $mtid = $result->[0];
-    return 0
-        unless defined $mtid;
-
-    $self->validate_sql_prepare_and_execute('
-        INSERT INTO magnets (bucketid, mtid, val)
-        VALUES (?, ?, ?)',
-        $bucketid, $mtid, $text);
-    return 1;
-}
-
 =head2 get_magnet_types
 
 Get a hash mapping magnet types (e.g. from) to magnet names (e.g. From);
@@ -3918,14 +3882,14 @@ method get_magnet_types ($session) {
     return %result;
 }
 
-=head2 delete_magnet
-
-Remove a magnet
+=head2 create_magnet
 
 C<$session> A valid session key returned by a call to get_session_key
 C<$bucket> The bucket the magnet belongs in
 C<$type> The magnet type (e.g. from, to or subject)
 C<$text> The text of the magnet
+
+Creates a new magnet in C<$bucket>.
 
 =cut
 
