@@ -197,6 +197,13 @@ method deliver ($type, @message) {
     }
 }
 
+=head2 forked($writer)
+
+Called after the process forks.  Clears the inherited database handle so the
+child opens its own connection.
+
+=cut
+
 method forked ($writer = undef) {
     $self->_clear_db();
 }
@@ -345,19 +352,15 @@ method commit_slot ($session, $slot, $bucket, $magnet) {
     $self->mq_post('COMIT', $session, $slot, $bucket, $magnet);
 }
 
-#----------------------------------------------------------------------------
-#
-# change_slot_classification
-#
-# Used to 'reclassify' a message by changing its classification in the
-# database.
-#
-# slot         The slot to update
-# class        The new classification
-# session      A valid API session
-# undo         If set to 1 then indicates an undo operation
-#
-#----------------------------------------------------------------------------
+=head2 change_slot_classification($slot, $class, $session, $undo)
+
+Reclassifies message C<$slot> to bucket C<$class>.  C<$session> is a valid
+Classifier::Bayes API session.  When C<$undo> is 0 the previous bucket ID is
+saved to C<usedtobe>; when C<$undo> is 1 (undo operation) C<usedtobe> is not
+updated.  Invalidates all open query caches.
+
+=cut
+
 method change_slot_classification ($slot, $class, $session, $undo) {
     $self->log_msg(0, "Change slot classification of $slot to $class");
 
@@ -379,16 +382,14 @@ method change_slot_classification ($slot, $class, $session, $undo) {
     $self->force_requery();
 }
 
-#----------------------------------------------------------------------------
-#
-# revert_slot_classification
-#
-# Used to undo a 'reclassify' a message by changing its classification
-# in the database.
-#
-# slot         The slot to update
-#
-#----------------------------------------------------------------------------
+=head2 revert_slot_classification($slot)
+
+Undoes a previous reclassification for C<$slot> by restoring the bucket stored
+in C<usedtobe> and clearing C<usedtobe> to 0.  Invalidates all open query
+caches.
+
+=cut
+
 method revert_slot_classification ($slot) {
     my @fields = $self->get_slot_fields($slot);
     my $oldbucketid = $fields[9];
@@ -400,16 +401,16 @@ method revert_slot_classification ($slot) {
     $self->force_requery();
 }
 
-#----------------------------------------------------------------------------
-#
-# get_slot_fields
-#
-# Returns the fields associated with a specific slot.  We return the
-# same collection of fields as get_query_rows.
-#
-# slot           The slot id
-#
-#----------------------------------------------------------------------------
+=head2 get_slot_fields($slot)
+
+Returns the database fields for a single committed history entry identified by
+C<$slot>.  The returned list has the same columns as C<get_query_rows>:
+C<id(0)>, C<from(1)>, C<to(2)>, C<cc(3)>, C<subject(4)>, C<date(5)>,
+C<hash(6)>, C<inserted(7)>, C<bucket(8)>, C<usedtobe(9)>, C<bucketid(10)>,
+C<magnet(11)>, C<size(12)>.  Returns C<undef> if C<$slot> is invalid.
+
+=cut
+
 method get_slot_fields ($slot) {
     return undef if (!defined($slot) || $slot !~ /^\d+$/);
 
@@ -423,15 +424,12 @@ method get_slot_fields ($slot) {
     return $h->fetchrow_array
 }
 
-#----------------------------------------------------------------------------
-#
-# is_valid_slot
-#
-# Returns 1 if the slot ID passed in is valid
-#
-# slot           The slot id
-#
-#----------------------------------------------------------------------------
+=head2 is_valid_slot($slot)
+
+Returns 1 if C<$slot> is a committed history entry, C<undef> otherwise.
+
+=cut
+
 method is_valid_slot ($slot) {
     return undef if (!defined($slot) || $slot !~ /^\d+$/);
 
@@ -613,17 +611,15 @@ method commit_history() {
     $self->force_requery();
 }
 
-# ---------------------------------------------------------------------------
-#
-# delete_slot
-#
-# Deletes an entry from the database and disk, optionally archiving it
-# if the archive parameters have been set
-#
-# $slot              The slot ID
-# $archive           1 if it's OK to archive this entry
-#
-# ---------------------------------------------------------------------------
+=head2 delete_slot($slot, $archive)
+
+Removes a history entry from the database and its message file from disk.
+When C<$archive> is 1 and the C<archive> config option is enabled, copies the
+file to the archive directory (organised by bucket) before deleting.
+Invalidates all open query caches.
+
+=cut
+
 method delete_slot ($slot, $archive) {
     my $file = $self->get_slot_file($slot);
     $self->log_msg(2, "delete_slot called for slot $slot, file $file");
@@ -669,41 +665,40 @@ method delete_slot ($slot, $archive) {
     $self->force_requery();
 }
 
-#----------------------------------------------------------------------------
-#
-# start_deleting
-#
-# Called before doing a block of calls to delete_slot.  This will call
-# back into the Classifier::Bayes to tweak the database performance to
-# make this quick.
-#
-#----------------------------------------------------------------------------
+=head2 start_deleting()
+
+Opens a database transaction before a batch of C<delete_slot> calls so that
+the deletions are applied as a single atomic write.  Call C<stop_deleting()>
+when done.
+
+=cut
+
 method start_deleting() {
 #    $classifier->tweak_sqlite( 1, 1, $self->db() );
     $self->db()->begin_work;
 }
 
-#----------------------------------------------------------------------------
-#
-# stop_deleting
-#
-# Called after doing a block of calls to delete_slot.  This will call
-# back into the Classifier::Bayes to untweak the database performance.
-#
-#----------------------------------------------------------------------------
+=head2 stop_deleting()
+
+Commits the transaction opened by C<start_deleting()>.
+
+=cut
+
 method stop_deleting() {
     $self->db()->commit;
 #    $classifier->tweak_sqlite( 1, 0, $self->db() );
 }
 
-#----------------------------------------------------------------------------
-#
-# get_slot_file
-#
-# Used to map a slot ID to the full path of the file will contain
-# the message associated with the slot
-#
-#----------------------------------------------------------------------------
+=head2 get_slot_file($slot)
+
+Returns the full filesystem path for the message file associated with
+C<$slot>.  The slot ID is encoded as an 8-digit hex number and mapped to a
+three-level directory tree under C<msgdir> (e.g.
+C<msgdir/aa/bb/cc/popfiledd.msg>).  Creates any missing intermediate
+directories.
+
+=cut
+
 method get_slot_file ($slot) {
     # The mapping between the slot and the file goes as follows:
     #
@@ -731,24 +726,15 @@ method get_slot_file ($slot) {
     return $path . $file;
 }
 
-#----------------------------------------------------------------------------
-#
-# get_message_hash
-#
-# Used to compute an MD5 hash of the headers of a message
-# so that the same message can later me identified by a
-# call to get_slot_from_hash
-#
-# messageid              The message id header
-# date                   The date header
-# subject                The subject header
-# received               First Received header line
-#
-# Note that the values passed in are everything after the : in
-# header without the trailing \r or \n.  If a header is missing
-# then pass in the empty string
-#
-#----------------------------------------------------------------------------
+=head2 get_message_hash($messageid, $date, $subject, $received)
+
+Computes an MD5 hex digest over the four key message headers — C<Message-ID>,
+C<Date>, C<Subject>, and the first C<Received> line — so that the same message
+can later be located with C<get_slot_from_hash>.  Pass C<undef> for any header
+that is absent; it is treated as the empty string.
+
+=cut
+
 method get_message_hash ($messageid, $date, $subject, $received) {
     $messageid = '' if (!defined($messageid));
     $date = '' if (!defined($date));
@@ -758,18 +744,14 @@ method get_message_hash ($messageid, $date, $subject, $received) {
     return md5_hex("[$messageid][$date][$subject][$received]");
 }
 
-#----------------------------------------------------------------------------
-#
-# get_slot_from_hash
-#
-# Given a hash value (returned by get_message_hash), find any
-# corresponding message in the database and return its slot
-# id.   If the message does not exist then return the empty
-# string.
-#
-# hash                 The hash value
-#
-#----------------------------------------------------------------------------
+=head2 get_slot_from_hash($hash)
+
+Returns the slot ID for the first history entry whose C<hash> matches the MD5
+digest produced by C<get_message_hash>.  Returns the empty string if no match
+is found.
+
+=cut
+
 method get_slot_from_hash ($hash) {
     my $h = $self->validate_sql_prepare_and_execute(
         'SELECT id FROM history WHERE hash = ? LIMIT 1',
@@ -798,15 +780,15 @@ method get_slot_from_hash ($hash) {
 #
 #----------------------------------------------------------------------------
 
-#----------------------------------------------------------------------------
-#
-# start_query
-#
-# Used to start a query session, returns a unique ID for this
-# query.  When the caller is done with the query they return
-# stop_query.
-#
-#----------------------------------------------------------------------------
+=head2 start_query()
+
+Allocates a new query session and returns a unique ID string.  The session
+holds a result cache and must be released with C<stop_query()> when no longer
+needed.  Use C<set_query()> to specify filter and sort options, then retrieve
+rows with C<get_query_rows()>.
+
+=cut
+
 method start_query() {
     # Think of a large random number, make sure that it hasn't
     # been used and then return it
@@ -823,15 +805,13 @@ method start_query() {
     }
 }
 
-#----------------------------------------------------------------------------
-#
-# stop_query
-#
-# Used to clean up after a query session
-#
-# id                The ID returned by start_query
-#
-#----------------------------------------------------------------------------
+=head2 stop_query($id)
+
+Releases the query session identified by C<$id>, freeing its database
+statement handle and cached rows.
+
+=cut
+
 method stop_query ($id) {
     # If the cache size hasn't grown to the row
     # count then we didn't fetch everything and so
@@ -850,20 +830,41 @@ method stop_query ($id) {
     delete $queries{$id};
 }
 
-#----------------------------------------------------------------------------
-#
-# set_query
-#
-# Called to set up a query with sort, filter and search options
-#
-# id            The ID returned by start_query
-# filter        Name of bucket to filter on
-# search        From/Subject line to search for
-# sort          The field to sort on (from, subject, to, cc, bucket, date)
-#               (optional leading - for descending sort)
-# not           If set to 1 negates the search
-#
-#----------------------------------------------------------------------------
+=head2 set_query($id, $filter, $search, $sort, $not)
+
+Configures the query session C<$id> with optional filter, full-text search,
+and sort criteria.
+
+=over 4
+
+=item C<$filter>
+
+Bucket name to restrict results to, or one of the special values
+C<__filter__magnet> (magnet-classified only) or C<__filter__reclassified>
+(reclassified messages only).  Empty string means no filter.
+
+=item C<$search>
+
+String to match against C<hdr_from> and C<hdr_subject> (SQL LIKE).  Empty
+string means no search.
+
+=item C<$sort>
+
+Field to sort on: one of C<inserted>, C<from>, C<to>, C<cc>, C<subject>,
+C<bucket>, C<date>, or C<size>.  Prefix with C<-> for descending order.
+Defaults to C<inserted desc>.
+
+=item C<$not>
+
+When 1, negates both the search and the filter.
+
+=back
+
+Results are not fetched immediately; call C<get_query_size()> and
+C<get_query_rows()> to retrieve them.
+
+=cut
+
 method set_query ($id, $filter, $search, $sort, $not) {
     $search =~ s/\0//g;
     $sort = '' if ($sort !~ /^(\-)?(inserted|from|to|cc|subject|bucket|date|size)$/);
@@ -955,15 +956,14 @@ method set_query ($id, $filter, $search, $sort, $not) {
     $queries{$id}{cache} = ();
 }
 
-#----------------------------------------------------------------------------
-#
-# delete_query
-#
-# Called to delete all the rows returned in a query
-#
-# id            The ID returned by start_query
-#
-#----------------------------------------------------------------------------
+=head2 delete_query($id)
+
+Deletes every history entry matched by the current query C<$id> from both the
+database and disk (with archiving if configured).  Wraps the deletions in a
+C<start_deleting>/C<stop_deleting> transaction.
+
+=cut
+
 method delete_query ($id) {
     $self->start_deleting();
 
@@ -984,37 +984,27 @@ method delete_query ($id) {
     $self->stop_deleting();
 }
 
-#----------------------------------------------------------------------------
-#
-# get_query_size
-#
-# Called to return the number of elements in the query.
-# Should only be called after a call to set_query.
-#
-# id            The ID returned by start_query
-#
-#----------------------------------------------------------------------------
+=head2 get_query_size($id)
+
+Returns the total number of rows matched by the query C<$id>.  Must be called
+after C<set_query()>.
+
+=cut
+
 method get_query_size ($id) {
     return $queries{$id}{count};
 }
 
-#----------------------------------------------------------------------------
-#
-# get_query_rows
-#
-# Returns the rows in the range [$start, $end) from a query that has
-# already been set up with a call to set_query.  The first row is row 1.
-#
-# id            The ID returned by start_query
-# start         The first row to return
-# count         Number of rows to return
-#
-# Each row contains the fields:
-#
-#    id (0), from (1), to (2), cc (3), subject (4), date (5), hash (6),
-#    inserted date (7), bucket name (8), reclassified id (9), bucket id (10),
-#    magnet value (11), size (12)
-#----------------------------------------------------------------------------
+=head2 get_query_rows($id, $start, $count)
+
+Returns C<$count> rows starting at 1-based position C<$start> from the result
+set of query C<$id>.  Rows are fetched lazily and cached.  Each row is an
+array ref with the columns: C<id(0)>, C<from(1)>, C<to(2)>, C<cc(3)>,
+C<subject(4)>, C<date(5)>, C<hash(6)>, C<inserted(7)>, C<bucket(8)>,
+C<usedtobe(9)>, C<bucketid(10)>, C<magnet(11)>, C<size(12)>.
+
+=cut
+
 method get_query_rows ($id, $start, $count) {
     # First see if we have already retrieved these rows from the query
     # if we have then we can just return them from the cache.  Otherwise
@@ -1184,14 +1174,13 @@ method history_read_class ($filename) {
     return ($reclassified, $bucket, $usedtobe, $magnet);
 }
 
-#----------------------------------------------------------------------------
-#
-# cleanup_history
-#
-# Removes the popfile*.msg files that are older than a number of days
-# configured as history_days.
-#
-#----------------------------------------------------------------------------
+=head2 cleanup_history()
+
+Deletes history entries older than C<history_days> configuration days.
+Called automatically on each C<TICKD> message-queue event (i.e. once per day).
+
+=cut
+
 method cleanup_history() {
     my $seconds_per_day = 24 * 60 * 60;
     my $old = time - $self->config('history_days') * $seconds_per_day;
@@ -1237,14 +1226,14 @@ method copy_file ($from, $to_dir, $to_name) {
     }
 }
 
-# ---------------------------------------------------------------------------
-#
-# force_requery
-#
-# Called when the database has changed to invalidate any queries that are
-# open so that cached data is not returned and the database is requeried
-#
-# ---------------------------------------------------------------------------
+=head2 force_requery()
+
+Invalidates the result caches of all open query sessions so that the next call
+to C<get_query_rows()> re-executes the query against the database.  Called
+automatically after any write operation.
+
+=cut
+
 method force_requery() {
     # Force requery since the messages have changed
 
