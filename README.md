@@ -1,9 +1,13 @@
 # POPFile
 
-Bayesian email classifier written in Perl. Acts as a proxy between mail clients
-and mail servers (POP3, SMTP, NNTP), inserting an `X-Text-Classification:` header
-with the predicted category. Users correct misclassifications through the web UI,
-which trains the classifier over time.
+Bayesian email classifier written in Perl. POPFile connects to your IMAP
+folders, classifies incoming messages with Naive Bayes, and inserts an
+`X-Text-Classification:` header with the predicted category ("bucket").
+You correct misclassifications through the web UI, which retrains the
+classifier over time.
+
+POP3, SMTP, and NNTP proxies are also included for legacy setups, but IMAP
+is the primary interface.
 
 ## Prerequisites
 
@@ -55,7 +59,7 @@ npm run build
 ## Tests
 
 ```sh
-carton exec perl -I. t/mailparse.t
+carton exec prove -l t/
 ```
 
 ## Runtime files (gitignored)
