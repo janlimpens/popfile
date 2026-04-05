@@ -40,6 +40,13 @@ The module acquires an admin session in C<start()> and releases it in
 C<stop()>.  Every public method delegates to the underlying Bayes engine,
 prepending the held session key.
 
+=head1 LIFECYCLE
+
+=head2 start
+
+Acquires an admin session key from the Bayes classifier.  Returns 1 on
+success, 0 if the session key could not be obtained.
+
 =cut
 
 field $classifier :writer(set_classifier) = undef;
@@ -55,6 +62,12 @@ field $classifier :writer(set_classifier) = undef;
         return defined($session) ? 1 : 0;
     }
 
+=head2 stop
+
+Releases the admin session key.
+
+=cut
+
     method stop() {
         if ($session ne '') {
             $classifier->release_session_key($session);
@@ -62,20 +75,15 @@ field $classifier :writer(set_classifier) = undef;
         }
     }
 
-=head1 METHODS
+=head1 CLASSIFICATION
 
-=head2 start()
+=head2 classify_message
 
-Acquires an admin session key from the Bayes classifier.  Returns 1 on
-success, 0 if the session key could not be obtained.
+    $self->classify_message($mail, $client, $nosave, $class, $slot, $echo, $crlf);
 
-=head2 stop()
-
-Releases the admin session key.
-
-=head2 Classification
-
-Methods that classify or modify messages using the Bayes engine.
+Classifies the message in C<$mail> and modifies the message stream written to
+C<$client> by inserting the C<X-Text-Classification> header.  Delegates to
+C<< Classifier::Bayes->classify_and_modify >>.
 
 =cut
 
@@ -84,13 +92,65 @@ Methods that classify or modify messages using the Bayes engine.
             $session, $mail, $client, $nosave, $class, $slot, $echo, $crlf);
     }
 
-    # --- Classify only (no modification) ---
+=head2 classify
+
+    my $bucket = $self->classify($file);
+
+Classifies the message in C<$file> and returns the bucket name.
+
+=cut
 
     method classify ($file)     { $classifier->classify($session, $file) }
 
-=head2 Buckets
+=head1 BUCKETS
 
-Methods to query and manage classification buckets.
+=head2 get_buckets
+
+Returns a list of all non-pseudo bucket names for the current user.
+
+=head2 get_all_buckets
+
+Returns a list of all bucket names including pseudo-buckets.
+
+=head2 get_pseudo_buckets
+
+Returns a list of pseudo-bucket names only.
+
+=head2 is_bucket
+
+    my $bool = $self->is_bucket($name);
+
+Returns true if C<$name> is a real (non-pseudo) bucket.
+
+=head2 is_pseudo_bucket
+
+    my $bool = $self->is_pseudo_bucket($name);
+
+Returns true if C<$name> is a pseudo-bucket.
+
+=head2 create_bucket
+
+    $self->create_bucket($name);
+
+Creates a new bucket with the given name.
+
+=head2 delete_bucket
+
+    $self->delete_bucket($name);
+
+Deletes the named bucket and all its training data.
+
+=head2 rename_bucket
+
+    $self->rename_bucket($old_name, $new_name);
+
+Renames a bucket.
+
+=head2 clear_bucket
+
+    $self->clear_bucket($name);
+
+Removes all training data from a bucket without deleting it.
 
 =cut
 
@@ -104,7 +164,47 @@ Methods to query and manage classification buckets.
     method rename_bucket ($old, $new) { $classifier->rename_bucket($session, $old, $new) }
     method clear_bucket ($b)    { $classifier->clear_bucket($session, $b) }
 
-    # --- Bucket statistics ---
+=head1 BUCKET STATISTICS
+
+=head2 get_bucket_word_count
+
+    my $n = $self->get_bucket_word_count($bucket);
+
+Returns the total word count (with repetitions) for C<$bucket>.
+
+=head2 get_bucket_unique_count
+
+    my $n = $self->get_bucket_unique_count($bucket);
+
+Returns the number of distinct words in C<$bucket>.
+
+=head2 get_word_count
+
+Returns the total word count across all buckets.
+
+=head2 get_unique_word_count
+
+Returns the number of distinct words across all buckets.
+
+=head2 get_bucket_word_list
+
+    my @words = $self->get_bucket_word_list($bucket, $prefix);
+
+Returns words in C<$bucket> that start with C<$prefix>.
+
+=head2 get_bucket_word_prefixes
+
+    my @prefixes = $self->get_bucket_word_prefixes($bucket);
+
+Returns all word prefixes present in C<$bucket>.
+
+=head2 get_count_for_word
+
+    my $n = $self->get_count_for_word($bucket, $word);
+
+Returns the training count for C<$word> in C<$bucket>.
+
+=cut
 
     method get_bucket_word_count ($b)       { $classifier->get_bucket_word_count($session, $b) }
     method get_bucket_unique_count ($b)     { $classifier->get_bucket_unique_count($session, $b) }
@@ -114,7 +214,69 @@ Methods to query and manage classification buckets.
     method get_bucket_word_prefixes ($b)    { $classifier->get_bucket_word_prefixes($session, $b) }
     method get_count_for_word ($b, $w)      { $classifier->get_count_for_word($session, $b, $w) }
 
-    # --- Bucket parameters / color ---
+=head1 BUCKET PARAMETERS AND COLOR
+
+=head2 get_bucket_parameter
+
+    my $val = $self->get_bucket_parameter($bucket, $param);
+
+Returns the value of a per-bucket parameter.
+
+=head2 set_bucket_parameter
+
+    $self->set_bucket_parameter($bucket, $param, $value);
+
+Sets a per-bucket parameter.
+
+=head2 get_bucket_color
+
+    my $color = $self->get_bucket_color($bucket);
+
+Returns the display color for C<$bucket>.
+
+=head2 set_bucket_color
+
+    $self->set_bucket_color($bucket, $color);
+
+Sets the display color for C<$bucket>.
+
+=head2 get_color
+
+    my $color = $self->get_color($word);
+
+Returns the color of the bucket that would claim C<$word>.
+
+=head2 get_word_colors
+
+    my %colors = $self->get_word_colors(@words);
+
+Returns a hash mapping each word to its bucket color.
+
+=head2 mangle_word
+
+    my $mangled = $self->mangle_word($word);
+
+Normalises C<$word> through the word-mangler (stemming, lowercasing, etc.).
+
+=head2 add_message_to_bucket
+
+    $self->add_message_to_bucket($bucket, $file);
+
+Trains the message in C<$file> into C<$bucket>.
+
+=head2 add_messages_to_bucket
+
+    $self->add_messages_to_bucket($bucket, @files);
+
+Trains multiple message files into C<$bucket>.
+
+=head2 remove_message_from_bucket
+
+    $self->remove_message_from_bucket($bucket, $file);
+
+Removes the training contribution of C<$file> from C<$bucket>.
+
+=cut
 
     method get_bucket_parameter ($b, $p)        { $classifier->get_bucket_parameter($session, $b, $p) }
     method set_bucket_parameter ($b, $p, $v)    { $classifier->set_bucket_parameter($session, $b, $p, $v) }
@@ -123,16 +285,51 @@ Methods to query and manage classification buckets.
     method get_color ($w)                       { $classifier->get_color($session, $w) }
     method get_word_colors (@words)             { $classifier->get_word_colors($session, @words) }
     method mangle_word ($w)                     { $classifier->parser()->mangle()->mangle($w) }
-
-    # --- Training ---
-
     method add_message_to_bucket ($b, $file)    { $classifier->add_message_to_bucket($session, $b, $file) }
     method add_messages_to_bucket ($b, @files)  { $classifier->add_messages_to_bucket($session, $b, @files) }
     method remove_message_from_bucket ($b, $f)  { $classifier->remove_message_from_bucket($session, $b, $f) }
 
-=head2 Magnets
+=head1 MAGNETS
 
-Methods to query and manage magnets (forced-classification rules).
+=head2 get_buckets_with_magnets
+
+Returns a list of bucket names that have at least one magnet defined.
+
+=head2 get_magnet_types
+
+Returns a list of all magnet type names (e.g. C<from>, C<to>, C<subject>).
+
+=head2 get_magnet_types_in_bucket
+
+    my @types = $self->get_magnet_types_in_bucket($bucket);
+
+Returns the magnet types that have entries in C<$bucket>.
+
+=head2 get_magnets
+
+    my @magnets = $self->get_magnets($bucket, $type);
+
+Returns all magnet strings of C<$type> in C<$bucket>.
+
+=head2 create_magnet
+
+    $self->create_magnet($bucket, $type, $text);
+
+Creates a new magnet matching C<$text> of C<$type> pointing to C<$bucket>.
+
+=head2 delete_magnet
+
+    $self->delete_magnet($bucket, $type, $text);
+
+Deletes the magnet matching C<$text> of C<$type> in C<$bucket>.
+
+=head2 clear_magnets
+
+Deletes all magnets for all buckets.
+
+=head2 magnet_count
+
+Returns the total number of magnets defined.
 
 =cut
 
@@ -145,9 +342,23 @@ Methods to query and manage magnets (forced-classification rules).
     method clear_magnets()                        { $classifier->clear_magnets($session) }
     method magnet_count()                         { $classifier->magnet_count($session) }
 
-=head2 Stopwords
+=head1 STOPWORDS
 
-Methods to query and manage the stopword list.
+=head2 get_stopword_list
+
+Returns a list of all stopwords.
+
+=head2 add_stopword
+
+    $self->add_stopword($word);
+
+Adds C<$word> to the stopword list.
+
+=head2 remove_stopword
+
+    $self->remove_stopword($word);
+
+Removes C<$word> from the stopword list.
 
 =cut
 
@@ -155,16 +366,19 @@ Methods to query and manage the stopword list.
     method add_stopword ($w)    { $classifier->add_stopword($session, $w) }
     method remove_stopword ($w) { $classifier->remove_stopword($session, $w) }
 
-=head2 Setters
+=head1 ACCESSORS
 
-Called by C<POPFile::Loader::CORE_link_components> to inject dependencies.
+=head2 session
 
-=cut
+Returns the current admin session key.
 
+=head2 bayes
 
-=head2 Accessors
+Returns the underlying L<Classifier::Bayes> object.
 
-Direct access to internal objects for XML-RPC and legacy callers.
+=head2 history_obj
+
+Returns the injected L<POPFile::History> object.
 
 =cut
 
