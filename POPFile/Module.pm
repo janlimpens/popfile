@@ -131,10 +131,6 @@ Return the full path to a POPFile-root-relative file or directory.
         return $configuration->get_root_path($path, $sandbox);
     }
 
-    # -------------------------------------------------------------------------
-    # slurp_ — line-buffered reader tolerating CR, CRLF and LF endings
-    # -------------------------------------------------------------------------
-
     method flush_slurp_data ($handle) {
         if ($slurp_data{"$handle"}{data} =~ s/^([^\015\012]*\012)//) {
             return $1;
@@ -234,6 +230,17 @@ Returns C<undef> on timeout or closed connection.
         delete $slurp_data{"$handle"};
     }
 
+=head2 flush_extra
+
+    $self->flush_extra($mail, $client);
+    $self->flush_extra($mail, $client, 1);   # discard — do not forward to $client
+
+Drains any data left in C<$mail>'s read buffer and any immediately available
+bytes on the socket, forwarding them to C<$client> unless C<$discard> is true.
+Returns all drained bytes as a string.
+
+=cut
+
     method flush_extra ($mail, $client, $discard = 0) {
         if ($self->slurp_data_size($mail)) {
             print $client $slurp_data{"$mail"}{data} if $discard != 1;
@@ -257,6 +264,17 @@ Returns C<undef> on timeout or closed connection.
         }
         return $full_buf;
     }
+
+=head2 can_read
+
+    my $ready = $self->can_read($handle);
+    my $ready = $self->can_read($handle, $timeout);
+
+Returns true if C<$handle> has data available to read within C<$timeout>
+seconds (defaults to the global C<timeout> config).  Handles both plain
+sockets and SSL handles (via C<< $handle->pending() >>).
+
+=cut
 
     method can_read ($handle, $timeout = undef) {
         $timeout = $self->global_config('timeout') if !defined $timeout;
@@ -286,12 +304,86 @@ Getters use the field name; setters use the C<set_> prefix (e.g. C<set_name>).
 C<setchildexit> is a combined getter/setter for the loader's child-exit callback
 (the name is kept to avoid a clash with the C<childexit> lifecycle hook).
 
+=head2 setchildexit
+
+    my $code = $self->setchildexit();
+    $self->setchildexit($coderef);
+
+Gets or sets the child-exit callback used by C<POPFile::Loader>.  The callback
+is invoked when a forked child process exits.
+
 =cut
 
     method setchildexit ($val = undef) {
         $childexit = $val if defined $val;
         return $childexit;
     }
+
+=head1 LIFECYCLE
+
+The following methods form the module lifecycle.  Each has a default no-op
+implementation here; subclasses override the ones they need.
+
+=head2 initialize
+
+Called once by C<POPFile::Loader> before C<start>.  Subclasses register
+default configuration parameters and subscribe to message-queue events here.
+Returns 1 on success.
+
+=head2 start
+
+Called once after all modules are initialised.  Subclasses open connections,
+start background workers, etc.  Returns 1 on success, 0 on failure.
+
+=head2 stop
+
+Called once when POPFile is shutting down.  Subclasses flush state, close
+handles, and release resources here.
+
+=head2 service
+
+Called repeatedly in the main loop.  Subclasses perform per-tick work (e.g.
+accepting connections, flushing queues).  Returns 1 to continue, 0 to
+request shutdown.
+
+=head2 prefork
+
+Called in the parent process just before C<fork()>.  Subclasses may close
+handles that must not be shared with the child.
+
+=head2 forked
+
+    $self->forked($writer);
+
+Called in the child process after C<fork()>.  C<$writer> is the write end of
+a pipe back to the parent (may be C<undef>).  Subclasses reset per-process
+state here (e.g. database handles).
+
+=head2 postfork
+
+    $self->postfork($pid, $reader);
+
+Called in the parent process after C<fork()>.  C<$pid> is the child PID;
+C<$reader> is the read end of a pipe from the child.
+
+=head2 childexit
+
+Called in the child process just before it exits.  Subclasses perform
+last-minute cleanup.
+
+=head2 reaper
+
+Called in the parent when a child process has exited (SIGCHLD).  Subclasses
+reap zombie processes and update internal state.
+
+=head2 deliver
+
+    $self->deliver($type, @message);
+
+Called by the message queue to deliver a message of C<$type>.  Subclasses
+handle the types they subscribed to in C<initialize>.
+
+=cut
 
     method initialize() { return 1 }
     method start() { return 1 }
