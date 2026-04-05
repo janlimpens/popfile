@@ -52,15 +52,18 @@
 
   async function load() {
     loading = true;
-    const params = new URLSearchParams({ page, per_page: pageSize, search });
-    const res = await fetch('/api/v1/history?' + params);
-    if (res.ok) {
-      const data = await res.json();
-      items = data.items;
-      total = data.total;
+    try {
+      const params = new URLSearchParams({ page, per_page: pageSize, search });
+      const res = await fetch('/api/v1/history?' + params);
+      if (res.ok) {
+        const data = await res.json();
+        items = data.items;
+        total = data.total;
+      }
+    } finally {
+      loading = false;
+      checkedSlots = new Set();
     }
-    loading = false;
-    checkedSlots = new Set();
   }
 
   async function pollRefresh() {
@@ -283,7 +286,7 @@
   .bulk-bar span { font-weight: 500; color: var(--text); }
   .btn-cancel { color: var(--text-muted); }
   table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-  table.loading { opacity: 0.6; pointer-events: none; }
+  table.loading { opacity: 0.6; }
   th, td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); text-align: left; }
   .cb-col { width: 2rem; padding-right: 0; }
   .trunc { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
