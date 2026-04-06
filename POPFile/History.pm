@@ -598,7 +598,7 @@ method commit_history() {
                     $hash,                  # hash
                     $msg_size,              # size
                     $slot                   # id
-);
+                    );
         } else {
             $self->log_msg(0, "Couldn't find bucket ID for bucket $bucket when committing $slot");
             $self->release_slot($slot);
