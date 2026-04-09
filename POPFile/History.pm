@@ -24,18 +24,18 @@ use Object::Pad;
 use locale;
 
 my @fields = (
-    'history.id AS slot',
-    'hdr_from AS from',
-    'hdr_to AS to',
-    'hdr_cc AS cc',
-    'hdr_subject AS subject',
-    'hdr_date AS date',
+    'history.id AS "slot"',
+    'hdr_from AS "from"',
+    'hdr_to AS "to"',
+    'hdr_cc AS "cc"',
+    'hdr_subject AS "subject"',
+    'hdr_date AS "date"',
     'hash',
     'inserted',
-    'buckets.name AS bucket',
+    'buckets.name AS "bucket"',
     'usedtobe',
-    'history.bucketid AS bucket_id',
-    'magnets.val AS magnet',
+    'history.bucketid AS "bucket_id"',
+    'magnets.val AS "magnet"',
     'size');
 my $fields_slot = join ', ', @fields;
 
@@ -960,9 +960,9 @@ method get_search_queries(%args) {
         $qb->compare('committed', \1),
         $qb->compare('history.bucketid' => \'buckets.id'));
     my $base_query = $qb
+        ->select()
         ->from(qw(history buckets))
-        ->joins($qb->join(magnets => (
-            on => $qb->compare('magnets.id', \'history.magnetid'))))
+        ->joins( $qb->join('magnets')->on($qb->compare('magnets.id', \'history.magnetid')) )
         ->where($where);
     if (my $search = $args{search}) {
         $search =~ s/\0//g;
@@ -976,23 +976,23 @@ method get_search_queries(%args) {
     if (my $bucket = $args{bucket}) {
         $where->add_expression($qb->compare('buckets.name', $bucket));
     }
-    my $count_q = $base_query->clone()->select('COUNT(*)');
-    my ($total) = $self->db()->selectcol_arrayref($count_q, undef, $count_q->params())->@*;
+    my $count_q = $base_query->clone(columns => ['COUNT(*)']);
+    my ($total) = $self->db()->selectcol_arrayref($count_q->as_sql(), undef, $count_q->params())->@*;
     my $pagination = Data::Page->new();
     $pagination->total_entries($total);
     $pagination->entries_per_page($args{per_page}//25);
     $pagination->current_page($args{page}//1);
     my @columns = split /\s?,\s?/, $fields_slot;
-    my $rows_q = $base_query->clone()->select(@columns);
+    my $rows_q = $base_query->clone(columns => \@columns);
     if (my $sort = $args{sort}) {
         ($sort, my $direction) = split / /, $sort;
         if ($sort =~ /^-?(inserted|from|to|cc|subject|bucket|date|size)$/i) {
-            $rows_q->order_by([[$1, $direction//'ASC']]);
+            $rows_q->order_by($qb->order_by($1, $direction//'ASC'));
         }
     }
     $rows_q->limit($pagination->entries_per_page());
     $rows_q->offset($pagination->skipped());
-    my $rows = $self->db()->selectall_arrayref($rows_q, { Slice => {} }, $rows_q->params());
+    my $rows = $self->db()->selectall_arrayref($rows_q->as_sql(), { Slice => {} }, $rows_q->params());
     return ($total+0, $rows)
 }
 
