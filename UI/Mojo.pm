@@ -43,7 +43,7 @@ BUILD {
 Registers configuration defaults: C<port> (8080), C<static_dir> (public),
 and C<open_browser> (0).  Set C<port> to 0 to let the OS pick a free port
 at startup.  Set C<open_browser> to 1 to open the UI in the default browser
-once the server is ready (config key: C<mojo_ui_open_browser>).
+once the server is ready (config key: C<open_browser>).
 
 =cut
 
