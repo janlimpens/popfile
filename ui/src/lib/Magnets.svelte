@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import BucketSelect from './BucketSelect.svelte';
+  import { t } from './locale.svelte.js';
 
   let { buckets } = $props();
 
@@ -27,7 +28,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bucket: newBucket, type: newType, value: newText.trim() }),
     });
-    status = res.ok ? 'Magnet created' : 'Error';
+    status = res.ok ? t('Magnet_Created') : 'Error';
     newText = '';
     load();
   }
@@ -38,7 +39,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bucket, type, value }),
     });
-    status = res.ok ? 'Magnet deleted' : 'Error';
+    status = res.ok ? t('Magnet_Deleted') : 'Error';
     load();
   }
 
@@ -47,12 +48,12 @@
 
 <div class="page">
 
-<h2>Magnets</h2>
+<h2>{t('NavMagnets')}</h2>
 
 {#if status}<p class="status">{status}</p>{/if}
 
 <section>
-  <h3>Add magnet</h3>
+  <h3>{t('Magnet_CreateNew')}</h3>
   <div class="row">
     <BucketSelect
       {buckets}
@@ -67,12 +68,12 @@
       {/each}
     </select>
     <input type="text" placeholder="match text" bind:value={newText} />
-    <button onclick={create}>Add</button>
+    <button onclick={create}>{t('Add')}</button>
   </div>
 </section>
 
 <section>
-  <h3>Existing magnets</h3>
+  <h3>{t('Magnet_CurrentMagnets')}</h3>
   {#each Object.entries(byBucket) as [bucket, types]}
     {@const bc = buckets.find(b => b.name === bucket)}
     <div class="bucket-block">

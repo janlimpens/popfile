@@ -1,27 +1,28 @@
 <script>
   import { connectivity, reconnectNow } from './connectivity.svelte.js';
+  import { t } from './locale.svelte.js';
 </script>
 
 {#if connectivity.offline}
   <div class="overlay">
     <div class="modal">
-      <h3>Connection lost</h3>
-      <p>The backend is not reachable. Trying to reconnect…</p>
+      <h3>{t('Reconnect_Title')}</h3>
+      <p>{t('Reconnect_Message')}</p>
 
       {#if connectivity.responseBody}
         <pre class="body">{connectivity.responseBody}</pre>
         <button class="btn-dismiss" onclick={() => { connectivity.offline = false; }}>
-          Dismiss
+          {t('Close')}
         </button>
       {/if}
 
       <div class="actions">
-        <button onclick={reconnectNow}>Reconnect now</button>
+        <button onclick={reconnectNow}>{t('Reconnect_Now')}</button>
         <span class="countdown">
           {#if connectivity.nextRetryIn > 0}
-            Retrying in {connectivity.nextRetryIn}s
+            {t('Reconnect_RetryIn')} {connectivity.nextRetryIn}s
           {:else}
-            Connecting…
+            {t('Reconnect_Connecting')}
           {/if}
         </span>
       </div>

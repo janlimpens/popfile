@@ -394,3 +394,64 @@ NavMagnets                              Magnets
 NavIMAP                                 IMAP
 NavStatus                               Status
 NavSettings                             Settings
+
+# --- New keys for Svelte UI components ---
+
+Reconnect_Title                         Connection lost
+Reconnect_Message                       The backend is not reachable. Trying to reconnect...
+Reconnect_Now                           Reconnect now
+Reconnect_Connecting                    Connecting...
+Reconnect_RetryIn                       Retrying in
+
+BucketSelect_NameRequired               Name required
+BucketSelect_InvalidName                Only a-z, 0-9, - and _
+BucketSelect_AlreadyExists              Already exists
+BucketSelect_CreateError                Error creating bucket
+BucketSelect_AddNew                     Add new...
+
+Magnet_Created                          Magnet created
+Magnet_Deleted                          Magnet deleted
+
+Status_Description                      Health checks for POPFile services.
+Status_Checking                         Checking...
+Status_LoadError                        Failed to load status
+Status_NoChecks                         No checks available.
+
+Imap_Description                        Monitor IMAP folders and automatically classify incoming messages.
+Imap_Connection                         Connection
+Imap_Connected                          Connected
+Imap_Testing                            Testing...
+Imap_TestConnection                     Test Connection
+Imap_ConnectionFailed                   Connection failed
+Imap_SaveAnyway                         Save anyway
+Imap_SaveConnection                     Save Connection
+Imap_Service                            Service
+Imap_EnableService                      Enable IMAP service
+Imap_TrainingMode                       Training mode
+Imap_TrainingHint                       Training mode scans existing archive folders and trains the classifier on their contents. The flag resets automatically when training completes.
+Imap_WatchedFolders                     Watched Folders
+Imap_WatchedHint                        POPFile monitors these IMAP folders for new messages to classify.
+Imap_NoFoldersWatched                   No folders watched yet.
+Imap_BucketFolderMappings               Bucket -> Folder Mappings
+Imap_MappingsHint                       Classified messages are moved to the specified IMAP folder. Leave unmapped buckets empty to skip moving.
+Imap_FetchFolders                       Fetch Folders
+Imap_Fetching                           Fetching...
+Imap_IMAFFolder                         IMAP Folder
+Imap_NoMappings                         No mappings defined.
+Imap_SaveFolders                        Save Folders
+Imap_Saving                             Saving...
+
+Corpus_Color                            Color
+Corpus_Actions                          Actions
+Corpus_Clear                            Clear
+Corpus_BucketList                       Buckets
+Corpus_Search                           Search
+
+History_AllBuckets                      All buckets
+History_Reclassifying                   Reclassifying...
+History_ReclassifyUnclassified          Reclassify unclassified
+History_Selected                        selected
+History_MoveTo                          — move to —
+History_Moving                          Moving...
+History_HighlightWords                  Highlight words by bucket
+History_Loading                         Loading...

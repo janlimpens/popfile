@@ -3,6 +3,7 @@
   import { fade } from 'svelte/transition';
   import { flip } from 'svelte/animate';
   import BucketSelect from './BucketSelect.svelte';
+  import { t } from './locale.svelte.js';
 
   let { buckets } = $props();
 
@@ -174,13 +175,13 @@
 
 <div class="page">
 
-<h2>History</h2>
+<h2>{t('NavHistory')}</h2>
 
 <div class="toolbar">
   <div class="search-wrap">
     <input
       type="search"
-      placeholder="Search…"
+      placeholder={t('History_SearchMessage')}
       bind:value={search}
       oninput={() => { page = 1; }}
     />
@@ -189,30 +190,30 @@
     {/if}
   </div>
   <select bind:value={bucket} onchange={() => { page = 1; }}>
-    <option value="">All buckets</option>
+    <option value="">{t('History_AllBuckets')}</option>
     {#each buckets as b}
       <option value={b.name}>{b.name}</option>
     {/each}
   </select>
-  <span>{total} messages</span>
+  <span>{total} {t('Total')}</span>
   <button onclick={reclassifyAll} disabled={reclassifying}>
-    {reclassifying ? 'Reclassifying…' : 'Reclassify unclassified'}
+    {reclassifying ? t('History_Reclassifying') : t('History_ReclassifyUnclassified')}
   </button>
 </div>
 
 {#if checkedSlots.size > 0}
   <div class="bulk-bar">
-    <span>{checkedSlots.size} selected</span>
-    <BucketSelect {buckets} bind:value={bulkBucket} placeholder="— move to —" />
+    <span>{checkedSlots.size} {t('History_Selected')}</span>
+    <BucketSelect {buckets} bind:value={bulkBucket} placeholder={t('History_MoveTo')} />
     <button onclick={bulkReclassify} disabled={!bulkBucket || bulkBusy}>
-      {bulkBusy ? 'Moving…' : 'Apply'}
+      {bulkBusy ? t('History_Moving') : t('Apply')}
     </button>
-    <button class="btn-cancel" onclick={() => checkedSlots = new Set()}>Cancel</button>
+    <button class="btn-cancel" onclick={() => checkedSlots = new Set()}>{t('Close')}</button>
   </div>
 {/if}
 
 {#if loading && items.length === 0}
-  <p>Loading…</p>
+  <p>{t('History_Loading')}</p>
 {/if}
 <table class:loading>
     <thead>
@@ -220,7 +221,7 @@
         <th class="cb-col">
           <input type="checkbox" checked={allChecked()} onclick={toggleAll} />
         </th>
-        <th></th><th>Date</th><th>From</th><th>Subject</th><th>Bucket</th><th>Reclassify</th>
+        <th></th><th>{t('Date')}</th><th>{t('From')}</th><th>{t('Subject')}</th><th>{t('Bucket')}</th><th>{t('Reclassify')}</th>
       </tr>
     </thead>
     {#each items as item (item.slot)}
@@ -256,12 +257,12 @@
           <tr class="detail-row">
             <td colspan="7">
               {#if detailLoading}
-                <p class="detail-msg">Loading…</p>
+                <p class="detail-msg">{t('History_Loading')}</p>
               {:else if selected.body !== undefined}
                 <div class="detail">
                   <label class="toggle">
                     <input type="checkbox" bind:checked={highlight} />
-                    Highlight words by bucket
+                    {t('History_HighlightWords')}
                   </label>
                   <div class="body">{@html renderBody(selected.body, selected.word_colors)}</div>
                 </div>
@@ -274,9 +275,9 @@
   </table>
 
 <div class="pagination">
-  <button disabled={page <= 1} onclick={() => page--}>← Prev</button>
-  <span>Page {page} / {Math.ceil(total / pageSize)}</span>
-  <button disabled={page * pageSize >= total} onclick={() => page++}>Next →</button>
+  <button disabled={page <= 1} onclick={() => page--}>← {t('Previous')}</button>
+  <span>{page} / {Math.ceil(total / pageSize)}</span>
+  <button disabled={page * pageSize >= total} onclick={() => page++}>{t('Next')} →</button>
 </div>
 
 </div>

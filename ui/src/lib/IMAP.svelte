@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { t } from './locale.svelte.js';
 
   let { buckets = [] } = $props();
 
@@ -105,7 +106,7 @@
     if (res.ok) {
       serverFolders = await res.json();
     } else {
-      fetchError = 'Could not connect to server';
+      fetchError = t('Imap_NoConnectionMessage');
     }
   }
 
@@ -135,21 +136,21 @@
 <div class="page">
   <div class="page-header">
     <div>
-      <h2>IMAP Service</h2>
-      <p>Monitor IMAP folders and automatically classify incoming messages.</p>
+      <h2>{t('NavIMAP')}</h2>
+      <p>{t('Imap_Description')}</p>
     </div>
   </div>
 
   <!-- ── Connection settings ──────────────────────────────────────────── -->
   <section class="card">
-    <h3>Connection</h3>
+    <h3>{t('Imap_Connection')}</h3>
     <div class="fields">
       {#each [
-        ['imap_hostname',        'Hostname',        'text'],
-        ['imap_port',            'Port',            'number'],
-        ['imap_login',           'Username',        'text'],
-        ['imap_password',        'Password',        'password'],
-        ['imap_update_interval', 'Poll Interval (s)','number'],
+        ['imap_hostname',        t('Imap_Server'),   'text'],
+        ['imap_port',            t('Imap_Port'),     'number'],
+        ['imap_login',           t('Imap_Login'),    'text'],
+        ['imap_password',        t('Imap_Password'), 'password'],
+        ['imap_update_interval', t('Imap_Interval'), 'number'],
       ] as [key, label, type]}
         <div class="field-row">
           <label for={key}>{label}</label>
@@ -163,7 +164,7 @@
       {/each}
 
       <div class="field-row">
-        <label for="imap_use_ssl">Use SSL / TLS</label>
+        <label for="imap_use_ssl">{t('Imap_Use_SSL')}</label>
         <input id="imap_use_ssl" class="switch" type="checkbox"
           checked={cfg.imap_use_ssl == 1}
           onchange={(e) => { cfg.imap_use_ssl = e.target.checked ? 1 : 0; markCfg(); }}
@@ -171,7 +172,7 @@
       </div>
 
       <div class="field-row">
-        <label for="imap_expunge">Expunge after move</label>
+        <label for="imap_expunge">{t('Imap_Expunge')}</label>
         <input id="imap_expunge" class="switch" type="checkbox"
           checked={cfg.imap_expunge == 1}
           onchange={(e) => { cfg.imap_expunge = e.target.checked ? 1 : 0; markCfg(); }}
@@ -181,33 +182,33 @@
 
     <footer class="card-footer">
       {#if testStatus?.ok}
-        <span class="msg-ok">✓ Connected</span>
+        <span class="msg-ok">✓ {t('Imap_Connected')}</span>
       {:else if testStatus && !testStatus.ok}
-        <span class="msg-err">✗ {testStatus.error ?? 'Connection failed'}</span>
+        <span class="msg-err">✗ {testStatus.error ?? t('Imap_ConnectionFailed')}</span>
         <label class="save-anyway">
           <input type="checkbox" bind:checked={saveAnyway} />
-          Save anyway
+          {t('Imap_SaveAnyway')}
         </label>
       {/if}
-      {#if cfgStatus === 'ok'}  <span class="msg-ok">✓ Saved</span>
+      {#if cfgStatus === 'ok'}  <span class="msg-ok">✓ {t('Update')}</span>
       {:else if cfgStatus === 'error'}<span class="msg-err">✗ Error</span>
       {/if}
       <button class="btn btn-secondary" onclick={testConnection} disabled={testing}>
-        {testing ? 'Testing…' : 'Test Connection'}
+        {testing ? t('Imap_Testing') : t('Imap_TestConnection')}
       </button>
       <button class="btn" onclick={saveCfg}
         disabled={!cfgDirty || saving || (testStatus != null && !testStatus.ok && !saveAnyway)}>
-        {saving ? 'Saving…' : 'Save Connection'}
+        {saving ? t('Imap_Saving') : t('Imap_SaveConnection')}
       </button>
     </footer>
   </section>
 
   <!-- ── Service settings ─────────────────────────────────────────────── -->
   <section class="card">
-    <h3>Service</h3>
+    <h3>{t('Imap_Service')}</h3>
     <div class="fields">
       <div class="field-row">
-        <label for="imap_enabled">Enable IMAP service</label>
+        <label for="imap_enabled">{t('Imap_EnableService')}</label>
         <input id="imap_enabled" class="switch" type="checkbox"
           checked={cfg.imap_enabled == 1}
           disabled={!connectionReady}
@@ -215,33 +216,30 @@
         />
       </div>
       <div class="field-row">
-        <label for="imap_training_mode">Training mode</label>
+        <label for="imap_training_mode">{t('Imap_TrainingMode')}</label>
         <input id="imap_training_mode" class="switch" type="checkbox"
           checked={cfg.imap_training_mode == 1}
           onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; saveCfg(); }}
         />
       </div>
     </div>
-    <p class="hint" style="margin-top:0.75rem">
-      Training mode scans existing archive folders and trains the classifier on their contents.
-      The flag resets automatically when training completes.
-    </p>
+    <p class="hint" style="margin-top:0.75rem">{t('Imap_TrainingHint')}</p>
   </section>
 
   <!-- ── Watched folders ──────────────────────────────────────────────── -->
   <section class="card">
-    <h3>Watched Folders</h3>
-    <p class="hint">POPFile monitors these IMAP folders for new messages to classify.</p>
+    <h3>{t('Imap_WatchedFolders')}</h3>
+    <p class="hint">{t('Imap_WatchedHint')}</p>
 
     <ul class="tag-list">
       {#each watched as f (f)}
         <li>
           <span class="tag">{f}</span>
-          <button class="btn-remove" onclick={() => removeWatched(f)} title="Remove">×</button>
+          <button class="btn-remove" onclick={() => removeWatched(f)} title={t('Remove')}>×</button>
         </li>
       {/each}
       {#if watched.length === 0}
-        <li class="empty">No folders watched yet.</li>
+        <li class="empty">{t('Imap_NoFoldersWatched')}</li>
       {/if}
     </ul>
 
@@ -252,29 +250,26 @@
         bind:value={newWatch}
         onkeydown={(e) => e.key === 'Enter' && addWatched()}
       />
-      <button class="btn" onclick={addWatched} disabled={!newWatch.trim()}>Add</button>
+      <button class="btn" onclick={addWatched} disabled={!newWatch.trim()}>{t('Add')}</button>
     </div>
   </section>
 
   <!-- ── Bucket → folder mappings ─────────────────────────────────────── -->
   <section class="card">
     <div class="section-header">
-      <h3>Bucket → Folder Mappings</h3>
+      <h3>{t('Imap_BucketFolderMappings')}</h3>
       <button class="btn btn-sm" onclick={fetchServerFolders}
         disabled={!connectionReady || fetchingFolders}>
-        {fetchingFolders ? 'Fetching…' : 'Fetch Folders'}
+        {fetchingFolders ? t('Imap_Fetching') : t('Imap_FetchFolders')}
       </button>
     </div>
-    <p class="hint">
-      Classified messages are moved to the specified IMAP folder.
-      Leave unmapped buckets empty to skip moving.
-    </p>
+    <p class="hint">{t('Imap_MappingsHint')}</p>
     {#if fetchError}<p class="msg-err">{fetchError}</p>{/if}
 
     {#if mappings.length > 0}
       <table>
         <thead>
-          <tr><th>Bucket</th><th>IMAP Folder</th><th></th></tr>
+          <tr><th>Bucket</th><th>{t('Imap_IMAFFolder')}</th><th></th></tr>
         </thead>
         <tbody>
           {#each mappings as m (m.bucket)}
@@ -290,14 +285,14 @@
                 {/if}
               </td>
               <td>
-                <button class="btn-remove" onclick={() => removeMapping(m.bucket)} title="Remove">×</button>
+                <button class="btn-remove" onclick={() => removeMapping(m.bucket)} title={t('Remove')}>×</button>
               </td>
             </tr>
           {/each}
         </tbody>
       </table>
     {:else}
-      <p class="empty">No mappings defined.</p>
+      <p class="empty">{t('Imap_NoMappings')}</p>
     {/if}
 
     <div class="add-row">
@@ -324,16 +319,16 @@
         />
       {/if}
       <button class="btn" onclick={addMapping} disabled={!newMapBucket || !newMapFolder.trim()}>
-        Add
+        {t('Add')}
       </button>
     </div>
 
     <footer class="card-footer">
-      {#if foldersStatus === 'ok'}  <span class="msg-ok">✓ Saved</span>
+      {#if foldersStatus === 'ok'}  <span class="msg-ok">✓ {t('Update')}</span>
       {:else if foldersStatus === 'error'}<span class="msg-err">✗ Error</span>
       {/if}
       <button class="btn" onclick={saveFolders} disabled={!foldersDirty || saving}>
-        {saving ? 'Saving…' : 'Save Folders'}
+        {saving ? t('Imap_Saving') : t('Imap_SaveFolders')}
       </button>
     </footer>
   </section>

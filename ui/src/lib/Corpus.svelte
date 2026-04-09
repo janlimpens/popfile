@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { t } from './locale.svelte.js';
 
   let { buckets = $bindable([]) } = $props();
 
@@ -81,16 +82,16 @@
 
 <div class="page">
 
-<h2>Corpus</h2>
+<h2>{t('NavCorpus')}</h2>
 
 {#if status}
   <p class="status" class:error={status.startsWith('invalid') || status === 'bucket already exists'}>{status}</p>
 {/if}
 
 <section>
-  <h3>Buckets</h3>
+  <h3>{t('Corpus_BucketList')}</h3>
   <table>
-    <thead><tr><th>Name</th><th>Words</th><th>Color</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Name</th><th>Words</th><th>{t('Corpus_Color')}</th><th>{t('Corpus_Actions')}</th></tr></thead>
     <tbody>
       {#each buckets as b (b.name)}
         <tr>
@@ -105,8 +106,8 @@
           </td>
           <td>
             {#if !b.pseudo}
-              <button class="btn-danger" onclick={() => deleteBucket(b.name)}>Delete</button>
-              <button onclick={() => clearBucket(b.name)}>Clear</button>
+              <button class="btn-danger" onclick={() => deleteBucket(b.name)}>{t('Delete')}</button>
+              <button onclick={() => clearBucket(b.name)}>{t('Corpus_Clear')}</button>
             {/if}
           </td>
         </tr>
@@ -116,16 +117,16 @@
 </section>
 
 <section>
-  <h3>Create bucket</h3>
+  <h3>{t('Bucket_CreateBucket')}</h3>
   <div class="row">
     <input type="color" bind:value={newColor} />
     <input type="text" placeholder="my-bucket-1" pattern="[a-z0-9_-]+" title="lowercase letters, digits, - and _ only" bind:value={newName} />
-    <button onclick={createBucket}>Create</button>
+    <button onclick={createBucket}>{t('Create')}</button>
   </div>
 </section>
 
 <section>
-  <h3>Rename bucket</h3>
+  <h3>{t('Bucket_RenameBucket')}</h3>
   <div class="row">
     <select bind:value={renameFrom}>
       <option value="">— select —</option>
@@ -134,12 +135,12 @@
       {/each}
     </select>
     <input type="text" placeholder="new name" bind:value={renameTo} />
-    <button onclick={renameBucket}>Rename</button>
+    <button onclick={renameBucket}>{t('Rename')}</button>
   </div>
 </section>
 
 <section>
-  <h3>Word lookup</h3>
+  <h3>{t('Bucket_Lookup')}</h3>
   <div class="row">
     <select bind:value={wordBucket}>
       <option value="">— bucket —</option>
@@ -148,7 +149,7 @@
       {/each}
     </select>
     <input type="text" placeholder="prefix…" bind:value={wordSearch} />
-    <button onclick={searchWords}>Search</button>
+    <button onclick={searchWords}>{t('Corpus_Search')}</button>
   </div>
   {#if words.length}
     <ul class="word-list">

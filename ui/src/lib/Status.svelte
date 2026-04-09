@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { t } from './locale.svelte.js';
 
   let checks = $state([]);
   let loading = $state(false);
@@ -14,7 +15,7 @@
       const data = await res.json();
       checks = data.checks ?? [];
     } else {
-      error = 'Failed to load status';
+      error = t('Status_LoadError');
     }
   }
 
@@ -24,11 +25,11 @@
 <div class="page">
   <div class="page-header">
     <div>
-      <h2>Status</h2>
-      <p>Health checks for POPFile services.</p>
+      <h2>{t('NavStatus')}</h2>
+      <p>{t('Status_Description')}</p>
     </div>
     <button class="btn" onclick={load} disabled={loading}>
-      {loading ? 'Checking…' : 'Refresh'}
+      {loading ? t('Status_Checking') : t('Refresh')}
     </button>
   </div>
 
@@ -37,11 +38,11 @@
   {/if}
 
   <section class="card">
-    <h3>IMAP</h3>
+    <h3>{t('NavIMAP')}</h3>
     {#if loading && checks.length === 0}
-      <p class="hint">Checking…</p>
+      <p class="hint">{t('Status_Checking')}</p>
     {:else if checks.length === 0}
-      <p class="hint">No checks available.</p>
+      <p class="hint">{t('Status_NoChecks')}</p>
     {:else}
       <ul class="check-list">
         {#each checks as check (check.id)}

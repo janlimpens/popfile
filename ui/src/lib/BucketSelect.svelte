@@ -1,4 +1,6 @@
 <script>
+  import { t } from './locale.svelte.js';
+
   const NAME_RE = /^[a-z0-9_-]+$/;
 
   let {
@@ -35,8 +37,8 @@
 
   async function confirm() {
     const name = newName.trim();
-    if (!name) { err = 'Name required'; return; }
-    if (!NAME_RE.test(name)) { err = 'Only a–z, 0–9, - and _'; return; }
+    if (!name) { err = t('BucketSelect_NameRequired'); return; }
+    if (!NAME_RE.test(name)) { err = t('BucketSelect_InvalidName'); return; }
     busy = true;
     const res = await fetch('/api/v1/buckets', {
       method: 'POST',
@@ -44,8 +46,8 @@
       body: JSON.stringify({ name }),
     });
     busy = false;
-    if (res.status === 409) { err = 'Already exists'; return; }
-    if (!res.ok) { err = 'Error creating bucket'; return; }
+    if (res.status === 409) { err = t('BucketSelect_AlreadyExists'); return; }
+    if (!res.ok) { err = t('BucketSelect_CreateError'); return; }
     const created = { name };
     extra = [...extra, created];
     value = name;
@@ -85,7 +87,7 @@
     {#each visible as b}
       <option value={b.name}>{b.name}</option>
     {/each}
-    <option value="__add_new__">Add new…</option>
+    <option value="__add_new__">{t('BucketSelect_AddNew')}</option>
   </select>
 {/if}
 
