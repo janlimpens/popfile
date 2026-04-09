@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { t } from './locale.svelte.js';
 
   let config = $state({});
   let status = $state('');
@@ -22,7 +23,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
     });
-    status = res.ok ? 'Saved' : 'Error saving';
+    status = res.ok ? t('Settings_Saved') : t('Settings_ErrorSaving');
   }
 
   onMount(load);
@@ -48,7 +49,7 @@
       {/each}
     </tbody>
   </table>
-  <button type="submit">Save</button>
+  <button type="submit">{t('Update')}</button>
 </form>
 
 <style>

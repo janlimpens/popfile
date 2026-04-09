@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { initLocale } from './locale.svelte.js';
+  import { initLocale, t } from './locale.svelte.js';
 
   let config = $state({});
   let active = $state('ui');
@@ -221,7 +221,7 @@
       <input
         class="panel-search"
         type="search"
-        placeholder="Search settings…"
+        placeholder={t('Settings_Search')}
         bind:value={settingsSearch}
         oninput={() => { if (settingsSearch) active = ''; }}
       />
@@ -269,7 +269,7 @@
                       bind:value={config[f.key]}
                       onchange={mark}
                     >
-                      <option value="">Auto-detect</option>
+                      <option value="">{t('Settings_AutoDetect')}</option>
                       {#each availableLocales as l}
                         <option value={l.name}>{l.name}</option>
                       {/each}
@@ -330,7 +330,7 @@
                         bind:value={config[f.key]}
                         onchange={mark}
                       >
-                        <option value="">Auto-detect</option>
+                        <option value="">{t('Settings_AutoDetect')}</option>
                         {#each availableLocales as l}
                           <option value={l.name}>{l.name}</option>
                         {/each}
@@ -354,12 +354,12 @@
 
     <footer class="section-footer">
       {#if status === 'ok'}
-        <span class="msg-ok">✓ Saved</span>
+        <span class="msg-ok">✓ {t('Settings_Saved')}</span>
       {:else if status === 'error'}
-        <span class="msg-err">✗ Error saving</span>
+        <span class="msg-err">✗ {t('Settings_ErrorSaving')}</span>
       {/if}
       <button class="btn-save" onclick={save} disabled={!dirty || saving}>
-        {saving ? 'Saving…' : 'Save Changes'}
+        {saving ? t('Settings_Saving') : t('Settings_SaveChanges')}
       </button>
     </footer>
   </div>
