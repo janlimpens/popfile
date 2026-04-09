@@ -2,7 +2,7 @@
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
 
-role POPFile::Role::DBAccess {
+role POPFile::Role::DBAccess;
 
 =head2 _db
 
@@ -12,9 +12,11 @@ before delegating to their own lazy-loading C<db()> accessor.
 
 =cut
 
-    field $db = undef;
+field $db = undef;
 
-    method _db() { $db }
+method _db() {
+    return $db
+}
 
 =head2 _set_db
 
@@ -22,7 +24,9 @@ Stores a database handle (or C<undef>) in the role's backing field.
 
 =cut
 
-    method _set_db($handle) { $db = $handle }
+method _set_db($handle) {
+    $db = $handle
+}
 
 =head2 _clear_db
 
@@ -31,5 +35,8 @@ C<forked()> and C<stop()> implementations.
 
 =cut
 
-    method _clear_db() { undef $db }
+method _clear_db() {
+    undef $db
 }
+
+1;

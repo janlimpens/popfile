@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What is POPFile
 
-POPFile is a Bayesian email classifier written in Perl. It acts as a proxy between mail clients and mail servers (POP3, SMTP, NNTP), intercepting messages and inserting an `X-Text-Classification:` header with the predicted category ("bucket"). Users correct misclassifications through the web UI, which trains the classifier over time.
+POPFile is a Bayesian email classifier written in Perl. It acts as a IMAP client moving messages to folders and/or as proxy between mail clients and mail servers (POP3, and some), intercepting messages and inserting an `X-Text-Classification:` header with the predicted category ("bucket"). Users correct misclassifications through the web UI, which trains the classifier over time.
 
 ## Environment and Dependencies
 
@@ -12,7 +12,7 @@ POPFile is a Bayesian email classifier written in Perl. It acts as a proxy betwe
 
 **Dependency management:** Carton. All dependencies are declared in `cpanfile` and installed locally into `local/`. Every Perl invocation must go through `carton exec`.
 
-**`lib/` directory:** Do not add XS modules, Windows DLLs, or autosplit artifacts — these cause version mismatches across platforms. Everything except git submodules comes from carton.
+**`lib/` directory:** Everything except git submodules comes from carton.
 
 **CI:** GitHub Actions runs `carton install` then `carton exec prove -l t/` on Perl 5.40.
 
@@ -72,15 +72,11 @@ All POPFile components inherit from `POPFile::Module` and follow a strict lifecy
 | `POPFile::` | Core infrastructure: `Loader`, `Module` (base), `Configuration`, `History`, `MQ` (message queue), `Mutex`, `Logger`, `API` |
 | `Classifier::` | `Bayes` (Naive Bayes engine), `MailParse` (MIME/email parsing), `WordMangle` (word normalization) |
 | `Proxy::` | `Proxy` (base), `POP3`, `SMTP`, `NNTP` — sit between mail client and server |
-| `UI::` | `HTTP` (web server), `HTML` (page rendering), `XMLRPC` (XML-RPC interface) |
-| `Platform::` | `MSWin32` — Windows-specific adaptations |
-
-### `POPFile::API`
-
-Thin wrapper around `Classifier::Bayes` that exposes the classifier through XML-RPC. Uses a session-key pattern: callers obtain a session with `get_session_key('admin', '')` and release it with `release_session_key($session)` when done.
+| `UI::` | `Mocolicious Web API` |
+| `Services`| `mainly IMAP Implementation` |
 
 ### Update this!
-For architecture changes, update CLAUSE.md to reflect changes, so that future sessions don't start with the wrong impression
+Update CLAUSE.md to reflect architectonical changes
 
 ### Database
 
@@ -141,7 +137,7 @@ git add vendor/perl-querybuilder
 git commit -m "chore: update perl-querybuilder submodule to <description>"
 ```
 
-You are an expert programmer using these guidelines (you can break these rules if editing existing source code, and adapt to the present style, if it isn't too crazy):
+You are an expert programmer using these guidelines:
 
 When you reply be friendly, precise and to the point. Don't gratulate youself to your successes. Better test your assumptions and communicate the results.
 
@@ -166,9 +162,9 @@ When you reply be friendly, precise and to the point. Don't gratulate youself to
 - first core dependencies, then alphabetically, unless for a good reason
 
 ### Control Flow
-- Avoid declaring without assigning; `my $bad;`
+- Declare with assign; `my $good = $value;`
 - Prefer early returns over nested if statements
-- Avoid deep nesting
+- Extract smaller methods with meaningful names, if a method goes more than 1 thing. A method has max 50 lines.
 
 ### Postfix Conditionals, for, while
 - Prefer this notation
@@ -180,9 +176,8 @@ $count += $_->@*
 die 'error message'
     unless $required;
 ```
-- Postfix if/unless must have line break and indentation
-- This makes it clearer what is being returned
-- prefer positive conditions (no `if !`, but `unless`)
+- Postfix if/unless/for must have line break and indentation
+- prefer positive booleans `unless ( $stuff eq '' )`
 ```
   do() if $so
   # or
@@ -190,7 +185,7 @@ die 'error message'
 ```
 
 ### if elsif else
-- prefer trinary if feasible and possible to keep it 3 or even 1 line(s)
+- prefer trinary if feasible and possible to keep it 3 or even 1 line(s) if it fits within 74 chars
 ```perl
 my $x = $cond
     ? $this
@@ -204,12 +199,11 @@ return $value    # no semicolon
 ```
 
 ### Loops and Iteration
-- Prefer `for` to `foreach`
-- Prefer `map`, `grep`, `biltin::any` with one-line blocks over `for` loops
+- Use `for` instead of `foreach`
+- Prefer `map`, `grep`, `builtin::any` with one-line blocks over `for` loops
 - If multi-line block required, prefer a support sub or coderef instead of inlining too much
 
 ### Module Structure (Perl)
-- No `1;` at end of file unless required by perl version
 - Separate statement groups with one empty line:
   - `use` statements
   - `class`/`package` declaration
@@ -221,13 +215,13 @@ return $value    # no semicolon
 - NEVER align vertically.
 - Avoid multiple commands on a line. as a general rule, use on ; per line only.
 - fix `@{$bla}` (and similar) to `$bla->@*` (and so on)
-- prefer working with @lists and %hashes to $references, use them as booleans
+- prefer working with @lists and %hashes to $references, use them directly as booleans
 - make use of fat comma, where it makes sense 
   ```perl
   $self->apply(username => $email);
   ```
 - user reader/writer abstractions
-- use roles rather than inheritance, where this is possible
+- use roles rather than inheritance, where possible, but keep it simple, not roles pulling in stuff, pulling other stuff. roles should be self contained.
 - keep the code clean and readable
 
 ### Example for good code
@@ -242,11 +236,11 @@ use Other::Module;
 ADJUST {
     # use for initialization ....
 }
-
+# not padded:
 field $foo :param=123 :reader;
-field $bar :param=true :reader :writer;
+field $barbaz :param=true :reader :writer;
 
-method first_method($param, %args) { # I like greedy %args
+method first_method($param, %args) { # greedy %args
     return $self->second_method()
         if $args{condition}; # break and ident
     my $result = $self->process($arg);
@@ -255,7 +249,10 @@ method first_method($param, %args) { # I like greedy %args
 
 method second_method() {
     my $multi = 2;
-    my $transform = sub($x) { $x * $multi };
+    my $transform = sub($x) { 
+        my $first step = 1 / $x * $multi;
+        my $second_step = $first_step > 0 ? $first_step * -1 : 0;
+        return $second_step };
     my @items = map { $transform->($_) } @source;
     return $self->first_method(\@items) # always return, even nothing, avoid returning undef
 }
@@ -275,23 +272,15 @@ my $x = do {
         3
     } };
 ```
-- always return from a function, usually don't retun explicit `undef`
+- always return from a function, usually don't return explicit `undef`
 - use `try {} catch($e) {} finally {}` instead of eval
-- DO NOT ALIGN VERTICALLY and fix it whereever you find it!
-- see sometng repeats too often, refactor it into a method
-- don't be overly chatty or explain too much, don't jump ahead, but go one step at a time, unless told otherwise. 
-- don't execute db queries unless allowed. in test setting, you may.
+- DO NOT ALIGN/pad VERTICALLY and fix it whereever you find it! One space is enough!
+- if a procedure repeats too often, refactor it into a method/role
+- don't execute destructive db queries except in safe test settings.
 - keep your edits and commands within the code directory
-- if you want to use the gh executable for github, use `/usr/bin/gh`
-- run tests, add tests
-- fix documentation
+- run tests, add tests, create tests before implementations
+- fix documentation, PODs
 - convert good information from comments to PODs
-
-** Konkrete Muster die VERBOTEN sind:
-- Extra Spaces vor `=>` damit alle Werte in einer Hash-Liste auf gleicher Spalte stehen
-- einfache Hash-Keys NIEMALS quoten (explizit verboten) — `hostname => $val` NICHT `'hostname' => $val`
-- Extra Spaces vor `=` damit alle Zuweisungen in einer Variablengruppe auf gleicher Spalte stehen
-- Extra Spaces vor `//` in Default-Zuweisungen
 
 ## IMPORTANT:
 Reference AGENT.md for your role and information that pertain to you.

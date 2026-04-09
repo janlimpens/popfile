@@ -3,7 +3,7 @@
 use Object::Pad;
 use Log::Any ();
 
-role POPFile::Role::Logging {
+role POPFile::Role::Logging;
 
 =head1 NAME
 
@@ -38,16 +38,17 @@ the message text to aid tracing.
 
 =cut
 
-    method log_msg ($level, $message) {
-        my $log = Log::Any->get_logger(category => ref($self));
-        my (undef, undef, $line) = caller;
-        my $msg = ref($self) . ": $line: $message";
-        if ($level == 0) {
-            $log->error($msg)
-        } elsif ($level == 1) {
-            $log->info($msg)
-        } else {
-            $log->debug($msg)
-        }
+method log_msg ($level, $message) {
+    my $log = Log::Any->get_logger(category => ref($self));
+    my (undef, undef, $line) = caller;
+    my $msg = ref($self) . ": $line: $message";
+    if ($level == 0) {
+        $log->error($msg)
+    } elsif ($level == 1) {
+        $log->info($msg)
+    } else {
+        $log->debug($msg)
     }
 }
+
+1;

@@ -21,6 +21,8 @@ POPFile-based utilities that need to load a subset of modules.
 =cut
 
 use Object::Pad;
+use lib '.';
+use POPFile::Features;
 use feature 'try';
 no warnings 'experimental::try';
 use locale;
@@ -58,13 +60,13 @@ method CORE_loader_init() {
         $popfile_root = $ENV{POPFILE_ROOT};
     }
 
-    $aborting  = sub { $self->CORE_aborting(@_) };
+    $aborting = sub { $self->CORE_aborting(@_) };
     $pipeready = sub { $self->pipeready(@_) };
-    $forker    = sub { $self->CORE_forker(@_) };
-    $reaper    = sub { $self->CORE_reaper(@_) };
+    $forker = sub { $self->CORE_forker(@_) };
+    $reaper = sub { $self->CORE_reaper(@_) };
     $childexit = sub { $self->CORE_childexit(@_) };
-    $warning   = sub { $self->CORE_warning(@_) };
-    $die_cb    = sub { $self->CORE_die(@_) };
+    $warning = sub { $self->CORE_warning(@_) };
+    $die_cb = sub { $self->CORE_die(@_) };
 
     my $version_file = $self->root_path('VERSION');
 
@@ -301,11 +303,18 @@ method load_module ($module) {
     require $module;
     (my $class = $module) =~ s/\//::/g;
     $class =~ s/\.pm$//;
+    return
+        unless $class->can('new');
     my $mod = do {
         try { $class->new() }
-        catch ($e) { return }
+        catch ($e) {
+            say STDERR $e;
+            return
+        }
     };
-    return $mod->DOES('POPFile::Loadable') ? $mod : undef
+    return $mod
+        if $mod && $mod isa POPFile::Module;
+    return
 }
 
 =head2 CORE_signals
@@ -401,6 +410,7 @@ method CORE_link_components() {
 
     $components{core}{history}->set_classifier(
         $components{classifier}{bayes});
+
     $components{classifier}{bayes}->set_history(
         $components{core}{history});
 

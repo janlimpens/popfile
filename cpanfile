@@ -6,6 +6,7 @@ requires 'perl', '5.040';
 # Core runtime dependencies
 requires 'DBI', '1.643';
 requires 'DBD::SQLite', '1.00';
+requires 'Data::Page', '0';
 requires 'Date::Parse', '0';
 requires 'Digest::MD5', '0';
 requires 'HTML::Tagset', '0';

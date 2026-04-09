@@ -3,23 +3,6 @@
 # Copyright (C) 2026 Jan Limpens
 package Services::Classifier;
 
-#----------------------------------------------------------------------------
-#
-# This module provides a session-less facade over Classifier::Bayes.
-# Proxy and UI modules use this instead of calling Bayes directly.
-# The service manages its own admin session key and exposes every
-# Bayes operation without requiring callers to track the session.
-#
-# Copyright (c) 2001-2011 John Graham-Cumming
-#
-#   This file is part of POPFile
-#
-#   POPFile is free software; you can redistribute it and/or modify it
-#   under the terms of version 2 of the GNU General Public License as
-#   published by the Free Software Foundation.
-#
-#----------------------------------------------------------------------------
-
 use Object::Pad;
 use locale;
 

@@ -3,30 +3,6 @@
 # Copyright (C) 2026 Jan Limpens
 package POPFile::History;
 
-#----------------------------------------------------------------------------
-#
-# This module handles POPFile's history.  It manages entries in the POPFile
-# database and on disk that store messages previously classified by POPFile.
-#
-# Copyright (c) 2001-2011 John Graham-Cumming
-#
-#   This file is part of POPFile
-#
-#   POPFile is free software; you can redistribute it and/or modify it
-#   under the terms of version 2 of the GNU General Public License as
-#   published by the Free Software Foundation.
-#
-#   POPFile is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with POPFile; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-#
-#----------------------------------------------------------------------------
-
 =head1 NAME
 
 POPFile::History - manage the POPFile message history
@@ -46,17 +22,38 @@ C<history_days> configuration parameter.
 
 use Object::Pad;
 use locale;
-use POPFile::Role::DBAccess;
-use POPFile::Role::SQL;
-use Query::Builder;
 
-use Date::Parse;
-use Digest::MD5 qw(md5_hex);
-use File::Path qw(make_path);
+my @fields = (
+    'history.id AS slot',
+    'hdr_from AS from',
+    'hdr_to AS to',
+    'hdr_cc AS cc',
+    'hdr_subject AS subject',
+    'hdr_date AS date',
+    'hash',
+    'inserted',
+    'buckets.name AS bucket',
+    'usedtobe',
+    'history.bucketid AS bucket_id',
+    'magnets.val AS magnet',
+    'size');
+my $fields_slot = join ', ', @fields;
 
-my $fields_slot ='history.id, hdr_from, hdr_to, hdr_cc, hdr_subject, hdr_date, hash, inserted,
- buckets.name, usedtobe, history.bucketid, magnets.val, size';
-class POPFile::History :isa(POPFile::Module) :does(POPFile::Role::DBAccess) :does(POPFile::Role::SQL);    # List of committed history items waiting to be committed
+use lib '.';
+class POPFile::History
+    :isa(POPFile::Module);
+    apply POPFile::Role::DBAccess;
+    apply POPFile::Role::SQL;
+
+    use lib 'lib';
+
+    use Query::Builder;
+
+    use Date::Parse;
+    use Digest::MD5 qw(md5_hex);
+    use File::Path qw(make_path);
+
+    # List of committed history items waiting to be committed
     # into the database, it consists of lists containing three
     # elements: the slot id, the bucket classified to and the
     # magnet if used
@@ -956,6 +953,49 @@ method set_query ($id, $filter, $search, $sort, $not) {
     $queries{$id}{cache} = ();
 }
 
+method get_search_queries(%args) {
+    my $qb = Query::Builder->new(dialect => $db_service->dialect());
+    my $where = $qb->combine(AND =>
+        $qb->compare('history.userid', \1),
+        $qb->compare('committed', \1),
+        $qb->compare('history.bucketid' => \'buckets.id'));
+    my $base_query = $qb
+        ->from(qw(history buckets))
+        ->joins($qb->join(magnets => (
+            on => $qb->compare('magnets.id', \'history.magnetid'))))
+        ->where($where);
+    if (my $search = $args{search}) {
+        $search =~ s/\0//g;
+        $search = trim($search);
+        my $pat = "%$search%";
+        my $like_expr = $qb->combine(OR =>
+            $qb->like('hdr_from', $pat),
+            $qb->like('hdr_subject', $pat));
+        $where->add_expression($like_expr);
+    }
+    if (my $bucket = $args{bucket}) {
+        $where->add_expression($qb->compare('buckets.name', $bucket));
+    }
+    my $count_q = $base_query->clone()->select('COUNT(*)');
+    my ($total) = $self->db()->selectcol_arrayref($count_q, undef, $count_q->params())->@*;
+    my $pagination = Data::Page->new();
+    $pagination->total_entries($total);
+    $pagination->entries_per_page($args{per_page}//25);
+    $pagination->current_page($args{page}//1);
+    my @columns = split /\s?,\s?/, $fields_slot;
+    my $rows_q = $base_query->clone()->select(@columns);
+    if (my $sort = $args{sort}) {
+        ($sort, my $direction) = split / /, $sort;
+        if ($sort =~ /^-?(inserted|from|to|cc|subject|bucket|date|size)$/i) {
+            $rows_q->order_by([[$1, $direction//'ASC']]);
+        }
+    }
+    $rows_q->limit($pagination->entries_per_page());
+    $rows_q->offset($pagination->skipped());
+    my $rows = $self->db()->selectall_arrayref($rows_q, { Slice => {} }, $rows_q->params());
+    return ($total+0, $rows)
+}
+
 =head2 delete_query($id)
 
 Deletes every history entry matched by the current query C<$id> from both the
@@ -1242,8 +1282,4 @@ method force_requery() {
     }
 }
 
-# SETTER
-
-
 1;
-#----------------------------------------------------------------------------

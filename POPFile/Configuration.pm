@@ -24,7 +24,8 @@ use locale;
 
 use Getopt::Long;
 
-class POPFile::Configuration :isa(POPFile::Module);
+class POPFile::Configuration
+    :isa(POPFile::Module);
 
 field %configuration_parameters;
 field $pid_file = '';

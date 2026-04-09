@@ -2,8 +2,9 @@
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
 
-role POPFile::Role::SQL {
+role POPFile::Role::SQL;
 
+use lib 'vendor/perl-querybuilder/lib';
 use Query::Builder;
 
 field $_qb = undef;
@@ -11,9 +12,8 @@ field $_qb = undef;
 my %driver_map = (
     SQLite  => 'sqlite',
     SQLite2 => 'sqlite',
-    mysql   => 'mysql',
-    Pg      => 'pg',
-);
+    mysql => 'mysql',
+    Pg => 'pg' );
 
 =head2 qb
 
@@ -38,11 +38,11 @@ leading/trailing whitespace.
 
 =cut
 
-    method normalize_sql ($sql) {
-        $sql =~ s/\s+/ /g;
-        $sql =~ s/^ | $//g;
-        return $sql
-    }
+method normalize_sql ($sql) {
+    $sql =~ s/\s+/ /g;
+    $sql =~ s/^ | $//g;
+    return $sql
+}
 
 =head2 check_for_nullbytes
 
@@ -52,16 +52,16 @@ C<undef> or the empty string.
 
 =cut
 
-    method check_for_nullbytes($string) {
-        return
-            unless $string;
-        my $backup = $string;
-        if (my $count = ($string =~ s/\x00//g)) {
-            my ($package, $file, $line) = caller(1);
-            $self->log_msg(0, "Found $count null-character(s) in string '$backup'. Called from package '$package' ($file), line $line.");
-        }
-        return $string
+method check_for_nullbytes($string) {
+    return
+        unless $string;
+    my $backup = $string;
+    if (my $count = ($string =~ s/\x00//g)) {
+        my ($package, $file, $line) = caller(1);
+        $self->log_msg(0, "Found $count null-character(s) in string '$backup'. Called from package '$package' ($file), line $line.");
     }
+    return $string
+}
 
 =head2 validate_sql_prepare_and_execute
 
@@ -76,30 +76,30 @@ C<@args>       — optional bind parameters
 
 =cut
 
-    method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
-        my $dbh = $self->db();
-        my $sth;
-        if ((ref $sql_or_sth) =~ m/^DBI::/) {
-            $sth = $sql_or_sth;
-        }
-        else {
-            my $sql = $self->normalize_sql($sql_or_sth);
-            $sql = $self->check_for_nullbytes($sql);
-            $sth = $dbh->prepare($sql);
-        }
-        for my $arg (@args) {
-            $arg = $self->check_for_nullbytes($arg);
-        }
-        my $execute_result = $sth->execute(@args);
-        if ($self->module_config('logger', 'log_sql') && $self->module_config('logger', 'log_to_stdout')) {
-            my @vals = @args;
-            (my $logged = $sth->{Statement} // '') =~ s/\?/do { my $v = shift @vals; defined $v ? "'$v'" : 'NULL' }/ge;
-            print "[SQL] $logged\n";
-        }
-        unless ($execute_result) {
-            my ($package, $file, $line) = caller;
-            $self->log_msg(0, "DBI::execute failed.  Called from package '$package' ($file), line $line.");
-        }
-        return $sth
+method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
+    my $dbh = $self->db();
+    my $sth;
+    if ((ref $sql_or_sth) =~ m/^DBI::/) {
+        $sth = $sql_or_sth;
+    } else {
+        my $sql = $self->normalize_sql($sql_or_sth);
+        $sql = $self->check_for_nullbytes($sql);
+        $sth = $dbh->prepare($sql);
     }
+    for my $arg (@args) {
+        $arg = $self->check_for_nullbytes($arg);
+    }
+    my $execute_result = $sth->execute(@args);
+    if ($self->module_config('logger', 'log_sql') && $self->module_config('logger', 'log_to_stdout')) {
+        my @vals = @args;
+        (my $logged = $sth->{Statement} // '') =~ s/\?/do { my $v = shift @vals; defined $v ? "'$v'" : 'NULL' }/ge;
+        print "[SQL] $logged\n";
+    }
+    unless ($execute_result) {
+        my ($package, $file, $line) = caller;
+        $self->log_msg(0, "DBI::execute failed.  Called from package '$package' ($file), line $line.");
+    }
+    return $sth
 }
+
+1;

@@ -12,7 +12,7 @@ sub import {
     strict->import();
     warnings->import();
     utf8->import();
-    feature->import(qw(say state try signatures));
+    feature->import(qw(say state try signatures isa));
     warnings->unimport('experimental::try');
     no strict 'refs';
     my $caller = caller;

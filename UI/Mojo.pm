@@ -27,6 +27,7 @@ use POPFile::Features;
 
 use POSIX ':sys_wait_h';
 use Scalar::Util qw(looks_like_number);
+use Data::Page;
 
 class UI::Mojo :isa(POPFile::Module);
 
@@ -57,7 +58,7 @@ method initialize() {
     $self->config(session_dividers => 1);
     $self->config(wordtable_format => '');
     # $self->config(locale => '');
-    $self->config(open_browser => 1);
+    $self->config(open_browser => 0);
     return 1
 }
 
@@ -288,43 +289,31 @@ method build_app ($svc, $session) {
     #   Returns { items: [...], total: N }
     #--------------------------------------------------------------------
     $r->get('/api/v1/history' => sub ($c) {
-        my $page = ($c->param('page')     // 1) + 0;
-        my $per_page = ($c->param('per_page') // 25) + 0;
-        my $search = $c->param('search') // '';
-        my $bucket = $c->param('bucket') // '';
         my $max_per_page = 200;
         my $per_page_default = 25;
+        my $page = ($c->param('page') // 1) + 0;
+        my $per_page = ($c->param('per_page') // $per_page_default) + 0;
+        my $search = $c->param('search');
+        my $bucket = $c->param('bucket');
         $page = 1
             if $page < 1;
         $per_page = $per_page_default
             if $per_page < 1 || $per_page > $max_per_page;
-
         my $hist = $svc->history_obj();
-        my $qid = $hist->start_query();
-        $hist->set_query($qid, $bucket, $search, '-inserted', 0);
-        my $total = $hist->get_query_size($qid);
-        my $start = ($page - 1) * $per_page + 1;
-        my @rows = $hist->get_query_rows($qid, $start, $per_page);
-        $hist->stop_query($qid);
-
-        my @items;
-        for my $row (@rows) {
-            next unless defined $row;
-            # fields: id(0) from(1) to(2) cc(3) subject(4) date(5)
-            #         hash(6) inserted(7) bucket_name(8) usedtobe(9)
-            #         bucket_id(10) magnet(11) size(12)
-            push @items, {
-                slot => $row->[0] + 0,
-                from => $row->[1] // '',
-                to => $row->[2] // '',
-                subject => $row->[4] // '',
-                date => $row->[5] // '',
-                bucket => $row->[8] // '',
-                color => $svc->get_bucket_color($row->[8] // '') // '#666666',
-                magnet => $row->[11] // '',
-            };
-        }
-        $c->render(json => { items => \@items, total => $total + 0 });
+        my ($total, $rows) = $hist->get_search_queries(
+            $bucket ? (bucket => $bucket) : (),
+            $search ? (search => $search) : (),
+            page => $page,
+            per_page => $per_page,
+            sort => 'date DESC' );
+        my @items =
+            map {
+                $_->{color} = $svc->get_bucket_color($_->{'bucket_id'} // '') // '#666666';
+                $_
+            }
+            grep { $_ }
+            $rows->@*;
+        $c->render(json => { items => \@items, total => $total });
     });
 
     my $do_reclassify = sub ($slot, $bucket) {

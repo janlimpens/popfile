@@ -132,6 +132,30 @@ done_testing;
 
 package MockHist;
 
+sub get_search_queries {
+    my ($self, %args) = @_;
+    my $bucket = $args{bucket} // '';
+    my $search = $args{search} // '';
+    my $page = $args{page} // 1;
+    my $per_page = $args{per_page} // 25;
+    my @ids = sort { $a <=> $b } grep {
+        my $s = $self->{slots}{$_};
+        ($bucket eq '' || $s->{bucket} eq $bucket)
+        && ($search eq '' || $s->{fields}[1] =~ /\Q$search\E/i || $s->{fields}[4] =~ /\Q$search\E/i)
+    } keys %{$self->{slots}};
+    my $total = scalar @ids;
+    my $offset = ($page - 1) * $per_page;
+    my @page_ids = splice(@ids, $offset, $per_page);
+    my @rows = map {
+        my $f = $self->{slots}{$_}{fields};
+        { slot => $f->[0], from => $f->[1], to => $f->[2], cc => $f->[3],
+          subject => $f->[4], date => $f->[5], hash => $f->[6],
+          inserted => $f->[7], bucket => $f->[8], usedtobe => $f->[9],
+          bucket_id => $f->[10], magnet => $f->[11], size => $f->[12] }
+    } @page_ids;
+    return ($total, \@rows)
+}
+
 sub start_query {
     my ($self) = @_;
     my $qid = $self->{next_qid}++;
