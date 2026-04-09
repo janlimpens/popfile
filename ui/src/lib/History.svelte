@@ -68,7 +68,7 @@
   }
 
   async function pollRefresh() {
-    const params = new URLSearchParams({ page, per_page: pageSize, search });
+    const params = new URLSearchParams({ page, per_page: pageSize, search, bucket });
     const res = await fetch('/api/v1/history?' + params);
     if (!res.ok) return;
     const data = await res.json();
