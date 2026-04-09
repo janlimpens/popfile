@@ -15,6 +15,10 @@ use Test2::V0;
 use Test::Mojo;
 use Encode qw(decode);
 
+require FindBin;
+require Cwd;
+my $root = Cwd::abs_path("$FindBin::Bin/..");
+
 require UI::Mojo;
 require POPFile::Configuration;
 
@@ -25,6 +29,7 @@ sub StubMQ::register {}
 my $config = POPFile::Configuration->new();
 $config->set_configuration($config);
 $config->set_mq($mq);
+$config->set_popfile_root("$root/");
 $config->initialize();
 $config->set_started(1);
 

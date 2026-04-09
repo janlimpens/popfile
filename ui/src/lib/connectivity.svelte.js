@@ -18,7 +18,7 @@ function clearState() {
 
 function scheduleRetry() {
     connectivity.nextRetryIn = retryDelay;
-    retryDelay = Math.min(retryDelay * 2, 60);
+    retryDelay = Math.min(retryDelay * 2, 30);
     countdownTimer = setInterval(() => {
         connectivity.nextRetryIn = Math.max(0, connectivity.nextRetryIn - 1);
         if (connectivity.nextRetryIn === 0) {
@@ -38,7 +38,7 @@ function triggerOffline(body) {
 
 async function probe() {
     try {
-        const res = await originalFetch('/api/v1/config');
+        const res = await originalFetch('/api/v1/buckets');
         if (res.status < 500) {
             clearState();
         } else {
