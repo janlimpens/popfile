@@ -446,6 +446,15 @@ Corpus_Actions                          Actions
 Corpus_Clear                            Clear
 Corpus_BucketList                       Buckets
 Corpus_Search                           Search
+Corpus_StopwordCandidates               Stop-word candidates
+Corpus_StopwordCandidatesDesc           Words appearing evenly across all buckets — little discriminative power.
+Corpus_StopwordRatio                    Max/min ratio threshold
+Corpus_LoadCandidates                   Find candidates
+Corpus_AddStopword                      Add to stop-words
+Corpus_StopwordsTitle                   Stop-words
+Corpus_StopwordsDesc                    Words in this list are never used for classification.
+Corpus_RemoveStopword                   Remove
+Corpus_NoCandidates                     No candidates found at this threshold.
 
 History_AllBuckets                      All buckets
 History_Reclassifying                   Reclassifying...

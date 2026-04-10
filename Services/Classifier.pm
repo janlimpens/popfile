@@ -345,9 +345,10 @@ Removes C<$word> from the stopword list.
 
 =cut
 
-method get_stopword_list()    { $classifier->get_stopword_list($session) }
-method add_stopword ($w)    { $classifier->add_stopword($session, $w) }
+method get_stopword_list() { $classifier->get_stopword_list($session) }
+method add_stopword ($w) { $classifier->add_stopword($session, $w) }
 method remove_stopword ($w) { $classifier->remove_stopword($session, $w) }
+method get_stopword_candidates ($ratio, $limit = 50) { $classifier->get_stopword_candidates($session, $ratio, $limit) }
 
 =head1 ACCESSORS
 

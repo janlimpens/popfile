@@ -172,11 +172,38 @@ subtest 'delete bucket' => sub {
 };
 
 # -----------------------------------------------------------------------
+subtest 'get_stopword_candidates' => sub {
+    my @candidates = $bayes->get_stopword_candidates($session, 2.0, 50);
+    ok( defined \@candidates, 'get_stopword_candidates returns a list' );
+    for my $c (@candidates) {
+        ok( $c->{ratio} < 2.0, "candidate '$c->{word}' ratio $c->{ratio} < 2.0" );
+        ok( $c->{max_count} >= $c->{min_count}, 'max_count >= min_count' );
+    }
+};
+
+# -----------------------------------------------------------------------
+subtest 'stopword_ratio config filters uniform words at classify time' => sub {
+    my $ham_fixture  = "$Bin/fixtures/ham.eml";
+    my $spam_fixture = "$Bin/fixtures/spam.eml";
+
+    $bayes->config('stemming', 0);
+    $bayes->config('stopword_ratio', 0);
+    my $class_no_filter = $bayes->classify($session, $ham_fixture);
+
+    $bayes->config('stopword_ratio', 1000);
+    my $class_with_filter = $bayes->classify($session, $ham_fixture);
+
+    ok( defined $class_no_filter,   'classify works without filtering' );
+    ok( defined $class_with_filter, 'classify works with aggressive filtering (ratio 1000)' );
+    $bayes->config('stopword_ratio', 0);
+};
+
+# -----------------------------------------------------------------------
 subtest 'clear bucket' => sub {
-    my $wc_before = $bayes->get_bucket_word_count($session, 'spam');
-    ok( $wc_before > 0, "spam has words before clear" );
-    is( $bayes->clear_bucket($session, 'spam'),         1, 'clear_bucket returned 1' );
-    is( $bayes->get_bucket_word_count($session, 'spam'), 0, 'spam word count is 0 after clear' );
+    my $wc_before = $bayes->get_bucket_word_count($session, 'inbox');
+    ok( $wc_before > 0, "inbox has words before clear" );
+    is( $bayes->clear_bucket($session, 'inbox'),          1, 'clear_bucket returned 1' );
+    is( $bayes->get_bucket_word_count($session, 'inbox'),  0, 'inbox word count is 0 after clear' );
 };
 
 # -----------------------------------------------------------------------

@@ -40,6 +40,7 @@ use POPFile::Role::SQL;
 use IO::Handle;
 use DBI;
 use Digest::MD5 qw(md5_hex);
+use List::Util qw(max min);
 use MIME::Base64;
 use File::Copy;
 
@@ -231,6 +232,7 @@ method initialize() {
     # 100 times more
 
     $self->config(unclassified_weight => 100);
+    $self->config(stopword_ratio => 0);
 
     # The corpus is kept in the 'corpus' subfolder of POPFile
     #
@@ -2267,8 +2269,21 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     undef $db_classify;
 
     my $not_likely = $not_likely->{$userid};
+    my $stopword_ratio = $self->config('stopword_ratio') + 0;
 
     for my $id (@id_list) {
+        if ($stopword_ratio > 0 && @buckets > 1) {
+            my $min_c = 'inf';
+            my $max_c = 0;
+            my $all_present = 1;
+            for my $bucket (@buckets) {
+                my $c = $$matrix{$id}{$bucket} // 0;
+                if ($c == 0) { $all_present = 0; last }
+                $min_c = $c if $c < $min_c;
+                $max_c = $c if $c > $max_c;
+            }
+            next if $all_present && $max_c / $min_c < $stopword_ratio;
+        }
         $word_count += 2;
         my $wmax = -10000;
         my $count = $parser->words()->{$$idmap{$id}};
@@ -3973,6 +3988,60 @@ method get_stopword_list ($session) {
         unless defined $userid;
 
     return $parser->mangle()->stopwords();
+}
+
+=head2 get_stopword_candidates
+
+    my @candidates = $self->get_stopword_candidates($session, $ratio, $limit);
+
+Returns words that appear in every non-pseudo bucket with a max-to-min
+per-bucket frequency ratio below C<$ratio>.  These words carry little
+discriminative power.  C<$limit> caps the result set (default 50).
+
+Each entry is a hashref with C<word>, C<min_count>, C<max_count>, and C<ratio>.
+
+=cut
+
+method get_stopword_candidates ($session, $ratio = 2.0, $limit = 50) {
+    my $userid = $self->valid_session_key($session);
+    return ()
+        unless defined $userid;
+
+    my $bucket_count_row = $self->validate_sql_prepare_and_execute(
+        'SELECT COUNT(*) FROM buckets WHERE userid = ? AND pseudo = 0',
+        $userid)->fetchrow_arrayref;
+    my $n_buckets = $bucket_count_row ? $bucket_count_row->[0] : 0;
+    return ()
+        if $n_buckets < 2;
+
+    my $sth = $self->validate_sql_prepare_and_execute(
+        'SELECT w.word,
+                MIN(m.times) AS min_count,
+                MAX(m.times) AS max_count,
+                CAST(MAX(m.times) AS FLOAT) / MIN(m.times) AS ratio
+         FROM words w
+         JOIN matrix m ON m.wordid = w.id
+         JOIN buckets b ON b.id = m.bucketid
+         WHERE b.userid = ?
+           AND b.pseudo = 0
+         GROUP BY w.id, w.word
+         HAVING COUNT(DISTINCT m.bucketid) = ?
+            AND MIN(m.times) > 0
+            AND CAST(MAX(m.times) AS FLOAT) / MIN(m.times) < ?
+         ORDER BY CAST(MAX(m.times) AS FLOAT) / MIN(m.times) ASC
+         LIMIT ?',
+        $userid, $n_buckets, $ratio, $limit);
+
+    my @candidates;
+    while (my $row = $sth->fetchrow_hashref()) {
+        push @candidates, {
+            word => $row->{word},
+            min_count => $row->{min_count} + 0,
+            max_count => $row->{max_count} + 0,
+            ratio => $row->{ratio} + 0,
+        };
+    }
+    return @candidates
 }
 
 =head2 magnet_count

@@ -284,6 +284,51 @@ method build_app ($svc, $session) {
     });
 
     #--------------------------------------------------------------------
+    # GET /api/v1/stopwords
+    #   Returns [word, ...]
+    #--------------------------------------------------------------------
+    $r->get('/api/v1/stopwords' => sub ($c) {
+        my @words = sort $svc->get_stopword_list();
+        $c->render(json => \@words);
+    });
+
+    #--------------------------------------------------------------------
+    # POST /api/v1/stopwords   { word }
+    #   Returns { ok } or 400
+    #--------------------------------------------------------------------
+    $r->post('/api/v1/stopwords' => sub ($c) {
+        my $body = $c->req->json // {};
+        my $word = $body->{word} // '';
+        return $c->render(status => 400, json => { error => 'word required' })
+            if $word eq '';
+        my $ok = $svc->add_stopword($word);
+        return $c->render(status => 400, json => { error => 'invalid word' })
+            unless $ok;
+        $c->render(json => { ok => \1 });
+    });
+
+    #--------------------------------------------------------------------
+    # DELETE /api/v1/stopwords/:word
+    #--------------------------------------------------------------------
+    $r->delete('/api/v1/stopwords/:word' => sub ($c) {
+        $svc->remove_stopword($c->param('word'));
+        $c->render(json => { ok => \1 });
+    });
+
+    #--------------------------------------------------------------------
+    # GET /api/v1/stopword-candidates?ratio=2.0&limit=50
+    #   Returns [{word, min_count, max_count, ratio}, ...]
+    #--------------------------------------------------------------------
+    $r->get('/api/v1/stopword-candidates' => sub ($c) {
+        my $ratio = ($c->param('ratio') // 2.0) + 0;
+        my $limit = ($c->param('limit') // 50) + 0;
+        $ratio = 2.0 if $ratio <= 1;
+        $limit = 50 if $limit < 1 || $limit > 500;
+        my @candidates = $svc->get_stopword_candidates($ratio, $limit);
+        $c->render(json => \@candidates);
+    });
+
+    #--------------------------------------------------------------------
     # GET /api/v1/history?page=1&per_page=25&search=…
     #   Returns { items: [...], total: N }
     #--------------------------------------------------------------------
