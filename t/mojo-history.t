@@ -69,6 +69,18 @@ subtest 'GET /api/v1/history returns items and total' => sub {
     is(scalar @{$data->{items}}, 2, 'items count matches');
 };
 
+subtest 'GET /api/v1/history items include correct bucket color' => sub {
+    $t->get_ok('/api/v1/history')
+      ->status_is(200);
+    my $items = $t->tx->res->json->{items};
+    my ($ham_item) = grep { $_->{bucket} eq 'ham' } @$items;
+    ok(defined $ham_item, 'ham item found');
+    is($ham_item->{color}, '#aaffaa', 'ham bucket color is correct');
+    my ($unclass_item) = grep { $_->{bucket} eq 'unclassified' } @$items;
+    ok(defined $unclass_item, 'unclassified item found');
+    is($unclass_item->{color}, '#666666', 'unknown bucket falls back to gray');
+};
+
 subtest 'GET /api/v1/history pagination' => sub {
     $t->get_ok('/api/v1/history?page=1&per_page=1')
       ->status_is(200);

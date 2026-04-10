@@ -307,7 +307,7 @@ method build_app ($svc, $session) {
             sort => 'date DESC' );
         my @items =
             map {
-                $_->{color} = $svc->get_bucket_color($_->{'bucket_id'} // '') // '#666666';
+                $_->{color} = $svc->get_bucket_color($_->{'bucket'} // '') // '#666666';
                 $_
             }
             grep { $_ }
