@@ -240,3 +240,302 @@ Configuration_InsertionTableSummary     This table contains buttons that determi
 Security_MainTableSummary               This table provides sets of controls that affect the security of the overall configuration of PopFile, whether it should automatically check for updates to the program, and whether statistics about PopFile's performance should be sent to the central datastore of the program's author for general information.
 Advanced_MainTableSummary               This table provides a list of words that PopFile ignores when classifying email due to their relative frequency in email in general.  They are organized per row according to the first letter of the words.
 
+
+# New keys added (translations batch 2)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+WikiLink index.php
+FAQLink FAQ
+RequestFeatureLink RequestFeature
+MailingListLink mailing_lists
+DonateLink Donate
+NavCorpus Corpus
+NavHistory Geschiedenis
+NavIMAP IMAP
+NavMagnets Magneten
+NavSettings Instellingen
+NavStatus Status
+Corpus_BucketList Categorieën
+Corpus_Color Kleur
+Corpus_Actions Acties
+Corpus_Clear Wissen
+Corpus_Search Zoeken
+Corpus_StopwordsTitle Stopwoorden
+Corpus_StopwordsDesc Woorden in deze lijst worden nooit gebruikt voor classificatie.
+Corpus_RemoveStopword Verwijderen
+Corpus_StopwordCandidates Stopwoordkandidaten
+Corpus_StopwordCandidatesDesc Woorden die gelijkmatig voorkomen in alle categorieën — weinig onderscheidend vermogen.
+Corpus_StopwordRatio Max/min-verhoudrempelwaarde
+Corpus_LoadCandidates Kandidaten zoeken
+Corpus_NoCandidates Geen kandidaten gevonden bij deze drempelwaarde.
+Corpus_AddStopword Toevoegen aan stopwoorden
+BucketSelect_AddNew Nieuwe toevoegen...
+BucketSelect_AlreadyExists Bestaat al
+BucketSelect_CreateError Fout bij aanmaken categorie
+BucketSelect_InvalidName Alleen a-z, 0-9, - en _
+BucketSelect_NameRequired Naam verplicht
+Bucket_InIgnoredWords <b>%s</b> staat in genegeerde woorden. POPFile negeert dit woord
+Bucket_ClassificationFN Fout-negatieven
+Bucket_ClassificationFP Fout-positieven
+Bucket_Quarantine Quarantaine<br>Bericht
+ApplyChanges Wijzigingen toepassen
+Arrived Ontvangen
+Cc Cc
+Count Aantal
+Date Datum
+FAQ FAQ
+Footer_Wiki Documentatie
+ID ID
+Probability Kans
+QuickMagnets SnelMagneten
+Refresh Vernieuwen
+Scores Scores
+Shutdown_Message POPFile is afgesloten
+Size Grootte
+Update Bijwerken
+Word Woord
+Configuration_CurrentLogFile &lt;Huidig logbestand bekijken&gt;
+Configuration_Error7 De XML RPC luisterpoort moet een getal zijn tussen 1 en 65535
+Configuration_Error8 De SOCKS V proxy-poort moet een getal zijn tussen 1 en 65535
+Configuration_Error9 De gebruikersinterfacepoort mag niet dezelfde waarde hebben als de POP3 luisterpoort
+Configuration_Error10 De POP3 luisterpoort mag niet dezelfde waarde hebben als de gebruikersinterfacepoort
+Configuration_Fields Geschiedeniskolommen
+Configuration_NNTPFork Gelijktijdige NNTP-verbindingen toestaan
+Configuration_NNTPPort NNTP luisterpoort
+Configuration_NNTPSeparator Scheidingsteken NNTP host:poort:gebruiker
+Configuration_NNTPSepUpdate NNTP-scheidingsteken bijgewerkt naar %s
+Configuration_NNTPUpdate NNTP-poort bijgewerkt naar %s; wijziging wordt van kracht na herstart van POPFile
+Configuration_POP3Separator Scheidingsteken POP3 host:poort:gebruiker
+Configuration_POP3SepUpdate POP3-scheidingsteken bijgewerkt naar %s
+Configuration_POPFork Gelijktijdige POP3-verbindingen toestaan
+Configuration_SMTPFork Gelijktijdige SMTP-verbindingen toestaan
+Configuration_SMTPPort SMTP luisterpoort
+Configuration_SMTPUpdate SMTP-poort bijgewerkt naar %s; wijziging wordt van kracht na herstart van POPFile
+Configuration_SOCKSPort SOCKS V proxy-poort
+Configuration_SOCKSPortUpdate SOCKS V proxy-poort bijgewerkt naar %s
+Configuration_SOCKSServer SOCKS V proxy-host
+Configuration_SOCKSServerUpdate SOCKS V proxy-host bijgewerkt naar %s
+Configuration_XMLRPCPort XML-RPC luisterpoort
+Configuration_XMLRPCUpdate XML-RPC-poort bijgewerkt naar %s; wijziging wordt van kracht na herstart van POPFile
+Help_Bucket_Setup POPFile vereist minimaal twee categorieën naast de pseudo-categorie "niet-geclassificeerd". Wat POPFile uniek maakt is dat het e-mail in meer categorieën kan indelen; u kunt elk gewenst aantal categorieën hebben. Een eenvoudige instelling zou een categorie "spam", "persoonlijk" en "werk" zijn.
+Help_No_More Dit niet meer tonen
+Help_Training Wanneer u POPFile voor het eerst gebruikt, weet het niets en heeft het training nodig. POPFile heeft training met berichten voor elke categorie nodig; training vindt plaats wanneer u een bericht dat POPFile verkeerd heeft geclassificeerd opnieuw classificeert naar de juiste categorie. Voordat POPFile het eerste bericht classificeert, moet u berichten in minimaal twee categorieën hebben herclassificeerd.
+History_AllBuckets Alle categorieën
+History_Automatic Automatisch
+History_ChangedClass Zou nu classificeren als
+History_Column_Characters Breedte van Van, Aan, Cc en Onderwerpkolommen wijzigen
+History_Decrease Verkleinen
+History_HighlightWords Woorden markeren per categorie
+History_Increase Vergroten
+History_Loading Laden...
+History_Magnet &nbsp;(alleen berichten geclassificeerd door magneet)
+History_MagnetBecause <b>Magneet gebruikt</b><p>Geclassificeerd naar <font color="%s">%s</font> vanwege magneet %s </p>
+History_MoveTo — verplaatsen naar —
+History_Moving Verplaatsen...
+History_Negate_Search Zoekopdracht/filter omkeren
+History_NoMagnet &nbsp;(alleen berichten niet geclassificeerd door magneet)
+History_NoMatchingMessages Geen overeenkomende berichten
+History_Purge Nu verlopen
+History_Reclassified Herclassificeerd
+History_Reclassifying Herclassificeren...
+History_ReclassifyUnclassified Niet-geclassificeerde herclassificeren
+History_RemoveChecked Geselecteerde verwijderen
+History_ResetSearch Wissen
+History_Selected geselecteerd
+History_ShowMagnet gemagnetiseerd
+History_Size_Bytes %d&nbsp;B
+History_Size_KiloBytes %.1f&nbsp;KB
+History_Size_MegaBytes %.1f&nbsp;MB
+Imap_Bucket2Folder Post voor categorie '<b>%s</b>' gaat naar map
+Imap_BucketFolderMappings Categorie -> Maptoewijzingen
+Imap_Bytelimit Bytes per bericht voor classificatie. Voer 0 in voor het volledige bericht:
+Imap_BytelimitError Voer een getal in.
+Imap_Connected Verbonden
+Imap_Connection Verbinding
+Imap_ConnectionFailed Verbinding mislukt
+Imap_Description IMAP-mappen bewaken en inkomende berichten automatisch classificeren.
+Imap_EnableService IMAP-service inschakelen
+Imap_Expunge Verwijderde berichten uit bewaakte mappen verwijderen.
+Imap_FetchFolders Mappen ophalen
+Imap_Fetching Ophalen...
+Imap_IMAFFolder IMAP-map
+Imap_Interval Bijwerkinterval in seconden:
+Imap_IntervalError Voer een interval in tussen 10 en 3600 seconden.
+Imap_Login IMAP-accountnaam:
+Imap_LoginError Voer een gebruikers-/aanmeldingsnaam in!
+Imap_MapError U kunt niet meer dan één categorie aan een enkele map koppelen!
+Imap_MappingsHint Geclassificeerde berichten worden verplaatst naar de opgegeven IMAP-map. Laat niet-gekoppelde categorieën leeg om verplaatsen over te slaan.
+Imap_NoConnectionMessage Configureer eerst de verbindingsdetails. Daarna zijn meer opties beschikbaar op deze pagina.
+Imap_NoFoldersWatched Nog geen mappen bewaakt.
+Imap_NoMappings Geen toewijzingen gedefinieerd.
+Imap_Now nu!
+Imap_Password Wachtwoord voor IMAP-account:
+Imap_PasswordError Voer een wachtwoord in voor de server!
+Imap_Port IMAP-serverpoort:
+Imap_PortError Voer een geldig poortnummer in!
+Imap_RefreshFolders Mappenlijst vernieuwen
+Imap_SaveAnyway Toch opslaan
+Imap_SaveConnection Verbinding opslaan
+Imap_SaveFolders Mappen opslaan
+Imap_Saving Opslaan...
+Imap_Server IMAP-servernaam:
+Imap_ServerNameError Voer de hostnaam van de server in!
+Imap_Service Service
+Imap_TestConnection Verbinding testen
+Imap_Testing Testen...
+Imap_TrainingHint De trainingsmodus doorzoekt bestaande archiefmappen en traint de classificator op hun inhoud. De vlag wordt automatisch gereset wanneer de training is voltooid.
+Imap_TrainingMode Trainingsmodus
+Imap_UpdateError1 Aanmelden mislukt. Controleer uw gebruikersnaam en wachtwoord.
+Imap_UpdateError2 Verbinding met server mislukt. Controleer de hostnaam en poort en zorg dat u online bent.
+Imap_UpdateError3 Configureer eerst de verbindingsdetails.
+Imap_Use_SSL SSL gebruiken
+Imap_WatchedFolder Bewaakte map nr.
+Imap_WatchedFolders Bewaakte mappen
+Imap_WatchedHint POPFile bewaakt deze IMAP-mappen op nieuwe berichten om te classificeren.
+Imap_WatchMore een map toevoegen aan de lijst met bewaakte mappen
+Locale_Date %a %R | %D %R
+Locale_Decimal ,
+Locale_Thousands .
+Magnet_Created Magneet aangemaakt
+Magnet_Deleted Magneet verwijderd
+Magnet_Jump Naar magneetpagina
+Reconnect_Connecting Verbinden...
+Reconnect_Message Het backend is niet bereikbaar. Verbinding wordt hersteld...
+Reconnect_Now Nu verbinden
+Reconnect_RetryIn Opnieuw proberen over
+Reconnect_Title Verbinding verbroken
+Security_NNTP NNTP-verbindingen van externe machines accepteren (vereist herstart van POPFile)
+Security_SMTP SMTP-verbindingen van externe machines accepteren (vereist herstart van POPFile)
+Security_SMTPPort SMTP-ketenpoort
+Security_SMTPPortUpdate SMTP-ketenpoort bijgewerkt naar %s; wijziging wordt van kracht na herstart van POPFile
+Security_SMTPServer SMTP-ketenserver
+Security_SMTPServerUpdate SMTP-ketenserver bijgewerkt naar %s; wijziging wordt van kracht na herstart van POPFile
+Security_StealthMode (Stealthmodus)
+Security_XMLRPC XML-RPC-verbindingen van externe machines accepteren (vereist herstart van POPFile)
+Session_Error Uw POPFile-sessie is verlopen. Dit kan zijn veroorzaakt door het starten en stoppen van POPFile terwijl uw webbrowser open bleef. Klik op een van de bovenstaande koppelingen om door te gaan met POPFile.
+Session_Title POPFile-sessie verlopen
+Settings_AdminPassword Beheerderswachtwoord
+Settings_ArchiveDirectory Archiefmap
+Settings_ArchiveMessages Berichten archiveren
+Settings_ArchiveSubdirs Archiefsubmappen
+Settings_AutoDetect Automatisch detecteren
+Settings_AutoDetectLanguage Taal automatisch detecteren
+Settings_ChainPort Ketenpoort
+Settings_ChainServer Ketenserver
+Settings_DateFormat Datumnotatie
+Settings_DescAdminPassword Laat leeg om wachtwoordbeveiliging uit te schakelen.
+Settings_DescArchiveDir Map voor gearchiveerde berichten (relatief aan gebruikersmap).
+Settings_DescArchiveMessages Een kopie van elk geclassificeerd bericht opslaan op schijf.
+Settings_DescArchiveSubdirs Archief verdelen in N submappen (0 = uitgeschakeld).
+Settings_DescAutoDetectLang Detecteert de taal van elk bericht en past bijbehorende stopwoorden en stemmer toe. Voegt ~130% classificatievertraging toe; nuttig voor meertalige postvakken.
+Settings_DescChainPort Poort van de stroomopwaartse SMTP-server.
+Settings_DescChainServer Hostnaam van de stroomopwaartse SMTP-server.
+Settings_DescDateFormat strftime-notatietekenreeks. Leeg laten voor standaard locale.
+Settings_DescForceFork Voor elke verbinding een nieuw proces aanmaken.
+Settings_DescHEADFetchesBody Volledig artikel ophalen met het HEAD-commando.
+Settings_DescHTTPPort Poort waarop de webinterface luistert. Vereist herstart.
+Settings_DescItemsPerPage Rijen weergegeven per pagina in Geschiedenis en Magneten.
+Settings_DescLanguage Weergavetaal van de interface. Leeg laten voor automatische detectie vanuit de browser.
+Settings_DescListenAddress IP-adres om aan te binden. Leeg = alle interfaces.
+Settings_DescLocalOnly_UI Webinterface beperken tot lokale verbindingen.
+Settings_DescLogDirectory Map voor logbestanden. Leeg = POPFile-root.
+Settings_DescLogLevel Uitgebreidheid van loguitvoer.
+Settings_DescLogSQLToStdout Elke SQL-instructie met gebonden waarden naar stdout afdrukken. Alleen actief wanneer "Loggen naar stdout" ook is ingeschakeld.
+Settings_DescLogToStdout Loguitvoer ook naar stdout spiegelen naast het logbestand.
+Settings_DescMessageCutoff Maximaal aantal geanalyseerde woorden per bericht (0 = onbeperkt).
+Settings_DescNNTPLocalOnly Alleen NNTP-verbindingen van localhost accepteren.
+Settings_DescNNTPPort Poort waarop POPFile luistert voor NNTP (standaard 119).
+Settings_DescNNTPSeparator Scheidingsteken tussen gebruiker en server.
+Settings_DescPOP3LocalOnly Alleen POP3-verbindingen van localhost accepteren.
+Settings_DescPOP3Port Poort waarop POPFile luistert voor POP3 (standaard 1110).
+Settings_DescPOP3Separator Teken dat gebruiker van server scheidt (bijv. gebruiker:mailhost).
+Settings_DescRetentionDays Hoeveel dagen berichtgeschiedenis bewaren.
+Settings_DescSessionDividers Scheidingslijnen weergeven tussen browsersessies in Geschiedenis.
+Settings_DescSMTPLocalOnly Alleen SMTP-verbindingen van localhost accepteren.
+Settings_DescSMTPPort Poort waarop POPFile luistert voor SMTP (standaard 25).
+Settings_DescSQLiteJournal SQLite-journaalmodus / WAL.
+Settings_DescSQLiteTweaks Bitmasker: 1 = snellere schrijfacties (minder veilig), 2 = periodieke back-up.
+Settings_DescSSLChainPort Poort van de stroomopwaartse SSL POP3-server.
+Settings_DescSSLChainServer Hostnaam van de stroomopwaartse SSL POP3-server voor SSL-ketening.
+Settings_DescSubjectTagLeft Prefix ingevoegd in de onderwerpheader, bijv. [SPAM].
+Settings_DescSubjectTagRight Suffix toegevoegd aan de onderwerpheader.
+Settings_DescTagPosition Waar het onderwerplabel te plaatsen.
+Settings_DescTOPFetchesBody Berichtinhoud ook ophalen met het TOP-commando.
+Settings_DescUnclassifiedWeight Kansdrempel waaronder e-mail "niet-geclassificeerd" is.
+Settings_DescWordStemming Woorden reduceren tot hun stam vóór classificatie (bijv. "lopen" naar "loop"). Verbetert recall voor morfologisch rijke talen bij ~10% latentiekosten.
+Settings_DescWordTable Wat weergeven in de woordkanssentabel.
+Settings_ErrorSaving Fout bij opslaan
+Settings_ForceFork Force Fork
+Settings_HEADFetchesBody HEAD haalt inhoud op
+Settings_HTTPPort HTTP-poort
+Settings_ItemsPerPage Items per pagina
+Settings_ListenAddress Luisteradres
+Settings_ListenPort Luisterpoort
+Settings_LocalOnly Alleen lokaal
+Settings_LogDirectory Logmap
+Settings_LogLevel Logniveau
+Settings_LogSQLToStdout SQL naar stdout loggen
+Settings_LogToStdout Naar stdout loggen
+Settings_MessageCutoff Berichtlimiet
+Settings_OptDebug Debug
+Settings_OptEnd Einde
+Settings_OptErrorsOnly Alleen fouten
+Settings_OptFrequencies Frequenties
+Settings_OptFront Voorkant
+Settings_OptHidden Verborgen
+Settings_OptInfo Info
+Settings_OptLogScores Scores loggen
+Settings_OptProbabilities Kansen
+Settings_OptWarnings Waarschuwingen
+Settings_RetentionDays Bewaring (dagen)
+Settings_SaveChanges Wijzigingen opslaan
+Settings_Saved Opgeslagen
+Settings_Saving Opslaan...
+Settings_Search Instellingen zoeken...
+Settings_SectionClassifier Classificator
+Settings_SectionHistory Geschiedenis
+Settings_SectionLogging Logboekregistratie
+Settings_SectionNNTP NNTP-proxy
+Settings_SectionPOP3 POP3-proxy
+Settings_SectionSecurity Beveiliging
+Settings_SectionSMTP SMTP-proxy
+Settings_SectionUI Gebruikersinterface
+Settings_ServerSeparator Serverscheidingsteken
+Settings_SessionDividers Sessiescheidingen
+Settings_SQLiteJournalMode SQLite-journaalmodus
+Settings_SQLiteTweaks SQLite-optimalisaties
+Settings_SSLChainPort SSL-ketenpoort
+Settings_SSLChainServer SSL-ketenserver
+Settings_SubjectTagLeft Onderwerplabel links
+Settings_SubjectTagRight Onderwerplabel rechts
+Settings_TagPosition Labelpositie
+Settings_TOPFetchesBody TOP haalt inhoud op
+Settings_UnclassifiedWeight Gewicht niet-geclassificeerd
+Settings_WordStemming Woordstamming
+Settings_WordTable Woordentabel
+SingleBucket_ClearBucket Alle woorden verwijderen
+Status_Checking Controleren...
+Status_Description Statuscontroles voor POPFile-services.
+Status_LoadError Status laden mislukt
+Status_NoChecks Geen controles beschikbaar.
+View_Chart Beslissingsdiagram
+View_DownloadMessage Bericht downloaden
+View_MessageBody Berichtinhoud
+View_MessageHeader Berichtkoptekst
+View_ShowFrequencies Woordfrequenties weergeven
+View_ShowProbabilities Woordkansen weergeven
+View_ShowScores Woordscores en beslissingsdiagram weergeven
+View_Title Enkelbericht weergeven
+View_WordFrequencies woordfrequenties weergeven
+View_WordMatrix Woordmatrix
+View_WordProbabilities woordkansen weergeven
+View_WordScores woordscores weergeven
+Windows_Console POPFile uitvoeren in een consolevenster?
+Windows_NextTime <p><font color="red">Deze wijziging wordt pas van kracht de volgende keer dat u POPFile start</font>
+Windows_TrayIcon POPFile-pictogram weergeven in het Windows-systeemvak?
+
+Advanced_AllParameters Alle POPFile-parameters
+Advanced_ConfigFile Configuratiebestand:
+Advanced_Parameter Parameter
+Advanced_Value Waarde
+Advanced_Warning Dit is de volledige lijst van POPFile-parameters. Alleen voor gevorderde gebruikers: u kunt elk item wijzigen en op Bijwerken klikken; er is geen geldigheidscontrole. Vetgedrukte items zijn gewijzigd ten opzichte van de standaardinstelling.

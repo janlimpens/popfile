@@ -264,3 +264,278 @@ Configuration_InsertionTableSummary     Denne tabel indeholder knapperne, der be
 Security_MainTableSummary               Denne tabel indeholder kontroller, der vedrører POPFiles almene sikkerhed, hvorvidt programmet automatisk skal undersøge, om der er opdateringer tilgængelige på Internettet samt om der skal sendes statistik om programmets ydelse til programmets forfatter med henblik på offentliggørelse.
 Advanced_MainTableSummary               Denne tabel indeholder en liste over stopord, som POPFile ignorerer på grund af deres hyppighed, når det klassificerer breve. De er organiseret alfabetisk i rækker.
 
+
+# New keys added (translations batch 2)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+WikiLink index.php
+FAQLink FAQ
+RequestFeatureLink RequestFeature
+MailingListLink mailing_lists
+DonateLink Donate
+NavCorpus Korpus
+NavHistory Historik
+NavIMAP IMAP
+NavMagnets Magneter
+NavSettings Indstillinger
+NavStatus Status
+Corpus_BucketList Kategorier
+Corpus_Color Farve
+Corpus_Actions Handlinger
+Corpus_Clear Ryd
+Corpus_Search Søg
+Corpus_StopwordsTitle Stopord
+Corpus_StopwordsDesc Ord på denne liste bruges aldrig til klassificering.
+Corpus_RemoveStopword Fjern
+Corpus_StopwordCandidates Stopordskandidater
+Corpus_StopwordCandidatesDesc Ord der forekommer jævnt i alle kategorier — ringe diskriminerende styrke.
+Corpus_StopwordRatio Maks/min-forholdsgrænse
+Corpus_LoadCandidates Find kandidater
+Corpus_NoCandidates Ingen kandidater fundet ved denne grænse.
+Corpus_AddStopword Tilføj til stopord
+BucketSelect_AddNew Tilføj ny...
+BucketSelect_AlreadyExists Eksisterer allerede
+BucketSelect_CreateError Fejl ved oprettelse af kategori
+BucketSelect_InvalidName Kun a-z, 0-9, - og _
+BucketSelect_NameRequired Navn påkrævet
+Bucket_InIgnoredWords <b>%s</b> er i ignorerede ord. POPFile ignorerer dette ord
+Bucket_ClassificationFN Falsk negative
+Bucket_ClassificationFP Falsk positive
+ApplyChanges Anvend ændringer
+Arrived Modtaget
+Cc Cc
+Count Antal
+Date Dato
+FAQ FAQ
+Footer_Wiki Dokumentation
+ID ID
+Probability Sandsynlighed
+QuickMagnets HurtigMagneter
+Refresh Opdater
+Scores Scorer
+Shutdown_Message POPFile er lukket ned
+Size Størrelse
+Update Opdater
+Word Ord
+Configuration_CurrentLogFile &lt;Vis aktuelt logfil&gt;
+Configuration_Error8 SOCKS V proxy-porten skal være et tal mellem 1 og 65535
+Configuration_Error9 Brugergrænsefladeport kan ikke have samme værdi som POP3 lytteport
+Configuration_Error10 POP3 lytteport kan ikke have samme værdi som brugergrænsefladeport
+Configuration_Fields Historikkolonner
+Configuration_NNTPFork Tillad samtidige NNTP-forbindelser
+Configuration_POPFork Tillad samtidige POP3-forbindelser
+Configuration_SMTPFork Tillad samtidige SMTP-forbindelser
+Configuration_SOCKSPort SOCKS V proxy-port
+Configuration_SOCKSPortUpdate SOCKS V proxy-port opdateret til %s
+Configuration_SOCKSServer SOCKS V proxy-vært
+Configuration_SOCKSServerUpdate SOCKS V proxy-vært opdateret til %s
+Help_Bucket_Setup POPFile kræver mindst to kategorier ud over pseudo-kategorien "uklassificeret". Det der gør POPFile unikt er, at det kan klassificere e-mail i mere end det; du kan have et vilkårligt antal kategorier. En simpel opsætning ville være en "spam"-, "personlig"- og "arbejds"-kategori.
+Help_No_More Vis ikke dette igen
+Help_Training Når du bruger POPFile første gang, ved det ingenting og har brug for træning. POPFile kræver træning med beskeder for hver kategori; træning sker, når du omklassificerer en besked, som POPFile har klassificeret forkert, til den korrekte kategori. Før POPFile klassificerer den første besked, skal du have omklassificeret beskeder til mindst to kategorier.
+History_AllBuckets Alle kategorier
+History_Automatic Automatisk
+History_ChangedClass Ville nu klassificere som
+History_Column_Characters Skift bredde af Fra, Til, Cc og Emne-kolonner
+History_Decrease Mindsk
+History_HighlightWords Fremhæv ord efter kategori
+History_Increase Forøg
+History_Loading Indlæser...
+History_MagnetBecause <b>Magnet brugt</b><p>Klassificeret til <font color="%s">%s</font> på grund af magnet %s </p>
+History_MoveTo — flyt til —
+History_Moving Flytter...
+History_Negate_Search Inverter søgning/filter
+History_NoMagnet &nbsp;(viser kun ikke-magnet-klassificerede beskeder)
+History_NoMatchingMessages Ingen matchende beskeder
+History_Purge Udløb nu
+History_Reclassified Omklassificeret
+History_Reclassifying Omklassificerer...
+History_ReclassifyUnclassified Omklassificer uklassificerede
+History_RemoveChecked Fjern markerede
+History_Selected valgt(e)
+History_Size_Bytes %d&nbsp;B
+History_Size_KiloBytes %.1f&nbsp;KB
+History_Size_MegaBytes %.1f&nbsp;MB
+Imap_Bucket2Folder Post for kategori '<b>%s</b>' går til mappe
+Imap_BucketFolderMappings Kategori -> Mappetildelinger
+Imap_Bytelimit Bytes per besked til klassificering. Indtast 0 for den komplette besked:
+Imap_BytelimitError Angiv venligst et tal.
+Imap_Connected Forbundet
+Imap_Connection Forbindelse
+Imap_ConnectionFailed Forbindelsen mislykkedes
+Imap_Description Overvåg IMAP-mapper og klassificer automatisk indgående beskeder.
+Imap_EnableService Aktivér IMAP-tjeneste
+Imap_Expunge Slet slettede beskeder fra overvågede mapper.
+Imap_FetchFolders Hent mapper
+Imap_Fetching Henter...
+Imap_IMAFFolder IMAP-mappe
+Imap_Interval Opdateringsinterval i sekunder:
+Imap_IntervalError Angiv venligst et interval mellem 10 og 3600 sekunder.
+Imap_Login IMAP-konto login:
+Imap_LoginError Angiv venligst et bruger-/loginnavn!
+Imap_MapError Du kan ikke tilknytte mere end én kategori til en enkelt mappe!
+Imap_MappingsHint Klassificerede beskeder flyttes til den angivne IMAP-mappe. Lad ikke-tilknyttede kategorier være tomme for at springe flytning over.
+Imap_NoConnectionMessage Konfigurer venligst forbindelsesdetaljerne først. Derefter vil der være flere muligheder tilgængelige på denne side.
+Imap_NoFoldersWatched Ingen mapper overvåget endnu.
+Imap_NoMappings Ingen tildelinger defineret.
+Imap_Now nu!
+Imap_Password Adgangskode til IMAP-konto:
+Imap_PasswordError Angiv venligst en adgangskode til serveren!
+Imap_Port IMAP-serverport:
+Imap_PortError Angiv venligst et gyldigt portnummer!
+Imap_RefreshFolders Opdater mappeliste
+Imap_SaveAnyway Gem alligevel
+Imap_SaveConnection Gem forbindelse
+Imap_SaveFolders Gem mapper
+Imap_Saving Gemmer...
+Imap_Server IMAP-server værtsnavn:
+Imap_ServerNameError Angiv venligst serverens værtsnavn!
+Imap_Service Tjeneste
+Imap_TestConnection Test forbindelse
+Imap_Testing Tester...
+Imap_TrainingHint Træningstilstand gennemgår eksisterende arkivmapper og træner klassificereren på deres indhold. Flaget nulstilles automatisk, når træningen er færdig.
+Imap_TrainingMode Træningstilstand
+Imap_UpdateError1 Kunne ikke logge ind. Kontroller venligst dit loginnavn og adgangskode.
+Imap_UpdateError2 Forbindelsen til serveren mislykkedes. Kontroller venligst værtsnavn og port, og sørg for at du er online.
+Imap_UpdateError3 Konfigurer venligst forbindelsesdetaljerne først.
+Imap_Use_SSL Brug SSL
+Imap_WatchedFolder Overvåget mappe nr.
+Imap_WatchedFolders Overvågede mapper
+Imap_WatchedHint POPFile overvåger disse IMAP-mapper for nye beskeder at klassificere.
+Imap_WatchMore en mappe til listen over overvågede mapper
+Locale_Date %a %R | %D %R
+Locale_Decimal ,
+Locale_Thousands .
+Magnet_Created Magnet oprettet
+Magnet_Deleted Magnet slettet
+Magnet_Jump Gå til magnetside
+Reconnect_Connecting Forbinder...
+Reconnect_Message Backend er ikke tilgængeligt. Forsøger at genoprette forbindelsen...
+Reconnect_Now Genoprette forbindelsen nu
+Reconnect_RetryIn Prøver igen om
+Reconnect_Title Forbindelsen mistet
+Security_StealthMode (Stealth-tilstand)
+Settings_AdminPassword Administratoradgangskode
+Settings_ArchiveDirectory Arkivmappe
+Settings_ArchiveMessages Arkiver beskeder
+Settings_ArchiveSubdirs Arkiv-undermapper
+Settings_AutoDetect Automatisk registrering
+Settings_AutoDetectLanguage Registrer sprog automatisk
+Settings_ChainPort Kædeport
+Settings_ChainServer Kædeserver
+Settings_DateFormat Datoformat
+Settings_DescAdminPassword Lad tomt for at deaktivere adgangskodebeskyttelse.
+Settings_DescArchiveDir Mappe til arkiverede beskeder (relativ til brugermappe).
+Settings_DescArchiveMessages Gem en kopi af hver klassificeret besked på disk.
+Settings_DescArchiveSubdirs Del arkiv i N undermapper (0 = deaktiveret).
+Settings_DescAutoDetectLang Registrerer sproget i hver besked og anvender tilsvarende stopord og stemmer. Tilføjer ~130% klassificeringsforsinkelse; nyttigt til flersprogede postkasser.
+Settings_DescChainPort Port for den overordnede SMTP-server.
+Settings_DescChainServer Værtsnavn for den overordnede SMTP-server.
+Settings_DescDateFormat strftime-formatstreng. Lad tomt for locale-standard.
+Settings_DescForceFork Opret en ny proces for hver forbindelse.
+Settings_DescHEADFetchesBody Hent komplet artikel med HEAD-kommandoen.
+Settings_DescHTTPPort Port som webgrænsefladen lytter på. Kræver genstart.
+Settings_DescItemsPerPage Rækker vist per side i Historik og Magneter.
+Settings_DescLanguage Visningssprog for grænsefladen. Lad tomt for automatisk registrering fra browser.
+Settings_DescListenAddress IP-adresse at binde til. Tom = alle grænseflader.
+Settings_DescLocalOnly_UI Begræns webgrænsefladen til lokale forbindelser.
+Settings_DescLogDirectory Mappe til logfiler. Tom = POPFile-rod.
+Settings_DescLogLevel Uddybning af loguddata.
+Settings_DescLogSQLToStdout Udskriv hver SQL-sætning med bundne værdier til stdout. Kun aktiv når "Log til stdout" også er aktiveret.
+Settings_DescLogToStdout Spejl loguddata til stdout udover logfilen.
+Settings_DescMessageCutoff Maksimalt antal analyserede ord per besked (0 = ubegrænset).
+Settings_DescNNTPLocalOnly Acceptér kun NNTP-forbindelser fra localhost.
+Settings_DescNNTPPort Port som POPFile lytter på for NNTP (standard 119).
+Settings_DescNNTPSeparator Tegn der adskiller bruger fra server.
+Settings_DescPOP3LocalOnly Acceptér kun POP3-forbindelser fra localhost.
+Settings_DescPOP3Port Port som POPFile lytter på for POP3 (standard 1110).
+Settings_DescPOP3Separator Tegn der adskiller bruger fra server (f.eks. bruger:mailhost).
+Settings_DescRetentionDays Hvor mange dage beskederhistorik bevares.
+Settings_DescSessionDividers Vis skillelinjer mellem browsersessioner i Historik.
+Settings_DescSMTPLocalOnly Acceptér kun SMTP-forbindelser fra localhost.
+Settings_DescSMTPPort Port som POPFile lytter på for SMTP (standard 25).
+Settings_DescSQLiteJournal SQLite-journal / WAL-tilstand.
+Settings_DescSQLiteTweaks Bitmaske: 1 = hurtigere skrivninger (mindre sikker), 2 = periodisk sikkerhedskopi.
+Settings_DescSSLChainPort Port for den overordnede SSL POP3-server.
+Settings_DescSSLChainServer Værtsnavn for den overordnede SSL POP3-server til SSL-kæde.
+Settings_DescSubjectTagLeft Præfiks indsat i emne-headeren, f.eks. [SPAM].
+Settings_DescSubjectTagRight Suffiks tilføjet til emne-headeren.
+Settings_DescTagPosition Hvor emnemærkaten placeres.
+Settings_DescTOPFetchesBody Hent også beskedindhold med TOP-kommandoen.
+Settings_DescUnclassifiedWeight Sandsynlighedsgrænse under hvilken post er "uklassificeret".
+Settings_DescWordStemming Reducer ord til deres stamme før klassificering (f.eks. "løber" til "løb"). Forbedrer recall for morfologisk rige sprog med ~10% forsinkelsesomkostning.
+Settings_DescWordTable Hvad der vises i ordssandsynlighedstabellen.
+Settings_ErrorSaving Fejl ved gemning
+Settings_ForceFork Force Fork
+Settings_HEADFetchesBody HEAD henter indhold
+Settings_HTTPPort HTTP-port
+Settings_ItemsPerPage Elementer per side
+Settings_ListenAddress Lytteadresse
+Settings_ListenPort Lytteport
+Settings_LocalOnly Kun lokalt
+Settings_LogDirectory Logmappe
+Settings_LogLevel Logniveau
+Settings_LogSQLToStdout Log SQL til stdout
+Settings_LogToStdout Log til stdout
+Settings_MessageCutoff Beskedergrænse
+Settings_OptDebug Fejlsøgning
+Settings_OptEnd Slut
+Settings_OptErrorsOnly Kun fejl
+Settings_OptFrequencies Frekvenser
+Settings_OptFront Forside
+Settings_OptHidden Skjult
+Settings_OptInfo Info
+Settings_OptLogScores Log scorer
+Settings_OptProbabilities Sandsynligheder
+Settings_OptWarnings Advarsler
+Settings_RetentionDays Opbevaring (dage)
+Settings_SaveChanges Gem ændringer
+Settings_Saved Gemt
+Settings_Saving Gemmer...
+Settings_Search Søg i indstillinger...
+Settings_SectionClassifier Klassifikatoren
+Settings_SectionHistory Historik
+Settings_SectionLogging Logning
+Settings_SectionNNTP NNTP-proxy
+Settings_SectionPOP3 POP3-proxy
+Settings_SectionSecurity Sikkerhed
+Settings_SectionSMTP SMTP-proxy
+Settings_SectionUI Brugergrænseflade
+Settings_ServerSeparator Serveradskillertegn
+Settings_SessionDividers Sessionsskillere
+Settings_SQLiteJournalMode SQLite-journaltilstand
+Settings_SQLiteTweaks SQLite-justeringer
+Settings_SSLChainPort SSL-kædeport
+Settings_SSLChainServer SSL-kædeserver
+Settings_SubjectTagLeft Emnemærkat venstre
+Settings_SubjectTagRight Emnemærkat højre
+Settings_TagPosition Mærkatplacering
+Settings_TOPFetchesBody TOP henter indhold
+Settings_UnclassifiedWeight Uklassificeret vægt
+Settings_WordStemming Ordstemming
+Settings_WordTable Ordtabel
+SingleBucket_ClearBucket Fjern alle ord
+Status_Checking Kontrollerer...
+Status_Description Statuskontroller for POPFile-tjenester.
+Status_LoadError Kunne ikke indlæse status
+Status_NoChecks Ingen kontroller tilgængelige.
+View_Chart Beslutningsdiagram
+View_DownloadMessage Download besked
+View_MessageBody Beskedindhold
+View_MessageHeader Beskeddheader
+View_ShowFrequencies Vis ordfrekvenser
+View_ShowProbabilities Vis ordsandsynligheder
+View_ShowScores Vis ordscorer og beslutningsdiagram
+View_Title Enkelt beskedvisning
+View_WordFrequencies viser ordfrekvenser
+View_WordMatrix Ordmatrix
+View_WordProbabilities viser ordsandsynligheder
+View_WordScores viser ordscorer
+Windows_Console Kør POPFile i et konsolvindue?
+Windows_NextTime <p><font color="red">Denne ændring træder ikke i kraft, før næste gang du starter POPFile</font>
+Windows_TrayIcon Vis POPFile-ikonet i Windows systembakke?
+
+Advanced_AllParameters Alle POPFile-parametre
+Advanced_ConfigFile Konfigurationsfil:
+Advanced_Parameter Parameter
+Advanced_Value Værdi
+Advanced_Warning Dette er den komplette liste over POPFile-parametre. Kun til avancerede brugere: du kan ændre enhver og klikke Opdater; der er ingen gyldighed-kontrol. Elementer vist med fed er ændret fra standardindstillingen.
