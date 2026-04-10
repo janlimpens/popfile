@@ -377,3 +377,187 @@ Shutdown_Message                        O POPFile foi desligado
 Help_Training                           Quando você usa o POPFile pela primeira vez, ele ainda não sabe nada e precisa de treinamento. O POPFile requer treinamento nas mensagens para cada categoria, e o treinamento acontece quando você reclassifica para a categoria correto uma mensagem que o POPFile classificou incorretamente. Você deve também configurar seu cliente de email para filtrar mensagens baseado na classificação do POPFile. Informação para configurar os filtros no seu cliente de email pode ser encontrado no <a href="http://getpopfile.org/docs/FAQ:EmailSorting">Projeto de Documentação do POPFile</a>.
 Help_Bucket_Setup                       O POPFile requer pelo menos duas categorias além do pseudo-categoria "unclassified". O que torna o POPFile único é que ele pode classificar email, mais do que isso, você pode ter qualquer número de categorias. Uma configuração simples poderia ser uma categoria "spam", "pessoal", e uma categoria "trabalho".
 Help_No_More                            Não mostre isto novamente
+
+# New keys added (translations batch 1)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+WikiLink index.php
+FAQLink FAQ
+RequestFeatureLink RequestFeature
+MailingListLink mailing_lists
+DonateLink Donate
+NavCorpus Corpus
+NavHistory Histórico
+NavIMAP IMAP
+NavMagnets Ímãs
+NavSettings Configurações
+NavStatus Status
+Corpus_BucketList Categorias
+Corpus_Color Cor
+Corpus_Actions Ações
+Corpus_Clear Limpar
+Corpus_Search Pesquisar
+Corpus_StopwordsTitle Palavras de parada
+Corpus_StopwordsDesc As palavras nesta lista nunca são usadas para classificação.
+Corpus_RemoveStopword Remover
+Corpus_StopwordCandidates Candidatas a palavras de parada
+Corpus_StopwordCandidatesDesc Palavras que aparecem uniformemente em todas as categorias — pouco poder discriminativo.
+Corpus_StopwordRatio Limiar máx/mín do índice
+Corpus_LoadCandidates Encontrar candidatas
+Corpus_NoCandidates Nenhuma candidata encontrada neste limiar.
+Corpus_AddStopword Adicionar às palavras de parada
+BucketSelect_AddNew Adicionar nova...
+BucketSelect_AlreadyExists Já existe
+BucketSelect_CreateError Erro ao criar categoria
+BucketSelect_InvalidName Apenas a-z, 0-9, - e _
+BucketSelect_NameRequired Nome obrigatório
+Bucket_InIgnoredWords <b>%s</b> está nas palavras ignoradas. POPFile ignora esta palavra
+History_AllBuckets Todas as categorias
+History_HighlightWords Destacar palavras por categoria
+History_Loading Carregando...
+History_MoveTo — mover para —
+History_Moving Movendo...
+History_NoMatchingMessages Nenhuma mensagem correspondente
+History_Reclassifying Reclassificando...
+History_ReclassifyUnclassified Reclassificar não classificados
+History_Selected selecionado(s)
+Imap_BucketFolderMappings Categoria -> Mapeamentos de pastas
+Imap_Connected Conectado
+Imap_Connection Conexão
+Imap_ConnectionFailed Falha na conexão
+Imap_Description Monitorar pastas IMAP e classificar automaticamente as mensagens recebidas.
+Imap_EnableService Ativar serviço IMAP
+Imap_FetchFolders Obter pastas
+Imap_Fetching Obtendo...
+Imap_IMAFFolder Pasta IMAP
+Imap_MappingsHint As mensagens classificadas são movidas para a pasta IMAP especificada. Deixe as categorias não mapeadas vazias para ignorar o movimento.
+Imap_NoFoldersWatched Nenhuma pasta monitorada ainda.
+Imap_NoMappings Nenhum mapeamento definido.
+Imap_SaveAnyway Salvar mesmo assim
+Imap_SaveConnection Salvar conexão
+Imap_SaveFolders Salvar pastas
+Imap_Saving Salvando...
+Imap_Service Serviço
+Imap_TestConnection Testar conexão
+Imap_Testing Testando...
+Imap_TrainingHint O modo de treinamento analisa as pastas de arquivo existentes e treina o classificador com seu conteúdo. O indicador é redefinido automaticamente quando o treinamento termina.
+Imap_TrainingMode Modo de treinamento
+Imap_WatchedFolders Pastas monitoradas
+Imap_WatchedHint O POPFile monitora estas pastas IMAP para novas mensagens a classificar.
+Magnet_Created Ímã criado
+Magnet_Deleted Ímã excluído
+Reconnect_Connecting Conectando...
+Reconnect_Message O backend não está acessível. Tentando reconectar...
+Reconnect_Now Reconectar agora
+Reconnect_RetryIn Tentando novamente em
+Reconnect_Title Conexão perdida
+Settings_AdminPassword Senha do administrador
+Settings_ArchiveDirectory Diretório de arquivo
+Settings_ArchiveMessages Arquivar mensagens
+Settings_ArchiveSubdirs Sub-diretórios de arquivo
+Settings_AutoDetect Detecção automática
+Settings_AutoDetectLanguage Detectar idioma automaticamente
+Settings_ChainPort Porta em cadeia
+Settings_ChainServer Servidor em cadeia
+Settings_DateFormat Formato de data
+Settings_DescAdminPassword Deixar vazio para desativar a proteção por senha.
+Settings_DescArchiveDir Diretório para mensagens arquivadas (relativo ao diretório do usuário).
+Settings_DescArchiveMessages Salvar uma cópia de cada mensagem classificada no disco.
+Settings_DescArchiveSubdirs Dividir o arquivo em N sub-diretórios (0 = desativado).
+Settings_DescAutoDetectLang Detecta o idioma de cada mensagem e aplica as palavras de parada e o stemmer correspondentes. Adiciona ~130% de latência de classificação; útil para caixas de correio com múltiplos idiomas.
+Settings_DescChainPort Porta do servidor SMTP upstream.
+Settings_DescChainServer Nome do host do servidor SMTP upstream.
+Settings_DescDateFormat String de formato strftime. Deixar vazio para o padrão do locale.
+Settings_DescForceFork Criar um novo processo para cada conexão.
+Settings_DescHEADFetchesBody Obter artigo completo com o comando HEAD.
+Settings_DescHTTPPort Porta em que a interface web escuta. Requer reinicialização.
+Settings_DescItemsPerPage Linhas mostradas por página no Histórico e Ímãs.
+Settings_DescLanguage Idioma de exibição da interface. Deixar vazio para detecção automática pelo navegador.
+Settings_DescListenAddress Endereço IP para vincular. Vazio = todas as interfaces.
+Settings_DescLocalOnly_UI Restringir a interface web a conexões locais.
+Settings_DescLogDirectory Diretório para arquivos de log. Vazio = raiz do POPFile.
+Settings_DescLogLevel Verbosidade da saída de log.
+Settings_DescLogSQLToStdout Imprimir cada instrução SQL com valores vinculados no stdout. Ativo apenas quando "Log para stdout" também está habilitado.
+Settings_DescLogToStdout Espelhar a saída de log no stdout além do arquivo de log.
+Settings_DescMessageCutoff Número máximo de palavras analisadas por mensagem (0 = ilimitado).
+Settings_DescNNTPLocalOnly Aceitar apenas conexões NNTP do localhost.
+Settings_DescNNTPPort Porta em que o POPFile escuta para NNTP (padrão 119).
+Settings_DescNNTPSeparator Caractere que separa o usuário do servidor.
+Settings_DescPOP3LocalOnly Aceitar apenas conexões POP3 do localhost.
+Settings_DescPOP3Port Porta em que o POPFile escuta para POP3 (padrão 1110).
+Settings_DescPOP3Separator Caractere que separa o usuário do servidor (ex. usuário:mailhost).
+Settings_DescRetentionDays Quantos dias manter o histórico de mensagens.
+Settings_DescSessionDividers Mostrar divisores entre sessões de navegação no Histórico.
+Settings_DescSMTPLocalOnly Aceitar apenas conexões SMTP do localhost.
+Settings_DescSMTPPort Porta em que o POPFile escuta para SMTP (padrão 25).
+Settings_DescSQLiteJournal Modo de diário SQLite / WAL.
+Settings_DescSQLiteTweaks Máscara de bits: 1 = escritas mais rápidas (menos seguro), 2 = backup periódico.
+Settings_DescSSLChainPort Porta do servidor SSL POP3 upstream.
+Settings_DescSSLChainServer Nome do host do servidor SSL POP3 upstream para encadeamento SSL.
+Settings_DescSubjectTagLeft Prefixo inserido no cabeçalho Assunto, ex. [SPAM].
+Settings_DescSubjectTagRight Sufixo acrescentado ao cabeçalho Assunto.
+Settings_DescTagPosition Onde colocar a etiqueta do assunto.
+Settings_DescTOPFetchesBody Obter também o corpo da mensagem com o comando TOP.
+Settings_DescUnclassifiedWeight Limiar de probabilidade abaixo do qual o e-mail está "não classificado".
+Settings_DescWordStemming Reduzir palavras ao seu radical antes da classificação (ex. "correndo" para "corr"). Melhora a recuperação para idiomas morfologicamente ricos com ~10% de custo de latência.
+Settings_DescWordTable O que mostrar na tabela de probabilidade de palavras.
+Settings_ErrorSaving Erro ao salvar
+Settings_ForceFork Force Fork
+Settings_HEADFetchesBody HEAD obtém o corpo
+Settings_HTTPPort Porta HTTP
+Settings_ItemsPerPage Itens por página
+Settings_ListenAddress Endereço de escuta
+Settings_ListenPort Porta de escuta
+Settings_LocalOnly Apenas local
+Settings_LogDirectory Diretório de log
+Settings_LogLevel Nível de log
+Settings_LogSQLToStdout Log SQL no stdout
+Settings_LogToStdout Log no stdout
+Settings_MessageCutoff Limite de mensagem
+Settings_OptDebug Depuração
+Settings_OptEnd Fim
+Settings_OptErrorsOnly Apenas erros
+Settings_OptFrequencies Frequências
+Settings_OptFront Frente
+Settings_OptHidden Oculto
+Settings_OptInfo Info
+Settings_OptLogScores Log de pontuações
+Settings_OptProbabilities Probabilidades
+Settings_OptWarnings Avisos
+Settings_RetentionDays Retenção (dias)
+Settings_SaveChanges Salvar alterações
+Settings_Saved Salvo
+Settings_Saving Salvando...
+Settings_Search Pesquisar configurações...
+Settings_SectionClassifier Classificador
+Settings_SectionHistory Histórico
+Settings_SectionLogging Log
+Settings_SectionNNTP Proxy NNTP
+Settings_SectionPOP3 Proxy POP3
+Settings_SectionSecurity Segurança
+Settings_SectionSMTP Proxy SMTP
+Settings_SectionUI Interface do usuário
+Settings_ServerSeparator Separador de servidor
+Settings_SessionDividers Divisores de sessão
+Settings_SQLiteJournalMode Modo de diário SQLite
+Settings_SQLiteTweaks Ajustes de SQLite
+Settings_SSLChainPort Porta SSL em cadeia
+Settings_SSLChainServer Servidor SSL em cadeia
+Settings_SubjectTagLeft Etiqueta assunto esquerda
+Settings_SubjectTagRight Etiqueta assunto direita
+Settings_TagPosition Posição da etiqueta
+Settings_TOPFetchesBody TOP obtém o corpo
+Settings_UnclassifiedWeight Peso não classificado
+Settings_WordStemming Stemming de palavras
+Settings_WordTable Tabela de palavras
+Status_Checking Verificando...
+Status_Description Verificações de status para os serviços do POPFile.
+Status_LoadError Falha ao carregar o status
+Status_NoChecks Nenhuma verificação disponível.
+View_MessageBody Corpo da mensagem
+View_MessageHeader Cabeçalho da mensagem
+
+Configuration_Error10 A porta de escuta POP3 não pode ter o mesmo valor que a porta da interface do usuário
+Configuration_Error9 A porta da interface do usuário não pode ter o mesmo valor que a porta de escuta POP3
+Imap_Use_SSL Usar SSL
+View_DownloadMessage Baixar mensagem

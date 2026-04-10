@@ -382,3 +382,182 @@ Shutdown_Message                        POPFile wurde beendet
 Help_Training                           POPFile weiss zunächst einmal nichts über Ihre Nachrichten und muss deshalb erst trainiert werden. Für jede Kategorie muss mindestens eine Nachricht neu eingestuft worden sein, damit POPFile selber eine Einstufung vornehmen kann. Außerdem müssen Sie Ihr Mail-Programm so konfigurieren, dass es aufgrund der POPFile-Einstufung Ihre Emails filtert. Informationen über die Konfiguration verschiedener Mail-Programme finden Sie (auf English) im <a href="http://getpopfile.org/docs/FAQ:EmailSorting">POPFile Documentation Project</a>.
 Help_Bucket_Setup                       POPFile braucht mindestens zwei Kategorien zusätzlich zu der "unclassified" Pseudo-Kategorie. POPFile zeichnet sich durch die Fähigkeit aus, Emails in eine unbgrenzte Zahl von Kategorien einsortieren zu können. Eine einfache Konfiguration könnte zum Beispiel die Kategorien "spam", "beruflich" und "privat" enthalten.
 Help_No_More                            Diesen Hinweis nicht mehr zeigen
+
+# New keys added (translations batch 1)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+WikiLink index.php
+FAQLink FAQ
+RequestFeatureLink RequestFeature
+MailingListLink mailing_lists
+DonateLink Donate
+NavCorpus Korpus
+NavHistory Verlauf
+NavIMAP IMAP
+NavMagnets Magnete
+NavSettings Einstellungen
+NavStatus Status
+Corpus_BucketList Kategorien
+Corpus_Color Farbe
+Corpus_Actions Aktionen
+Corpus_Clear Leeren
+Corpus_Search Suchen
+Corpus_StopwordsTitle Stoppwörter
+Corpus_StopwordsDesc Wörter in dieser Liste werden nie zur Klassifizierung verwendet.
+Corpus_RemoveStopword Entfernen
+Corpus_StopwordCandidates Stoppwort-Kandidaten
+Corpus_StopwordCandidatesDesc Wörter, die gleichmäßig über alle Kategorien verteilt sind — geringer Diskriminierungswert.
+Corpus_StopwordRatio Max/min-Verhältnisschwelle
+Corpus_LoadCandidates Kandidaten suchen
+Corpus_NoCandidates Keine Kandidaten bei diesem Schwellenwert gefunden.
+Corpus_AddStopword Zu Stoppwörtern hinzufügen
+BucketSelect_AddNew Neu hinzufügen...
+BucketSelect_AlreadyExists Existiert bereits
+BucketSelect_CreateError Fehler beim Erstellen der Kategorie
+BucketSelect_InvalidName Nur a-z, 0-9, - und _
+BucketSelect_NameRequired Name erforderlich
+Bucket_InIgnoredWords <b>%s</b> ist in der Ignorierliste. POPFile ignoriert dieses Wort
+History_AllBuckets Alle Kategorien
+History_HighlightWords Wörter nach Kategorie hervorheben
+History_Loading Lade...
+History_MoveTo — verschieben nach —
+History_Moving Verschiebe...
+History_NoMatchingMessages Keine übereinstimmenden Nachrichten
+History_Reclassifying Klassifiziere neu...
+History_ReclassifyUnclassified Unkategorisierte neu einstufen
+History_Selected ausgewählt
+Imap_BucketFolderMappings Kategorie -> Ordner-Zuordnungen
+Imap_Connected Verbunden
+Imap_Connection Verbindung
+Imap_ConnectionFailed Verbindung fehlgeschlagen
+Imap_Description IMAP-Ordner überwachen und eingehende Nachrichten automatisch klassifizieren.
+Imap_EnableService IMAP-Dienst aktivieren
+Imap_FetchFolders Ordner abrufen
+Imap_Fetching Abrufe...
+Imap_IMAFFolder IMAP-Ordner
+Imap_MappingsHint Klassifizierte Nachrichten werden in den angegebenen IMAP-Ordner verschoben. Lassen Sie nicht zugeordnete Kategorien leer, um das Verschieben zu überspringen.
+Imap_NoFoldersWatched Noch keine Ordner überwacht.
+Imap_NoMappings Keine Zuordnungen definiert.
+Imap_SaveAnyway Trotzdem speichern
+Imap_SaveConnection Verbindung speichern
+Imap_SaveFolders Ordner speichern
+Imap_Saving Speichere...
+Imap_Service Dienst
+Imap_TestConnection Verbindung testen
+Imap_Testing Teste...
+Imap_TrainingHint Der Trainingsmodus durchsucht vorhandene Archivordner und trainiert den Klassifizierer anhand ihrer Inhalte. Das Flag wird automatisch zurückgesetzt, wenn das Training abgeschlossen ist.
+Imap_TrainingMode Trainingsmodus
+Imap_WatchedFolders Überwachte Ordner
+Imap_WatchedHint POPFile überwacht diese IMAP-Ordner auf neue Nachrichten zur Klassifizierung.
+Magnet_Created Magnet erstellt
+Magnet_Deleted Magnet gelöscht
+Reconnect_Connecting Verbinde...
+Reconnect_Message Das Backend ist nicht erreichbar. Versuche, die Verbindung wiederherzustellen...
+Reconnect_Now Jetzt verbinden
+Reconnect_RetryIn Erneuter Versuch in
+Reconnect_Title Verbindung unterbrochen
+Settings_AdminPassword Admin-Passwort
+Settings_ArchiveDirectory Archivverzeichnis
+Settings_ArchiveMessages Nachrichten archivieren
+Settings_ArchiveSubdirs Archiv-Unterverzeichnisse
+Settings_AutoDetect Automatisch erkennen
+Settings_AutoDetectLanguage Sprache automatisch erkennen
+Settings_ChainPort Chain-Port
+Settings_ChainServer Chain-Server
+Settings_DateFormat Datumsformat
+Settings_DescAdminPassword Leer lassen, um den Passwortschutz zu deaktivieren.
+Settings_DescArchiveDir Verzeichnis für archivierte Nachrichten (relativ zum Benutzerverzeichnis).
+Settings_DescArchiveMessages Eine Kopie jeder klassifizierten Nachricht auf dem Datenträger speichern.
+Settings_DescArchiveSubdirs Archiv in N Unterverzeichnisse aufteilen (0 = deaktiviert).
+Settings_DescAutoDetectLang Erkennt die Sprache jeder Nachricht und wendet passende Stoppwörter und Stemmer an. Erhöht die Klassifizierungslatenz um ~130%; nützlich für Postfächer mit gemischten Sprachen.
+Settings_DescChainPort Port des vorgelagerten SMTP-Servers.
+Settings_DescChainServer Hostname des vorgelagerten SMTP-Servers.
+Settings_DescDateFormat strftime-Formatstring. Leer lassen für Locale-Standard.
+Settings_DescForceFork Für jede Verbindung einen neuen Prozess forken.
+Settings_DescHEADFetchesBody Vollständigen Artikel mit dem HEAD-Befehl abrufen.
+Settings_DescHTTPPort Port, auf dem die Web-Oberfläche lauscht. Neustart erforderlich.
+Settings_DescItemsPerPage Angezeigte Zeilen pro Seite in Verlauf und Magneten.
+Settings_DescLanguage Anzeigesprache der Oberfläche. Leer lassen für automatische Erkennung aus dem Browser.
+Settings_DescListenAddress IP-Adresse zum Binden. Leer = alle Schnittstellen.
+Settings_DescLocalOnly_UI Web-Oberfläche auf lokale Verbindungen beschränken.
+Settings_DescLogDirectory Verzeichnis für Log-Dateien. Leer = POPFile-Wurzel.
+Settings_DescLogLevel Ausführlichkeit der Log-Ausgabe.
+Settings_DescLogSQLToStdout Jede SQL-Anweisung mit gebundenen Werten auf stdout ausgeben. Nur aktiv, wenn "Log auf stdout" ebenfalls aktiviert ist.
+Settings_DescLogToStdout Log-Ausgabe zusätzlich zur Log-Datei auf stdout spiegeln.
+Settings_DescMessageCutoff Maximale analysierte Wörter pro Nachricht (0 = unbegrenzt).
+Settings_DescNNTPLocalOnly Nur NNTP-Verbindungen von localhost akzeptieren.
+Settings_DescNNTPPort Port, auf dem POPFile für NNTP lauscht (Standard 119).
+Settings_DescNNTPSeparator Trennzeichen zwischen Benutzer und Server.
+Settings_DescPOP3LocalOnly Nur POP3-Verbindungen von localhost akzeptieren.
+Settings_DescPOP3Port Port, auf dem POPFile für POP3 lauscht (Standard 1110).
+Settings_DescPOP3Separator Zeichen, das Benutzer von Server trennt (z.B. benutzer:mailhost).
+Settings_DescRetentionDays Wie viele Tage der Nachrichtenverlauf aufbewahrt wird.
+Settings_DescSessionDividers Trennlinien zwischen Browsersitzungen im Verlauf anzeigen.
+Settings_DescSMTPLocalOnly Nur SMTP-Verbindungen von localhost akzeptieren.
+Settings_DescSMTPPort Port, auf dem POPFile für SMTP lauscht (Standard 25).
+Settings_DescSQLiteJournal SQLite Journal / WAL-Modus.
+Settings_DescSQLiteTweaks Bitmaske: 1 = schnelleres Schreiben (weniger sicher), 2 = regelmäßige Sicherung.
+Settings_DescSSLChainPort Port des vorgelagerten SSL POP3-Servers.
+Settings_DescSSLChainServer Hostname des vorgelagerten SSL POP3-Servers für SSL-Verkettung.
+Settings_DescSubjectTagLeft Präfix, das in den Betreff-Header eingefügt wird, z.B. [SPAM].
+Settings_DescSubjectTagRight Suffix, das an den Betreff-Header angehängt wird.
+Settings_DescTagPosition Wo das Betreff-Tag platziert werden soll.
+Settings_DescTOPFetchesBody Nachrichteninhalt auch mit dem TOP-Befehl abrufen.
+Settings_DescUnclassifiedWeight Wahrscheinlichkeitsschwelle, unterhalb derer E-Mails "unkategorisiert" sind.
+Settings_DescWordStemming Wörter vor der Klassifizierung auf ihren Stamm reduzieren (z.B. "laufen" zu "lauf"). Verbessert den Recall für morphologisch reiche Sprachen bei ~10% Latenzkosten.
+Settings_DescWordTable Was in der Wort-Wahrscheinlichkeitstabelle angezeigt werden soll.
+Settings_ErrorSaving Fehler beim Speichern
+Settings_ForceFork Force Fork
+Settings_HEADFetchesBody HEAD ruft Body ab
+Settings_HTTPPort HTTP-Port
+Settings_ItemsPerPage Einträge pro Seite
+Settings_ListenAddress Listen-Adresse
+Settings_ListenPort Listen-Port
+Settings_LocalOnly Nur lokal
+Settings_LogDirectory Log-Verzeichnis
+Settings_LogLevel Log-Stufe
+Settings_LogSQLToStdout SQL nach stdout loggen
+Settings_LogToStdout Nach stdout loggen
+Settings_MessageCutoff Nachrichtengrenze
+Settings_OptDebug Debug
+Settings_OptEnd Ende
+Settings_OptErrorsOnly Nur Fehler
+Settings_OptFrequencies Häufigkeiten
+Settings_OptFront Vorne
+Settings_OptHidden Versteckt
+Settings_OptInfo Info
+Settings_OptLogScores Bewertungen protokollieren
+Settings_OptProbabilities Wahrscheinlichkeiten
+Settings_OptWarnings Warnungen
+Settings_RetentionDays Aufbewahrung (Tage)
+Settings_SaveChanges Änderungen speichern
+Settings_Saved Gespeichert
+Settings_Saving Speichere...
+Settings_Search Einstellungen suchen...
+Settings_SectionClassifier Klassifizierer
+Settings_SectionHistory Verlauf
+Settings_SectionLogging Protokollierung
+Settings_SectionNNTP NNTP-Proxy
+Settings_SectionPOP3 POP3-Proxy
+Settings_SectionSecurity Sicherheit
+Settings_SectionSMTP SMTP-Proxy
+Settings_SectionUI Benutzeroberfläche
+Settings_ServerSeparator Server-Trennzeichen
+Settings_SessionDividers Sitzungstrennlinien
+Settings_SQLiteJournalMode SQLite-Journalmodus
+Settings_SQLiteTweaks SQLite-Optimierungen
+Settings_SSLChainPort SSL-Chain-Port
+Settings_SSLChainServer SSL-Chain-Server
+Settings_SubjectTagLeft Betreff-Tag links
+Settings_SubjectTagRight Betreff-Tag rechts
+Settings_TagPosition Tag-Position
+Settings_TOPFetchesBody TOP ruft Body ab
+Settings_UnclassifiedWeight Unkategorisiert-Gewichtung
+Settings_WordStemming Wortstammung
+Settings_WordTable Worttabelle
+Status_Checking Überprüfe...
+Status_Description Systemprüfungen für POPFile-Dienste.
+Status_LoadError Status konnte nicht geladen werden
+Status_NoChecks Keine Prüfungen verfügbar.
+View_MessageBody Nachrichteninhalt
+View_MessageHeader Nachrichtenkopf
