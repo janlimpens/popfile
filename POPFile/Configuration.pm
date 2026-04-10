@@ -22,6 +22,7 @@ parameter names from earlier POPFile releases.
 use Object::Pad;
 use locale;
 
+use File::Copy qw(copy);
 use Getopt::Long;
 
 class POPFile::Configuration
@@ -357,21 +358,24 @@ save (C<save_needed> is 0).
 =cut
 
 method save_configuration() {
-    if ($save_needed == 0) {
-        return;
-    }
+    return if $save_needed == 0;
     my $config_file = $self->get_user_path('popfile.cfg');
     my $config_temp = $self->get_user_path('popfile.cfg.tmp');
     if (-e $config_file && !-w _) {
         $self->log_msg(0, "Can't write to the configuration file $config_file");
+        return
     }
-    if (open my $config, '>', $config_temp) {
-        $save_needed = 0;
+    if (open my $tmp, '>', $config_temp) {
         foreach my $key (sort keys %configuration_parameters) {
-            print $config "$key $configuration_parameters{$key}{value}\n";
+            print $tmp "$key $configuration_parameters{$key}{value}\n";
         }
-        close $config;
-        rename $config_temp, $config_file;
+        close $tmp;
+        if (copy($config_temp, $config_file)) {
+            unlink $config_temp;
+            $save_needed = 0;
+        } else {
+            $self->log_msg(0, "Couldn't write configuration to $config_file: $!");
+        }
     } else {
         $self->log_msg(0, "Couldn't open a temporary configuration file $config_temp");
     }
