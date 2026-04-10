@@ -247,6 +247,21 @@ word contains no colon, applies the Snowball stemmer.
         return $result
     }
 
+=head2 mangle_words($word)
+
+Like L</mangle>, but first splits C<$word> on any single colon that is not
+part of a C<::> sequence (e.g. C<word1:word2> → C<word1>, C<word2>), then
+mangles each part.  Colons inside C<::> are left for the normal colon-strip
+pass inside L</mangle>.
+
+Returns a (possibly empty) list of mangled tokens.
+
+=cut
+
+    method mangle_words ($word) {
+        my @parts = split /(?<!:):(?!:)/, $word;
+        return grep { $_ ne '' } map { $self->mangle($_) } @parts
+    }
 
 =head2 add_stopword
 

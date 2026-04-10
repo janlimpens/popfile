@@ -502,14 +502,16 @@ colorization anchoring, and C<$prefix> is prepended to the mangled word
 =cut
 
 method update_word ($word, $encoded, $before, $after, $prefix) {
-    my $mword = $mangle->mangle($word);
+    my @mwords = $mangle->mangle_words($word);
 
-    if ($mword ne '') {
+    return unless @mwords;
+
+    if ($prefix =~ /(from|to|cc|subject)/i) {
+        push $quickmagnets{$prefix}->@*, $word;
+    }
+
+    for my $mword (@mwords) {
         $mword = $prefix . ':' . $mword if ($prefix ne '');
-
-        if ($prefix =~ /(from|to|cc|subject)/i) {
-            push $quickmagnets{$prefix}->@*, $word;
-        }
 
         if (defined($color_resolver)) {
             my $color = $self->get_color($mword);

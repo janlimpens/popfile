@@ -63,6 +63,15 @@ subtest 'colon handling' => sub {
     is( $wm->mangle('from:alice', 1),   'from:alice',  'pseudoword kept with allow_colon' );
 };
 
+subtest 'mangle_words colon split' => sub {
+    is( [$wm->mangle_words('hello:world')],   ['hello', 'world'], 'single colon splits into two tokens' );
+    is( [$wm->mangle_words('foo:bar:baz')],   ['foo', 'bar', 'baz'], 'two single colons split into three tokens' );
+    is( [$wm->mangle_words('Foo::Bar')],      ['foobar'],            ':: not split, colons stripped' );
+    is( [$wm->mangle_words('foo:bar::baz')],  ['foo', 'barbaz'],     'single and double colon mixed' );
+    is( [$wm->mangle_words('hello')],         ['hello'],             'no colon returns single token' );
+    is( [$wm->mangle_words('')],              [],                    'empty string returns empty list' );
+};
+
 subtest 'stopwords' => sub {
     $wm->add_stopword('the', '');
     $wm->add_stopword('and', '');
