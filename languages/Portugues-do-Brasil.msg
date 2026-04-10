@@ -43,7 +43,7 @@ Next                                    Próximo
 From                                    De
 Subject                                 Assunto
 Cc                                      Cc
-Classification                          Balde
+Classification                          categoria
 Reclassify                              Reclassificar
 Probability                             Probabilidade
 Scores                                  Pontos
@@ -56,7 +56,7 @@ Yes                                     Sim
 No                                      Não
 ChangeToYes                             Trocar para Sim
 ChangeToNo                              Trocar para Não
-Bucket                                  Balde
+Bucket                                  Categoria
 Magnet                                  Ímã
 Delete                                  Excluir
 Create                                  Criar
@@ -98,7 +98,7 @@ Locale_Date                            %a %R | %D %R
 Header_Title                            Centro de Controle do POPFile
 Header_Shutdown                         Desligar o POPFile
 Header_History                          Histórico
-Header_Buckets                          Baldes
+Header_Buckets                          Categorias
 Header_Configuration                    Configuração
 Header_Advanced                         Avançado
 Header_Security                         Segurança
@@ -186,7 +186,7 @@ Advanced_Value                          Valor
 Advanced_Warning                        Esta é a lista completa dos parâmetros do POPFile.  Somente para usuários avançados: você pode alterar qualquer um e clicar em Alterar; não há verificação de validade.  Ítens em negrito estão diferentes da configuração padrão. Veja <a href="http://getpopfile.org/docs/OptionReference">OptionReference</a> para mais informação sobre as opções.
 Advanced_ConfigFile                     Arquivo de configuração:
 
-History_Filter                          &nbsp;(apenas mostrando o balde <font color="%s">%s</font>)
+History_Filter                          &nbsp;(apenas mostrando a categoria <font color="%s">%s</font>)
 History_FilterBy                        Filtrar Por
 History_Search                          &nbsp;(procurado por remetente/assunto %s)
 History_Title                           Mensagens Recentes
@@ -231,7 +231,7 @@ Security_Error1                         A porta deve ser um número entre 1 e 65
 Security_Stealth                        Modo Stealth/Operação Servidor
 Security_NoStealthMode                  Não (Modo Stealth)
 Security_StealthMode                    (Modo Stealth)
-Security_ExplainStats                   (Com isto ligado o POPFile envia uma vez por dia os seguintes três valores para um script em getpopfile.org: bc (o número total de baldes que você tem), mc (o número total de mensagens que o POPFile classificou) e ec (o número total de erros de classificação).  Isto fica guardado em um arquivo e eu vou usar para publicar algumas estatísticas sobre como as pessoas usam o POPFile e o quão bem ele funciona.  Meu servidor web mantém seus arquivos de log por mais ou menos 5 dias e então os deleta; eu não estou guardando nenhuma conexão entre as estatístcas e os endereços IP de cada um.)
+Security_ExplainStats                   (Com isto ligado o POPFile envia uma vez por dia os seguintes três valores para um script em getpopfile.org: bc (o número total de categorias que você tem), mc (o número total de mensagens que o POPFile classificou) e ec (o número total de erros de classificação).  Isto fica guardado em um arquivo e eu vou usar para publicar algumas estatísticas sobre como as pessoas usam o POPFile e o quão bem ele funciona.  Meu servidor web mantém seus arquivos de log por mais ou menos 5 dias e então os deleta; eu não estou guardando nenhuma conexão entre as estatístcas e os endereços IP de cada um.)
 Security_ExplainUpdate                  (Com isto ligado o POPFile envia uma vez por dia os seguintes três valores para um script em getpopfile.org: ma (o número maior da versão do seu POPFile), mi (o número menor da versão do seu POPFile) e bn (o número do build da sua versão do POPFile). O POPFile recebe uma resposta na forma de um gráfico que aparece no topo da página se uma nova versão estiver disponível.  Meu servidor web mantém seus arquivos de log por mais ou menos 5 dias e então os deleta; eu não estou guardando nenhuma conexão entre as verificações de versão e os endereços IP de cada um.)
 Security_PasswordTitle                  Senha da Interface de Usuário
 Security_Password                       Senha
@@ -255,31 +255,31 @@ Security_Update                         Verificar diariamente atualizações par
 Security_StatsTitle                     Reportar Estatísticas
 Security_Stats                          Enviar estatísticas diariamente
 
-Magnet_Error1                           Ímã '%s' já existe no balde '%s'
-Magnet_Error2                           O novo ímã '%s' conflita com o ímã '%s' no balde '%s' e pode causar resultados ambíguos.  O novo ímã não foi adicionado.
-Magnet_Error3                           Criar novo ímã '%s' no balde '%s'
+Magnet_Error1                           Ímã '%s' já existe na categoria '%s'
+Magnet_Error2                           O novo ímã '%s' conflita com o ímã '%s' na categoria '%s' e pode causar resultados ambíguos.  O novo ímã não foi adicionado.
+Magnet_Error3                           Criar novo ímã '%s' na categoria '%s'
 Magnet_CurrentMagnets                   Ímãs Atuais
-Magnet_Message1                         Os seguintes ímãs fazem as mensagens serem sempre classificadas no balde especificado.
+Magnet_Message1                         Os seguintes ímãs fazem as mensagens serem sempre classificadas na categoria especificado.
 Magnet_CreateNew                        Criar Novo Ímã
 Magnet_Explanation                      Estes tipos de ímã estão disponíveis: <ul><li><b>Endereço ou nome do remetente:</b> Por exemplo: fulano@empresa.com para pegar um endereço específico, <br />empresa.com para pegar todo mundo que envia de empresa.com, <br />Fulano de Tal para pegar uma pessoa específica, Fulano para pegar todos os Fulanos.</li><li><b>Endereço ou nome de destinatário/cópia:</b> Como um ímã de remetente mas para o endereço Para:/Cc: de uma mensagem.</li> <li><b>Palavras no assunto:</b> Por exemplo: olá para pegar todas as mensagens com olá no assunto.</li></ul>
 Magnet_MagnetType                       Tipo do ímã
 Magnet_Value                            Valores
-Magnet_Always                           Sempre vai para o balde
+Magnet_Always                           Sempre vai para a categoria
 Magnet_Jump                             Ir para a página de ímãs
 
-Bucket_Error1                           Nomes de balde somente podem conter as letras de a até z minúsculas, números de 0 a 9, mais - e _
-Bucket_Error2                           O balde %s já existe
-Bucket_Error3                           Criado o balde %s
+Bucket_Error1                           Nomes de categoria somente podem conter as letras de a até z minúsculas, números de 0 a 9, mais - e _
+Bucket_Error2                           a categoria %s já existe
+Bucket_Error3                           Criado a categoria %s
 Bucket_Error4                           Por favor digite uma palavra que não seja em branco
-Bucket_Error5                           Renomeado o balde %s para %s
-Bucket_Error6                           Excluído o balde %s
-Bucket_Title                            Configuração do Balde
-Bucket_BucketName                       Nome do<br>Balde
+Bucket_Error5                           Renomeado a categoria %s para %s
+Bucket_Error6                           Excluído a categoria %s
+Bucket_Title                            Configuração da categoria
+Bucket_BucketName                       Nome do<br>categoria
 Bucket_WordCount                        Contagem de Palavras
 Bucket_WordCounts                       Contagens de Palavras
 Bucket_UniqueWords                      Palavras Distintas
 Bucket_SubjectModification              Modificação do<br>Cabeçalho Assunto
-Bucket_ChangeColor                      Cor do<br>Balde
+Bucket_ChangeColor                      Cor do<br>categoria
 Bucket_NotEnoughData                    Dados insuficientes
 Bucket_ClassificationAccuracy           Precisão da Classificação
 Bucket_EmailsClassified                 Mensagens classificadas
@@ -294,24 +294,24 @@ Bucket_LastReset                        Último Reinício
 Bucket_CurrentColor                     A cor atual de %s é %s
 Bucket_SetColorTo                       Ajustar a cor de %s para %s
 Bucket_Maintenance                      Manutenção
-Bucket_CreateBucket                     Criar balde com o nome
-Bucket_DeleteBucket                     Excluir o balde chamado
-Bucket_RenameBucket                     Renomear o balde chamado
+Bucket_CreateBucket                     Criar categoria com o nome
+Bucket_DeleteBucket                     Excluir a categoria chamado
+Bucket_RenameBucket                     Renomear a categoria chamado
 Bucket_Lookup                           Procurar
-Bucket_LookupMessage                    Procurar por palavra nos baldes
+Bucket_LookupMessage                    Procurar por palavra nas categorias
 Bucket_LookupMessage2                   Procurar no resultado por
 Bucket_LookupMostLikely                 <b>%s</b> é mais provável de aparecer em <font color="%s">%s</font>
-Bucket_DoesNotAppear                    <p><b>%s</b> não aparece em nenhum dos baldes
+Bucket_DoesNotAppear                    <p><b>%s</b> não aparece em nenhum das categorias
 Bucket_DisabledGlobally                 Desabilitado globalmente
 Bucket_To                               para
 Bucket_Quarantine                       Mensagem de<br>Quarentena
 
 SingleBucket_Title                      Detalhes para %s
-SingleBucket_WordCount                  Contagem de palavras do balde
+SingleBucket_WordCount                  Contagem de palavras da categoria
 SingleBucket_TotalWordCount             Contagem total de palavras
 SingleBucket_Percentage                 Percentual do total
 SingleBucket_WordTable                  Tabela de Palavras para %s
-SingleBucket_Message1                   Clique em uma letra no índice para ver a lista de palavras que começam com tal letra.  Clique em qualquer palavra para procurar sua probabilidade para todos os baldes.
+SingleBucket_Message1                   Clique em uma letra no índice para ver a lista de palavras que começam com tal letra.  Clique em qualquer palavra para procurar sua probabilidade para todos as categorias.
 SingleBucket_Unique                     %s distinta
 SingleBucket_ClearBucket                Remover Todas Palavras
 
@@ -333,23 +333,23 @@ Windows_Console                         Executar o POPFile em uma janela de cons
 Windows_NextTime                        <p><font color="red">Esta alteração não terá efeito até que você reinicie o POPFile</font>
 
 Header_MenuSummary                      Esta tabela é o menu de navegação que possibilita acesso a cada uma das diferentes páginas do centro de controle.
-History_MainTableSummary                Esta tabela mostra o remetente e o assunto das mensagens recebidas recentemente e permite que elas sejam revisadas e reclassificadas.  Clicar na linha de assunto vai mostrar o texto inteiro da mensagem, juntamente com informação sobre por que ela foi classificada como o foi.  A coluna 'Deveria ser' permite que você especifique a que balde a mensagem pertence, ou desfazer esta mudança.  A coluna 'Remover' permite que você exclua mensagens específicas do histórico se você não precisar mais delas.
-History_OpenMessageSummary              Esta tabela contém o texto integral de uma mensagem, com as palavras que são usadas para classificação destacadas de acordo com o balde que foi mais relevante para elas.
-Bucket_MainTableSummary                 Esta tabela fornece uma visão geral dos baldes de classificação.  Cada linha mostra o nome do balde, a contagem total de palavras para aquele balde, o número real de palavras individuais em cada balde, se o assunto da mensagem vai ser modificado quando ele for classificado para aquele balde, se as mensagens recebidas naquele balde devem ficar em quarentena, e uma tabela para escolher a cor usada para mostrar qualquer coisa relacionada àquele balde no centro de controle.
-Bucket_StatisticsTableSummary           Esta tabela fornece três conjuntos de estatísticas sobre o desempenho geral do PopFile.  A primeira é a exatidão da classificação, a segunda é quantas mensagens foram classificadas, e para quais baldes, e a terceira é quantas palavras existem em cada balde, e as suas porcentagens relativas.
-Bucket_MaintenanceTableSummary          Esta tabela contém formulários que permitem que você crie, exclua ou renomeie baldes, e para procurar uma palavra em todos os baldes e ver as suas probabilidades relativas.
+History_MainTableSummary                Esta tabela mostra o remetente e o assunto das mensagens recebidas recentemente e permite que elas sejam revisadas e reclassificadas.  Clicar na linha de assunto vai mostrar o texto inteiro da mensagem, juntamente com informação sobre por que ela foi classificada como o foi.  A coluna 'Deveria ser' permite que você especifique a que categoria a mensagem pertence, ou desfazer esta mudança.  A coluna 'Remover' permite que você exclua mensagens específicas do histórico se você não precisar mais delas.
+History_OpenMessageSummary              Esta tabela contém o texto integral de uma mensagem, com as palavras que são usadas para classificação destacadas de acordo com a categoria que foi mais relevante para elas.
+Bucket_MainTableSummary                 Esta tabela fornece uma visão geral das categorias de classificação.  Cada linha mostra o nome da categoria, a contagem total de palavras para aquela categoria, o número real de palavras individuais em cada categoria, se o assunto da mensagem vai ser modificado quando ele for classificado para aquela categoria, se as mensagens recebidas naquela categoria devem ficar em quarentena, e uma tabela para escolher a cor usada para mostrar qualquer coisa relacionada àquele categoria no centro de controle.
+Bucket_StatisticsTableSummary           Esta tabela fornece três conjuntos de estatísticas sobre o desempenho geral do PopFile.  A primeira é a exatidão da classificação, a segunda é quantas mensagens foram classificadas, e para quais categorias, e a terceira é quantas palavras existem em cada categoria, e as suas porcentagens relativas.
+Bucket_MaintenanceTableSummary          Esta tabela contém formulários que permitem que você crie, exclua ou renomeie categorias, e para procurar uma palavra em todos as categorias e ver as suas probabilidades relativas.
 Bucket_AccuracyChartSummary             Esta tabela representa graficamente a exatidão da classificação de mensagens.
-Bucket_BarChartSummary                  Esta tabela representa graficamente a uma alocação porcentual para cada um dos diferentes baldes.  Ela é usada tanto para o número de mensagens classificadas como para o número total de palavras.
-Bucket_LookupResultsSummary             Esta tabela mostra as probabilidades associadas com qualquer palavra específica do corpus.  Para cada balde, ela mostra a freqüência com que cada palavra ocorre, a probabilidade de que ela ocorra naquele balde, e o efeito geral na pontuação do balde se aquela palavra existir em uma mensagem.
-Bucket_WordListTableSummary             Esta tabela fornece uma relação de todas as palavras para um balde específico, organizada pela primeira letra comum para cada linha.
-Magnet_MainTableSummary                 Esta tabela mostra a lista de ímãs que são usados para classificar automaticamente mensagens de acordo com regras fixas.  Cada linha mostra como o ímã está definido, para qual balde ele foi concebido, e um botão para excluir aquele ímã.
+Bucket_BarChartSummary                  Esta tabela representa graficamente a uma alocação porcentual para cada um dos diferentes categorias.  Ela é usada tanto para o número de mensagens classificadas como para o número total de palavras.
+Bucket_LookupResultsSummary             Esta tabela mostra as probabilidades associadas com qualquer palavra específica do corpus.  Para cada categoria, ela mostra a freqüência com que cada palavra ocorre, a probabilidade de que ela ocorra naquela categoria, e o efeito geral na pontuação da categoria se aquela palavra existir em uma mensagem.
+Bucket_WordListTableSummary             Esta tabela fornece uma relação de todas as palavras para uma categoria específico, organizada pela primeira letra comum para cada linha.
+Magnet_MainTableSummary                 Esta tabela mostra a lista de ímãs que são usados para classificar automaticamente mensagens de acordo com regras fixas.  Cada linha mostra como o ímã está definido, para qual categoria ele foi concebido, e um botão para excluir aquele ímã.
 Configuration_MainTableSummary          Esta tabela contém alguns formulários que permitem que você controle a configuração do PopFile.
 Configuration_InsertionTableSummary     Esta tabela contém botões para determinar se certas modificações são feitas no cabeçalho ou no assunto da mensagem antes que ela seja encaminhada para o programa cliente de mensagens.
 Security_MainTableSummary               Esta tabela fornece conjuntos de controles que afetam a segurança da configuração geral do PopFile, se ele deve procurar automaticamente por atualizações do programa, e se estatísticas sobre o desempenho do PopFile devem ser enviadas ao banco de dados central do autor do programa para informação geral.
 Advanced_MainTableSummary               Esta tabela fornece uma lista de palavras que o PopFile ignora quando classifica mensagens por causa da sua freqüência relativa nas mensagens em geral.  Elas são organizadas por linha de acordo com a primeira letra das palavras.
 
-Imap_Bucket2Folder                      Email para o balde '<b>%s</b>' vai para a pasta
-Imap_MapError                           Você não pode mapear mais de um balde para uma única pasta!
+Imap_Bucket2Folder                      Email para a categoria '<b>%s</b>' vai para a pasta
+Imap_MapError                           Você não pode mapear mais de uma categoria para uma única pasta!
 Imap_Server                             Nome do servidor IMAP:
 Imap_ServerNameError                    Por favor informe o nome do servidor!
 Imap_Port                               Porta do servidor IMAP:
@@ -374,6 +374,6 @@ Imap_WatchedFolder                      Pasta em observação nº
 
 Shutdown_Message                        O POPFile foi desligado
 
-Help_Training                           Quando você usa o POPFile pela primeira vez, ele ainda não sabe nada e precisa de treinamento. O POPFile requer treinamento nas mensagens para cada balde, e o treinamento acontece quando você reclassifica para o balde correto uma mensagem que o POPFile classificou incorretamente. Você deve também configurar seu cliente de email para filtrar mensagens baseado na classificação do POPFile. Informação para configurar os filtros no seu cliente de email pode ser encontrado no <a href="http://getpopfile.org/docs/FAQ:EmailSorting">Projeto de Documentação do POPFile</a>.
-Help_Bucket_Setup                       O POPFile requer pelo menos dois baldes além do pseudo-balde "unclassified". O que torna o POPFile único é que ele pode classificar email, mais do que isso, você pode ter qualquer número de baldes. Uma configuração simples poderia ser um balde "spam", "pessoal", e um balde "trabalho".
+Help_Training                           Quando você usa o POPFile pela primeira vez, ele ainda não sabe nada e precisa de treinamento. O POPFile requer treinamento nas mensagens para cada categoria, e o treinamento acontece quando você reclassifica para a categoria correto uma mensagem que o POPFile classificou incorretamente. Você deve também configurar seu cliente de email para filtrar mensagens baseado na classificação do POPFile. Informação para configurar os filtros no seu cliente de email pode ser encontrado no <a href="http://getpopfile.org/docs/FAQ:EmailSorting">Projeto de Documentação do POPFile</a>.
+Help_Bucket_Setup                       O POPFile requer pelo menos duas categorias além do pseudo-categoria "unclassified". O que torna o POPFile único é que ele pode classificar email, mais do que isso, você pode ter qualquer número de categorias. Uma configuração simples poderia ser uma categoria "spam", "pessoal", e uma categoria "trabalho".
 Help_No_More                            Não mostre isto novamente
