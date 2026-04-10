@@ -70,6 +70,7 @@ method initialize() {
     $self->config('uidnexts', '');
     $self->config('enabled', 0);
     $self->config('training_mode', 0);
+    $self->config('training_error', '');
     $last_update = time - $self->config('update_interval');
     return 1
 }
@@ -127,12 +128,13 @@ method service() {
     }
     catch ($err) {
         $self->disconnect_folders();
-        $self->config('training_mode', 0);
-        if ($err =~ /^POPFILE-IMAP-EXCEPTION: (.+\)\))/s) {
-            $self->log_msg(0, $1);
-        }
-        else {
-            $self->log_msg(0, "Unexpected IMAP error: $err");
+        my $msg = $err =~ /^POPFILE-IMAP-EXCEPTION: (.+\)\))/s
+            ? $1
+            : "Unexpected IMAP error: $err";
+        $self->log_msg(0, $msg);
+        if ($self->config('training_mode') == 1) {
+            $self->config('training_error', $msg);
+            $self->config('training_mode', 0);
         }
     }
     $last_update = time;
@@ -581,6 +583,7 @@ on completion.
 =cut
 
 method train_on_archive() {
+    $self->config('training_error', '');
     $self->log_msg(0, "Training on existing archive.");
     %folders = ();
     $self->build_folder_list();

@@ -550,6 +550,7 @@ method build_app ($svc, $session) {
         imap_update_interval => [imap => 'update_interval'],
         imap_expunge => [imap => 'expunge'],
         imap_training_mode => [imap => 'training_mode'],
+        imap_training_error => [imap => 'training_error'],
         imap_uidnexts => [imap => 'uidnexts'],
         imap_uidvalidities => [imap => 'uidvalidities'],
 );
@@ -775,6 +776,24 @@ method build_app ($svc, $session) {
                 ? 'Target folders missing: ' . join(', ', map { $map_hash{$_} } @missing_m)
                 : 'All ' . scalar(keys %map_hash) . ' mapping(s) valid',
         };
+        my $training_mode  = $self->module_config('imap', 'training_mode')  // 0;
+        my $training_error = $self->module_config('imap', 'training_error') // '';
+        if ($training_mode) {
+            push @checks, {
+                id => 'training_mode',
+                label => 'Training Mode',
+                status => 'warn',
+                detail => 'Training in progress — will reset automatically when complete',
+            };
+        }
+        elsif ($training_error ne '') {
+            push @checks, {
+                id => 'training_mode',
+                label => 'Training Mode',
+                status => 'error',
+                detail => "Training failed: $training_error",
+            };
+        }
         $c->render(json => { checks => \@checks });
     });
 
