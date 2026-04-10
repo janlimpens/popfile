@@ -462,3 +462,102 @@ Settings_Saved                          Saved
 Settings_ErrorSaving                    Error saving
 Settings_SaveChanges                    Save Changes
 Settings_Saving                         Saving...
+
+# --- Settings sections and field labels ---
+
+Settings_SectionUI                      User Interface
+Settings_SectionSecurity                Security
+Settings_SectionPOP3                    POP3 Proxy
+Settings_SectionSMTP                    SMTP Proxy
+Settings_SectionNNTP                    NNTP Proxy
+Settings_SectionClassifier              Classifier
+Settings_SectionHistory                 History
+Settings_SectionLogging                 Logging
+
+Settings_HTTPPort                       HTTP Port
+Settings_LocalOnly                      Local Only
+Settings_ItemsPerPage                   Items Per Page
+Settings_DateFormat                     Date Format
+Settings_SessionDividers                Session Dividers
+Settings_WordTable                      Word Table
+Settings_AdminPassword                  Admin Password
+Settings_ListenPort                     Listen Port
+Settings_ServerSeparator                Server Separator
+Settings_ForceFork                      Force Fork
+Settings_TOPFetchesBody                 TOP Fetches Body
+Settings_SSLChainServer                 SSL Chain Server
+Settings_SSLChainPort                   SSL Chain Port
+Settings_ChainServer                    Chain Server
+Settings_ChainPort                      Chain Port
+Settings_HEADFetchesBody                HEAD Fetches Body
+Settings_ListenAddress                  Listen Address
+Settings_MessageCutoff                  Message Cutoff
+Settings_UnclassifiedWeight             Unclassified Weight
+Settings_SubjectTagLeft                 Subject Tag Left
+Settings_SubjectTagRight                Subject Tag Right
+Settings_TagPosition                    Tag Position
+Settings_SQLiteTweaks                   SQLite Tweaks
+Settings_SQLiteJournalMode              SQLite Journal Mode
+Settings_WordStemming                   Word Stemming
+Settings_AutoDetectLanguage             Auto-detect Language
+Settings_RetentionDays                  Retention (days)
+Settings_ArchiveMessages                Archive Messages
+Settings_ArchiveDirectory               Archive Directory
+Settings_ArchiveSubdirs                 Archive Sub-dirs
+Settings_LogLevel                       Log Level
+Settings_LogDirectory                   Log Directory
+Settings_LogToStdout                    Log to stdout
+Settings_LogSQLToStdout                 Log SQL to stdout
+
+Settings_DescHTTPPort                   Port the web UI listens on. Requires restart.
+Settings_DescLocalOnly_UI               Restrict the web UI to localhost connections.
+Settings_DescItemsPerPage               Rows shown per page in History and Magnets.
+Settings_DescDateFormat                 strftime format string. Leave empty for locale default.
+Settings_DescSessionDividers            Show dividers between browsing sessions in History.
+Settings_DescWordTable                  What to display in the word probability table.
+Settings_DescLanguage                   UI display language. Leave empty to auto-detect from browser.
+Settings_DescAdminPassword              Leave empty to disable password protection.
+Settings_DescPOP3Port                   Port POPFile listens on for POP3 (default 1110).
+Settings_DescPOP3Separator              Character that separates user from server (e.g. user:mailhost).
+Settings_DescPOP3LocalOnly              Only accept POP3 connections from localhost.
+Settings_DescForceFork                  Fork a new process for each connection.
+Settings_DescTOPFetchesBody             Also retrieve message body with the TOP command.
+Settings_DescSSLChainServer             Upstream SSL POP3 server hostname for SSL chaining.
+Settings_DescSSLChainPort               Upstream SSL POP3 server port.
+Settings_DescSMTPPort                   Port POPFile listens on for SMTP (default 25).
+Settings_DescChainServer                Upstream SMTP server hostname.
+Settings_DescChainPort                  Upstream SMTP server port.
+Settings_DescSMTPLocalOnly              Only accept SMTP connections from localhost.
+Settings_DescNNTPPort                   Port POPFile listens on for NNTP (default 119).
+Settings_DescNNTPSeparator              Character separating user from server.
+Settings_DescNNTPLocalOnly              Only accept NNTP connections from localhost.
+Settings_DescHEADFetchesBody            Retrieve full article with the HEAD command.
+Settings_DescListenAddress              IP address to bind to. Empty = all interfaces.
+Settings_DescMessageCutoff              Maximum words analysed per message (0 = unlimited).
+Settings_DescUnclassifiedWeight         Probability threshold below which mail is "unclassified".
+Settings_DescSubjectTagLeft             Prefix inserted into Subject header, e.g. [SPAM].
+Settings_DescSubjectTagRight            Suffix appended to Subject header.
+Settings_DescTagPosition                Where to place the subject tag.
+Settings_DescSQLiteTweaks               Bitmask: 1 = faster writes (less safe), 2 = periodic backup.
+Settings_DescSQLiteJournal              SQLite journal / WAL mode.
+Settings_DescWordStemming               Reduce words to their stem before classification (e.g. "running" to "run"). Improves recall for morphologically rich languages at ~10% latency cost.
+Settings_DescAutoDetectLang             Detect the language of each message and apply matching stopwords and stemmer. Adds ~130% classify latency; useful for mixed-language mailboxes.
+Settings_DescRetentionDays              How many days to keep message history.
+Settings_DescArchiveMessages            Save a copy of every classified message to disk.
+Settings_DescArchiveDir                 Directory for archived messages (relative to user dir).
+Settings_DescArchiveSubdirs             Split archive into N sub-directories (0 = disabled).
+Settings_DescLogLevel                   Verbosity of log output.
+Settings_DescLogDirectory               Directory for log files. Empty = popfile root.
+Settings_DescLogToStdout                Mirror log output to stdout in addition to the log file.
+Settings_DescLogSQLToStdout             Print every SQL statement with bound values to stdout. Only active when "Log to stdout" is also enabled.
+
+Settings_OptHidden                      Hidden
+Settings_OptFrequencies                 Frequencies
+Settings_OptProbabilities               Probabilities
+Settings_OptLogScores                   Log Scores
+Settings_OptFront                       Front
+Settings_OptEnd                         End
+Settings_OptErrorsOnly                  Errors only
+Settings_OptWarnings                    Warnings
+Settings_OptInfo                        Info
+Settings_OptDebug                       Debug
