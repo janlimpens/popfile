@@ -1,4 +1,4 @@
-FROM perl:5.38
+FROM perl:5.40
 
 WORKDIR /app
 

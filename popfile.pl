@@ -2,38 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming
 # Copyright (C) 2026 Jan Limpens
-# ----------------------------------------------------------------------------
-#
-# popfile.pl --- Message analyzer and sorter
-#
-# Acts as a server and client designed to sit between a real mail/news
-# client and a real mail/ news server using POP3.  Inserts an extra
-# header X-Text-Classification: into the header to tell the client
-# which category the message belongs in and much more...
-#
-# Copyright (c) 2001-2011 John Graham-Cumming
-#
-#   This file is part of POPFile
-#
-#   POPFile is free software; you can redistribute it and/or modify it
-#   under the terms of version 2 of the GNU General Public License as
-#   published by the Free Software Foundation.
-#
-#   POPFile is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with POPFile; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-#
-#   Modified by     Sam Schinke (sschinke@users.sourceforge.net)
-#
-# ----------------------------------------------------------------------------
-
-# Check the packing list of POPFile to ensure that all the required
-# modules are present.
 
 my $packing_list = defined($ENV{POPFILE_ROOT})?$ENV{POPFILE_ROOT}:'./';
 $packing_list =~ s/[\\\/]$//;
@@ -75,7 +43,6 @@ if (open PACKING, "<$packing_list") {
 use strict;
 use locale;
 use lib defined($ENV{POPFILE_ROOT}) ? $ENV{POPFILE_ROOT} : '.';
-use lib (defined($ENV{POPFILE_ROOT}) ? $ENV{POPFILE_ROOT} : '.') . '/lib';
 use lib (defined($ENV{POPFILE_ROOT}) ? $ENV{POPFILE_ROOT} : '.') . '/vendor/perl-querybuilder/lib';
 use POPFile::Loader;
 

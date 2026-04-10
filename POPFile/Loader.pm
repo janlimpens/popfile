@@ -308,7 +308,7 @@ method load_module ($module) {
     my $mod = do {
         try { $class->new() }
         catch ($e) {
-            say STDERR $e;
+        Log::Any->get_logger(category => $class)->warning($e);
             return
         }
     };

@@ -45,7 +45,7 @@ class POPFile::History
     apply POPFile::Role::DBAccess;
     apply POPFile::Role::SQL;
 
-    use lib 'lib';
+    # use lib 'lib';
 
     use Query::Builder;
 
