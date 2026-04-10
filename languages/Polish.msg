@@ -283,3 +283,259 @@ Configuration_InsertionTableSummary     Ta tabela zawiera przełączniki okresla
 Security_MainTableSummary               Ta tabela zawiera kontrolki ustawiające bezpieczeństwo POPFile'a, możliwość sprawdzania aktualizacji oraz możliwość wysyłania statystyk o działaniu POPFile'a do centralnego rejestru programu znajdującego się na serwerze autora.
 Advanced_MainTableSummary               Ta tabela zawiera listę słów ignorowanych przez POPFile'a w traksie klasyfikacji wiadomości z powodu ich częstego występowania.  Są one zorganizowane wierszami, alfabetycznie..
 
+
+# New keys added (translations batch 4)
+WikiLink index.php
+FAQLink FAQ
+RequestFeatureLink RequestFeature
+MailingListLink mailing_lists
+DonateLink Donate
+NavCorpus Korpus
+NavHistory Historia
+NavIMAP IMAP
+NavMagnets Magnesy
+NavSettings Ustawienia
+NavStatus Status
+Advanced_AllParameters Wszystkie parametry POPFile
+Advanced_ConfigFile Plik konfiguracyjny:
+Advanced_Parameter Parametr
+Advanced_Value Wartość
+Advanced_Warning To jest pełna lista parametrów POPFile. Tylko dla zaawansowanych użytkowników: możesz zmienić dowolny parametr i kliknąć Aktualizuj; nie ma sprawdzania poprawności. Elementy pogrubione zostały zmienione z wartości domyślnej.
+ApplyChanges Zastosuj zmiany
+Arrived Odebrano
+Bucket_InIgnoredWords <b>%s</b> jest na liście ignorowanych słów. POPFile ignoruje to słowo
+BucketSelect_AddNew Dodaj nową...
+BucketSelect_AlreadyExists Już istnieje
+BucketSelect_CreateError Błąd podczas tworzenia kategorii
+BucketSelect_InvalidName Tylko a-z, 0-9, - i _
+BucketSelect_NameRequired Nazwa jest wymagana
+Configuration_Error8 Port proxy SOCKS V musi być liczbą z zakresu od 1 do 65535
+Configuration_Error9 Port interfejsu użytkownika nie może mieć tej samej wartości co port nasłuchu POP3
+Configuration_Error10 Port nasłuchu POP3 nie może mieć tej samej wartości co port interfejsu użytkownika
+Configuration_Fields Kolumny historii
+Configuration_NNTPFork Zezwól na jednoczesne połączenia NNTP
+Configuration_POPFork Zezwól na jednoczesne połączenia POP3
+Configuration_SMTPFork Zezwól na jednoczesne połączenia SMTP
+Configuration_SOCKSPort Port proxy SOCKS V
+Configuration_SOCKSPortUpdate Zaktualizowano port proxy SOCKS V do %s
+Configuration_SOCKSServer Host proxy SOCKS V
+Configuration_SOCKSServerUpdate Zaktualizowano host proxy SOCKS V do %s
+Corpus_BucketList Kategorie
+Corpus_Color Kolor
+Corpus_Actions Akcje
+Corpus_Clear Wyczyść
+Corpus_Search Szukaj
+Corpus_StopwordsTitle Stoplisty
+Corpus_StopwordsDesc Słowa na tej liście nigdy nie są używane do klasyfikacji.
+Corpus_RemoveStopword Usuń
+Corpus_StopwordCandidates Kandydaci na słowa stoplisty
+Corpus_StopwordCandidatesDesc Słowa pojawiające się równomiernie we wszystkich kategoriach — mała moc dyskryminacyjna.
+Corpus_StopwordRatio Próg współczynnika maks/min
+Corpus_LoadCandidates Znajdź kandydatów
+Corpus_NoCandidates Nie znaleziono kandydatów przy tym progu.
+Corpus_AddStopword Dodaj do stoplisty
+Date Data
+FAQ FAQ
+Footer_Wiki Dokumentacja
+Help_Bucket_Setup POPFile wymaga co najmniej dwóch kategorii oprócz pseudokategorii "niesklasyfikowane". Wyjątkowość POPFile polega na tym, że może klasyfikować pocztę do więcej niż dwóch kategorii; możesz mieć dowolną liczbę kategorii. Prosta konfiguracja to kategoria "spam", "osobiste" i "praca".
+Help_No_More Nie pokazuj tego więcej
+Help_Training Gdy po raz pierwszy używasz POPFile, nic nie wie i wymaga treningu. POPFile wymaga trenowania na wiadomościach dla każdej kategorii; trening następuje, gdy przeklasyfikujesz wiadomość, którą POPFile błędnie sklasyfikował, do właściwej kategorii.
+History_AllBuckets Wszystkie kategorie
+History_Automatic Automatycznie
+History_ChangedClass Teraz zaklasyfikowałoby jako
+History_Column_Characters Zmień szerokość kolumn Od, Do, Dw i Temat
+History_Decrease Zmniejsz
+History_HighlightWords Podświetl słowa według kategorii
+History_Increase Zwiększ
+History_Loading Ładowanie...
+History_MoveTo — przenieś do —
+History_Moving Przenoszenie...
+History_Negate_Search Odwróć wyszukiwanie/filtr
+History_NoMatchingMessages Brak pasujących wiadomości
+History_Purge Wygaś teraz
+History_Reclassified Przeklasyfikowano
+History_Reclassifying Przeklasyfikowywanie...
+History_ReclassifyUnclassified Przeklasyfikuj niesklasyfikowane
+History_RemoveChecked Usuń zaznaczone
+History_Selected zaznaczono
+History_Size_Bytes %d&nbsp;B
+History_Size_KiloBytes %.1f&nbsp;KB
+History_Size_MegaBytes %.1f&nbsp;MB
+ID ID
+Imap_Bucket2Folder Poczta dla kategorii '<b>%s</b>' trafia do folderu
+Imap_BucketFolderMappings Kategoria -> Przypisania folderów
+Imap_Bytelimit Bajty na wiadomość do klasyfikacji. Wpisz 0 dla pełnej wiadomości:
+Imap_BytelimitError Proszę wpisać liczbę.
+Imap_Connected Połączono
+Imap_Connection Połączenie
+Imap_ConnectionFailed Połączenie nieudane
+Imap_Description Monitoruj foldery IMAP i automatycznie klasyfikuj przychodzące wiadomości.
+Imap_EnableService Włącz usługę IMAP
+Imap_Expunge Usuń trwale wiadomości skasowane z monitorowanych folderów.
+Imap_FetchFolders Pobierz foldery
+Imap_Fetching Pobieranie...
+Imap_IMAFFolder Folder IMAP
+Imap_Interval Interwał aktualizacji w sekundach:
+Imap_IntervalError Proszę wpisać interwał między 10 a 3600 sekund.
+Imap_Login Nazwa logowania konta IMAP:
+Imap_LoginError Proszę wpisać nazwę użytkownika/logowania!
+Imap_MapError Nie można przypisać więcej niż jednej kategorii do jednego folderu!
+Imap_MappingsHint Sklasyfikowane wiadomości są przenoszone do wskazanego folderu IMAP. Zostaw nieprzypisane kategorie puste, aby pominąć przenoszenie.
+Imap_NoConnectionMessage Najpierw skonfiguruj szczegóły połączenia. Potem na tej stronie pojawią się dodatkowe opcje.
+Imap_NoFoldersWatched Brak monitorowanych folderów.
+Imap_NoMappings Nie zdefiniowano przypisań.
+Imap_Now teraz!
+Imap_Password Hasło do konta IMAP:
+Imap_PasswordError Proszę wpisać hasło do serwera!
+Imap_Port Port serwera IMAP:
+Imap_PortError Proszę wpisać prawidłowy numer portu!
+Imap_RefreshFolders Odśwież listę folderów
+Imap_SaveAnyway Zapisz mimo to
+Imap_SaveConnection Zapisz połączenie
+Imap_SaveFolders Zapisz foldery
+Imap_Saving Zapisywanie...
+Imap_Server Nazwa hosta serwera IMAP:
+Imap_ServerNameError Proszę wpisać nazwę hosta serwera!
+Imap_Service Usługa
+Imap_TestConnection Testuj połączenie
+Imap_Testing Testowanie...
+Imap_TrainingHint Tryb treningowy skanuje istniejące foldery archiwum i trenuje klasyfikator na ich zawartości. Flaga resetuje się automatycznie po zakończeniu treningu.
+Imap_TrainingMode Tryb treningowy
+Imap_UpdateError1 Nie można się zalogować. Sprawdź nazwę użytkownika i hasło.
+Imap_UpdateError2 Nie udało się połączyć z serwerem. Sprawdź nazwę hosta i port i upewnij się, że jesteś online.
+Imap_UpdateError3 Najpierw skonfiguruj szczegóły połączenia.
+Imap_Use_SSL Użyj SSL
+Imap_WatchedFolder Monitorowany folder nr
+Imap_WatchedFolders Monitorowane foldery
+Imap_WatchedHint POPFile monitoruje te foldery IMAP w poszukiwaniu nowych wiadomości do sklasyfikowania.
+Imap_WatchMore folder do listy monitorowanych folderów
+Locale_Date %d.%m.%Y %R
+Locale_Decimal ,
+Locale_Thousands .
+Magnet_Created Magnes utworzony
+Magnet_Deleted Magnes usunięty
+Reconnect_Connecting Łączenie...
+Reconnect_Message Backend jest nieosiągalny. Próba ponownego połączenia...
+Reconnect_Now Połącz teraz
+Reconnect_RetryIn Ponowna próba za
+Reconnect_Title Utracono połączenie
+Security_StealthMode (Tryb ukryty)
+Settings_AdminPassword Hasło administratora
+Settings_ArchiveDirectory Katalog archiwum
+Settings_ArchiveMessages Archiwizuj wiadomości
+Settings_ArchiveSubdirs Podkatalogi archiwum
+Settings_AutoDetect Wykryj automatycznie
+Settings_AutoDetectLanguage Wykryj język automatycznie
+Settings_ChainPort Port łańcucha
+Settings_ChainServer Serwer łańcucha
+Settings_DateFormat Format daty
+Settings_DescAdminPassword Pozostaw puste, aby wyłączyć ochronę hasłem.
+Settings_DescArchiveDir Katalog dla zarchiwizowanych wiadomości (względem katalogu użytkownika).
+Settings_DescArchiveMessages Zapisz kopię każdej sklasyfikowanej wiadomości na dysk.
+Settings_DescArchiveSubdirs Podziel archiwum na N podkatalogów (0 = wyłączone).
+Settings_DescAutoDetectLang Wykrywa język każdej wiadomości i stosuje pasujące słowa stoplisty i stemmer. Dodaje ~130% opóźnienia klasyfikacji; przydatne dla skrzynek z wieloma językami.
+Settings_DescChainPort Port nadrzędnego serwera SMTP.
+Settings_DescChainServer Nazwa hosta nadrzędnego serwera SMTP.
+Settings_DescDateFormat Ciąg formatujący strftime. Pozostaw puste dla domyślnego ustawienia regionalnego.
+Settings_DescForceFork Utwórz nowy proces dla każdego połączenia.
+Settings_DescHEADFetchesBody Pobierz pełny artykuł poleceniem HEAD.
+Settings_DescHTTPPort Port, na którym nasłuchuje interfejs webowy. Wymaga restartu.
+Settings_DescItemsPerPage Wiersze wyświetlane na stronie w Historii i Magnesach.
+Settings_DescLanguage Język wyświetlania interfejsu. Pozostaw puste dla automatycznego wykrywania z przeglądarki.
+Settings_DescListenAddress Adres IP do powiązania. Puste = wszystkie interfejsy.
+Settings_DescLocalOnly_UI Ogranicz interfejs webowy do połączeń lokalnych.
+Settings_DescLogDirectory Katalog dla plików dziennika. Puste = katalog główny POPFile.
+Settings_DescLogLevel Szczegółowość dziennika.
+Settings_DescLogSQLToStdout Drukuj każde polecenie SQL z wartościami na stdout. Aktywne tylko gdy "Dziennik na stdout" jest też włączony.
+Settings_DescLogToStdout Lustrzane kopiowanie dziennika na stdout oprócz pliku dziennika.
+Settings_DescMessageCutoff Maksymalna liczba analizowanych słów na wiadomość (0 = bez limitu).
+Settings_DescNNTPLocalOnly Akceptuj połączenia NNTP tylko z lokalnego hosta.
+Settings_DescNNTPPort Port, na którym POPFile nasłuchuje dla NNTP (domyślnie 119).
+Settings_DescNNTPSeparator Znak oddzielający użytkownika od serwera.
+Settings_DescPOP3LocalOnly Akceptuj połączenia POP3 tylko z lokalnego hosta.
+Settings_DescPOP3Port Port, na którym POPFile nasłuchuje dla POP3 (domyślnie 1110).
+Settings_DescPOP3Separator Znak oddzielający użytkownika od serwera (np. użytkownik:serwer).
+Settings_DescRetentionDays Ile dni przechowywać historię wiadomości.
+Settings_DescSessionDividers Pokaż separatory między sesjami przeglądania w Historii.
+Settings_DescSMTPLocalOnly Akceptuj połączenia SMTP tylko z lokalnego hosta.
+Settings_DescSMTPPort Port, na którym POPFile nasłuchuje dla SMTP (domyślnie 25).
+Settings_DescSQLiteJournal Tryb dziennika SQLite / WAL.
+Settings_DescSQLiteTweaks Maska bitowa: 1 = szybszy zapis (mniej bezpieczny), 2 = okresowa kopia zapasowa.
+Settings_DescSSLChainPort Port nadrzędnego serwera SSL POP3.
+Settings_DescSSLChainServer Nazwa hosta nadrzędnego serwera SSL POP3 dla łańcuchowania SSL.
+Settings_DescSubjectTagLeft Prefiks wstawiany do nagłówka Temat, np. [SPAM].
+Settings_DescSubjectTagRight Sufiks dołączany do nagłówka Temat.
+Settings_DescTagPosition Gdzie umieścić znacznik tematu.
+Settings_DescTOPFetchesBody Pobierz też treść wiadomości poleceniem TOP.
+Settings_DescUnclassifiedWeight Próg prawdopodobieństwa, poniżej którego poczta jest "niesklasyfikowana".
+Settings_DescWordStemming Redukuj słowa do ich rdzenia przed klasyfikacją (np. "bieganie" → "bieg"). Poprawia recall dla języków morfologicznie bogatych przy ~10% koszcie opóźnienia.
+Settings_DescWordTable Co wyświetlać w tabeli prawdopodobieństwa słów.
+Settings_ErrorSaving Błąd podczas zapisywania
+Settings_ForceFork Force Fork
+Settings_HEADFetchesBody HEAD pobiera treść
+Settings_HTTPPort Port HTTP
+Settings_ItemsPerPage Elementów na stronie
+Settings_ListenAddress Adres nasłuchu
+Settings_ListenPort Port nasłuchu
+Settings_LocalOnly Tylko lokalnie
+Settings_LogDirectory Katalog dziennika
+Settings_LogLevel Poziom dziennika
+Settings_LogSQLToStdout Dziennik SQL na stdout
+Settings_LogToStdout Dziennik na stdout
+Settings_MessageCutoff Limit wiadomości
+Settings_OptDebug Debugowanie
+Settings_OptEnd Koniec
+Settings_OptErrorsOnly Tylko błędy
+Settings_OptFrequencies Częstości
+Settings_OptFront Przód
+Settings_OptHidden Ukryty
+Settings_OptInfo Info
+Settings_OptLogScores Dziennik wyników
+Settings_OptProbabilities Prawdopodobieństwa
+Settings_OptWarnings Ostrzeżenia
+Settings_RetentionDays Retencja (dni)
+Settings_SaveChanges Zapisz zmiany
+Settings_Saved Zapisano
+Settings_Saving Zapisywanie...
+Settings_Search Szukaj ustawień...
+Settings_SectionClassifier Klasyfikator
+Settings_SectionHistory Historia
+Settings_SectionLogging Rejestrowanie
+Settings_SectionNNTP Proxy NNTP
+Settings_SectionPOP3 Proxy POP3
+Settings_SectionSecurity Bezpieczeństwo
+Settings_SectionSMTP Proxy SMTP
+Settings_SectionUI Interfejs użytkownika
+Settings_ServerSeparator Separator serwera
+Settings_SessionDividers Separatory sesji
+Settings_SQLiteJournalMode Tryb dziennika SQLite
+Settings_SQLiteTweaks Ulepszenia SQLite
+Settings_SSLChainPort Port łańcucha SSL
+Settings_SSLChainServer Serwer łańcucha SSL
+Settings_SubjectTagLeft Znacznik tematu po lewej
+Settings_SubjectTagRight Znacznik tematu po prawej
+Settings_TagPosition Pozycja znacznika
+Settings_TOPFetchesBody TOP pobiera treść
+Settings_UnclassifiedWeight Waga niesklasyfikowanych
+Settings_WordStemming Stemming słów
+Settings_WordTable Tabela słów
+Shutdown_Message POPFile został zamknięty
+Size Rozmiar
+Status_Checking Sprawdzanie...
+Status_Description Kontrole stanu usług POPFile.
+Status_LoadError Nie udało się załadować statusu
+Status_NoChecks Brak dostępnych kontroli.
+View_Chart Wykres decyzji
+View_DownloadMessage Pobierz wiadomość
+View_MessageBody Treść wiadomości
+View_MessageHeader Nagłówek wiadomości
+View_ShowFrequencies Pokaż częstości słów
+View_ShowProbabilities Pokaż prawdopodobieństwa słów
+View_ShowScores Pokaż wyniki słów i wykres decyzji
+View_WordFrequencies pokazuje częstości słów
+View_WordMatrix Macierz słów
+View_WordProbabilities pokazuje prawdopodobieństwa słów
+View_WordScores pokazuje wyniki słów
+Windows_Console Uruchomić POPFile w oknie konsoli?
+Windows_NextTime <p><font color="red">Ta zmiana nie wejdzie w życie do następnego uruchomienia POPFile</font>
+Windows_TrayIcon Pokazać ikonę POPFile na pasku zadań Windows?

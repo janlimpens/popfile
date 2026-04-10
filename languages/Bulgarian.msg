@@ -247,3 +247,294 @@ Configuration_InsertionTableSummary     This table contains buttons that determi
 Security_MainTableSummary               This table provides sets of controls that affect the security of the overall configuration of PopFile, whether it should automatically check for updates to the program, and whether statistics about PopFile's performance should be sent to the central datastore of the program's author for general information.
 Advanced_MainTableSummary               This table provides a list of words that PopFile ignores when classifying email due to their relative frequency in email in general.  They are organized per row according to the first letter of the words.
 
+
+# New UI keys added — batch 4
+WikiLink	index.php
+FAQLink	FAQ
+RequestFeatureLink	RequestFeature
+MailingListLink	mailing_lists
+DonateLink	Donate
+ApplyChanges	Приложи промените
+FAQ	FAQ
+ID	ID
+Date	Дата
+Arrived	Получено
+Size	Размер
+Word	Дума
+Count	Брой
+Update	Актуализирай
+Refresh	Обнови
+Probability	Вероятност
+Scores	Оценки
+QuickMagnets	Бързи магнити
+Locale_Thousands	.
+Locale_Decimal	,
+Locale_Date	%a %R | %D %R
+Footer_Wiki	Документация
+Cc	Cc
+Advanced_AllParameters	Всички параметри
+Advanced_ConfigFile	Конфигурационен файл
+Advanced_Parameter	Параметър
+Advanced_Value	Стойност
+Advanced_Warning	Внимание: промяната на тези параметри може да дестабилизира POPFile.
+Bucket_ClassificationFN	Фалшиви отрицателни
+Bucket_ClassificationFP	Фалшиви положителни
+Bucket_InIgnoredWords	Игнорирани думи
+BucketSelect_AddNew	Нова категория
+BucketSelect_AlreadyExists	Категория с такова име вече съществува.
+BucketSelect_CreateError	Грешка при създаване на категория.
+BucketSelect_InvalidName	Невалидно име на категория.
+BucketSelect_NameRequired	Въведете име на категория.
+Configuration_CurrentLogFile	&lt;Виж текущия лог файл&gt;
+Configuration_Error7	Портът за XML RPC трябва да е число между 1 и 65535
+Configuration_Error8	Портът за SOCKS V proxy трябва да е число между 1 и 65535
+Configuration_Error9	Портът на потребителския интерфейс не може да съвпада с порта на POP3
+Configuration_Error10	Портът на POP3 не може да съвпада с порта на потребителския интерфейс
+Configuration_Fields	Полета
+Configuration_NNTPFork	Позволи паралелни NNTP връзки
+Configuration_NNTPPort	NNTP порт за слушане
+Configuration_NNTPSeparator	Разделителен знак за NNTP хост:порт:потребител
+Configuration_NNTPSepUpdate	Актуализиран NNTP разделител на %s
+Configuration_NNTPUpdate	NNTP портът е актуализиран на %s; промяната влиза в сила след рестарт на POPFile
+Configuration_POP3Separator	Разделителен знак за POP3 хост:порт:потребител
+Configuration_POP3SepUpdate	Актуализиран POP3 разделител на %s
+Configuration_POPFork	Позволи паралелни POP3 връзки
+Configuration_SMTPFork	Позволи паралелни SMTP връзки
+Configuration_SMTPPort	SMTP порт за слушане
+Configuration_SMTPUpdate	SMTP портът е актуализиран на %s; промяната влиза в сила след рестарт на POPFile
+Configuration_SOCKSPort	Порт на SOCKS прокси
+Configuration_SOCKSPortUpdate	Актуализирай порта на SOCKS
+Configuration_SOCKSServer	SOCKS сървър
+Configuration_SOCKSServerUpdate	Актуализирай SOCKS сървъра
+Configuration_XMLRPCPort	XML-RPC порт за слушане
+Configuration_XMLRPCUpdate	XML-RPC портът е актуализиран на %s; промяната влиза в сила след рестарт на POPFile
+Corpus_Actions	Действия
+Corpus_AddStopword	Добави стоп-дума
+Corpus_BucketList	Списък категории
+Corpus_Clear	Изчисти
+Corpus_Color	Цвят
+Corpus_LoadCandidates	Зареди кандидати
+Corpus_NoCandidates	Не са намерени кандидати.
+Corpus_RemoveStopword	Премахни стоп-дума
+Corpus_Search	Търсене
+Corpus_StopwordCandidates	Кандидати за стоп-думи
+Corpus_StopwordCandidatesDesc	Думи, които се срещат твърде често и могат да пречат на класификацията.
+Corpus_StopwordRatio	Праг на честота
+Corpus_StopwordsDesc	Думи, които POPFile игнорира при класификация.
+Corpus_StopwordsTitle	Стоп-думи
+Help_Bucket_Setup	Настройка на категории
+Help_No_More	Не показвай повече
+Help_Training	Обучение
+History_AllBuckets	Всички категории
+History_Automatic	Автоматично
+History_ChangedClass	Класът е променен
+History_Column_Characters	Знаци
+History_Decrease	Намали
+History_HighlightWords	Открои думи
+History_Increase	Увеличи
+History_Loading	Зареждане...
+History_MagnetBecause	<b>Използван магнит</b><p>Класифицирано в <font color="%s">%s</font> поради магнит %s </p>
+History_MoveTo	Премести в
+History_Moving	Преместване...
+History_Negate_Search	Инвертирай търсенето
+History_NoMagnet	&nbsp;(показване само на некласифицирани с магнит съобщения)
+History_NoMatchingMessages	Няма намерени съобщения.
+History_Purge	Изчисти
+History_Reclassified	Прекласифицирано
+History_Reclassifying	Прекласифициране...
+History_ReclassifyUnclassified	Прекласифицирай некласифицираните
+History_RemoveChecked	Премахни отбелязаните
+History_Selected	Отбелязани
+History_Size_Bytes	Б
+History_Size_KiloBytes	КБ
+History_Size_MegaBytes	МБ
+Imap_Bucket2Folder	Категория → папка
+Imap_BucketFolderMappings	Съответствия категория–папка
+Imap_Bytelimit	Байтов лимит
+Imap_BytelimitError	Байтовият лимит трябва да е число по-голямо от 0.
+Imap_Connected	Свързан
+Imap_Connection	Връзка
+Imap_ConnectionFailed	Грешка при свързване.
+Imap_Description	POPFile може да класифицира поща директно чрез IMAP.
+Imap_EnableService	Активирай IMAP
+Imap_Expunge	Изтривай маркираните съобщения
+Imap_FetchFolders	Вземи папки
+Imap_Fetching	Зареждане...
+Imap_IMAFFolder	IMAP папка
+Imap_Interval	Интервал (секунди)
+Imap_IntervalError	Интервалът трябва да е число по-голямо от 0.
+Imap_Login	Потребителско име
+Imap_LoginError	Въведете потребителско име.
+Imap_MapError	Грешка при запис на съответствия.
+Imap_MappingsHint	За всяка категория посочете IMAP папка.
+Imap_NoConnectionMessage	Първо запишете параметрите на връзката.
+Imap_NoFoldersWatched	Няма следени папки.
+Imap_NoMappings	Няма зададени съответствия.
+Imap_Now	Сега
+Imap_Password	Парола
+Imap_PasswordError	Въведете парола.
+Imap_Port	Порт
+Imap_PortError	Портът трябва да е число между 1 и 65535.
+Imap_RefreshFolders	Обнови папки
+Imap_SaveAnyway	Запиши въпреки това
+Imap_SaveConnection	Запиши връзката
+Imap_SaveFolders	Запиши папки
+Imap_Saving	Запис...
+Imap_Server	Сървър
+Imap_ServerNameError	Въведете име на сървър.
+Imap_Service	IMAP услуга
+Imap_TestConnection	Тествай връзката
+Imap_Testing	Тестване...
+Imap_TrainingHint	Преместете съобщение в подходяща папка за обучение.
+Imap_TrainingMode	Режим на обучение
+Imap_UpdateError1	Грешка при актуализиране: непозната категория.
+Imap_UpdateError2	Грешка при актуализиране: непозната папка.
+Imap_UpdateError3	Грешка при актуализиране: неуспешен запис.
+Imap_Use_SSL	Използвай SSL
+Imap_WatchedFolder	Следена папка
+Imap_WatchedFolders	Следени папки
+Imap_WatchedHint	Добавете папки за следене.
+Imap_WatchMore	Следи още
+Magnet_Created	Магнитът е създаден.
+Magnet_Deleted	Магнитът е изтрит.
+Magnet_Jump	Към страница с магнити
+MailingListLink	mailing_lists
+NavCorpus	Корпус
+NavHistory	История
+NavIMAP	IMAP
+NavMagnets	Магнити
+NavSettings	Настройки
+NavStatus	Статус
+Reconnect_Connecting	Свързване...
+Reconnect_Message	POPFile изгуби връзката. Повторно свързване.
+Reconnect_Now	Свържи се сега
+Reconnect_RetryIn	Опитай отново след
+Reconnect_Title	Прекъсната връзка
+Security_NNTP	Приемай NNTP връзки от отдалечени машини (изисква рестарт на POPFile)
+Security_SMTP	Приемай SMTP връзки от отдалечени машини (изисква рестарт на POPFile)
+Security_SMTPPort	SMTP chain порт
+Security_SMTPPortUpdate	SMTP chain портът е актуализиран на %s; промяната влиза в сила след рестарт
+Security_SMTPServer	SMTP chain сървър
+Security_SMTPServerUpdate	SMTP chain сървърът е актуализиран на %s; промяната влиза в сила след рестарт
+Security_StealthMode	Невидим режим
+Security_XMLRPC	Приемай XML-RPC връзки от отдалечени машини (изисква рестарт на POPFile)
+Settings_AdminPassword	Администраторска парола
+Settings_ArchiveDirectory	Директория за архив
+Settings_ArchiveMessages	Архивирай съобщения
+Settings_ArchiveSubdirs	Поддиректории за архив
+Settings_AutoDetect	Автоматично определяне
+Settings_AutoDetectLanguage	Автоматично определяне на езика
+Settings_ChainPort	Chain порт
+Settings_ChainServer	Chain сървър
+Settings_DateFormat	Формат на датата
+Settings_DescAdminPassword	Парола за административния интерфейс.
+Settings_DescArchiveDir	Директория за архивни съобщения. Празно = не архивирай.
+Settings_DescArchiveMessages	Запазвай копия на класифицираните съобщения.
+Settings_DescArchiveSubdirs	Разпределяй архива в поддиректории по категории.
+Settings_DescAutoDetectLang	Автоматично определяне на езика на интерфейса.
+Settings_DescChainPort	Порт на upstream POP3 сървър за chain.
+Settings_DescChainServer	Хостово име на upstream POP3 сървър.
+Settings_DescDateFormat	Формат на показваните дати.
+Settings_DescForceFork	Принудително използване на форкване на процеси.
+Settings_DescHEADFetchesBody	Получавай тялото на съобщението с команда HEAD.
+Settings_DescHTTPPort	Порт на уеб интерфейса на POPFile.
+Settings_DescItemsPerPage	Брой елементи на страница в Историята.
+Settings_DescLanguage	Език на интерфейса.
+Settings_DescListenAddress	Адрес, на който POPFile слуша за връзки.
+Settings_DescLocalOnly_UI	Ограничи уеб интерфейса само до локални връзки.
+Settings_DescLogDirectory	Директория за лог файлове. Празно = корен на POPFile.
+Settings_DescLogLevel	Детайлност на лога.
+Settings_DescLogSQLToStdout	Извеждай всяка SQL заявка с параметри в stdout.
+Settings_DescLogToStdout	Дублирай лога в stdout в допълнение към файла.
+Settings_DescMessageCutoff	Максимален брой анализирани думи на съобщение (0 = без ограничение).
+Settings_DescNNTPLocalOnly	Приемай NNTP връзки само от локален хост.
+Settings_DescNNTPPort	Порт, на който POPFile слуша за NNTP (по подразбиране 119).
+Settings_DescNNTPSeparator	Знак, разделящ потребител и сървър.
+Settings_DescPOP3LocalOnly	Приемай POP3 връзки само от локален хост.
+Settings_DescPOP3Port	Порт, на който POPFile слуша за POP3 (по подразбиране 1110).
+Settings_DescPOP3Separator	Знак, разделящ потребител и сървър (напр. потребител:пощенски_сървър).
+Settings_DescRetentionDays	Брой дни за съхранение на историята.
+Settings_DescSessionDividers	Показвай разделители между сесии в Историята.
+Settings_DescSMTPLocalOnly	Приемай SMTP връзки само от локален хост.
+Settings_DescSMTPPort	Порт, на който POPFile слуша за SMTP (по подразбиране 25).
+Settings_DescSQLiteJournal	Режим на SQLite журнал / WAL.
+Settings_DescSQLiteTweaks	Битова маска: 1 = по-бърз запис (по-малко безопасно), 2 = периодичен архив.
+Settings_DescSSLChainPort	Порт на upstream SSL POP3 сървър.
+Settings_DescSSLChainServer	Хостово име на upstream SSL POP3 сървър за SSL chain.
+Settings_DescSubjectTagLeft	Префикс, добавян в заглавието Тема, напр. [СПАМ].
+Settings_DescSubjectTagRight	Суфикс, добавян в заглавието Тема.
+Settings_DescTagPosition	Позиция на маркировката на темата.
+Settings_DescTOPFetchesBody	Получавай тялото на съобщението с команда TOP.
+Settings_DescUnclassifiedWeight	Праг на вероятност, под който поща е "некласифицирана".
+Settings_DescWordStemming	Свеждай думи до основата им преди класификация. Подобрява обхвата за морфологично богати езици.
+Settings_DescWordTable	Какво да се показва в таблицата с вероятности на думите.
+Settings_ErrorSaving	Грешка при запис
+Settings_ForceFork	Принудителен fork
+Settings_HEADFetchesBody	HEAD взема тялото
+Settings_HTTPPort	HTTP порт
+Settings_ItemsPerPage	Елементи на страница
+Settings_ListenAddress	Адрес за слушане
+Settings_ListenPort	Порт за слушане
+Settings_LocalOnly	Само локално
+Settings_LogDirectory	Директория за лог
+Settings_LogLevel	Ниво на лога
+Settings_LogSQLToStdout	Записвай SQL в stdout
+Settings_LogToStdout	Записвай в stdout
+Settings_MessageCutoff	Ограничение на съобщение
+Settings_OptDebug	Дебъг
+Settings_OptEnd	Край
+Settings_OptErrorsOnly	Само грешки
+Settings_OptFrequencies	Честоти
+Settings_OptFront	Отпред
+Settings_OptHidden	Скрит
+Settings_OptInfo	Инфо
+Settings_OptLogScores	Записвай оценки
+Settings_OptProbabilities	Вероятности
+Settings_OptWarnings	Предупреждения
+Settings_RetentionDays	Съхранение (дни)
+Settings_SaveChanges	Запиши промените
+Settings_Saved	Записано
+Settings_Saving	Запис...
+Settings_Search	Търсене в настройки...
+Settings_SectionClassifier	Класификатор
+Settings_SectionHistory	История
+Settings_SectionLogging	Журналиране
+Settings_SectionNNTP	NNTP прокси
+Settings_SectionPOP3	POP3 прокси
+Settings_SectionSecurity	Сигурност
+Settings_SectionSMTP	SMTP прокси
+Settings_SectionUI	Интерфейс
+Settings_ServerSeparator	Разделител на сървър
+Settings_SessionDividers	Разделители на сесии
+Settings_SQLiteJournalMode	Режим на SQLite журнал
+Settings_SQLiteTweaks	Настройки на SQLite
+Settings_SSLChainPort	SSL chain порт
+Settings_SSLChainServer	SSL chain сървър
+Settings_SubjectTagLeft	Лява маркировка на тема
+Settings_SubjectTagRight	Дясна маркировка на тема
+Settings_TagPosition	Позиция на маркировката
+Settings_TOPFetchesBody	TOP взема тялото
+Settings_UnclassifiedWeight	Тегло на некласифицираните
+Settings_WordStemming	Стемиране на думи
+Settings_WordTable	Таблица на думите
+Shutdown_Message	POPFile приключва работа. Довиждане.
+SingleBucket_ClearBucket	Премахни всички думи
+Status_Checking	Проверка...
+Status_Description	Статус и статистика на POPFile.
+Status_LoadError	Грешка при зареждане на данните за статуса.
+Status_NoChecks	Няма проверки.
+View_Chart	Диаграма
+View_DownloadMessage	Изтегли съобщение
+View_MessageBody	Тяло на съобщение
+View_MessageHeader	Заглавие на съобщение
+View_ShowFrequencies	Покажи честоти
+View_ShowProbabilities	Покажи вероятности
+View_ShowScores	Покажи оценки
+View_Title	Преглед на единично съобщение
+View_WordFrequencies	Честоти на думи
+View_WordMatrix	Матрица на думи
+View_WordProbabilities	Вероятности на думи
+View_WordScores	Оценки на думи
+Windows_Console	Конзола
+Windows_NextTime	Следващия път
+Windows_TrayIcon	Икона в системния трей

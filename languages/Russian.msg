@@ -255,3 +255,294 @@ Configuration_InsertionTableSummary     This table contains buttons that determi
 Security_MainTableSummary               This table provides sets of controls that affect the security of the overall configuration of PopFile, whether it should automatically check for updates to the program, and whether statistics about PopFile's performance should be sent to the central datastore of the program's author for general information.
 Advanced_MainTableSummary               This table provides a list of words that PopFile ignores when classifying email due to their relative frequency in email in general.  They are organized per row according to the first letter of the words.
 
+
+# New keys added (translations batch 4)
+WikiLink index.php
+FAQLink FAQ
+RequestFeatureLink RequestFeature
+MailingListLink mailing_lists
+DonateLink Donate
+NavCorpus Корпус
+NavHistory История
+NavIMAP IMAP
+NavMagnets Магниты
+NavSettings Настройки
+NavStatus Статус
+Advanced_AllParameters Все параметры POPFile
+Advanced_ConfigFile Файл конфигурации:
+Advanced_Parameter Параметр
+Advanced_Value Значение
+Advanced_Warning Это полный список параметров POPFile. Только для опытных пользователей: вы можете изменить любой параметр и нажать Обновить; проверка правильности не выполняется. Элементы, выделенные жирным шрифтом, изменены по сравнению с настройками по умолчанию.
+ApplyChanges Применить изменения
+Arrived Получено
+Bucket_ClassificationFN Ложноотрицательные
+Bucket_ClassificationFP Ложноположительные
+Bucket_InIgnoredWords <b>%s</b> находится в игнорируемых словах. POPFile игнорирует это слово
+BucketSelect_AddNew Добавить новую...
+BucketSelect_AlreadyExists Уже существует
+BucketSelect_CreateError Ошибка при создании категории
+BucketSelect_InvalidName Только a-z, 0-9, - и _
+BucketSelect_NameRequired Требуется имя
+Cc Копия
+Configuration_CurrentLogFile &lt;Просмотр текущего файла журнала&gt;
+Configuration_Error7 Порт прослушивания XML RPC должен быть числом от 1 до 65535
+Configuration_Error8 Порт прокси SOCKS V должен быть числом от 1 до 65535
+Configuration_Error9 Порт пользовательского интерфейса не может совпадать с портом прослушивания POP3
+Configuration_Error10 Порт прослушивания POP3 не может совпадать с портом пользовательского интерфейса
+Configuration_Fields Столбцы истории
+Configuration_NNTPFork Разрешить одновременные подключения NNTP
+Configuration_NNTPPort Порт прослушивания NNTP
+Configuration_NNTPSeparator Разделитель хост:порт:пользователь для NNTP
+Configuration_NNTPSepUpdate Разделитель NNTP обновлён до %s
+Configuration_NNTPUpdate Порт NNTP обновлён до %s; изменение вступит в силу после перезапуска POPFile
+Configuration_POP3Separator Разделитель хост:порт:пользователь для POP3
+Configuration_POP3SepUpdate Разделитель POP3 обновлён до %s
+Configuration_POPFork Разрешить одновременные подключения POP3
+Configuration_SMTPFork Разрешить одновременные подключения SMTP
+Configuration_SMTPPort Порт прослушивания SMTP
+Configuration_SMTPUpdate Порт SMTP обновлён до %s; изменение вступит в силу после перезапуска POPFile
+Configuration_SOCKSPort Порт прокси SOCKS V
+Configuration_SOCKSPortUpdate Порт прокси SOCKS V обновлён до %s
+Configuration_SOCKSServer Хост прокси SOCKS V
+Configuration_SOCKSServerUpdate Хост прокси SOCKS V обновлён до %s
+Configuration_XMLRPCPort Порт прослушивания XML-RPC
+Configuration_XMLRPCUpdate Порт XML-RPC обновлён до %s; изменение вступит в силу после перезапуска POPFile
+Corpus_BucketList Категории
+Corpus_Color Цвет
+Corpus_Actions Действия
+Corpus_Clear Очистить
+Corpus_Search Поиск
+Corpus_StopwordsTitle Стоп-слова
+Corpus_StopwordsDesc Слова в этом списке никогда не используются для классификации.
+Corpus_RemoveStopword Удалить
+Corpus_StopwordCandidates Кандидаты в стоп-слова
+Corpus_StopwordCandidatesDesc Слова, равномерно встречающиеся во всех категориях — малая различающая сила.
+Corpus_StopwordRatio Порог соотношения макс/мин
+Corpus_LoadCandidates Найти кандидатов
+Corpus_NoCandidates При данном пороге кандидаты не найдены.
+Corpus_AddStopword Добавить в стоп-слова
+Count Количество
+Date Дата
+FAQ FAQ
+Footer_Wiki Документация
+Help_Bucket_Setup POPFile требует как минимум двух категорий в дополнение к псевдокатегории "неклассифицированное". Уникальность POPFile в том, что он может классифицировать почту по большему числу категорий; вы можете иметь любое количество категорий. Простая настройка — категории "спам", "личное" и "работа".
+Help_No_More Больше не показывать
+Help_Training При первом использовании POPFile он ничего не знает и нуждается в обучении. POPFile требует обучения на сообщениях для каждой категории; обучение происходит, когда вы переклассифицируете сообщение, неверно классифицированное POPFile, в правильную категорию.
+History_AllBuckets Все категории
+History_Automatic Автоматически
+History_ChangedClass Сейчас классифицировал бы как
+History_Column_Characters Изменить ширину столбцов От, Кому, Копия и Тема
+History_Decrease Уменьшить
+History_HighlightWords Выделить слова по категориям
+History_Increase Увеличить
+History_Loading Загрузка...
+History_MagnetBecause <b>Использован магнит</b><p>Классифицировано в <font color="%s">%s</font> из-за магнита %s </p>
+History_MoveTo — переместить в —
+History_Moving Перемещение...
+History_Negate_Search Инвертировать поиск/фильтр
+History_NoMagnet &nbsp;(только сообщения без магнитной классификации)
+History_NoMatchingMessages Нет совпадающих сообщений
+History_Purge Истечь сейчас
+History_Reclassified Переклассифицировано
+History_Reclassifying Переклассификация...
+History_ReclassifyUnclassified Переклассифицировать неклассифицированные
+History_RemoveChecked Удалить отмеченные
+History_ResetSearch Сбросить
+History_Selected выбрано
+History_Size_Bytes %d&nbsp;Б
+History_Size_KiloBytes %.1f&nbsp;КБ
+History_Size_MegaBytes %.1f&nbsp;МБ
+ID ИД
+Imap_Bucket2Folder Почта для категории '<b>%s</b>' попадает в папку
+Imap_BucketFolderMappings Категория -> Сопоставление папок
+Imap_Bytelimit Байт на сообщение для классификации. Введите 0 для полного сообщения:
+Imap_BytelimitError Введите число.
+Imap_Connected Подключено
+Imap_Connection Подключение
+Imap_ConnectionFailed Ошибка подключения
+Imap_Description Мониторинг папок IMAP и автоматическая классификация входящих сообщений.
+Imap_EnableService Включить сервис IMAP
+Imap_Expunge Окончательно удалить удалённые сообщения из отслеживаемых папок.
+Imap_FetchFolders Получить папки
+Imap_Fetching Получение...
+Imap_IMAFFolder Папка IMAP
+Imap_Interval Интервал обновления в секундах:
+Imap_IntervalError Введите интервал от 10 до 3600 секунд.
+Imap_Login Логин учётной записи IMAP:
+Imap_LoginError Введите имя пользователя/логин!
+Imap_MapError Нельзя назначить более одной категории одной папке!
+Imap_MappingsHint Классифицированные сообщения перемещаются в указанную папку IMAP. Оставьте несопоставленные категории пустыми, чтобы пропустить перемещение.
+Imap_NoConnectionMessage Сначала настройте параметры подключения. После этого на этой странице будут доступны дополнительные параметры.
+Imap_NoFoldersWatched Нет отслеживаемых папок.
+Imap_NoMappings Сопоставления не определены.
+Imap_Now сейчас!
+Imap_Password Пароль учётной записи IMAP:
+Imap_PasswordError Введите пароль для сервера!
+Imap_Port Порт сервера IMAP:
+Imap_PortError Введите допустимый номер порта!
+Imap_RefreshFolders Обновить список папок
+Imap_SaveAnyway Сохранить в любом случае
+Imap_SaveConnection Сохранить подключение
+Imap_SaveFolders Сохранить папки
+Imap_Saving Сохранение...
+Imap_Server Имя хоста сервера IMAP:
+Imap_ServerNameError Введите имя хоста сервера!
+Imap_Service Сервис
+Imap_TestConnection Проверить подключение
+Imap_Testing Тестирование...
+Imap_TrainingHint Режим обучения сканирует существующие архивные папки и обучает классификатор на их содержимом. Флаг автоматически сбрасывается по завершении обучения.
+Imap_TrainingMode Режим обучения
+Imap_UpdateError1 Не удалось войти. Проверьте имя пользователя и пароль.
+Imap_UpdateError2 Не удалось подключиться к серверу. Проверьте имя хоста и порт и убедитесь, что вы в сети.
+Imap_UpdateError3 Сначала настройте параметры подключения.
+Imap_Use_SSL Использовать SSL
+Imap_WatchedFolder Отслеживаемая папка №
+Imap_WatchedFolders Отслеживаемые папки
+Imap_WatchedHint POPFile отслеживает эти папки IMAP для новых сообщений для классификации.
+Imap_WatchMore папку в список отслеживаемых папок
+Locale_Date %d.%m.%Y %R
+Locale_Decimal ,
+Locale_Thousands .
+Magnet_Created Магнит создан
+Magnet_Deleted Магнит удалён
+Magnet_Jump Перейти на страницу магнитов
+Probability Вероятность
+QuickMagnets БыстрыеМагниты
+Reconnect_Connecting Подключение...
+Reconnect_Message Серверная часть недоступна. Попытка повторного подключения...
+Reconnect_Now Подключиться сейчас
+Reconnect_RetryIn Повторная попытка через
+Reconnect_Title Соединение потеряно
+Refresh Обновить
+Scores Оценки
+Security_NNTP Принимать подключения NNTP с удалённых машин (требуется перезапуск POPFile)
+Security_SMTP Принимать подключения SMTP с удалённых машин (требуется перезапуск POPFile)
+Security_SMTPPort Порт цепочки SMTP
+Security_SMTPPortUpdate Порт цепочки SMTP обновлён до %s; изменение вступит в силу после перезапуска POPFile
+Security_SMTPServer Сервер цепочки SMTP
+Security_SMTPServerUpdate Сервер цепочки SMTP обновлён до %s; изменение вступит в силу после перезапуска POPFile
+Security_StealthMode (Скрытный режим)
+Security_XMLRPC Принимать подключения XML-RPC с удалённых машин (требуется перезапуск POPFile)
+Settings_AdminPassword Пароль администратора
+Settings_ArchiveDirectory Каталог архива
+Settings_ArchiveMessages Архивировать сообщения
+Settings_ArchiveSubdirs Подкаталоги архива
+Settings_AutoDetect Автоопределение
+Settings_AutoDetectLanguage Автоматически определить язык
+Settings_ChainPort Порт цепочки
+Settings_ChainServer Сервер цепочки
+Settings_DateFormat Формат даты
+Settings_DescAdminPassword Оставьте пустым для отключения защиты паролем.
+Settings_DescArchiveDir Каталог для архивированных сообщений (относительно каталога пользователя).
+Settings_DescArchiveMessages Сохранять копию каждого классифицированного сообщения на диск.
+Settings_DescArchiveSubdirs Разделить архив на N подкаталогов (0 = отключено).
+Settings_DescAutoDetectLang Определяет язык каждого сообщения и применяет соответствующие стоп-слова и стеммер. Добавляет ~130% задержки классификации; полезно для многоязычных почтовых ящиков.
+Settings_DescChainPort Порт вышестоящего SMTP-сервера.
+Settings_DescChainServer Имя хоста вышестоящего SMTP-сервера.
+Settings_DescDateFormat Строка формата strftime. Оставьте пустым для локали по умолчанию.
+Settings_DescForceFork Создавать новый процесс для каждого подключения.
+Settings_DescHEADFetchesBody Получить полную статью командой HEAD.
+Settings_DescHTTPPort Порт, на котором прослушивает веб-интерфейс. Требуется перезапуск.
+Settings_DescItemsPerPage Строк, отображаемых на страницу в Истории и Магнитах.
+Settings_DescLanguage Язык отображения интерфейса. Оставьте пустым для автоопределения из браузера.
+Settings_DescListenAddress IP-адрес для привязки. Пусто = все интерфейсы.
+Settings_DescLocalOnly_UI Ограничить веб-интерфейс локальными подключениями.
+Settings_DescLogDirectory Каталог для файлов журнала. Пусто = корень POPFile.
+Settings_DescLogLevel Подробность вывода журнала.
+Settings_DescLogSQLToStdout Выводить каждый SQL-оператор со связанными значениями в stdout. Активно только когда также включён "Журнал в stdout".
+Settings_DescLogToStdout Дублировать вывод журнала в stdout в дополнение к файлу журнала.
+Settings_DescMessageCutoff Максимальное количество анализируемых слов на сообщение (0 = без ограничений).
+Settings_DescNNTPLocalOnly Принимать подключения NNTP только с локального хоста.
+Settings_DescNNTPPort Порт, на котором POPFile прослушивает NNTP (по умолчанию 119).
+Settings_DescNNTPSeparator Символ, разделяющий пользователя и сервер.
+Settings_DescPOP3LocalOnly Принимать подключения POP3 только с локального хоста.
+Settings_DescPOP3Port Порт, на котором POPFile прослушивает POP3 (по умолчанию 1110).
+Settings_DescPOP3Separator Символ, разделяющий пользователя и сервер (напр. пользователь:почтовый_сервер).
+Settings_DescRetentionDays Сколько дней хранить историю сообщений.
+Settings_DescSessionDividers Показывать разделители между сеансами просмотра в Истории.
+Settings_DescSMTPLocalOnly Принимать подключения SMTP только с локального хоста.
+Settings_DescSMTPPort Порт, на котором POPFile прослушивает SMTP (по умолчанию 25).
+Settings_DescSQLiteJournal Режим журнала SQLite / WAL.
+Settings_DescSQLiteTweaks Битовая маска: 1 = более быстрая запись (менее безопасно), 2 = периодическое резервное копирование.
+Settings_DescSSLChainPort Порт вышестоящего SSL POP3-сервера.
+Settings_DescSSLChainServer Имя хоста вышестоящего SSL POP3-сервера для SSL-цепочки.
+Settings_DescSubjectTagLeft Префикс, вставляемый в заголовок Тема, напр. [СПАМ].
+Settings_DescSubjectTagRight Суффикс, добавляемый к заголовку Тема.
+Settings_DescTagPosition Где размещать метку темы.
+Settings_DescTOPFetchesBody Также получать тело сообщения командой TOP.
+Settings_DescUnclassifiedWeight Порог вероятности, ниже которого почта является "неклассифицированной".
+Settings_DescWordStemming Сводить слова к основе перед классификацией (напр. "бежать" → "беж"). Улучшает полноту для морфологически богатых языков при ~10% затратах на задержку.
+Settings_DescWordTable Что отображать в таблице вероятностей слов.
+Settings_ErrorSaving Ошибка при сохранении
+Settings_ForceFork Force Fork
+Settings_HEADFetchesBody HEAD получает тело
+Settings_HTTPPort HTTP-порт
+Settings_ItemsPerPage Элементов на страницу
+Settings_ListenAddress Адрес прослушивания
+Settings_ListenPort Порт прослушивания
+Settings_LocalOnly Только локально
+Settings_LogDirectory Каталог журнала
+Settings_LogLevel Уровень журнала
+Settings_LogSQLToStdout Записывать SQL в stdout
+Settings_LogToStdout Записывать в stdout
+Settings_MessageCutoff Ограничение сообщения
+Settings_OptDebug Отладка
+Settings_OptEnd Конец
+Settings_OptErrorsOnly Только ошибки
+Settings_OptFrequencies Частоты
+Settings_OptFront Спереди
+Settings_OptHidden Скрытый
+Settings_OptInfo Инфо
+Settings_OptLogScores Записывать оценки
+Settings_OptProbabilities Вероятности
+Settings_OptWarnings Предупреждения
+Settings_RetentionDays Хранение (дни)
+Settings_SaveChanges Сохранить изменения
+Settings_Saved Сохранено
+Settings_Saving Сохранение...
+Settings_Search Поиск настроек...
+Settings_SectionClassifier Классификатор
+Settings_SectionHistory История
+Settings_SectionLogging Ведение журнала
+Settings_SectionNNTP NNTP-прокси
+Settings_SectionPOP3 POP3-прокси
+Settings_SectionSecurity Безопасность
+Settings_SectionSMTP SMTP-прокси
+Settings_SectionUI Пользовательский интерфейс
+Settings_ServerSeparator Разделитель сервера
+Settings_SessionDividers Разделители сеансов
+Settings_SQLiteJournalMode Режим журнала SQLite
+Settings_SQLiteTweaks Настройки SQLite
+Settings_SSLChainPort Порт SSL-цепочки
+Settings_SSLChainServer Сервер SSL-цепочки
+Settings_SubjectTagLeft Метка темы слева
+Settings_SubjectTagRight Метка темы справа
+Settings_TagPosition Позиция метки
+Settings_TOPFetchesBody TOP получает тело
+Settings_UnclassifiedWeight Вес неклассифицированных
+Settings_WordStemming Стемминг слов
+Settings_WordTable Таблица слов
+SingleBucket_ClearBucket Удалить все слова
+Shutdown_Message POPFile был остановлен
+Size Размер
+Status_Checking Проверка...
+Status_Description Проверки состояния сервисов POPFile.
+Status_LoadError Не удалось загрузить статус
+Status_NoChecks Проверки недоступны.
+Update Обновить
+View_Chart График решений
+View_DownloadMessage Загрузить сообщение
+View_MessageBody Тело сообщения
+View_MessageHeader Заголовок сообщения
+View_ShowFrequencies Показать частоты слов
+View_ShowProbabilities Показать вероятности слов
+View_ShowScores Показать оценки слов и график решений
+View_Title Просмотр одного сообщения
+View_WordFrequencies показывает частоты слов
+View_WordMatrix Матрица слов
+View_WordProbabilities показывает вероятности слов
+View_WordScores показывает оценки слов
+Windows_Console Запустить POPFile в окне консоли?
+Windows_NextTime <p><font color="red">Это изменение вступит в силу только при следующем запуске POPFile</font>
+Windows_TrayIcon Показать значок POPFile в системном трее Windows?
+Word Слово
