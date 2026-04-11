@@ -374,3 +374,182 @@ Shutdown_Message                        تم إقفال POPFile
 Help_Training                           عند إستعمالك POPFile لأول مرة، فإنه لا يعرف أي شيء ويحتاج لبعض التدريب. يحتاج POPFile للتدريب على رسائل لكل دلو، التدريب يتم عند إعادة تصنيف رسالة قام POPFile بتصنيفها بشكل خاطئ. ستحتاج أيضاً إلى إعداد برنامج البريد ليقوم بترتيب البريد حسب تصنيفات POPFile. يمكن العثور على التعليمات لإعداد برامج البريد في <a href="http://getpopfile.org/docs/FAQ:EmailSorting">صفحات تعليمات POPFile</a>.
 Help_Bucket_Setup                       يحتاج POPFile إلى دلوين على الأقل بالإضافة إلى دلو غير-المصنف. ما يجعل POPFile فريداً هو أنه يستطيع تصنيف بريد اكثر من هذا، تستطيع ان يكون عندك أي عدد من الدلاء. أبسط إعداد هو أن يكون عندك الدلاء "spam"، "personal"، "work".
 Help_No_More                            لا تعرض هذا مرة أخرى
+ApplyChanges                            تطبيق التغييرات
+Bucket_InIgnoredWords                   <b>%s</b> موجودة في قائمة الكلمات المتجاهلة. POPFile يتجاهل هذه الكلمة
+BucketSelect_AddNew                     إضافة جديد...
+BucketSelect_AlreadyExists              موجود مسبقاً
+BucketSelect_CreateError                خطأ في إنشاء الفئة
+BucketSelect_InvalidName                يُسمح فقط بـ a-z، 0-9، - و _
+BucketSelect_NameRequired               الاسم مطلوب
+Configuration_Error10                   منفذ استماع POP3 لا يمكن أن يكون نفس قيمة منفذ واجهة المستخدم
+Configuration_Error9                    منفذ واجهة المستخدم لا يمكن أن يكون نفس قيمة منفذ استماع POP3
+Corpus_Actions                          إجراءات
+Corpus_AddStopword                      إضافة إلى الكلمات المتوقفة
+Corpus_BucketList                       الفئات
+Corpus_Clear                            مسح
+Corpus_Color                            اللون
+Corpus_LoadCandidates                   البحث عن المرشحين
+Corpus_NoCandidates                     لم يتم العثور على مرشحين عند هذا الحد.
+Corpus_RemoveStopword                   إزالة
+Corpus_Search                           بحث
+Corpus_StopwordCandidates               مرشحو الكلمات المتوقفة
+Corpus_StopwordCandidatesDesc           كلمات تظهر بالتساوي عبر جميع الفئات — قدرة تمييزية منخفضة.
+Corpus_StopwordRatio                    نسبة الحد الأقصى/الأدنى
+Corpus_StopwordsDesc                    الكلمات في هذه القائمة لا تُستخدم أبداً للتصنيف.
+Corpus_StopwordsTitle                   الكلمات المتوقفة
+DonateLink                              Donate
+History_AllBuckets                      جميع الفئات
+History_HighlightWords                  تمييز الكلمات حسب الفئة
+History_Loading                         جارٍ التحميل...
+History_MoveTo                          — نقل إلى —
+History_Moving                          جارٍ النقل...
+History_NoMatchingMessages              لا توجد رسائل مطابقة
+History_Reclassifying                   جارٍ إعادة التصنيف...
+History_ReclassifyUnclassified          إعادة تصنيف غير المصنفة
+History_Selected                        محدد
+Imap_BucketFolderMappings               تعيينات الفئة -> المجلد
+Imap_Connected                          متصل
+Imap_Connection                         الاتصال
+Imap_ConnectionFailed                   فشل الاتصال
+Imap_Description                        مراقبة مجلدات IMAP وتصنيف الرسائل الواردة تلقائياً.
+Imap_EnableService                      تفعيل خدمة IMAP
+Imap_FetchFolders                       جلب المجلدات
+Imap_Fetching                           جارٍ الجلب...
+Imap_IMAFFolder                         مجلد IMAP
+Imap_MappingsHint                       يتم نقل الرسائل المصنفة إلى مجلد IMAP المحدد. اتركها فارغة لتخطي النقل.
+Imap_NoFoldersWatched                   لا توجد مجلدات مراقبة حتى الآن.
+Imap_NoMappings                         لا توجد تعيينات محددة.
+Imap_SaveAnyway                         حفظ على أي حال
+Imap_SaveConnection                     حفظ الاتصال
+Imap_SaveFolders                        حفظ المجلدات
+Imap_Saving                             جارٍ الحفظ...
+Imap_Service                            الخدمة
+Imap_TestConnection                     اختبار الاتصال
+Imap_Testing                            جارٍ الاختبار...
+Imap_TrainingHint                       وضع التدريب يفحص مجلدات الأرشيف الموجودة ويدرب المصنف على محتوياتها. تتم إعادة تعيين العلامة تلقائياً عند اكتمال التدريب.
+Imap_TrainingMode                       وضع التدريب
+Imap_Use_SSL                            استخدام SSL
+Imap_WatchedFolders                     المجلدات المراقبة
+Imap_WatchedHint                        يراقب POPFile مجلدات IMAP هذه بحثاً عن رسائل جديدة للتصنيف.
+Magnet_Created                          تم إنشاء المغناطيس
+Magnet_Deleted                          تم حذف المغناطيس
+MailingListLink                         mailing_lists
+NavCorpus                               المتن
+NavHistory                              السجل
+NavIMAP                                 IMAP
+NavMagnets                              المغانط
+NavSettings                             الإعدادات
+NavStatus                               الحالة
+Reconnect_Connecting                    جارٍ الاتصال...
+Reconnect_Message                       الخادم الخلفي غير متاح. جارٍ محاولة إعادة الاتصال...
+Reconnect_Now                           إعادة الاتصال الآن
+Reconnect_RetryIn                       إعادة المحاولة في
+Reconnect_Title                         انقطع الاتصال
+RequestFeatureLink                      RequestFeature
+Settings_AdminPassword                  كلمة مرور المسؤول
+Settings_ArchiveDirectory               مجلد الأرشيف
+Settings_ArchiveMessages                أرشفة الرسائل
+Settings_ArchiveSubdirs                 المجلدات الفرعية للأرشيف
+Settings_AutoDetect                     الاكتشاف التلقائي
+Settings_AutoDetectLanguage             الاكتشاف التلقائي للغة
+Settings_ChainPort                      منفذ السلسلة
+Settings_ChainServer                    خادم السلسلة
+Settings_DateFormat                     تنسيق التاريخ
+Settings_DescAdminPassword              اتركها فارغة لتعطيل حماية كلمة المرور.
+Settings_DescArchiveDir                 مجلد الرسائل المؤرشفة (نسبياً لمجلد المستخدم).
+Settings_DescArchiveMessages            حفظ نسخة من كل رسالة مصنفة على القرص.
+Settings_DescArchiveSubdirs             تقسيم الأرشيف إلى N مجلداً فرعياً (0 = معطل).
+Settings_DescAutoDetectLang             اكتشاف لغة كل رسالة وتطبيق الكلمات المتوقفة والجذر المطابق. يضيف ~130% تأخيراً في التصنيف؛ مفيد لصناديق البريد متعددة اللغات.
+Settings_DescChainPort                  منفذ خادم SMTP الأعلى.
+Settings_DescChainServer                اسم مضيف خادم SMTP الأعلى.
+Settings_DescDateFormat                 سلسلة تنسيق strftime. اتركها فارغة للإعداد الافتراضي.
+Settings_DescForceFork                  تفرع عملية جديدة لكل اتصال.
+Settings_DescHEADFetchesBody            استرداد المقال الكامل باستخدام أمر HEAD.
+Settings_DescHTTPPort                   المنفذ الذي تستمع عليه واجهة الويب. يتطلب إعادة تشغيل.
+Settings_DescItemsPerPage               الصفوف المعروضة لكل صفحة في السجل والمغانط.
+Settings_DescLanguage                   لغة عرض واجهة المستخدم. اتركها فارغة للاكتشاف التلقائي من المتصفح.
+Settings_DescListenAddress              عنوان IP للربط. فارغ = جميع الواجهات.
+Settings_DescLocalOnly_UI               تقييد واجهة الويب على اتصالات المضيف المحلي.
+Settings_DescLogDirectory               مجلد ملفات السجل. فارغ = مجلد popfile الجذر.
+Settings_DescLogLevel                   مستوى تفصيل السجل.
+Settings_DescLogSQLToStdout             طباعة كل جملة SQL مع القيم المرتبطة إلى stdout. نشط فقط عند تفعيل "تسجيل إلى stdout".
+Settings_DescLogToStdout                نسخ مخرجات السجل إلى stdout بالإضافة إلى ملف السجل.
+Settings_DescMessageCutoff              الحد الأقصى للكلمات المحللة لكل رسالة (0 = غير محدود).
+Settings_DescNNTPLocalOnly              قبول اتصالات NNTP من المضيف المحلي فقط.
+Settings_DescNNTPPort                   المنفذ الذي يستمع عليه POPFile لـ NNTP (الافتراضي 119).
+Settings_DescNNTPSeparator              حرف يفصل المستخدم عن الخادم.
+Settings_DescPOP3LocalOnly              قبول اتصالات POP3 من المضيف المحلي فقط.
+Settings_DescPOP3Port                   المنفذ الذي يستمع عليه POPFile لـ POP3 (الافتراضي 1110).
+Settings_DescPOP3Separator              الحرف الفاصل بين المستخدم والخادم (مثلاً user:mailhost).
+Settings_DescRetentionDays              عدد الأيام للاحتفاظ بسجل الرسائل.
+Settings_DescSessionDividers            عرض فواصل بين جلسات التصفح في السجل.
+Settings_DescSMTPLocalOnly              قبول اتصالات SMTP من المضيف المحلي فقط.
+Settings_DescSMTPPort                   المنفذ الذي يستمع عليه POPFile لـ SMTP (الافتراضي 25).
+Settings_DescSQLiteJournal              وضع مجلة/WAL لـ SQLite.
+Settings_DescSQLiteTweaks               قناع بت: 1 = كتابة أسرع (أقل أمان)، 2 = نسخ احتياطي دوري.
+Settings_DescSSLChainPort               منفذ خادم SSL POP3 الأعلى.
+Settings_DescSSLChainServer             اسم مضيف خادم SSL POP3 الأعلى لتسلسل SSL.
+Settings_DescSubjectTagLeft             بادئة تُدرج في ترويسة الموضوع، مثلاً [SPAM].
+Settings_DescSubjectTagRight            لاحقة تُضاف إلى ترويسة الموضوع.
+Settings_DescTagPosition                موضع وضع وسم الموضوع.
+Settings_DescTOPFetchesBody             استرداد نص الرسالة أيضاً باستخدام أمر TOP.
+Settings_DescUnclassifiedWeight         حد الاحتمالية الذي يُعد البريد دونه "غير مصنف".
+Settings_DescWordStemming               تحويل الكلمات إلى جذرها قبل التصنيف (مثلاً "running" إلى "run"). يحسن الاستدعاء للغات الغنية صرفياً بتكلفة ~10% تأخير.
+Settings_DescWordTable                  ما يُعرض في جدول احتمالية الكلمات.
+Settings_ErrorSaving                    خطأ في الحفظ
+Settings_ForceFork                      فرض التفرع
+Settings_HEADFetchesBody                HEAD يجلب النص
+Settings_HTTPPort                       منفذ HTTP
+Settings_ItemsPerPage                   عناصر لكل صفحة
+Settings_ListenAddress                  عنوان الاستماع
+Settings_ListenPort                     منفذ الاستماع
+Settings_LocalOnly                      محلي فقط
+Settings_LogDirectory                   مجلد السجل
+Settings_LogLevel                       مستوى السجل
+Settings_LogSQLToStdout                 تسجيل SQL إلى stdout
+Settings_LogToStdout                    تسجيل إلى stdout
+Settings_MessageCutoff                  حد الرسالة
+Settings_OptDebug                       تصحيح
+Settings_OptEnd                         نهاية
+Settings_OptErrorsOnly                  أخطاء فقط
+Settings_OptFrequencies                 التكرارات
+Settings_OptFront                       أمام
+Settings_OptHidden                      مخفي
+Settings_OptInfo                        معلومات
+Settings_OptLogScores                   تسجيل النقاط
+Settings_OptProbabilities               الاحتمالات
+Settings_OptWarnings                    تحذيرات
+Settings_RetentionDays                  الاحتفاظ (أيام)
+Settings_SaveChanges                    حفظ التغييرات
+Settings_Saved                          تم الحفظ
+Settings_Saving                         جارٍ الحفظ...
+Settings_Search                         البحث في الإعدادات...
+Settings_SectionClassifier              المصنف
+Settings_SectionHistory                 السجل
+Settings_SectionLogging                 التسجيل
+Settings_SectionNNTP                    وكيل NNTP
+Settings_SectionPOP3                    وكيل POP3
+Settings_SectionSecurity                الأمان
+Settings_SectionSMTP                    وكيل SMTP
+Settings_SectionUI                      واجهة المستخدم
+Settings_ServerSeparator                فاصل الخادم
+Settings_SessionDividers                فواصل الجلسة
+Settings_SQLiteJournalMode              وضع مجلة SQLite
+Settings_SQLiteTweaks                   تعديلات SQLite
+Settings_SSLChainPort                   منفذ سلسلة SSL
+Settings_SSLChainServer                 خادم سلسلة SSL
+Settings_SubjectTagLeft                 وسم الموضوع الأيسر
+Settings_SubjectTagRight                وسم الموضوع الأيمن
+Settings_TagPosition                    موضع الوسم
+Settings_TOPFetchesBody                 TOP يجلب النص
+Settings_UnclassifiedWeight             وزن غير المصنف
+Settings_WordStemming                   جذر الكلمات
+Settings_WordTable                      جدول الكلمات
+Status_Checking                         جارٍ الفحص...
+Status_Description                      فحوصات صحة خدمات POPFile.
+Status_LoadError                        فشل تحميل الحالة
+Status_NoChecks                         لا توجد فحوصات متاحة.
+View_DownloadMessage                    تنزيل الرسالة
+View_MessageBody                        نص الرسالة
+View_MessageHeader                      ترويسة الرسالة
+WikiLink                                index.php
