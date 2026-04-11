@@ -18,5 +18,6 @@ pm_to_blib
 legacy/
 lib
 !ui/src/lib
+!vendor/perl-querybuilder/lib
 popfile.db.backup
 tools/cleanup.pl
