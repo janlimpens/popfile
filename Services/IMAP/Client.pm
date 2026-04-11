@@ -3,11 +3,18 @@
 use Object::Pad;
 use Carp qw(confess);
 use Encode qw(decode);
+use feature 'signatures';
 use IO::Socket::INET;
 use IO::Socket::SSL;
 use IO::Select;
 use MIME::Base64 qw(decode_base64);
 use Socket ();
+
+sub _imap_utf7_decode ($chunk) {
+    return '&' if $chunk eq '';
+    (my $b = $chunk) =~ tr/+/\//;
+    return decode('UTF-16BE', decode_base64($b))
+}
 
 class Services::IMAP::Client :isa(POPFile::Module);
 
@@ -329,10 +336,7 @@ method get_mailbox_list() {
         s/^\* LIST \(.*\) .+? (.+)$/$1/;
         s/"(.*?)"/$1/;
         my $name = $_;
-        $name =~ s/&([^-]*)-/
-            $1 eq '' ? '&'
-                     : do { (my $b = $1) =~ tr[+][/]; decode('UTF-16BE', decode_base64($b)) }
-        /ge;
+        $name =~ s{&([^-]*)-}{_imap_utf7_decode($1)}ge;
         push @mailboxes, $name;
     }
     return sort @mailboxes
