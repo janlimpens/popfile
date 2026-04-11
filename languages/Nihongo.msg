@@ -556,3 +556,5 @@ Status_Checking	確認中...
 Status_Description	POPFile のステータスと統計。
 Status_LoadError	ステータスデータの読み込みに失敗しました。
 Status_NoChecks	確認項目なし。
+
+Language_Name                           日本語

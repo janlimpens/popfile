@@ -556,3 +556,5 @@ Configuration_Error10 Le port d'écoute POP3 ne peut pas avoir la même valeur q
 Configuration_Error9 Le port de l'interface utilisateur ne peut pas avoir la même valeur que le port d'écoute POP3
 Imap_Use_SSL Utiliser SSL
 View_DownloadMessage Télécharger le message
+
+Language_Name                           Français

@@ -536,3 +536,5 @@ View_WordScores                         מציג ציוני מילים
 WikiLink                                index.php
 Windows_Console                         הפעל POPFile בחלון קונסול?
 Windows_NextTime                        <p><font color="red">שינוי זה לא ייכנס לתוקף עד הפעם הבאה שתפעיל את POPFile</font>
+
+Language_Name                           עברית

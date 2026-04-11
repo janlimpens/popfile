@@ -541,3 +541,5 @@ Shutdown_Message POPFile se ha cerrado
 Size Tamaño
 View_Chart Gráfico de decisión
 View_DownloadMessage Descargar mensaje
+
+Language_Name                           Español

@@ -541,3 +541,5 @@ View_WordScores a mostrar pontuações de palavras
 Windows_Console Executar POPFile numa janela de consola?
 Windows_NextTime <p><font color="red">Esta alteração não terá efeito até da próxima vez que iniciar o POPFile</font>
 Windows_TrayIcon Mostrar ícone do POPFile na barra de sistema do Windows?
+
+Language_Name                           Português

@@ -556,3 +556,5 @@ Status_NoChecks Ei tarkistuksia saatavilla.
 View_DownloadMessage Lataa viesti
 View_MessageBody Viestin runko
 View_MessageHeader Viestin otsake
+
+Language_Name                           Suomi

@@ -555,3 +555,5 @@ Status_Checking Checking...
 Status_Description Health checks for POPFile services.
 Status_LoadError Failed to load status
 Status_NoChecks No checks available.
+
+Language_Name                           English (UK)

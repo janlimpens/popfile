@@ -553,3 +553,5 @@ View_DownloadMessage                    تنزيل الرسالة
 View_MessageBody                        نص الرسالة
 View_MessageHeader                      ترويسة الرسالة
 WikiLink                                index.php
+
+Language_Name                           العربية

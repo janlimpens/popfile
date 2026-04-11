@@ -168,7 +168,7 @@
   async function load() {
     const [cfgRes, localeRes] = await Promise.all([
       fetch('/api/v1/config'),
-      fetch('/api/v1/i18n'),
+      fetch('/api/v1/languages'),
     ]);
     if (cfgRes.ok) config = await cfgRes.json();
     if (localeRes.ok) availableLocales = await localeRes.json();
@@ -272,7 +272,7 @@
                     >
                       <option value="">{t('Settings_AutoDetect')}</option>
                       {#each availableLocales as l}
-                        <option value={l.name}>{l.name}</option>
+                        <option value={l.code}>{l.name}</option>
                       {/each}
                     </select>
                   {:else}

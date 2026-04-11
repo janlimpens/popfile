@@ -539,3 +539,5 @@ Advanced_ConfigFile Konfigurationsfil:
 Advanced_Parameter Parameter
 Advanced_Value Værdi
 Advanced_Warning Dette er den komplette liste over POPFile-parametre. Kun til avancerede brugere: du kan ændre enhver og klikke Opdater; der er ingen gyldighed-kontrol. Elementer vist med fed er ændret fra standardindstillingen.
+
+Language_Name                           Dansk

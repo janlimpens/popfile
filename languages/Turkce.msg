@@ -556,3 +556,5 @@ View_DownloadMessage                    Mesajı İndir
 View_MessageBody                        Mesaj Gövdesi
 View_MessageHeader                      Mesaj Başlığı
 WikiLink                                index.php
+
+Language_Name                           Türkçe

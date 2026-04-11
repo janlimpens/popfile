@@ -544,3 +544,5 @@ View_WordScores	Оцінки слів
 Windows_Console	Консоль
 Windows_NextTime	Наступного разу
 Windows_TrayIcon	Значок у треї
+
+Language_Name                           Українська

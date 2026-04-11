@@ -553,3 +553,5 @@ Windows_TrayIcon Zobrazit ikonu POPFile na hlavním panelu Windows?
 
 Probability	Věrohodnost
 Score	Skóre
+
+Language_Name                           Čeština

@@ -558,3 +558,5 @@ Status_LoadError	載入狀態資料失敗。
 Status_NoChecks	無檢查項目。
 View_MessageBody	郵件內文
 View_MessageHeader	郵件標頭
+
+Language_Name                           中文（繁體）

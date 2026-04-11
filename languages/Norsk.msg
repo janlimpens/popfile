@@ -539,3 +539,5 @@ Advanced_ConfigFile Konfigurasjonsfil:
 Advanced_Parameter Parameter
 Advanced_Value Verdi
 Advanced_Warning Dette er den fullstendige listen over POPFile-parametere. Kun for avanserte brukere: du kan endre hvilken som helst og klikke Oppdater; det er ingen gyldighetssjekk. Elementer vist med fet skrift er endret fra standardinnstillingen.
+
+Language_Name                           Norsk

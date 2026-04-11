@@ -561,3 +561,5 @@ Status_LoadError Status konnte nicht geladen werden
 Status_NoChecks Keine Prüfungen verfügbar.
 View_MessageBody Nachrichteninhalt
 View_MessageHeader Nachrichtenkopf
+
+Language_Name                           Deutsch

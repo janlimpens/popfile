@@ -539,3 +539,5 @@ View_Chart	차트
 View_DownloadMessage	메시지 다운로드
 View_MessageBody	메시지 본문
 View_MessageHeader	메시지 헤더
+
+Language_Name                           한국어
