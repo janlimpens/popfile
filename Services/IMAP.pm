@@ -215,7 +215,7 @@ established.
 method connect_server() {
     my $imap;
     for my $folder (keys %folders) {
-        last if exists $folders{$folder}{imap};
+        next if exists $folders{$folder}{imap};
         if (exists $folders{$folder}{output}
              && !exists $folders{$folder}{watched}
              && $classifier->is_pseudo_bucket($self->api_session(), $folders{$folder}{output})) {

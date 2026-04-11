@@ -1316,9 +1316,13 @@ method db_put_word_count ($session, $bucket, $word, $count) {
     return
         unless defined $userid;
 
-    # We need to have two things before we can start, the id of the
-    # word in the words table (if there's none then we need to add the
-    # word), the bucket id in the buckets table (which must exist)
+    return 0 unless defined $count && $count > 0;
+
+    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
+    unless (defined $bucketid) {
+        $self->log_msg(0, "db_put_word_count: bucketid undef for user=$userid bucket=$bucket word=$word");
+        return 0;
+    }
 
     my $result = $self->validate_sql_prepare_and_execute(
         $db_get_wordid, $word)->fetchrow_arrayref;
@@ -1329,9 +1333,7 @@ method db_put_word_count ($session, $bucket, $word, $count) {
             $db_get_wordid, $word)->fetchrow_arrayref;
     }
 
-    return 0 unless defined $count && $count > 0;
     my $wordid = $result->[0];
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
 
     $self->validate_sql_prepare_and_execute(
         $db_put_word_count, $bucketid, $wordid, $count);
@@ -1733,10 +1735,14 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     return
         unless defined $userid;
 
-    # Map the list of words to a list of counts currently in the database
-    # then update those counts and write them back to the database.
+    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
+    unless (defined $bucketid) {
+        $self->log_msg(0, "add_words_to_bucket: bucketid undef for user=$userid bucket=$bucket; skipping");
+        return;
+    }
 
     return unless keys $parser->words()->%*;
+    $self->log_msg(5, "add_words_to_bucket: user=$userid bucket=$bucket bucketid=$bucketid words=" . scalar(keys $parser->words()->%*));
     my $qb = $self->qb();
     my $word_expr = $qb->compare('word', [sort keys $parser->words()->%*]);
     my $select = $qb->select('id', 'word')->from('words')->where($word_expr);
@@ -3683,10 +3689,13 @@ method add_message_to_bucket ($session, $bucket, $file) {
         unless defined $userid;
 
     unless (defined($db_bucketid->{$userid}{$bucket})) {
+        $self->log_msg(0, "add_message_to_bucket: bucket '$bucket' not found for user=$userid file=$file");
         return 0;
     }
 
-    return $self->add_messages_to_bucket($session, $bucket, $file);
+    my $result = $self->add_messages_to_bucket($session, $bucket, $file);
+    $self->log_msg(5, "add_message_to_bucket: user=$userid bucket=$bucket file=$file result=" . (defined $result ? $result : 'undef'));
+    return $result;
 }
 
 =head2 remove_message_from_bucket
