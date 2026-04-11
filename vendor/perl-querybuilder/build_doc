@@ -1,0 +1,62 @@
+#! /usr/bin/env perl
+
+use v5.40;
+use IPC::Open3 qw(open3);
+use Symbol qw(gensym);
+
+
+sub run_perl ($code) {
+    my $err = gensym;
+    my $pid = open3(my $in, my $out, $err, "perl");
+    print {$in} $code;
+    close $in;
+    my $stdout = do { local $/; <$out> } // "";
+    my $stderr = do { local $/; <$err> } // "";
+    waitpid $pid, 0;
+    return $stderr
+        ? "$stdout\n[stderr]\n$stderr"
+        : $stdout;
+}
+
+sub process() {
+    my $in_code = 0;
+    my $exec = 0;
+    my @code;
+    my @out;
+    while (<>) {
+        if (/^```perl(.*)/) {
+            $in_code = 1;
+            $exec = $1 =~ /\bexec\b/;
+            @code = ();
+            push @out, $_;
+            next;
+        }
+        if ($in_code && /^```/) {
+            $in_code = 0;
+            push @out, $_;
+
+            if ($exec) {
+                my $output = run_perl(join "", @code);
+                push @out, "\n```text output\n$output```\n";
+            }
+            next;
+        }
+        if ($in_code) {
+            push @code, $_;
+            push @out, $_;
+            next;
+        }
+        if (/^```text output/) {
+            1 while <> !~ /^```/;
+            next;
+        }
+        push @out, $_;
+    }
+    print @out;
+    return
+}
+
+process()
+    unless caller();
+
+1;
