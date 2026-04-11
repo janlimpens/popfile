@@ -331,7 +331,7 @@ method get_mailbox_list() {
         my $name = $_;
         $name =~ s/&([^-]*)-/
             $1 eq '' ? '&'
-                     : decode('UTF-16BE', decode_base64($1 =~ tr,+,/,r))
+                     : do { (my $b = $1) =~ tr[+][/]; decode('UTF-16BE', decode_base64($b)) }
         /ge;
         push @mailboxes, $name;
     }
