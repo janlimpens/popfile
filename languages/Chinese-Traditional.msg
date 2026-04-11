@@ -380,3 +380,181 @@ Shutdown_Message                        POPFile 已經被停掉了
 Help_Training                           當妳初次使用 POPFile 時, 她啥也不懂而需要被加以調教. POPFile 的每一個郵筒都需要用郵件訊息來加以調教, 祇有當妳重新把某個被 POPFile 錯誤分類的郵件訊息重新分類到正確的郵筒時, 纔真的是在調教她. 同時妳也得設定妳的郵件用戶端程式, 來按照 POPFile 的分類結果加以過濾郵件訊息. 關於設定用戶端過濾器的資訊可以在 <a href="http://getpopfile.org/docs/FAQ:EmailSorting">POPFile 文件計畫</a>裏被找到.
 Help_Bucket_Setup                       POPFile 除了 "未分類 (unclassified)" 的假郵筒外, 還需要至少兩個郵筒. 而 POPFile 的獨特之處正在於她對電子郵件的區分更勝於此, 妳甚至可以有任意數量的郵筒. 簡單的設定會是像 "垃圾 (spam)", "個人 (personal)", 和 "工作 (work)" 郵筒.
 Help_No_More                            別再顯示這個說明了
+
+# New UI keys added — batch 6
+WikiLink	index.php
+RequestFeatureLink	RequestFeature
+MailingListLink	mailing_lists
+DonateLink	Donate
+Bucket_InIgnoredWords	忽略詞彙
+BucketSelect_AddNew	新增類別
+BucketSelect_AlreadyExists	該類別名稱已存在。
+BucketSelect_CreateError	建立類別失敗。
+BucketSelect_InvalidName	無效的類別名稱。
+BucketSelect_NameRequired	請輸入類別名稱。
+Configuration_Error9	使用者介面連接埠不能與 POP3 連接埠相同
+Configuration_Error10	POP3 連接埠不能與使用者介面連接埠相同
+Corpus_Actions	操作
+Corpus_AddStopword	新增停用詞
+Corpus_BucketList	類別清單
+Corpus_Clear	清除
+Corpus_Color	顏色
+Corpus_LoadCandidates	載入候選詞
+Corpus_NoCandidates	未找到候選詞。
+Corpus_RemoveStopword	刪除停用詞
+Corpus_Search	搜尋
+Corpus_StopwordCandidates	停用詞候選
+Corpus_StopwordCandidatesDesc	出現頻率過高、可能影響分類的詞彙。
+Corpus_StopwordRatio	頻率閾值
+Corpus_StopwordsDesc	POPFile 在分類時忽略的詞彙。
+Corpus_StopwordsTitle	停用詞
+History_AllBuckets	所有類別
+History_HighlightWords	高亮詞彙
+History_Loading	載入中...
+History_MoveTo	移至
+History_Moving	移動中...
+History_NoMatchingMessages	未找到符合的郵件。
+History_Reclassifying	重新分類中...
+History_ReclassifyUnclassified	重新分類未分類郵件
+History_Selected	已選擇
+Imap_BucketFolderMappings	類別與資料夾對應
+Imap_Connected	已連線
+Imap_Connection	連線
+Imap_ConnectionFailed	連線失敗。
+Imap_Description	POPFile 可以透過 IMAP 直接對郵件進行分類。
+Imap_EnableService	啟用 IMAP
+Imap_FetchFolders	取得資料夾
+Imap_Fetching	取得中...
+Imap_IMAFFolder	IMAP 資料夾
+Imap_MappingsHint	請為每個類別指定對應的 IMAP 資料夾。
+Imap_NoFoldersWatched	沒有監視中的資料夾。
+Imap_NoMappings	未設定對應關係。
+Imap_SaveAnyway	仍然儲存
+Imap_SaveConnection	儲存連線
+Imap_SaveFolders	儲存資料夾
+Imap_Saving	儲存中...
+Imap_Service	IMAP 服務
+Imap_TestConnection	測試連線
+Imap_Testing	測試中...
+Imap_TrainingHint	將郵件移到相應資料夾以進行訓練。
+Imap_TrainingMode	訓練模式
+Imap_WatchedFolders	監視中的資料夾
+Imap_WatchedHint	請新增要監視的資料夾。
+Magnet_Created	磁鐵已建立。
+Magnet_Deleted	磁鐵已刪除。
+NavCorpus	語料庫
+NavHistory	歷史
+NavIMAP	IMAP
+NavMagnets	磁鐵
+NavSettings	設定
+NavStatus	狀態
+Reconnect_Connecting	連線中...
+Reconnect_Message	POPFile 已斷線，正在重新連線。
+Reconnect_Now	立即連線
+Reconnect_RetryIn	重試間隔
+Reconnect_Title	連線中斷
+Settings_AdminPassword	管理員密碼
+Settings_ArchiveDirectory	封存目錄
+Settings_ArchiveMessages	封存郵件
+Settings_ArchiveSubdirs	封存子目錄
+Settings_AutoDetect	自動偵測
+Settings_AutoDetectLanguage	自動偵測語言
+Settings_ChainPort	鏈結連接埠
+Settings_ChainServer	鏈結伺服器
+Settings_DateFormat	日期格式
+Settings_DescAdminPassword	管理介面的登入密碼。
+Settings_DescArchiveDir	封存郵件的目錄。留空則不封存。
+Settings_DescArchiveMessages	儲存已分類郵件的副本。
+Settings_DescArchiveSubdirs	依類別將封存分配到子目錄。
+Settings_DescAutoDetectLang	自動偵測介面語言。
+Settings_DescChainPort	鏈結上游 POP3 伺服器的連接埠。
+Settings_DescChainServer	上游 POP3 伺服器的主機名稱。
+Settings_DescDateFormat	日期的顯示格式。
+Settings_DescForceFork	強制使用程序分叉。
+Settings_DescHEADFetchesBody	使用 HEAD 命令取得郵件內文。
+Settings_DescHTTPPort	POPFile 網頁介面連接埠。
+Settings_DescItemsPerPage	歷史記錄每頁顯示的項目數。
+Settings_DescLanguage	介面語言。
+Settings_DescListenAddress	POPFile 監聽連線的位址。
+Settings_DescLocalOnly_UI	將網頁介面限制為僅本機連線。
+Settings_DescLogDirectory	日誌檔案目錄。留空則使用 POPFile 根目錄。
+Settings_DescLogLevel	日誌輸出詳細程度。
+Settings_DescLogSQLToStdout	將每條 SQL 語句及其參數值輸出到 stdout。
+Settings_DescLogToStdout	將日誌輸出同時複製到 stdout。
+Settings_DescMessageCutoff	每封郵件最多分析的詞數（0 表示不限）。
+Settings_DescNNTPLocalOnly	僅接受本機的 NNTP 連線。
+Settings_DescNNTPPort	POPFile 監聽 NNTP 的連接埠（預設 119）。
+Settings_DescNNTPSeparator	分隔使用者名稱和伺服器的字元。
+Settings_DescPOP3LocalOnly	僅接受本機的 POP3 連線。
+Settings_DescPOP3Port	POPFile 監聽 POP3 的連接埠（預設 1110）。
+Settings_DescPOP3Separator	分隔使用者名稱和伺服器的字元（如 使用者名稱:郵件伺服器）。
+Settings_DescRetentionDays	郵件歷史保留天數。
+Settings_DescSessionDividers	在歷史記錄中顯示會話間的分隔線。
+Settings_DescSMTPLocalOnly	僅接受本機的 SMTP 連線。
+Settings_DescSMTPPort	POPFile 監聽 SMTP 的連接埠（預設 25）。
+Settings_DescSQLiteJournal	SQLite 日誌 / WAL 模式。
+Settings_DescSQLiteTweaks	位元遮罩：1=快速寫入（安全性較低），2=定期備份。
+Settings_DescSSLChainPort	上游 SSL POP3 伺服器連接埠。
+Settings_DescSSLChainServer	SSL 鏈結用上游 SSL POP3 伺服器主機名稱。
+Settings_DescSubjectTagLeft	插入主旨標頭的前置詞（如 [垃圾郵件]）。
+Settings_DescSubjectTagRight	附加到主旨標頭的後置詞。
+Settings_DescTagPosition	主旨標籤的位置。
+Settings_DescTOPFetchesBody	使用 TOP 命令取得郵件內文。
+Settings_DescUnclassifiedWeight	低於此機率的郵件被視為「未分類」的閾值。
+Settings_DescWordStemming	分類前對詞語進行詞幹提取。可提高形態豐富語言的召回率。
+Settings_DescWordTable	詞語機率表中顯示的內容。
+Settings_ErrorSaving	儲存錯誤
+Settings_ForceFork	強制分叉
+Settings_HEADFetchesBody	HEAD 取得內文
+Settings_HTTPPort	HTTP 連接埠
+Settings_ItemsPerPage	每頁項目數
+Settings_ListenAddress	監聽位址
+Settings_ListenPort	監聽連接埠
+Settings_LocalOnly	僅本機
+Settings_LogDirectory	日誌目錄
+Settings_LogLevel	日誌層級
+Settings_LogSQLToStdout	將 SQL 輸出到 stdout
+Settings_LogToStdout	輸出到 stdout
+Settings_MessageCutoff	郵件截斷數
+Settings_OptDebug	除錯
+Settings_OptEnd	末尾
+Settings_OptErrorsOnly	僅錯誤
+Settings_OptFrequencies	頻率
+Settings_OptFront	前部
+Settings_OptHidden	隱藏
+Settings_OptInfo	資訊
+Settings_OptLogScores	記錄分數
+Settings_OptProbabilities	機率
+Settings_OptWarnings	警告
+Settings_RetentionDays	保留天數
+Settings_SaveChanges	儲存變更
+Settings_Saved	已儲存
+Settings_Saving	儲存中...
+Settings_Search	搜尋設定...
+Settings_SectionClassifier	分類器
+Settings_SectionHistory	歷史
+Settings_SectionLogging	日誌記錄
+Settings_SectionNNTP	NNTP 代理
+Settings_SectionPOP3	POP3 代理
+Settings_SectionSecurity	安全性
+Settings_SectionSMTP	SMTP 代理
+Settings_SectionUI	介面
+Settings_ServerSeparator	伺服器分隔符
+Settings_SessionDividers	會話分隔線
+Settings_SQLiteJournalMode	SQLite 日誌模式
+Settings_SQLiteTweaks	SQLite 調整
+Settings_SSLChainPort	SSL 鏈結連接埠
+Settings_SSLChainServer	SSL 鏈結伺服器
+Settings_SubjectTagLeft	主旨標籤（左）
+Settings_SubjectTagRight	主旨標籤（右）
+Settings_TagPosition	標籤位置
+Settings_TOPFetchesBody	TOP 取得內文
+Settings_UnclassifiedWeight	未分類權重
+Settings_WordStemming	詞幹提取
+Settings_WordTable	詞語表
+Status_Checking	檢查中...
+Status_Description	POPFile 狀態與統計。
+Status_LoadError	載入狀態資料失敗。
+Status_NoChecks	無檢查項目。
+View_MessageBody	郵件內文
+View_MessageHeader	郵件標頭

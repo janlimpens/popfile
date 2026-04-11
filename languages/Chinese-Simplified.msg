@@ -381,3 +381,181 @@ Shutdown_Message                        POPFile 已经被停掉了
 Help_Training                           当你初次使用 POPFile 时, 她啥也不懂而需要被加以调教. POPFile 的每一个邮筒都需要用邮件讯息来加以调教, 祇有当你重新把某个被 POPFile 错误分类的邮件讯息重新分类到正确的邮筒时, 才真的是在调教她. 同时你也得设定你的邮件用户端程序, 来按照 POPFile 的分类结果加以过滤邮件讯息. 关于设定用户端过滤器的信息可以在 <a href="http://getpopfile.org/docs/FAQ:EmailSorting">POPFile 文件计画</a>里被找到.
 Help_Bucket_Setup                       POPFile 除了 "未分类 (unclassified)" 的假邮筒外, 还需要至少两个邮筒. 而 POPFile 的独特之处正在于她对电子邮件的区分更胜于此, 你甚至可以有任意数量的邮筒. 简单的设定会是像 "垃圾 (spam)", "个人 (personal)", 和 "工作 (work)" 邮筒.
 Help_No_More                            别再显示这个说明了
+
+# New UI keys added — batch 6
+WikiLink	index.php
+RequestFeatureLink	RequestFeature
+MailingListLink	mailing_lists
+DonateLink	Donate
+Bucket_InIgnoredWords	忽略词汇
+BucketSelect_AddNew	新建类别
+BucketSelect_AlreadyExists	该类别名称已存在。
+BucketSelect_CreateError	创建类别失败。
+BucketSelect_InvalidName	无效的类别名称。
+BucketSelect_NameRequired	请输入类别名称。
+Configuration_Error9	用户界面端口不能与 POP3 端口相同
+Configuration_Error10	POP3 端口不能与用户界面端口相同
+Corpus_Actions	操作
+Corpus_AddStopword	添加停用词
+Corpus_BucketList	类别列表
+Corpus_Clear	清除
+Corpus_Color	颜色
+Corpus_LoadCandidates	加载候选词
+Corpus_NoCandidates	未找到候选词。
+Corpus_RemoveStopword	删除停用词
+Corpus_Search	搜索
+Corpus_StopwordCandidates	停用词候选
+Corpus_StopwordCandidatesDesc	出现频率过高、可能影响分类的词汇。
+Corpus_StopwordRatio	频率阈值
+Corpus_StopwordsDesc	POPFile 在分类时忽略的词汇。
+Corpus_StopwordsTitle	停用词
+History_AllBuckets	所有类别
+History_HighlightWords	高亮词汇
+History_Loading	加载中...
+History_MoveTo	移至
+History_Moving	移动中...
+History_NoMatchingMessages	未找到匹配的邮件。
+History_Reclassifying	重新分类中...
+History_ReclassifyUnclassified	重新分类未分类邮件
+History_Selected	已选择
+Imap_BucketFolderMappings	类别与文件夹对应
+Imap_Connected	已连接
+Imap_Connection	连接
+Imap_ConnectionFailed	连接失败。
+Imap_Description	POPFile 可以通过 IMAP 直接对邮件进行分类。
+Imap_EnableService	启用 IMAP
+Imap_FetchFolders	获取文件夹
+Imap_Fetching	获取中...
+Imap_IMAFFolder	IMAP 文件夹
+Imap_MappingsHint	请为每个类别指定对应的 IMAP 文件夹。
+Imap_NoFoldersWatched	没有监视中的文件夹。
+Imap_NoMappings	未设置对应关系。
+Imap_SaveAnyway	仍然保存
+Imap_SaveConnection	保存连接
+Imap_SaveFolders	保存文件夹
+Imap_Saving	保存中...
+Imap_Service	IMAP 服务
+Imap_TestConnection	测试连接
+Imap_Testing	测试中...
+Imap_TrainingHint	将邮件移到相应文件夹以进行训练。
+Imap_TrainingMode	训练模式
+Imap_WatchedFolders	监视中的文件夹
+Imap_WatchedHint	请添加要监视的文件夹。
+Magnet_Created	磁铁已创建。
+Magnet_Deleted	磁铁已删除。
+NavCorpus	语料库
+NavHistory	历史
+NavIMAP	IMAP
+NavMagnets	磁铁
+NavSettings	设置
+NavStatus	状态
+Reconnect_Connecting	连接中...
+Reconnect_Message	POPFile 已断开连接，正在重新连接。
+Reconnect_Now	立即连接
+Reconnect_RetryIn	重试间隔
+Reconnect_Title	连接断开
+Settings_AdminPassword	管理员密码
+Settings_ArchiveDirectory	归档目录
+Settings_ArchiveMessages	归档邮件
+Settings_ArchiveSubdirs	归档子目录
+Settings_AutoDetect	自动检测
+Settings_AutoDetectLanguage	自动检测语言
+Settings_ChainPort	链接端口
+Settings_ChainServer	链接服务器
+Settings_DateFormat	日期格式
+Settings_DescAdminPassword	管理界面的登录密码。
+Settings_DescArchiveDir	归档邮件的目录。留空则不归档。
+Settings_DescArchiveMessages	保存已分类邮件的副本。
+Settings_DescArchiveSubdirs	按类别将归档分配到子目录。
+Settings_DescAutoDetectLang	自动检测界面语言。
+Settings_DescChainPort	链接上游 POP3 服务器的端口。
+Settings_DescChainServer	上游 POP3 服务器的主机名。
+Settings_DescDateFormat	日期的显示格式。
+Settings_DescForceFork	强制使用进程分叉。
+Settings_DescHEADFetchesBody	使用 HEAD 命令获取邮件正文。
+Settings_DescHTTPPort	POPFile 网页界面端口。
+Settings_DescItemsPerPage	历史记录每页显示的条目数。
+Settings_DescLanguage	界面语言。
+Settings_DescListenAddress	POPFile 监听连接的地址。
+Settings_DescLocalOnly_UI	将网页界面限制为仅本地连接。
+Settings_DescLogDirectory	日志文件目录。留空则使用 POPFile 根目录。
+Settings_DescLogLevel	日志输出详细程度。
+Settings_DescLogSQLToStdout	将每条 SQL 语句及其参数值输出到 stdout。
+Settings_DescLogToStdout	将日志输出同时复制到 stdout。
+Settings_DescMessageCutoff	每封邮件最多分析的词数（0 表示不限）。
+Settings_DescNNTPLocalOnly	仅接受本地主机的 NNTP 连接。
+Settings_DescNNTPPort	POPFile 监听 NNTP 的端口（默认 119）。
+Settings_DescNNTPSeparator	分隔用户名和服务器的字符。
+Settings_DescPOP3LocalOnly	仅接受本地主机的 POP3 连接。
+Settings_DescPOP3Port	POPFile 监听 POP3 的端口（默认 1110）。
+Settings_DescPOP3Separator	分隔用户名和服务器的字符（如 用户名:邮件服务器）。
+Settings_DescRetentionDays	邮件历史保留天数。
+Settings_DescSessionDividers	在历史记录中显示会话间的分隔线。
+Settings_DescSMTPLocalOnly	仅接受本地主机的 SMTP 连接。
+Settings_DescSMTPPort	POPFile 监听 SMTP 的端口（默认 25）。
+Settings_DescSQLiteJournal	SQLite 日志 / WAL 模式。
+Settings_DescSQLiteTweaks	位掩码：1=快速写入（安全性较低），2=定期备份。
+Settings_DescSSLChainPort	上游 SSL POP3 服务器端口。
+Settings_DescSSLChainServer	SSL 链接用上游 SSL POP3 服务器主机名。
+Settings_DescSubjectTagLeft	插入主题头的前缀（如 [垃圾邮件]）。
+Settings_DescSubjectTagRight	附加到主题头的后缀。
+Settings_DescTagPosition	主题标签的位置。
+Settings_DescTOPFetchesBody	使用 TOP 命令获取邮件正文。
+Settings_DescUnclassifiedWeight	低于此概率的邮件被视为"未分类"的阈值。
+Settings_DescWordStemming	分类前对词语进行词干提取。可提高形态丰富语言的召回率。
+Settings_DescWordTable	词语概率表中显示的内容。
+Settings_ErrorSaving	保存错误
+Settings_ForceFork	强制分叉
+Settings_HEADFetchesBody	HEAD 获取正文
+Settings_HTTPPort	HTTP 端口
+Settings_ItemsPerPage	每页条目数
+Settings_ListenAddress	监听地址
+Settings_ListenPort	监听端口
+Settings_LocalOnly	仅本地
+Settings_LogDirectory	日志目录
+Settings_LogLevel	日志级别
+Settings_LogSQLToStdout	将 SQL 输出到 stdout
+Settings_LogToStdout	输出到 stdout
+Settings_MessageCutoff	邮件截断数
+Settings_OptDebug	调试
+Settings_OptEnd	末尾
+Settings_OptErrorsOnly	仅错误
+Settings_OptFrequencies	频率
+Settings_OptFront	前部
+Settings_OptHidden	隐藏
+Settings_OptInfo	信息
+Settings_OptLogScores	记录得分
+Settings_OptProbabilities	概率
+Settings_OptWarnings	警告
+Settings_RetentionDays	保留天数
+Settings_SaveChanges	保存更改
+Settings_Saved	已保存
+Settings_Saving	保存中...
+Settings_Search	搜索设置...
+Settings_SectionClassifier	分类器
+Settings_SectionHistory	历史
+Settings_SectionLogging	日志记录
+Settings_SectionNNTP	NNTP 代理
+Settings_SectionPOP3	POP3 代理
+Settings_SectionSecurity	安全
+Settings_SectionSMTP	SMTP 代理
+Settings_SectionUI	界面
+Settings_ServerSeparator	服务器分隔符
+Settings_SessionDividers	会话分隔线
+Settings_SQLiteJournalMode	SQLite 日志模式
+Settings_SQLiteTweaks	SQLite 调整
+Settings_SSLChainPort	SSL 链接端口
+Settings_SSLChainServer	SSL 链接服务器
+Settings_SubjectTagLeft	主题标签（左）
+Settings_SubjectTagRight	主题标签（右）
+Settings_TagPosition	标签位置
+Settings_TOPFetchesBody	TOP 获取正文
+Settings_UnclassifiedWeight	未分类权重
+Settings_WordStemming	词干提取
+Settings_WordTable	词语表
+Status_Checking	检查中...
+Status_Description	POPFile 状态与统计。
+Status_LoadError	加载状态数据失败。
+Status_NoChecks	无检查项。
+View_MessageBody	邮件正文
+View_MessageHeader	邮件头
