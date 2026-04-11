@@ -3,6 +3,8 @@
 # Copyright (C) 2001-2011 John Graham-Cumming
 # Copyright (C) 2026 Jan Limpens
 
+BEGIN { $| = 1 }
+
 my $packing_list = defined($ENV{POPFILE_ROOT})?$ENV{POPFILE_ROOT}:'./';
 $packing_list =~ s/[\\\/]$//;
 $packing_list .= '/popfile.pck';
