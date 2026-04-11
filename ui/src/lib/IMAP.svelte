@@ -298,7 +298,7 @@
     <div class="add-row">
       <select bind:value={newMapBucket}>
         <option value="">— bucket —</option>
-        {#each buckets.filter(b => !b.pseudo) as b}
+        {#each buckets.filter(b => !b.pseudo && !mappings.some(m => m.bucket === b.name)) as b}
           <option value={b.name}>{b.name}</option>
         {/each}
       </select>
