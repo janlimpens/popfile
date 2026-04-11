@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
+
+class Services::IMAP::Client :isa(POPFile::Module);
+
 use Carp qw(confess);
 use Encode qw(decode);
 use feature 'signatures';
@@ -9,14 +12,6 @@ use IO::Socket::SSL;
 use IO::Select;
 use MIME::Base64 qw(decode_base64);
 use Socket ();
-
-sub _imap_utf7_decode ($chunk) {
-    return '&' if $chunk eq '';
-    (my $b = $chunk) =~ tr/+/\//;
-    return decode('UTF-16BE', decode_base64($b))
-}
-
-class Services::IMAP::Client :isa(POPFile::Module);
 
 =head1 NAME
 
@@ -47,6 +42,13 @@ field $last_command = '';
 
 my $eol = "\015\012";
 my $cfg_separator = "-->";
+
+method _imap_utf7_decode($chunk) {
+    return '&'
+        if $chunk eq '';
+    (my $b = $chunk) =~ tr/+/\//;
+    return decode('UTF-16BE', decode_base64($b))
+}
 
 =head2 connect()
 
@@ -331,12 +333,11 @@ method get_mailbox_list() {
     }
     my @lines = split /$eol/, $last_response;
     my @mailboxes;
-    for (@lines) {
-        next unless /^\*/;
-        s/^\* LIST \(.*\) .+? (.+)$/$1/;
-        s/"(.*?)"/$1/;
-        my $name = $_;
-        $name =~ s{&([^-]*)-}{_imap_utf7_decode($1)}ge;
+    for my $name ( grep { /^\*/ } @lines) {
+        $name =~ s/^\* LIST \(.*\) .+? (.+)$/$1/;
+        $name =~ s/"(.*?)"/$1/;
+        my $decoded = $self->_imap_utf7_decode($1);
+        $name =~ s/&([^-]*)-/$decoded/ge;
         push @mailboxes, $name;
     }
     return sort @mailboxes
