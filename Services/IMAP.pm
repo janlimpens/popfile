@@ -106,7 +106,8 @@ if an exception is thrown.  Returns 1.
 =cut
 
 method service() {
-    return 1 if $self->config('enabled') == 0;
+    return 1 if $self->config('enabled') == 0
+             && $self->config('training_mode') == 0;
     return 1 if time - $last_update < $self->config('update_interval');
     try {
         local $SIG{PIPE} = 'IGNORE';

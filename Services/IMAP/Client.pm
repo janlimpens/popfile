@@ -2,9 +2,11 @@
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
 use Carp qw(confess);
+use Encode qw(decode);
 use IO::Socket::INET;
 use IO::Socket::SSL;
 use IO::Select;
+use MIME::Base64 qw(decode_base64);
 use Socket ();
 
 class Services::IMAP::Client :isa(POPFile::Module);
@@ -307,7 +309,8 @@ method move_message ($msg, $destination) {
 =head2 get_mailbox_list()
 
 Sends C<LIST "" "*"> and returns a sorted list of all mailbox names on the
-server.  Returns an empty list on failure.
+server, with modified UTF-7 (RFC 3501) folder names decoded to UTF-8.
+Returns an empty list on failure.
 
 =cut
 
@@ -325,7 +328,12 @@ method get_mailbox_list() {
         next unless /^\*/;
         s/^\* LIST \(.*\) .+? (.+)$/$1/;
         s/"(.*?)"/$1/;
-        push @mailboxes, $1;
+        my $name = $_;
+        $name =~ s/&([^-]*)-/
+            $1 eq '' ? '&'
+                     : decode('UTF-16BE', decode_base64($1 =~ tr,+,/,r))
+        /ge;
+        push @mailboxes, $name;
     }
     return sort @mailboxes
 }
