@@ -1741,7 +1741,10 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
         return;
     }
 
-    return unless keys $parser->words()->%*;
+    unless (keys $parser->words()->%*) {
+        $self->log_msg(1, "add_words_to_bucket: no words parsed for user=$userid bucket=$bucket; skipping");
+        return;
+    }
     $self->log_msg(5, "add_words_to_bucket: user=$userid bucket=$bucket bucketid=$bucketid words=" . scalar(keys $parser->words()->%*));
     my $qb = $self->qb();
     my $word_expr = $qb->compare('word', [sort keys $parser->words()->%*]);

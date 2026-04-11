@@ -183,8 +183,7 @@ method new_imap_client() {
 =head2 build_folder_list()
 
 Rebuilds the C<%folders> map from watched folders and bucket-to-folder
-mappings.  Clears the map entirely if only one entry results (no useful work
-to do).  Resets C<$folder_change_flag>.
+mappings.  Resets C<$folder_change_flag>.
 
 =cut
 
@@ -198,7 +197,6 @@ method build_folder_list() {
         my $folder = $self->folder_for_bucket($bucket);
         $folders{$folder}{output} = $bucket if defined $folder;
     }
-    %folders = () if keys(%folders) == 1;
     $folder_change_flag = 0;
 }
 
@@ -590,7 +588,15 @@ method train_on_archive() {
     for my $folder (keys %folders) {
         delete $folders{$folder} if exists $folders{$folder}{watched};
     }
+    unless (%folders) {
+        $self->log_msg(0, "No output folders configured; nothing to train on.");
+        %folders = ();
+        $self->config('training_mode', 0);
+        return;
+    }
     $self->connect_server();
+    my $total_msgs = 0;
+    my $total_folders = 0;
     for my $folder (keys %folders) {
         my $bucket = $folders{$folder}{output};
         next if $classifier->is_pseudo_bucket($self->api_session(), $bucket);
@@ -599,6 +605,7 @@ method train_on_archive() {
         $imap->uid_next($folder, 1);
         my @uids = $imap->get_new_message_list_unselected($folder);
         $self->log_msg(0, "Training on " . scalar(@uids) . " messages in folder $folder to bucket $bucket.");
+        $total_folders++;
         for my $msg (@uids) {
             my ($ok, @lines) = $imap->fetch_message_part($msg, '');
             $imap->uid_next($folder, $msg);
@@ -618,8 +625,10 @@ method train_on_archive() {
             $classifier->add_message_to_bucket($self->api_session(), $bucket, $file);
             $self->log_msg(0, "Training on the message with UID $msg to bucket $bucket.");
             unlink $file;
+            $total_msgs++;
         }
     }
+    $self->log_msg(0, "Training complete: $total_msgs messages trained across $total_folders folders.");
     %folders = ();
     $self->config('training_mode', 0);
 }
