@@ -207,6 +207,25 @@ subtest 'clear bucket' => sub {
 };
 
 # -----------------------------------------------------------------------
+subtest 'matrix integrity after training (regression #170)' => sub {
+    my $spam_fixture = "$Bin/fixtures/spam.eml";
+    is( $bayes->create_bucket($session, 'spam2'), 1, 'created bucket "spam2"' );
+    for (1..3) {
+        $bayes->add_message_to_bucket($session, 'spam2', $spam_fixture);
+    }
+    my $wc = $bayes->get_bucket_word_count($session, 'spam2');
+    ok( $wc > 0, "spam2 has $wc words after training" );
+    my $null_bucket_rows = $bayes->db()->selectrow_array(
+        'SELECT COUNT(*) FROM matrix WHERE bucketid IS NULL');
+    is( $null_bucket_rows, 0, 'no matrix rows with NULL bucketid' );
+    my $spam2_matrix_count = $bayes->db()->selectrow_array(
+        'SELECT COUNT(*) FROM matrix m JOIN buckets b ON m.bucketid = b.id WHERE b.name = ?',
+        undef, 'spam2');
+    ok( $spam2_matrix_count > 0, "spam2 has $spam2_matrix_count matrix entries" );
+    $bayes->delete_bucket($session, 'spam2');
+};
+
+# -----------------------------------------------------------------------
 $bayes->release_session_key($session);
 $bayes->stop();
 
