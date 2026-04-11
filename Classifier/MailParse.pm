@@ -2263,10 +2263,8 @@ C<{...}>.
 
 =cut
 
-method parse_css_style ($line, $braces) {
+method parse_css_style ($line, $braces = 0) {
     # http://www.w3.org/TR/CSS2/grammar.html
-
-    $braces = 0 if (!defined($braces));
 
     # A reference is used to return data
 
