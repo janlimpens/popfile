@@ -628,6 +628,34 @@ method build_app ($svc, $session) {
     });
 
     #--------------------------------------------------------------------
+    # GET /api/v1/languages
+    #   Returns [{code, name}, ...] sorted by name, where name is the
+    #   native language name from the Language_Name key in each .msg file
+    #--------------------------------------------------------------------
+    $r->get('/api/v1/languages' => sub ($c) {
+        my @languages;
+        for my $file (sort glob "$languages_dir/*.msg") {
+            my $code = $file;
+            $code =~ s|.*/||;
+            $code =~ s|\.msg$||;
+            my $native_name = $code;
+            open my $fh, '<:encoding(UTF-8)', $file or next;
+            while (my $line = <$fh>) {
+                chomp $line;
+                next if $line =~ /^#/ || $line !~ /\S/;
+                if ($line =~ /^Language_Name\s+(.+)/) {
+                    $native_name = $1;
+                    last;
+                }
+            }
+            close $fh;
+            push @languages, { code => $code, name => $native_name };
+        }
+        @languages = sort { $a->{name} cmp $b->{name} } @languages;
+        $c->render(json => \@languages);
+    });
+
+    #--------------------------------------------------------------------
     # GET /api/v1/i18n/:locale
     #   Returns { key => value, ... } for the given locale .msg file
     #--------------------------------------------------------------------

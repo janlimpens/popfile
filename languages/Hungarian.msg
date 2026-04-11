@@ -535,3 +535,5 @@ View_WordScores szópontszámok megjelenítése
 Windows_Console POPFile futtatása konzolablakban?
 Windows_NextTime <p><font color="red">Ez a változtatás csak a POPFile következő indításakor lép érvénybe</font>
 Windows_TrayIcon POPFile ikon megjelenítése a Windows rendszertálcán?
+
+Language_Name                           Magyar

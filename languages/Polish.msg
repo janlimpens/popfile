@@ -539,3 +539,5 @@ View_WordScores pokazuje wyniki słów
 Windows_Console Uruchomić POPFile w oknie konsoli?
 Windows_NextTime <p><font color="red">Ta zmiana nie wejdzie w życie do następnego uruchomienia POPFile</font>
 Windows_TrayIcon Pokazać ikonę POPFile na pasku zadań Windows?
+
+Language_Name                           Polski

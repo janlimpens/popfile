@@ -535,3 +535,5 @@ WikiLink                                index.php
 Windows_Console                         Εκτέλεση POPFile σε παράθυρο κονσόλας;
 Windows_NextTime                        <p><font color="red">Αυτή η αλλαγή δεν θα τεθεί σε ισχύ μέχρι την επόμενη εκκίνηση του POPFile</font>
 Windows_TrayIcon                        Εμφάνιση εικονιδίου POPFile στην περιοχή ειδοποιήσεων των Windows;
+
+Language_Name                           Ελληνικά

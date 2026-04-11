@@ -559,3 +559,5 @@ Status_LoadError	加载状态数据失败。
 Status_NoChecks	无检查项。
 View_MessageBody	邮件正文
 View_MessageHeader	邮件头
+
+Language_Name                           中文（简体）

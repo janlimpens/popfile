@@ -561,3 +561,5 @@ Configuration_Error10 La porta di ascolto POP3 non può avere lo stesso valore d
 Configuration_Error9 La porta dell'interfaccia utente non può avere lo stesso valore della porta di ascolto POP3
 Imap_Use_SSL Usa SSL
 View_DownloadMessage Scarica messaggio
+
+Language_Name                           Italiano

@@ -539,3 +539,5 @@ Advanced_ConfigFile Configuratiebestand:
 Advanced_Parameter Parameter
 Advanced_Value Waarde
 Advanced_Warning Dit is de volledige lijst van POPFile-parameters. Alleen voor gevorderde gebruikers: u kunt elk item wijzigen en op Bijwerken klikken; er is geen geldigheidscontrole. Vetgedrukte items zijn gewijzigd ten opzichte van de standaardinstelling.
+
+Language_Name                           Nederlands

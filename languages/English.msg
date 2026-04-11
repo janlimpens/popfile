@@ -570,3 +570,5 @@ Settings_OptErrorsOnly                  Errors only
 Settings_OptWarnings                    Warnings
 Settings_OptInfo                        Info
 Settings_OptDebug                       Debug
+
+Language_Name                           English

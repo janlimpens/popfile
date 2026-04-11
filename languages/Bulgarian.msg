@@ -538,3 +538,5 @@ View_WordScores	Оценки на думи
 Windows_Console	Конзола
 Windows_NextTime	Следващия път
 Windows_TrayIcon	Икона в системния трей
+
+Language_Name                           Български

@@ -561,3 +561,5 @@ Configuration_Error10 A porta de escuta POP3 não pode ter o mesmo valor que a p
 Configuration_Error9 A porta da interface do usuário não pode ter o mesmo valor que a porta de escuta POP3
 Imap_Use_SSL Usar SSL
 View_DownloadMessage Baixar mensagem
+
+Language_Name                           Português (Brasil)

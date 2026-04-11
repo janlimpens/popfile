@@ -546,3 +546,5 @@ Windows_Console Запустить POPFile в окне консоли?
 Windows_NextTime <p><font color="red">Это изменение вступит в силу только при следующем запуске POPFile</font>
 Windows_TrayIcon Показать значок POPFile в системном трее Windows?
 Word Слово
+
+Language_Name                           Русский

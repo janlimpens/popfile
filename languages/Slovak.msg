@@ -541,3 +541,5 @@ Windows_Console Spustiť POPFile v okne konzoly?
 Windows_NextTime <p><font color="red">Táto zmena nenadobudne účinnosť do ďalšieho spustenia POPFile</font>
 Windows_TrayIcon Zobraziť ikonu POPFile na paneli úloh Windows?
 Word Slovo
+
+Language_Name                           Slovenčina

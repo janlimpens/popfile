@@ -561,3 +561,5 @@ Configuration_Error10 El port d'escolta POP3 no pot tenir el mateix valor que el
 Configuration_Error9 El port de la interfície d'usuari no pot tenir el mateix valor que el port d'escolta POP3
 Imap_Use_SSL Utilitza SSL
 View_DownloadMessage Descarrega el missatge
+
+Language_Name                           Català
