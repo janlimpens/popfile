@@ -13,6 +13,7 @@ requires 'Future::XS', '0';
 requires 'HTML::Tagset', '0';
 requires 'IO::Socket::Socks', '0';
 requires 'IO::Socket::SSL', '0';
+requires 'JSON', '0';
 requires 'JSON::XS', '0';
 requires 'Lingua::Identify', '0';
 requires 'Lingua::Stem::Snowball', '0';
