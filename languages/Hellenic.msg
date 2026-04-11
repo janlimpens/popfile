@@ -281,3 +281,257 @@ Configuration_InsertionTableSummary     This table contains buttons that determi
 Security_MainTableSummary               This table provides sets of controls that affect the security of the overall configuration of POPFile, whether it should automatically check for updates to the program, and whether statistics about POPFile's performance should be sent to the central datastore of the program's author for general information.
 Advanced_MainTableSummary               This table provides a list of words that POPFile ignores when classifying message due to their relative frequency in message in general.  They are organized per row according to the first letter of the words.
 
+Advanced_AllParameters                  Όλες οι παράμετροι POPFile
+Advanced_ConfigFile                     Αρχείο ρυθμίσεων:
+Advanced_Parameter                      Παράμετρος
+Advanced_Value                          Τιμή
+Advanced_Warning                        Αυτή είναι η πλήρης λίστα παραμέτρων POPFile. Μόνο για προχωρημένους χρήστες: μπορείτε να αλλάξετε οποιαδήποτε και να κάνετε κλικ στο Ενημέρωση. Δεν γίνεται έλεγχος εγκυρότητας. Τα στοιχεία με έντονη γραφή έχουν αλλαχτεί από την προεπιλογή. Δείτε <a href="http://getpopfile.org/docs/OptionReference">OptionReference</a> για περισσότερες πληροφορίες.
+ApplyChanges                            Εφαρμογή αλλαγών
+Arrived                                 Έφτασε
+Bucket_InIgnoredWords                   <b>%s</b> βρίσκεται στις αγνοημένες λέξεις. Το POPFile αγνοεί αυτή τη λέξη
+BucketSelect_AddNew                     Προσθήκη νέας...
+BucketSelect_AlreadyExists              Υπάρχει ήδη
+BucketSelect_CreateError                Σφάλμα δημιουργίας κατηγορίας
+BucketSelect_InvalidName                Μόνο a-z, 0-9, - και _
+BucketSelect_NameRequired               Απαιτείται όνομα
+Configuration_Error10                   Η θύρα ακρόασης POP3 δεν μπορεί να έχει την ίδια τιμή με τη θύρα της διεπαφής χρήστη
+Configuration_Error8                    Η θύρα διακομιστή SOCKS V πρέπει να είναι αριθμός μεταξύ 1 και 65535
+Configuration_Error9                    Η θύρα της διεπαφής χρήστη δεν μπορεί να έχει την ίδια τιμή με τη θύρα ακρόασης POP3
+Configuration_Fields                    Στήλες ιστορικού
+Configuration_NNTPFork                  Να επιτρέπονται ταυτόχρονες συνδέσεις NNTP
+Configuration_POPFork                   Να επιτρέπονται ταυτόχρονες συνδέσεις POP3
+Configuration_SMTPFork                  Να επιτρέπονται ταυτόχρονες συνδέσεις SMTP
+Configuration_SOCKSPort                 Θύρα διακομιστή SOCKS V
+Configuration_SOCKSPortUpdate           Η θύρα SOCKS V ενημερώθηκε σε %s
+Configuration_SOCKSServer               Διακομιστής SOCKS V
+Configuration_SOCKSServerUpdate         Ο διακομιστής SOCKS V ενημερώθηκε σε %s
+Corpus_Actions                          Ενέργειες
+Corpus_AddStopword                      Προσθήκη στις λέξεις-στοπ
+Corpus_BucketList                       Κατηγορίες
+Corpus_Clear                            Καθαρισμός
+Corpus_Color                            Χρώμα
+Corpus_LoadCandidates                   Εύρεση υποψηφίων
+Corpus_NoCandidates                     Δεν βρέθηκαν υποψήφιοι σε αυτό το κατώφλι.
+Corpus_RemoveStopword                   Αφαίρεση
+Corpus_Search                           Αναζήτηση
+Corpus_StopwordCandidates               Υποψήφιες λέξεις-στοπ
+Corpus_StopwordCandidatesDesc           Λέξεις που εμφανίζονται ομοιόμορφα σε όλες τις κατηγορίες — χαμηλή διακριτική δύναμη.
+Corpus_StopwordRatio                    Κατώφλι αναλογίας μέγιστου/ελάχιστου
+Corpus_StopwordsDesc                    Οι λέξεις σε αυτή τη λίστα δεν χρησιμοποιούνται ποτέ για ταξινόμηση.
+Corpus_StopwordsTitle                   Λέξεις-στοπ
+Date                                    Ημερομηνία
+DonateLink                              Donate
+FAQ                                     Συχνές ερωτήσεις
+FAQLink                                 FAQ
+Footer_Wiki                             Τεκμηρίωση
+Help_Bucket_Setup                       Το POPFile χρειάζεται τουλάχιστον δύο κατηγορίες εκτός από την ψευδο-κατηγορία "αταξινόμητο". Αυτό που κάνει το POPFile μοναδικό είναι ότι μπορεί να ταξινομεί αλληλογραφία σε περισσότερες κατηγορίες. Μια απλή ρύθμιση θα περιελάμβανε τις κατηγορίες "spam", "personal" και "work".
+Help_No_More                            Να μην εμφανιστεί ξανά
+Help_Training                           Όταν χρησιμοποιείτε για πρώτη φορά το POPFile, δεν γνωρίζει τίποτα και χρειάζεται εκπαίδευση. Το POPFile χρειάζεται εκπαίδευση σε μηνύματα για κάθε κατηγορία, η εκπαίδευση γίνεται όταν αναταξινομείτε ένα μήνυμα που το POPFile ταξινόμησε λανθασμένα. Πρέπει επίσης να ρυθμίσετε το πρόγραμμα αλληλογραφίας σας να φιλτράρει βάσει της ταξινόμησης POPFile. Πληροφορίες στο <a href="http://getpopfile.org/docs/FAQ:EmailSorting">POPFile Documentation Project</a>.
+History_AllBuckets                      Όλες οι κατηγορίες
+History_Automatic                       Αυτόματο
+History_ChangedClass                    Θα ταξινομηθεί τώρα ως
+History_Column_Characters               Αλλαγή πλάτους στηλών Από, Προς, Κοιν. και Θέμα
+History_Decrease                        Μείωση
+History_HighlightWords                  Επισήμανση λέξεων ανά κατηγορία
+History_Increase                        Αύξηση
+History_Loading                         Φόρτωση...
+History_MoveTo                          — μετακίνηση σε —
+History_Moving                          Μετακίνηση...
+History_Negate_Search                   Αντιστροφή αναζήτησης/φίλτρου
+History_NoMatchingMessages              Δεν βρέθηκαν αντίστοιχα μηνύματα
+History_Purge                           Λήξη τώρα
+History_Reclassified                    Αναταξινομήθηκε
+History_Reclassifying                   Αναταξινόμηση...
+History_ReclassifyUnclassified          Αναταξινόμηση αταξινόμητων
+History_RemoveChecked                   Αφαίρεση επιλεγμένων
+History_Selected                        επιλεγμένο
+History_Size_Bytes                      %d&nbsp;B
+History_Size_KiloBytes                  %.1f&nbsp;KB
+History_Size_MegaBytes                  %.1f&nbsp;MB
+ID                                      Αναγν.
+Imap_Bucket2Folder                      Αλληλογραφία για κατηγορία '<b>%s</b>' μεταφέρεται στο φάκελο
+Imap_BucketFolderMappings               Αντιστοιχίσεις κατηγορίας -> φακέλου
+Imap_Bytelimit                          Bytes ανά μήνυμα για ταξινόμηση. Εισάγετε 0 για πλήρες μήνυμα:
+Imap_BytelimitError                     Παρακαλώ εισάγετε αριθμό.
+Imap_Connected                          Συνδεδεμένο
+Imap_Connection                         Σύνδεση
+Imap_ConnectionFailed                   Αποτυχία σύνδεσης
+Imap_Description                        Παρακολούθηση φακέλων IMAP και αυτόματη ταξινόμηση εισερχόμενων μηνυμάτων.
+Imap_EnableService                      Ενεργοποίηση υπηρεσίας IMAP
+Imap_Expunge                            Οριστική διαγραφή μηνυμάτων από παρακολουθούμενους φακέλους.
+Imap_FetchFolders                       Ανάκτηση φακέλων
+Imap_Fetching                           Ανάκτηση...
+Imap_IMAFFolder                         Φάκελος IMAP
+Imap_Interval                           Διάστημα ενημέρωσης σε δευτερόλεπτα:
+Imap_IntervalError                      Παρακαλώ εισάγετε διάστημα μεταξύ 10 και 3600 δευτερολέπτων.
+Imap_Login                              Όνομα χρήστη IMAP:
+Imap_LoginError                         Παρακαλώ εισάγετε όνομα χρήστη!
+Imap_MapError                           Δεν μπορείτε να αντιστοιχίσετε περισσότερες από μία κατηγορία σε έναν φάκελο!
+Imap_MappingsHint                       Τα ταξινομημένα μηνύματα μεταφέρονται στον καθορισμένο φάκελο IMAP. Αφήστε κενό για παράλειψη μεταφοράς.
+Imap_NoConnectionMessage                Παρακαλώ ρυθμίστε πρώτα τις λεπτομέρειες σύνδεσης. Μετά θα εμφανιστούν περισσότερες επιλογές σε αυτή τη σελίδα.
+Imap_NoFoldersWatched                   Δεν παρακολουθούνται φάκελοι ακόμα.
+Imap_NoMappings                         Δεν ορίστηκαν αντιστοιχίσεις.
+Imap_Now                                τώρα!
+Imap_Password                           Κωδικός πρόσβασης IMAP:
+Imap_PasswordError                      Παρακαλώ εισάγετε κωδικό πρόσβασης!
+Imap_Port                               Θύρα διακομιστή IMAP:
+Imap_PortError                          Παρακαλώ εισάγετε έγκυρο αριθμό θύρας!
+Imap_RefreshFolders                     Ανανέωση λίστας φακέλων
+Imap_SaveAnyway                         Αποθήκευση ούτως ή άλλως
+Imap_SaveConnection                     Αποθήκευση σύνδεσης
+Imap_SaveFolders                        Αποθήκευση φακέλων
+Imap_Saving                             Αποθήκευση...
+Imap_Server                             Όνομα διακομιστή IMAP:
+Imap_ServerNameError                    Παρακαλώ εισάγετε όνομα διακομιστή!
+Imap_Service                            Υπηρεσία
+Imap_TestConnection                     Δοκιμή σύνδεσης
+Imap_Testing                            Δοκιμή...
+Imap_TrainingHint                       Η λειτουργία εκπαίδευσης σαρώνει τους υπάρχοντες φακέλους αρχείου και εκπαιδεύει τον ταξινομητή στα περιεχόμενά τους. Η σημαία επαναφέρεται αυτόματα όταν ολοκληρωθεί η εκπαίδευση.
+Imap_TrainingMode                       Λειτουργία εκπαίδευσης
+Imap_UpdateError1                       Αδυναμία σύνδεσης. Ελέγξτε το όνομα χρήστη και τον κωδικό σας.
+Imap_UpdateError2                       Αποτυχία σύνδεσης με τον διακομιστή. Ελέγξτε το όνομα κεντρικού υπολογιστή και τη θύρα και βεβαιωθείτε ότι είστε συνδεδεμένοι στο δίκτυο.
+Imap_UpdateError3                       Παρακαλώ ρυθμίστε πρώτα τις λεπτομέρειες σύνδεσης.
+Imap_Use_SSL                            Χρήση SSL
+Imap_WatchedFolder                      Παρακολουθούμενος φάκελος αρ.
+Imap_WatchedFolders                     Παρακολουθούμενοι φάκελοι
+Imap_WatchedHint                        Το POPFile παρακολουθεί αυτούς τους φακέλους IMAP για νέα μηνύματα προς ταξινόμηση.
+Imap_WatchMore                          φάκελος για προσθήκη στη λίστα παρακολούθησης
+Locale_Date                             %a %R | %D %R
+Locale_Decimal                          ,
+Locale_Thousands                        .
+Magnet_Created                          Δημιουργήθηκε μαγνήτης
+Magnet_Deleted                          Διαγράφηκε μαγνήτης
+MailingListLink                         mailing_lists
+NavCorpus                               Σώμα κειμένου
+NavHistory                              Ιστορικό
+NavIMAP                                 IMAP
+NavMagnets                              Μαγνήτες
+NavSettings                             Ρυθμίσεις
+NavStatus                               Κατάσταση
+Reconnect_Connecting                    Σύνδεση...
+Reconnect_Message                       Το σύστημα δεν είναι προσβάσιμο. Γίνεται προσπάθεια επανασύνδεσης...
+Reconnect_Now                           Επανασύνδεση τώρα
+Reconnect_RetryIn                       Επανάληψη σε
+Reconnect_Title                         Η σύνδεση χάθηκε
+RequestFeatureLink                      RequestFeature
+Security_StealthMode                    (Λειτουργία αθέατου)
+Settings_AdminPassword                  Κωδικός διαχειριστή
+Settings_ArchiveDirectory               Κατάλογος αρχείου
+Settings_ArchiveMessages                Αρχειοθέτηση μηνυμάτων
+Settings_ArchiveSubdirs                 Υποκατάλογοι αρχείου
+Settings_AutoDetect                     Αυτόματη ανίχνευση
+Settings_AutoDetectLanguage             Αυτόματη ανίχνευση γλώσσας
+Settings_ChainPort                      Θύρα αλυσίδας
+Settings_ChainServer                    Διακομιστής αλυσίδας
+Settings_DateFormat                     Μορφή ημερομηνίας
+Settings_DescAdminPassword              Αφήστε κενό για απενεργοποίηση προστασίας κωδικού.
+Settings_DescArchiveDir                 Κατάλογος για αρχειοθετημένα μηνύματα (σχετικά με τον κατάλογο χρήστη).
+Settings_DescArchiveMessages            Αποθήκευση αντιγράφου κάθε ταξινομημένου μηνύματος στο δίσκο.
+Settings_DescArchiveSubdirs             Διαίρεση αρχείου σε N υποκαταλόγους (0 = απενεργοποιημένο).
+Settings_DescAutoDetectLang             Ανίχνευση γλώσσας κάθε μηνύματος και εφαρμογή αντίστοιχων λέξεων-στοπ και ετυμολογητή. Προσθέτει ~130% καθυστέρηση ταξινόμησης· χρήσιμο για γραμματοκιβώτια πολλών γλωσσών.
+Settings_DescChainPort                  Θύρα ανάντη διακομιστή SMTP.
+Settings_DescChainServer                Όνομα κεντρικού ανάντη διακομιστή SMTP.
+Settings_DescDateFormat                 Μορφότυπος strftime. Αφήστε κενό για προεπιλογή locale.
+Settings_DescForceFork                  Δημιουργία νέας διεργασίας για κάθε σύνδεση.
+Settings_DescHEADFetchesBody            Ανάκτηση πλήρους άρθρου με την εντολή HEAD.
+Settings_DescHTTPPort                   Θύρα που ακούει η διεπαφή ιστού. Απαιτείται επανεκκίνηση.
+Settings_DescItemsPerPage               Γραμμές ανά σελίδα στο Ιστορικό και τους Μαγνήτες.
+Settings_DescLanguage                   Γλώσσα εμφάνισης διεπαφής. Αφήστε κενό για αυτόματη ανίχνευση από τον περιηγητή.
+Settings_DescListenAddress              Διεύθυνση IP για δέσμευση. Κενό = όλες οι διεπαφές.
+Settings_DescLocalOnly_UI               Περιορισμός της διεπαφής ιστού σε συνδέσεις localhost.
+Settings_DescLogDirectory               Κατάλογος αρχείων καταγραφής. Κενό = ρίζα popfile.
+Settings_DescLogLevel                   Επίπεδο λεπτομέρειας καταγραφής.
+Settings_DescLogSQLToStdout             Εκτύπωση κάθε πρότασης SQL με δεσμευμένες τιμές στο stdout. Ενεργό μόνο όταν είναι ενεργοποιημένη και η "Καταγραφή στο stdout".
+Settings_DescLogToStdout                Αντικατοπτρισμός εξόδου καταγραφής στο stdout επιπλέον του αρχείου καταγραφής.
+Settings_DescMessageCutoff              Μέγιστος αριθμός λέξεων για ανάλυση ανά μήνυμα (0 = απεριόριστο).
+Settings_DescNNTPLocalOnly              Αποδοχή συνδέσεων NNTP μόνο από localhost.
+Settings_DescNNTPPort                   Θύρα που ακούει το POPFile για NNTP (προεπιλογή 119).
+Settings_DescNNTPSeparator              Χαρακτήρας που διαχωρίζει χρήστη από διακομιστή.
+Settings_DescPOP3LocalOnly              Αποδοχή συνδέσεων POP3 μόνο από localhost.
+Settings_DescPOP3Port                   Θύρα που ακούει το POPFile για POP3 (προεπιλογή 1110).
+Settings_DescPOP3Separator              Χαρακτήρας που διαχωρίζει χρήστη από διακομιστή (π.χ. user:mailhost).
+Settings_DescRetentionDays              Πόσες ημέρες να διατηρείται το ιστορικό μηνυμάτων.
+Settings_DescSessionDividers            Εμφάνιση διαχωριστών μεταξύ περιόδων περιήγησης στο Ιστορικό.
+Settings_DescSMTPLocalOnly              Αποδοχή συνδέσεων SMTP μόνο από localhost.
+Settings_DescSMTPPort                   Θύρα που ακούει το POPFile για SMTP (προεπιλογή 25).
+Settings_DescSQLiteJournal              Λειτουργία journal/WAL SQLite.
+Settings_DescSQLiteTweaks               Bitmask: 1 = ταχύτερες εγγραφές (λιγότερο ασφαλές), 2 = περιοδικό αντίγραφο.
+Settings_DescSSLChainPort               Θύρα ανάντη διακομιστή SSL POP3.
+Settings_DescSSLChainServer             Όνομα κεντρικού ανάντη διακομιστή SSL POP3 για αλυσίδα SSL.
+Settings_DescSubjectTagLeft             Πρόθεμα που εισάγεται στην επικεφαλίδα Θέματος, π.χ. [SPAM].
+Settings_DescSubjectTagRight            Επίθεμα που προσαρτάται στην επικεφαλίδα Θέματος.
+Settings_DescTagPosition                Πού να τοποθετείται η ετικέτα θέματος.
+Settings_DescTOPFetchesBody             Ανάκτηση και του σώματος μηνύματος με την εντολή TOP.
+Settings_DescUnclassifiedWeight         Κατώφλι πιθανότητας κάτω από το οποίο το ηλεκτρονικό ταχυδρομείο είναι "αταξινόμητο".
+Settings_DescWordStemming               Αναγωγή λέξεων στη ρίζα τους πριν από την ταξινόμηση (π.χ. "running" σε "run"). Βελτιώνει την ανάκληση για μορφολογικά πλούσιες γλώσσες με κόστος ~10% καθυστέρησης.
+Settings_DescWordTable                  Τι να εμφανίζεται στον πίνακα πιθανοτήτων λέξεων.
+Settings_ErrorSaving                    Σφάλμα αποθήκευσης
+Settings_ForceFork                      Αναγκαστική διακλάδωση
+Settings_HEADFetchesBody                Το HEAD ανακτά το σώμα
+Settings_HTTPPort                       Θύρα HTTP
+Settings_ItemsPerPage                   Στοιχεία ανά σελίδα
+Settings_ListenAddress                  Διεύθυνση ακρόασης
+Settings_ListenPort                     Θύρα ακρόασης
+Settings_LocalOnly                      Μόνο τοπικά
+Settings_LogDirectory                   Κατάλογος καταγραφής
+Settings_LogLevel                       Επίπεδο καταγραφής
+Settings_LogSQLToStdout                 Καταγραφή SQL στο stdout
+Settings_LogToStdout                    Καταγραφή στο stdout
+Settings_MessageCutoff                  Όριο μηνύματος
+Settings_OptDebug                       Αποσφαλμάτωση
+Settings_OptEnd                         Τέλος
+Settings_OptErrorsOnly                  Μόνο σφάλματα
+Settings_OptFrequencies                 Συχνότητες
+Settings_OptFront                       Μπροστά
+Settings_OptHidden                      Κρυφό
+Settings_OptInfo                        Πληροφορίες
+Settings_OptLogScores                   Καταγραφή βαθμολογιών
+Settings_OptProbabilities               Πιθανότητες
+Settings_OptWarnings                    Προειδοποιήσεις
+Settings_RetentionDays                  Διατήρηση (ημέρες)
+Settings_SaveChanges                    Αποθήκευση αλλαγών
+Settings_Saved                          Αποθηκεύτηκε
+Settings_Saving                         Αποθήκευση...
+Settings_Search                         Αναζήτηση ρυθμίσεων...
+Settings_SectionClassifier              Ταξινομητής
+Settings_SectionHistory                 Ιστορικό
+Settings_SectionLogging                 Καταγραφή
+Settings_SectionNNTP                    Διακομιστής μεσολάβησης NNTP
+Settings_SectionPOP3                    Διακομιστής μεσολάβησης POP3
+Settings_SectionSecurity                Ασφάλεια
+Settings_SectionSMTP                    Διακομιστής μεσολάβησης SMTP
+Settings_SectionUI                      Διεπαφή χρήστη
+Settings_ServerSeparator                Διαχωριστής διακομιστή
+Settings_SessionDividers                Διαχωριστές περιόδου σύνδεσης
+Settings_SQLiteJournalMode              Λειτουργία journal SQLite
+Settings_SQLiteTweaks                   Ρυθμίσεις SQLite
+Settings_SSLChainPort                   Θύρα αλυσίδας SSL
+Settings_SSLChainServer                 Διακομιστής αλυσίδας SSL
+Settings_SubjectTagLeft                 Ετικέτα θέματος αριστερά
+Settings_SubjectTagRight                Ετικέτα θέματος δεξιά
+Settings_TagPosition                    Θέση ετικέτας
+Settings_TOPFetchesBody                 Το TOP ανακτά το σώμα
+Settings_UnclassifiedWeight             Βάρος αταξινόμητου
+Settings_WordStemming                   Ετυμολόγηση λέξεων
+Settings_WordTable                      Πίνακας λέξεων
+Shutdown_Message                        Το POPFile τερματίστηκε
+Size                                    Μέγεθος
+Status_Checking                         Έλεγχος...
+Status_Description                      Έλεγχοι υγείας υπηρεσιών POPFile.
+Status_LoadError                        Αποτυχία φόρτωσης κατάστασης
+Status_NoChecks                         Δεν υπάρχουν διαθέσιμοι έλεγχοι.
+View_Chart                              Διάγραμμα απόφασης
+View_DownloadMessage                    Λήψη μηνύματος
+View_MessageBody                        Σώμα μηνύματος
+View_MessageHeader                      Επικεφαλίδα μηνύματος
+View_ShowFrequencies                    Εμφάνιση συχνοτήτων λέξεων
+View_ShowProbabilities                  Εμφάνιση πιθανοτήτων λέξεων
+View_ShowScores                         Εμφάνιση βαθμολογιών λέξεων και διαγράμματος απόφασης
+View_WordFrequencies                    εμφάνιση συχνοτήτων λέξεων
+View_WordMatrix                         Πίνακας λέξεων
+View_WordProbabilities                  εμφάνιση πιθανοτήτων λέξεων
+View_WordScores                         εμφάνιση βαθμολογιών λέξεων
+WikiLink                                index.php
+Windows_Console                         Εκτέλεση POPFile σε παράθυρο κονσόλας;
+Windows_NextTime                        <p><font color="red">Αυτή η αλλαγή δεν θα τεθεί σε ισχύ μέχρι την επόμενη εκκίνηση του POPFile</font>
+Windows_TrayIcon                        Εμφάνιση εικονιδίου POPFile στην περιοχή ειδοποιήσεων των Windows;
