@@ -388,3 +388,171 @@ Shutdown_Message                        POPFile は終了しました。
 Help_Training                           POPFile をこれから使い始める場合、ある程度のトレーニングが必要となります。それは、POPFile はどのメールが必要なメールでどのメールが不要なメールかについてなにも知らないからです。トレーニングはそれぞれのバケツについて行う必要があり（最低でも１つのバケツについて、１つ以上のメッセージを再分類する）、POPFile が分類を間違えたメッセージを正しいバケツに再分類する（履歴の右側にあるメニューから正しい分類先を選択して「再分類」ボタンをクリックする）ことによってトレーニングすることができます。また、POPFile が行った分類にあわせてフォルダに移動するなど、メールクライアントを設定する必要があります。メールクライアントの設定については、<a href="http://getpopfile.org/docs/JP:FAQ:EmailSorting">POPFile ドキュメンテーションプロジェクト</a>を参照してください。
 Help_Bucket_Setup                       POPFile では、もともとある "unclassified" という仮想的なバケツ以外に、最低でも２つのバケツを作成する必要があります。POPFile の特徴は、（メールを spam とそれ以外に分類するというだけではなく）いくつでもバケツを作成し、それらにメールを分類することができることです。簡単な設定では、"spam"、"personal"、"work" といったバケツを設定することになるでしょう。
 Help_No_More                            次回から表示しない。
+
+# New UI keys added — batch 5
+BucketSelect_AddNew	新規カテゴリ
+BucketSelect_AlreadyExists	そのカテゴリ名は既に存在します。
+BucketSelect_CreateError	カテゴリの作成に失敗しました。
+BucketSelect_InvalidName	無効なカテゴリ名です。
+BucketSelect_NameRequired	カテゴリ名を入力してください。
+Corpus_Actions	操作
+Corpus_AddStopword	ストップワードを追加
+Corpus_BucketList	カテゴリ一覧
+Corpus_Clear	クリア
+Corpus_Color	色
+Corpus_LoadCandidates	候補を読み込む
+Corpus_NoCandidates	候補が見つかりませんでした。
+Corpus_RemoveStopword	ストップワードを削除
+Corpus_Search	検索
+Corpus_StopwordCandidates	ストップワード候補
+Corpus_StopwordCandidatesDesc	分類に影響を与える可能性のある高頻度語です。
+Corpus_StopwordRatio	頻度しきい値
+Corpus_StopwordsDesc	POPFile が分類時に無視する語です。
+Corpus_StopwordsTitle	ストップワード
+History_AllBuckets	すべてのカテゴリ
+History_HighlightWords	単語をハイライト
+History_Loading	読み込み中...
+History_MoveTo	移動先
+History_Moving	移動中...
+History_Reclassifying	再分類中...
+History_ReclassifyUnclassified	未分類を再分類
+History_Selected	選択済み
+Imap_BucketFolderMappings	カテゴリとフォルダの対応
+Imap_Connected	接続済み
+Imap_Connection	接続
+Imap_ConnectionFailed	接続に失敗しました。
+Imap_Description	POPFile は IMAP を通じて直接メールを分類できます。
+Imap_EnableService	IMAP を有効にする
+Imap_FetchFolders	フォルダを取得
+Imap_Fetching	取得中...
+Imap_IMAFFolder	IMAP フォルダ
+Imap_MappingsHint	各カテゴリに対応する IMAP フォルダを指定してください。
+Imap_NoFoldersWatched	監視中のフォルダがありません。
+Imap_NoMappings	対応が設定されていません。
+Imap_SaveAnyway	このまま保存
+Imap_SaveConnection	接続設定を保存
+Imap_SaveFolders	フォルダを保存
+Imap_Saving	保存中...
+Imap_Service	IMAP サービス
+Imap_TestConnection	接続をテスト
+Imap_Testing	テスト中...
+Imap_TrainingHint	学習させるにはメールを適切なフォルダに移動してください。
+Imap_TrainingMode	学習モード
+Imap_WatchedFolders	監視中のフォルダ
+Imap_WatchedHint	監視するフォルダを追加してください。
+Magnet_Created	マグネットを作成しました。
+Magnet_Deleted	マグネットを削除しました。
+NavCorpus	コーパス
+NavHistory	履歴
+NavIMAP	IMAP
+NavMagnets	マグネット
+NavSettings	設定
+NavStatus	ステータス
+Reconnect_Connecting	接続中...
+Reconnect_Message	POPFile が接続を失いました。再接続中です。
+Reconnect_Now	今すぐ接続
+Reconnect_RetryIn	再試行まで
+Reconnect_Title	接続切断
+Settings_AdminPassword	管理者パスワード
+Settings_ArchiveDirectory	アーカイブディレクトリ
+Settings_ArchiveMessages	メッセージをアーカイブ
+Settings_ArchiveSubdirs	アーカイブのサブディレクトリ
+Settings_AutoDetect	自動検出
+Settings_AutoDetectLanguage	言語の自動検出
+Settings_ChainPort	チェーンポート
+Settings_ChainServer	チェーンサーバー
+Settings_DateFormat	日付形式
+Settings_DescAdminPassword	管理インターフェースへのログインパスワード。
+Settings_DescArchiveDir	アーカイブメッセージのディレクトリ。空白の場合はアーカイブしません。
+Settings_DescArchiveMessages	分類済みメッセージのコピーを保存します。
+Settings_DescArchiveSubdirs	カテゴリ別にサブディレクトリへアーカイブを分配します。
+Settings_DescAutoDetectLang	インターフェースの言語を自動検出します。
+Settings_DescChainPort	チェーン用上流 POP3 サーバーのポート。
+Settings_DescChainServer	上流 POP3 サーバーのホスト名。
+Settings_DescDateFormat	日付の表示形式。
+Settings_DescForceFork	プロセスのフォーク使用を強制します。
+Settings_DescHEADFetchesBody	HEAD コマンドでメッセージ本文を取得します。
+Settings_DescHTTPPort	POPFile ウェブインターフェースのポート。
+Settings_DescItemsPerPage	履歴の1ページあたりのアイテム数。
+Settings_DescLanguage	インターフェースの言語。
+Settings_DescListenAddress	POPFile が接続を待ち受けるアドレス。
+Settings_DescLocalOnly_UI	ウェブインターフェースをローカル接続のみに制限します。
+Settings_DescLogDirectory	ログファイルのディレクトリ。空白の場合は POPFile のルート。
+Settings_DescLogLevel	ログ出力の詳細レベル。
+Settings_DescLogSQLToStdout	各 SQL 文をバインド値とともに stdout に出力します。
+Settings_DescLogToStdout	ログ出力をファイルに加えて stdout にも複製します。
+Settings_DescMessageCutoff	1メッセージあたりの最大解析語数（0は無制限）。
+Settings_DescNNTPLocalOnly	ローカルホストからの NNTP 接続のみ受け入れます。
+Settings_DescNNTPPort	POPFile が NNTP を待ち受けるポート（デフォルト 119）。
+Settings_DescNNTPSeparator	ユーザーとサーバーを区切る文字。
+Settings_DescPOP3LocalOnly	ローカルホストからの POP3 接続のみ受け入れます。
+Settings_DescPOP3Port	POPFile が POP3 を待ち受けるポート（デフォルト 1110）。
+Settings_DescPOP3Separator	ユーザーとサーバーを区切る文字（例 ユーザー:メールサーバー）。
+Settings_DescRetentionDays	メッセージ履歴の保存日数。
+Settings_DescSessionDividers	履歴でセッション間の区切りを表示します。
+Settings_DescSMTPLocalOnly	ローカルホストからの SMTP 接続のみ受け入れます。
+Settings_DescSMTPPort	POPFile が SMTP を待ち受けるポート（デフォルト 25）。
+Settings_DescSQLiteJournal	SQLite ジャーナル / WAL モード。
+Settings_DescSQLiteTweaks	ビットマスク: 1=高速書き込み（安全性低下）, 2=定期バックアップ。
+Settings_DescSSLChainPort	上流 SSL POP3 サーバーのポート。
+Settings_DescSSLChainServer	SSL チェーン用上流 SSL POP3 サーバーのホスト名。
+Settings_DescSubjectTagLeft	件名ヘッダーに挿入するプレフィックス（例 [スパム]）。
+Settings_DescSubjectTagRight	件名ヘッダーに付加するサフィックス。
+Settings_DescTagPosition	件名タグの配置位置。
+Settings_DescTOPFetchesBody	TOP コマンドでメッセージ本文を取得します。
+Settings_DescUnclassifiedWeight	この確率以下のメールを「未分類」とみなすしきい値。
+Settings_DescWordStemming	分類前に語をステミングします。形態論的に豊かな言語の再現率を改善します。
+Settings_DescWordTable	単語確率テーブルに表示する内容。
+Settings_ErrorSaving	保存エラー
+Settings_ForceFork	フォーク強制
+Settings_HEADFetchesBody	HEAD で本文を取得
+Settings_HTTPPort	HTTP ポート
+Settings_ItemsPerPage	1ページのアイテム数
+Settings_ListenAddress	待ち受けアドレス
+Settings_ListenPort	待ち受けポート
+Settings_LocalOnly	ローカルのみ
+Settings_LogDirectory	ログディレクトリ
+Settings_LogLevel	ログレベル
+Settings_LogSQLToStdout	SQL を stdout に出力
+Settings_LogToStdout	stdout に出力
+Settings_MessageCutoff	メッセージ上限
+Settings_OptDebug	デバッグ
+Settings_OptEnd	末尾
+Settings_OptErrorsOnly	エラーのみ
+Settings_OptFrequencies	頻度
+Settings_OptFront	先頭
+Settings_OptHidden	非表示
+Settings_OptInfo	情報
+Settings_OptLogScores	スコアを記録
+Settings_OptProbabilities	確率
+Settings_OptWarnings	警告
+Settings_RetentionDays	保存期間（日）
+Settings_SaveChanges	変更を保存
+Settings_Saved	保存しました
+Settings_Saving	保存中...
+Settings_Search	設定を検索...
+Settings_SectionClassifier	分類器
+Settings_SectionHistory	履歴
+Settings_SectionLogging	ログ
+Settings_SectionNNTP	NNTP プロキシ
+Settings_SectionPOP3	POP3 プロキシ
+Settings_SectionSecurity	セキュリティ
+Settings_SectionSMTP	SMTP プロキシ
+Settings_SectionUI	インターフェース
+Settings_ServerSeparator	サーバー区切り文字
+Settings_SessionDividers	セッション区切り
+Settings_SQLiteJournalMode	SQLite ジャーナルモード
+Settings_SQLiteTweaks	SQLite チューニング
+Settings_SSLChainPort	SSL チェーンポート
+Settings_SSLChainServer	SSL チェーンサーバー
+Settings_SubjectTagLeft	件名タグ（左）
+Settings_SubjectTagRight	件名タグ（右）
+Settings_TagPosition	タグ位置
+Settings_TOPFetchesBody	TOP で本文を取得
+Settings_UnclassifiedWeight	未分類の重み
+Settings_WordStemming	単語ステミング
+Settings_WordTable	単語テーブル
+Status_Checking	確認中...
+Status_Description	POPFile のステータスと統計。
+Status_LoadError	ステータスデータの読み込みに失敗しました。
+Status_NoChecks	確認項目なし。
