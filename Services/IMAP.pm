@@ -336,8 +336,11 @@ method scan_folder ($folder) {
         if (my $bucket = $is_output) {
             if (my $old_bucket = $self->can_reclassify($hash, $bucket)) {
                 $self->reclassify_message($folder, $msg, $old_bucket, $hash);
-                next;
             }
+            else {
+                $self->insert_message_into_bucket($folder, $msg, $bucket);
+            }
+            next;
         }
         $self->log_msg(1, "Ignoring message $msg");
     }
@@ -404,6 +407,37 @@ method classify_message ($msg, $hash, $folder) {
         }
     }
     return $moved_a_msg
+}
+
+=head2 insert_message_into_bucket($folder, $msg, $bucket)
+
+Fetches the full message C<$msg> from C<$folder> and trains the classifier
+directly into C<$bucket>.  Used when a message has no history entry (e.g. the
+user moved it into an output folder via their mail client).  Returns 1 on
+success, C<undef> on error.
+
+=cut
+
+method insert_message_into_bucket ($folder, $msg, $bucket) {
+    my $imap = $folders{$folder}{imap};
+    my ($ok, @lines) = $imap->fetch_message_part($msg, '');
+    unless ($ok) {
+        $self->log_msg(0, "Could not fetch message $msg!");
+        return
+    }
+    my $file = $self->get_user_path('imap.tmp');
+    unless (open my $TMP, '>', $file) {
+        $self->log_msg(0, "Cannot open temp file $file");
+        return
+    }
+    else {
+        print $TMP $_ for @lines;
+        close $TMP;
+    }
+    $classifier->add_message_to_bucket($self->api_session(), $bucket, $file);
+    $self->log_msg(0, "Trained message with UID $msg into bucket $bucket.");
+    unlink $file;
+    return 1
 }
 
 =head2 reclassify_message($folder, $msg, $old_bucket, $hash)
