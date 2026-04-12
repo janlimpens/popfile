@@ -76,7 +76,7 @@ print "POPFile " . $POPFile->CORE_version() . "\n";
 if ($POPFile->CORE_config()) {
     $POPFile->CORE_start();
 
-    my $ui = $POPFile->get_module('mojo_ui', 'interface');
+    my $ui = $POPFile->get_module('mojo_ui', 'core');
     print "POPFile UI: http://localhost:" . $ui->config('port') . "/\n"
         if defined $ui;
 

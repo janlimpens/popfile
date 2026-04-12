@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming
 # Copyright (C) 2026 Jan Limpens
-package UI::Mojo;
+package POPFile::API;
 
 =head1 NAME
 
-UI::Mojo - Mojolicious-based HTTP server for the POPFile web UI
+POPFile::API - Mojolicious-based HTTP server for the POPFile web UI
 
 =head1 DESCRIPTION
 
@@ -28,7 +28,7 @@ use POSIX ':sys_wait_h';
 use Scalar::Util qw(looks_like_number);
 use Data::Page;
 
-class UI::Mojo :isa(POPFile::Module);
+class POPFile::API :isa(POPFile::Module);
 
 field $service = undef;
 field $child_pid = undef;
@@ -88,16 +88,16 @@ method start() {
     }
     my $pid = fork();
     if (!defined $pid) {
-        $self->log_msg(0, "UI::Mojo: fork failed: $!");
+        $self->log_msg(0, "POPFile::API: fork failed: $!");
         return 0;
     }
     if ($pid == 0) {
         try { $self->run_server() }
-        catch ($e) { $self->log_msg(0, "UI::Mojo child error: $e") }
+        catch ($e) { $self->log_msg(0, "POPFile::API child error: $e") }
         exit 0;
     }
     $child_pid = $pid;
-    $self->log_msg(0, "UI::Mojo: started on port $port (pid $pid)");
+    $self->log_msg(0, "POPFile::API: started on port $port (pid $pid)");
     return 1
 }
 
@@ -126,7 +126,7 @@ method service() {
     if (defined $child_pid) {
         my $gone = waitpid($child_pid, WNOHANG);
         if ($gone == $child_pid) {
-            $self->log_msg(0, "UI::Mojo child exited unexpectedly");
+            $self->log_msg(0, "POPFile::API child exited unexpectedly");
             $child_pid = undef;
         }
     }
@@ -175,6 +175,12 @@ method build_app ($svc, $session) {
     });
 
     my $r = $app->routes;
+    my $history = defined $svc ? $svc->history_obj() : undef;
+    my $languages_dir = $self->get_root_path('languages');
+    $app->helper(popfile_svc => sub ($c) { $svc });
+    $app->helper(popfile_session => sub ($c) { $session });
+    $app->helper(popfile_history => sub ($c) { $history });
+    $app->helper(popfile_lang_dir => sub ($c) { $languages_dir });
 
     #--------------------------------------------------------------------
     # GET /api/v1/buckets
@@ -599,8 +605,6 @@ method build_app ($svc, $session) {
         imap_uidnexts => [imap => 'uidnexts'],
         imap_uidvalidities => [imap => 'uidvalidities'],
 );
-
-    my $languages_dir = $self->get_root_path('languages');
 
     #--------------------------------------------------------------------
     # GET /api/v1/i18n

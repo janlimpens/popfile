@@ -19,7 +19,7 @@ require FindBin;
 require Cwd;
 my $root = Cwd::abs_path("$FindBin::Bin/..");
 
-require UI::Mojo;
+require POPFile::API;
 require POPFile::Configuration;
 
 my $mq = bless {}, 'StubMQ';
@@ -33,7 +33,7 @@ $config->set_popfile_root("$root/");
 $config->initialize();
 $config->set_started(1);
 
-my $ui = UI::Mojo->new();
+my $ui = POPFile::API->new();
 $ui->set_configuration($config);
 $ui->set_mq($mq);
 $ui->initialize();

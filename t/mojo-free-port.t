@@ -14,7 +14,7 @@ use warnings;
 use Test2::V0;
 use IO::Socket::INET ();
 
-require UI::Mojo;
+require POPFile::API;
 require POPFile::Configuration;
 
 my $mq = bless {}, 'StubMQ';
@@ -27,7 +27,7 @@ $config->set_mq($mq);
 $config->initialize();
 $config->set_started(1);
 
-my $ui = UI::Mojo->new();
+my $ui = POPFile::API->new();
 $ui->set_configuration($config);
 $ui->set_mq($mq);
 $ui->initialize();
