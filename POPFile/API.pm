@@ -175,164 +175,25 @@ method build_app ($svc, $session) {
     });
 
     my $r = $app->routes;
-    my $history = defined $svc ? $svc->history_obj() : undef;
+    push $r->namespaces->@*, 'POPFile::API::Controller';
     my $languages_dir = $self->get_root_path('languages');
     $app->helper(popfile_svc => sub ($c) { $svc });
     $app->helper(popfile_session => sub ($c) { $session });
-    $app->helper(popfile_history => sub ($c) { $history });
+    $app->helper(popfile_history => sub ($c) { defined $svc ? $svc->history_obj() : undef });
     $app->helper(popfile_lang_dir => sub ($c) { $languages_dir });
 
-    #--------------------------------------------------------------------
-    # GET /api/v1/buckets
-    #   Returns [{name, pseudo, word_count, color}, ...]
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/buckets' => sub ($c) {
-        my @result;
-        for my $b ($svc->get_all_buckets()) {
-            push @result, {
-                name => $b,
-                pseudo => $svc->is_pseudo_bucket($b) ? \1 : \0,
-                word_count => $svc->get_bucket_word_count($b) + 0,
-                color => $svc->get_bucket_color($b) // '#666666',
-            };
-        }
-        $c->render(json => \@result);
-    });
-
-    #--------------------------------------------------------------------
-    # POST /api/v1/buckets   { name, color? }
-    #--------------------------------------------------------------------
-    $r->post('/api/v1/buckets' => sub ($c) {
-        my $body = $c->req->json // {};
-        my $name = $body->{name} // '';
-        my $color = $body->{color} // '';
-        return $c->render(status => 400, json => { error => 'name required' })
-            if $name eq '';
-        return $c->render(status => 422, json => { error => 'invalid name: use lowercase letters, digits, - and _ only' })
-            if $name =~ /[^a-z\-_0-9]/;
-        my $ok = $svc->create_bucket($name);
-        return $c->render(status => 409, json => { error => 'bucket already exists' })
-            unless $ok;
-        $svc->set_bucket_color($name, $color)
-            if $color =~ /^#[0-9a-fA-F]{6}$/;
-        $c->render(json => { ok => \1 });
-    });
-
-    #--------------------------------------------------------------------
-    # DELETE /api/v1/buckets/:name
-    #--------------------------------------------------------------------
-    $r->delete('/api/v1/buckets/:name' => sub ($c) {
-        $svc->delete_bucket($c->param('name'));
-        $c->render(json => { ok => \1 });
-    });
-
-    #--------------------------------------------------------------------
-    # PUT /api/v1/buckets/:name/rename   { new_name }
-    #--------------------------------------------------------------------
-    $r->put('/api/v1/buckets/:name/rename' => sub ($c) {
-        my $body = $c->req->json // {};
-        my $new = $body->{new_name} // '';
-        if ($new eq '') {
-            return $c->render(status => 400, json => { error => 'new_name required' });
-        }
-        $svc->rename_bucket($c->param('name'), $new);
-        $c->render(json => { ok => \1 });
-    });
-
-    #--------------------------------------------------------------------
-    # DELETE /api/v1/buckets/:name/words  — clear all words
-    #--------------------------------------------------------------------
-    $r->delete('/api/v1/buckets/:name/words' => sub ($c) {
-        $svc->clear_bucket($c->param('name'));
-        $c->render(json => { ok => \1 });
-    });
-
-    #--------------------------------------------------------------------
-    # PUT /api/v1/buckets/:name/params   { color }
-    #--------------------------------------------------------------------
-    $r->put('/api/v1/buckets/:name/params' => sub ($c) {
-        my $body = $c->req->json // {};
-        my $bname = $c->param('name');
-        if (defined $body->{color}) {
-            $svc->set_bucket_color($bname, $body->{color});
-        }
-        $c->render(json => { ok => \1 });
-    });
-
-    #--------------------------------------------------------------------
-    # GET /api/v1/buckets/:name/words?prefix=…
-    #   Returns [{word, count}, ...]
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/buckets/:name/words' => sub ($c) {
-        my $prefix = $c->param('prefix') // '';
-        my @words = $svc->get_bucket_word_list($c->param('name'), $prefix);
-        my @result = map { { word => $_->[0], count => $_->[1] + 0 } } @words;
-        $c->render(json => \@result);
-    });
-
-    #--------------------------------------------------------------------
-    # GET /api/v1/buckets/:name
-    #   Returns { name, color, word_count, pseudo, fpcount, fncount }
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/buckets/:name' => sub ($c) {
-        my $name = $c->param('name');
-        unless ($svc->is_bucket($name) || $svc->is_pseudo_bucket($name)) {
-            return $c->render(status => 404, json => { error => 'not found' });
-        }
-        $c->render(json => {
-            name => $name,
-            color => $svc->get_bucket_color($name) // '#666666',
-            word_count => $svc->get_bucket_word_count($name) + 0,
-            pseudo => $svc->is_pseudo_bucket($name) ? \1 : \0,
-            fpcount => ($svc->get_bucket_parameter($name, 'fpcount') // 0) + 0,
-            fncount => ($svc->get_bucket_parameter($name, 'fncount') // 0) + 0,
-        });
-    });
-
-    #--------------------------------------------------------------------
-    # GET /api/v1/stopwords
-    #   Returns [word, ...]
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/stopwords' => sub ($c) {
-        my @words = sort $svc->get_stopword_list();
-        $c->render(json => \@words);
-    });
-
-    #--------------------------------------------------------------------
-    # POST /api/v1/stopwords   { word }
-    #   Returns { ok } or 400
-    #--------------------------------------------------------------------
-    $r->post('/api/v1/stopwords' => sub ($c) {
-        my $body = $c->req->json // {};
-        my $word = $body->{word} // '';
-        return $c->render(status => 400, json => { error => 'word required' })
-            if $word eq '';
-        my $ok = $svc->add_stopword($word);
-        return $c->render(status => 400, json => { error => 'invalid word' })
-            unless $ok;
-        $c->render(json => { ok => \1 });
-    });
-
-    #--------------------------------------------------------------------
-    # DELETE /api/v1/stopwords/:word
-    #--------------------------------------------------------------------
-    $r->delete('/api/v1/stopwords/:word' => sub ($c) {
-        $svc->remove_stopword($c->param('word'));
-        $c->render(json => { ok => \1 });
-    });
-
-    #--------------------------------------------------------------------
-    # GET /api/v1/stopword-candidates?ratio=2.0&limit=50
-    #   Returns [{word, min_count, max_count, ratio}, ...]
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/stopword-candidates' => sub ($c) {
-        my $ratio = ($c->param('ratio') // 2.0) + 0;
-        my $limit = ($c->param('limit') // 50) + 0;
-        $ratio = 2.0 if $ratio <= 1;
-        $limit = 50 if $limit < 1 || $limit > 500;
-        my @candidates = $svc->get_stopword_candidates($ratio, $limit);
-        $c->render(json => \@candidates);
-    });
+    $r->get('/api/v1/buckets')->to('corpus#list_buckets');
+    $r->post('/api/v1/buckets')->to('corpus#create_bucket');
+    $r->delete('/api/v1/buckets/:name')->to('corpus#delete_bucket');
+    $r->put('/api/v1/buckets/:name/rename')->to('corpus#rename_bucket');
+    $r->delete('/api/v1/buckets/:name/words')->to('corpus#clear_bucket_words');
+    $r->put('/api/v1/buckets/:name/params')->to('corpus#update_bucket_params');
+    $r->get('/api/v1/buckets/:name/words')->to('corpus#get_bucket_words');
+    $r->get('/api/v1/buckets/:name')->to('corpus#get_bucket');
+    $r->get('/api/v1/stopwords')->to('corpus#list_stopwords');
+    $r->post('/api/v1/stopwords')->to('corpus#create_stopword');
+    $r->delete('/api/v1/stopwords/:word')->to('corpus#delete_stopword');
+    $r->get('/api/v1/stopword-candidates')->to('corpus#list_stopword_candidates');
 
     #--------------------------------------------------------------------
     # GET /api/v1/history?page=1&per_page=25&search=…
