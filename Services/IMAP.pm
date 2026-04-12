@@ -542,7 +542,7 @@ pseudo-bucket.
 method can_reclassify ($hash, $new_bucket) {
     my $slot = $history->get_slot_from_hash($hash);
     unless ($slot ne '') {
-        $self->log_msg(1, "Message is unknown and cannot be reclassified.");
+        $self->log_msg(2, "Message not in history; will train directly.");
         return
     }
     my ($id, $from, $to, $cc, $subject, $date, undef, $inserted,
@@ -654,7 +654,7 @@ method train_on_archive() {
                 next;
             }
             else {
-                print $TMP "$_\n" for @lines;
+                print $TMP $_ for @lines;
                 close $TMP;
             }
             $classifier->add_message_to_bucket($self->api_session(), $bucket, $file);
