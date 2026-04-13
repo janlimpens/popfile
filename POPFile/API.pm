@@ -202,54 +202,10 @@ method build_app ($svc, $session) {
     $r->post('/api/v1/history/:slot/reclassify')->to('history#reclassify_item');
     $r->get('/api/v1/history/:slot')->to('history#get_history_item');
 
-    #--------------------------------------------------------------------
-    # GET /api/v1/magnet-types
-    #   Returns { type: header_display_name, ... }
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/magnet-types' => sub ($c) {
-        my %types = $svc->get_magnet_types();
-        $c->render(json => \%types);
-    });
-
-    #--------------------------------------------------------------------
-    # GET /api/v1/magnets
-    #   Returns { bucket: { type: [values] } }
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/magnets' => sub ($c) {
-        my %by_bucket;
-        for my $b ($svc->get_buckets_with_magnets()) {
-            for my $t ($svc->get_magnet_types_in_bucket($b)) {
-                my @vals = $svc->get_magnets($b, $t);
-                $by_bucket{$b}{$t} = \@vals if @vals;
-            }
-        }
-        $c->render(json => \%by_bucket);
-    });
-
-    #--------------------------------------------------------------------
-    # POST /api/v1/magnets   { bucket, type, value }
-    #--------------------------------------------------------------------
-    $r->post('/api/v1/magnets' => sub ($c) {
-        my $body = $c->req->json // {};
-        for my $k (qw(bucket type value)) {
-            unless (defined $body->{$k} && $body->{$k} ne '') {
-                return $c->render(status => 400,
-                    json => { error => "$k required" });
-            }
-        }
-        $svc->create_magnet($body->{bucket}, $body->{type}, $body->{value});
-        $c->render(json => { ok => \1 });
-    });
-
-    #--------------------------------------------------------------------
-    # DELETE /api/v1/magnets   { bucket, type, value }
-    #--------------------------------------------------------------------
-    $r->delete('/api/v1/magnets' => sub ($c) {
-        my $body = $c->req->json // {};
-        $svc->delete_magnet(
-            $body->{bucket} // '', $body->{type} // '', $body->{value} // '');
-        $c->render(json => { ok => \1 });
-    });
+    $r->get('/api/v1/magnet-types')->to('magnets#list_magnet_types');
+    $r->get('/api/v1/magnets')->to('magnets#list_magnets');
+    $r->post('/api/v1/magnets')->to('magnets#create_magnet');
+    $r->delete('/api/v1/magnets')->to('magnets#delete_magnet');
 
     #--------------------------------------------------------------------
     # Config schema: key => [module, param]
