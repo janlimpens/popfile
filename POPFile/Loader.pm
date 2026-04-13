@@ -397,6 +397,10 @@ method CORE_link_components() {
     if (defined $components{services}{classifier_service}) {
         my $svc = $components{services}{classifier_service};
 
+        for my $name (sort keys $components{core}->%*) {
+            my $mod = $components{core}{$name};
+            $mod->set_service($svc) if $mod->can('set_service');
+        }
         for my $name (sort keys $components{proxy}->%*) {
             my $mod = $components{proxy}{$name};
             $mod->set_service($svc) if $mod->can('set_service');
