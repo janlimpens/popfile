@@ -1,0 +1,181 @@
+package POPFile::API::Controller::Config;
+use Mojo::Base 'Mojolicious::Controller', -signatures;
+
+use constant CFG => {
+    mojo_ui_port => [mojo_ui => 'port'],
+    mojo_ui_password => [mojo_ui => 'password'],
+    mojo_ui_local => [mojo_ui => 'local'],
+    mojo_ui_page_size => [mojo_ui => 'page_size'],
+    mojo_ui_date_format => [mojo_ui => 'date_format'],
+    mojo_ui_session_dividers => [mojo_ui => 'session_dividers'],
+    mojo_ui_wordtable_format => [mojo_ui => 'wordtable_format'],
+    mojo_ui_locale => [mojo_ui => 'locale'],
+    pop3_port => [pop3 => 'port'],
+    pop3_separator => [pop3 => 'separator'],
+    pop3_local => [pop3 => 'local'],
+    pop3_force_fork => [pop3 => 'force_fork'],
+    pop3_toptoo => [pop3 => 'toptoo'],
+    pop3_secure_server => [pop3 => 'secure_server'],
+    pop3_secure_port => [pop3 => 'secure_port'],
+    smtp_port => [smtp => 'port'],
+    smtp_chain_server => [smtp => 'chain_server'],
+    smtp_chain_port => [smtp => 'chain_port'],
+    smtp_local => [smtp => 'local'],
+    smtp_force_fork => [smtp => 'force_fork'],
+    nntp_port => [nntp => 'port'],
+    nntp_separator => [nntp => 'separator'],
+    nntp_local => [nntp => 'local'],
+    nntp_force_fork => [nntp => 'force_fork'],
+    nntp_headtoo => [nntp => 'headtoo'],
+    bayes_hostname => [bayes => 'hostname'],
+    bayes_message_cutoff => [bayes => 'message_cutoff'],
+    bayes_unclassified_weight => [bayes => 'unclassified_weight'],
+    bayes_subject_mod_left => [bayes => 'subject_mod_left'],
+    bayes_subject_mod_right => [bayes => 'subject_mod_right'],
+    bayes_subject_mod_pos => [bayes => 'subject_mod_pos'],
+    bayes_sqlite_tweaks => [bayes => 'sqlite_tweaks'],
+    bayes_sqlite_journal_mode => [bayes => 'sqlite_journal_mode'],
+    wordmangle_stemming => [wordmangle => 'stemming'],
+    wordmangle_auto_detect_language => [wordmangle => 'auto_detect_language'],
+    history_history_days => [history => 'history_days'],
+    history_archive => [history => 'archive'],
+    history_archive_dir => [history => 'archive_dir'],
+    history_archive_classes => [history => 'archive_classes'],
+    logger_level => [logger => 'level'],
+    logger_logdir => [logger => 'logdir'],
+    logger_log_to_stdout => [logger => 'log_to_stdout'],
+    logger_log_sql => [logger => 'log_sql'],
+    imap_enabled => [imap => 'enabled'],
+    imap_hostname => [imap => 'hostname'],
+    imap_port => [imap => 'port'],
+    imap_login => [imap => 'login'],
+    imap_password => [imap => 'password'],
+    imap_use_ssl => [imap => 'use_ssl'],
+    imap_update_interval => [imap => 'update_interval'],
+    imap_expunge => [imap => 'expunge'],
+    imap_training_mode => [imap => 'training_mode'],
+    imap_training_error => [imap => 'training_error'],
+    imap_uidnexts => [imap => 'uidnexts'],
+    imap_uidvalidities => [imap => 'uidvalidities'],
+};
+
+sub get_config($self) {
+    my $api = $self->popfile_api;
+    my %cfg;
+    for my $key (keys %{CFG()}) {
+        my ($mod, $param) = CFG->{$key}->@*;
+        $cfg{$key} = $api->module_config($mod, $param) // '';
+    }
+    $self->render(json => \%cfg)
+}
+
+sub update_config($self) {
+    my $api = $self->popfile_api;
+    my $body = $self->req->json // {};
+    for my $key (keys $body->%*) {
+        next unless exists CFG->{$key};
+        my ($mod, $param) = CFG->{$key}->@*;
+        $api->module_config($mod, $param, $body->{$key});
+    }
+    $api->configuration()->save_configuration();
+    $self->render(json => { ok => \1 })
+}
+
+sub get_status($self) {
+    require Services::IMAP::Client;
+    my $api = $self->popfile_api;
+    my @checks;
+    my $hostname = $api->module_config('imap', 'hostname') // '';
+    my $port = $api->module_config('imap', 'port') // '';
+    my $login = $api->module_config('imap', 'login') // '';
+    unless ($hostname ne '' && $port ne '') {
+        push @checks, {
+            id => 'connectivity',
+            label => 'IMAP Connectivity',
+            status => 'warn',
+            detail => 'IMAP not configured',
+        };
+        return $self->render(json => { checks => \@checks });
+    }
+    my $client = Services::IMAP::Client->new();
+    $client->set_configuration($api->configuration());
+    $client->set_mq($api->mq());
+    $client->set_name('imap');
+    unless ($client->connect()) {
+        push @checks, {
+            id => 'connectivity',
+            label => 'IMAP Connectivity',
+            status => 'error',
+            detail => "Cannot reach $hostname:$port",
+        };
+        return $self->render(json => { checks => \@checks });
+    }
+    push @checks, {
+        id => 'connectivity',
+        label => 'IMAP Connectivity',
+        status => 'ok',
+        detail => "Connected to $hostname:$port",
+    };
+    unless ($client->login()) {
+        push @checks, {
+            id => 'authentication',
+            label => 'IMAP Authentication',
+            status => 'error',
+            detail => "Login failed for $login",
+        };
+        return $self->render(json => { checks => \@checks });
+    }
+    push @checks, {
+        id => 'authentication',
+        label => 'IMAP Authentication',
+        status => 'ok',
+        detail => "Logged in as $login",
+    };
+    my @server_folders = $client->get_mailbox_list();
+    $client->logout();
+    my %on_server = map { $_ => 1 } @server_folders;
+    my $imap_sep = '-->';
+    my $watched_raw = $api->module_config('imap', 'watched_folders') // '';
+    my @watched = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
+    my @missing_w = grep { !$on_server{$_} } @watched;
+    push @checks, {
+        id => 'watched_folders',
+        label => 'Watched Folders',
+        status => @missing_w ? 'warn' : 'ok',
+        detail => @missing_w
+            ? 'Missing on server: ' . join(', ', @missing_w)
+            : 'All ' . scalar(@watched) . ' watched folder(s) exist',
+    };
+    my $mapping_raw = $api->module_config('imap', 'bucket_folder_mappings') // '';
+    my %map_hash = split /\Q$imap_sep\E/, $mapping_raw;
+    my @missing_m = grep { $_ ne '' && !$on_server{$map_hash{$_}} } keys %map_hash;
+    push @checks, {
+        id => 'bucket_mappings',
+        label => 'Bucket → Folder Mappings',
+        status => @missing_m ? 'warn' : 'ok',
+        detail => @missing_m
+            ? 'Target folders missing: ' . join(', ', map { $map_hash{$_} } @missing_m)
+            : 'All ' . scalar(keys %map_hash) . ' mapping(s) valid',
+    };
+    my $training_mode = $api->module_config('imap', 'training_mode') // 0;
+    my $training_error = $api->module_config('imap', 'training_error') // '';
+    if ($training_mode) {
+        push @checks, {
+            id => 'training_mode',
+            label => 'Training Mode',
+            status => 'warn',
+            detail => 'Training in progress — will reset automatically when complete',
+        };
+    }
+    elsif ($training_error ne '') {
+        push @checks, {
+            id => 'training_mode',
+            label => 'Training Mode',
+            status => 'error',
+            detail => "Training failed: $training_error",
+        };
+    }
+    $self->render(json => { checks => \@checks })
+}
+
+__PACKAGE__
