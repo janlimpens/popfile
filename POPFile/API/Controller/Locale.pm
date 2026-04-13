@@ -1,14 +1,9 @@
-use Object::Pad;
+package POPFile::API::Controller::Locale;
+use Mojo::Base 'Mojolicious::Controller', -signatures;
 
-class POPFile::API::Controller::Locale :isa(Mojolicious::Controller);
+sub _lang_dir($self) { $self->popfile_lang_dir }
 
-use File::Spec;
-
-method _lang_dir() {
-    File::Spec->catdir($ENV{POPFILE_ROOT} // '.', 'languages')
-}
-
-method _read_msg_file($file) {
+sub _read_msg_file($self, $file) {
     my %data;
     open my $fh, '<:encoding(UTF-8)', $file or return %data;
     while (my $line = <$fh>) {
@@ -22,7 +17,7 @@ method _read_msg_file($file) {
     return %data
 }
 
-method list_locales() {
+sub list_locales($self) {
     my $dir = $self->_lang_dir();
     my @locales;
     for my $file (sort glob "$dir/*.msg") {
@@ -38,7 +33,7 @@ method list_locales() {
     $self->render(json => \@locales)
 }
 
-method get_locale() {
+sub get_locale($self) {
     my $name = $self->param('locale');
     $name =~ s/[^A-Za-z0-9_\-]//g;
     my $file = $self->_lang_dir() . "/$name.msg";
@@ -48,7 +43,7 @@ method get_locale() {
     $self->render(json => \%strings)
 }
 
-method list_languages() {
+sub list_languages($self) {
     my $dir = $self->_lang_dir();
     my @languages;
     for my $file (sort glob "$dir/*.msg") {
@@ -62,4 +57,4 @@ method list_languages() {
     $self->render(json => \@languages)
 }
 
-1;
+__PACKAGE__

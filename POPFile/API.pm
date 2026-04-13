@@ -467,82 +467,9 @@ method build_app ($svc, $session) {
         imap_uidvalidities => [imap => 'uidvalidities'],
 );
 
-    #--------------------------------------------------------------------
-    # GET /api/v1/i18n
-    #   Returns [{name, code, direction}, ...] for each available locale
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/i18n' => sub ($c) {
-        my @locales;
-        for my $file (sort glob "$languages_dir/*.msg") {
-            my $name = $file;
-            $name =~ s|.*/||;
-            $name =~ s|\.msg$||;
-            my ($code, $dir) = ('en', 'ltr');
-            open my $fh, '<:encoding(UTF-8)', $file or next;
-            while (my $line = <$fh>) {
-                chomp $line;
-                next if $line =~ /^#/ || $line !~ /\S/;
-                if ($line =~ /^LanguageCode\s+(\S+)/) { $code = $1 }
-                if ($line =~ /^LanguageDirection\s+(\S+)/) { $dir = $1 }
-                last if $code ne 'en' || $dir ne 'ltr';
-            }
-            close $fh;
-            push @locales, { name => $name, code => $code, direction => $dir };
-        }
-        $c->render(json => \@locales);
-    });
-
-    #--------------------------------------------------------------------
-    # GET /api/v1/languages
-    #   Returns [{code, name}, ...] sorted by name, where name is the
-    #   native language name from the Language_Name key in each .msg file
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/languages' => sub ($c) {
-        my @languages;
-        for my $file (sort glob "$languages_dir/*.msg") {
-            my $code = $file;
-            $code =~ s|.*/||;
-            $code =~ s|\.msg$||;
-            my $native_name = $code;
-            open my $fh, '<:encoding(UTF-8)', $file or next;
-            while (my $line = <$fh>) {
-                chomp $line;
-                next if $line =~ /^#/ || $line !~ /\S/;
-                if ($line =~ /^Language_Name\s+(.+)/) {
-                    $native_name = $1;
-                    last;
-                }
-            }
-            close $fh;
-            push @languages, { code => $code, name => $native_name };
-        }
-        @languages = sort { $a->{name} cmp $b->{name} } @languages;
-        $c->render(json => \@languages);
-    });
-
-    #--------------------------------------------------------------------
-    # GET /api/v1/i18n/:locale
-    #   Returns { key => value, ... } for the given locale .msg file
-    #--------------------------------------------------------------------
-    $r->get('/api/v1/i18n/:locale' => sub ($c) {
-        my $name = $c->param('locale');
-        $name =~ s/[^A-Za-z0-9_\-]//g;
-        my $file = "$languages_dir/$name.msg";
-        return $c->render(status => 404, json => { error => 'locale not found' })
-            unless -f $file;
-        my %strings;
-        open my $fh, '<:encoding(UTF-8)', $file or
-            return $c->render(status => 500, json => { error => 'read error' });
-        while (my $line = <$fh>) {
-            chomp $line;
-            next if $line =~ /^#/ || $line !~ /\S/;
-            if ($line =~ /^(\S+)\s+(.+)/) {
-                $strings{$1} = $2;
-            }
-        }
-        close $fh;
-        $c->render(json => \%strings);
-    });
+    $r->get('/api/v1/i18n')->to('Locale#list_locales');
+    $r->get('/api/v1/languages')->to('Locale#list_languages');
+    $r->get('/api/v1/i18n/:locale')->to('Locale#get_locale');
 
     #--------------------------------------------------------------------
     # GET /api/v1/config  →  { key: value, ... }
