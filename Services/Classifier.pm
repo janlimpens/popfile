@@ -58,6 +58,17 @@ method stop() {
     }
 }
 
+=head2 forked
+
+Called in a forked child process after the database has been reconnected.
+Reacquires the admin session key.
+
+=cut
+
+method forked() {
+    $session = $classifier->get_session_key('admin', '');
+}
+
 =head1 CLASSIFICATION
 
 =head2 classify_message

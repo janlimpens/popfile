@@ -250,6 +250,7 @@ method run_server() {
         $history->forked() if defined $history;
         my $bayes = $svc->bayes();
         $bayes->forked(undef) if defined $bayes;
+        $svc->forked();
     }
 
     my $session = '';
