@@ -5,6 +5,7 @@ use Object::Pad;
 role POPFile::Role::SQL;
 
 use lib 'vendor/perl-querybuilder/lib';
+use Carp;
 use Query::Builder;
 
 field $_qb = undef;
@@ -77,7 +78,7 @@ C<@args>       — optional bind parameters
 =cut
 
 method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
-    my $dbh = $self->db();
+    my $dbh = $self->db() or croak 'Could not get handle';
     my $sth;
     if ((ref $sql_or_sth) =~ m/^DBI::/) {
         $sth = $sql_or_sth;
