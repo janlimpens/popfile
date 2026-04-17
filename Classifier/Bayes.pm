@@ -3,32 +3,6 @@
 # Copyright (C) 2026 Jan Limpens
 package Classifier::Bayes;
 
-#----------------------------------------------------------------------------
-#
-# Bayes.pm --- Naive Bayes text classifier
-#
-# Copyright (c) 2001-2011 John Graham-Cumming
-#
-#   This file is part of POPFile
-#
-#   POPFile is free software; you can redistribute it and/or modify it
-#   under the terms of version 2 of the GNU General Public License as
-#   published by the Free Software Foundation.
-#
-#   POPFile is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with POPFile; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-#
-#   Modified by              Sam Schinke    (sschinke@users.sourceforge.net)
-#   Merged with db code from Scott Leighton (helphand@users.sourceforge.net)
-#
-#----------------------------------------------------------------------------
-
 use Object::Pad;
 use feature qw(state try);
 no warnings 'experimental::try';
@@ -62,7 +36,7 @@ my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
 
 my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
-class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::DBAccess) :does(POPFile::Role::SQL);
+class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::DBAccess) :does(POPFile::Role::SQL) :does(POPFile::Role::Logging);
 
 =head1 NAME
 
@@ -3182,17 +3156,11 @@ C<$session> A valid session key returned by a call to get_session_key
 =cut
 
 method get_all_buckets ($session) {
-    my $userid = $self->valid_session_key($session);
-    return
-        unless defined $userid;
-
-    my @buckets;
-
-    for my $b (sort keys $db_bucketid->{$userid}->%*) {
-         push @buckets, ($b);
+    if (my $userid = $self->valid_session_key($session)) {
+        return sort keys $db_bucketid->{$userid}->%*
     }
-
-    return @buckets;
+    $self->log_msg(0, 'Could not get user ID');
+    return
 }
 
 =head2 is_pseudo_bucket

@@ -5,6 +5,7 @@ use Object::Pad;
 role POPFile::Role::SQL;
 
 use lib 'vendor/perl-querybuilder/lib';
+use Carp;
 use Query::Builder;
 
 field $_qb = undef;
@@ -77,7 +78,7 @@ C<@args>       — optional bind parameters
 =cut
 
 method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
-    my $dbh = $self->db();
+    my $dbh = $self->db() or croak 'Could not get handle';
     my $sth;
     if ((ref $sql_or_sth) =~ m/^DBI::/) {
         $sth = $sql_or_sth;
@@ -90,10 +91,10 @@ method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
         $arg = $self->check_for_nullbytes($arg);
     }
     my $execute_result = $sth->execute(@args);
-    if ($self->module_config('logger', 'log_sql') && $self->module_config('logger', 'log_to_stdout')) {
+    if ($self->module_config('logger', 'log_sql')) {
         my @vals = @args;
         (my $logged = $sth->{Statement} // '') =~ s/\?/do { my $v = shift @vals; defined $v ? "'$v'" : 'NULL' }/ge;
-        print "[SQL] $logged\n";
+        $self->log_msg(1, "[SQL] $logged");
     }
     unless ($execute_result) {
         my ($package, $file, $line) = caller;
