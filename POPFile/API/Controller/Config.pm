@@ -76,6 +76,10 @@ sub update_config($self) {
     for my $key (keys $body->%*) {
         next unless exists CFG->{$key};
         my ($mod, $param) = CFG->{$key}->@*;
+        if ($key =~ /^imap_(hostname|login|password)$/) {
+            my $val = $body->{$key} // '(undef)';
+            $self->app->log->info("CONFIG_DIAG: update_config setting $key='$val'");
+        }
         $api->module_config($mod, $param, $body->{$key});
     }
     $api->configuration()->save_configuration();
