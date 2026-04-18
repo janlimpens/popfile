@@ -40,8 +40,6 @@ my $eol = "\015\012";
 class Proxy::Proxy :isa(POPFile::Module);
     field $service = undef;
 
-    field $_child_coderef = 0;
-
     field $connection_timeout_error :reader :writer = '';
     field $connection_failed_error :reader :writer = '';
     field $good_response :reader :writer = '';

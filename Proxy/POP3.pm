@@ -70,7 +70,6 @@ field $use_apop = 0;
 
     BUILD {
         $self->set_name('pop3');
-        $self->set_child(\&child__);
         $self->set_connection_timeout_error('-ERR no response from mail server');
         $self->set_connection_failed_error('-ERR can\'t connect to');
         $self->set_good_response('^\+OK');
@@ -83,7 +82,6 @@ field $use_apop = 0;
     # ----------------------------------------------------------------------------
     method initialize() {
         $self->config('enabled', 1);
-        $self->config('force_fork', 1);
         $self->config('port', 1110);
         $self->config('secure_server', '');
         $self->config('secure_port', 995);
