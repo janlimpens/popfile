@@ -468,6 +468,8 @@ method uid_validity ($folder_name, $uidval = undef) {
         $self->log_msg(1, "Updated UIDVALIDITY value for folder $folder_name to $uidval.");
         return
     }
+    return undef
+        unless defined $hash{$folder_name};
     return $hash{$folder_name} =~ /^\d+$/
         ? $hash{$folder_name}
         : undef
