@@ -3,7 +3,7 @@
 
   let { buckets = [], initialBucket = '' } = $props();
 
-  let selectedBucket = $state(initialBucket);
+  let selectedBucket = $state('');
   let words = $state([]);
   let total = $state(0);
   let page = $state(1);
@@ -27,6 +27,10 @@
   }
 
   $effect(() => {
+    selectedBucket = initialBucket;
+    page = 1;
+    words = [];
+    total = 0;
     if (initialBucket) loadWords();
   });
 

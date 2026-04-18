@@ -407,7 +407,7 @@
     justify-content: space-between;
     gap: 1rem;
   }
-  .field-row label:not(.toggle), .field-row span {
+  .field-row label:not(.toggle) {
     font-size: 0.875rem;
     color: var(--text);
     font-weight: 500;
