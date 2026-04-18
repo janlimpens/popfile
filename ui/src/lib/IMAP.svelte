@@ -130,6 +130,21 @@
 
   function markCfg() { cfgDirty = true; cfgStatus = ''; testStatus = null; saveAnyway = false; }
 
+  function onPortInput() {
+    markCfg();
+    if (cfg.imap_port == 993) cfg.imap_use_ssl = 1;
+    else if (cfg.imap_port == 143) cfg.imap_use_ssl = 0;
+  }
+
+  function onSslChange(e) {
+    cfg.imap_use_ssl = e.target.checked ? 1 : 0;
+    if (cfg.imap_use_ssl && (!cfg.imap_port || cfg.imap_port == 143))
+      cfg.imap_port = 993;
+    else if (!cfg.imap_use_ssl && (!cfg.imap_port || cfg.imap_port == 993))
+      cfg.imap_port = 143;
+    markCfg();
+  }
+
   onMount(load);
 </script>
 
@@ -147,7 +162,6 @@
     <div class="fields">
       {#each [
         ['imap_hostname',        t('Imap_Server'),   'text'],
-        ['imap_port',            t('Imap_Port'),     'number'],
         ['imap_login',           t('Imap_Login'),    'text'],
         ['imap_password',        t('Imap_Password'), 'password'],
         ['imap_update_interval', t('Imap_Interval'), 'number'],
@@ -164,10 +178,15 @@
       {/each}
 
       <div class="field-row">
+        <label for="imap_port">{t('Imap_Port')}</label>
+        <input id="imap_port" type="number" bind:value={cfg.imap_port} oninput={onPortInput} />
+      </div>
+
+      <div class="field-row">
         <label for="imap_use_ssl">{t('Imap_Use_SSL')}</label>
         <input id="imap_use_ssl" class="switch" type="checkbox"
           checked={cfg.imap_use_ssl == 1}
-          onchange={(e) => { cfg.imap_use_ssl = e.target.checked ? 1 : 0; markCfg(); }}
+          onchange={onSslChange}
         />
       </div>
 

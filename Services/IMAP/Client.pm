@@ -336,8 +336,7 @@ method get_mailbox_list() {
     for my $name ( grep { /^\*/ } @lines) {
         $name =~ s/^\* LIST \(.*\) .+? (.+)$/$1/;
         $name =~ s/"(.*?)"/$1/;
-        my $decoded = $self->_imap_utf7_decode($1);
-        $name =~ s/&([^-]*)-/$decoded/ge;
+        $name =~ s/&([^-]*)-/$self->_imap_utf7_decode($1)/ge;
         push @mailboxes, $name;
     }
     return sort @mailboxes
