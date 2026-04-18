@@ -687,6 +687,7 @@ method train_on_archive() {
         next if $classifier->is_pseudo_bucket($self->api_session(), $bucket);
         next if $folder eq 'INBOX';
         my $imap = $folders{$folder}{imap};
+        $imap->uid_next($folder, 1);
         my @uids = $imap->get_new_message_list_unselected($folder);
         $self->log_msg(0, "Training on " . scalar(@uids) . " messages in folder $folder to bucket $bucket.");
         $total_folders++;
