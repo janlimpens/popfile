@@ -345,6 +345,10 @@ Removes C<$word> from the stopword list.
 
 =cut
 
+method get_words_for_bucket ($bucket, %opts) { $classifier->get_words_for_bucket($session, $bucket, %opts) }
+method remove_word_from_bucket ($bucket, $word) { $classifier->remove_word_from_bucket($session, $bucket, $word) }
+method move_word_between_buckets ($from, $to, $word) { $classifier->move_word_between_buckets($session, $from, $to, $word) }
+
 method get_stopword_list() { $classifier->get_stopword_list($session) }
 method add_stopword ($w) { $classifier->add_stopword($session, $w) }
 method remove_stopword ($w) { $classifier->remove_stopword($session, $w) }

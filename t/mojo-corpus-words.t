@@ -54,21 +54,19 @@ sub get_stopword_candidates { () }
 sub history_obj { undef }
 sub bayes { undef }
 sub get_words_for_bucket {
-    my ($self, $session, $bucket, %opts) = @_;
+    my ($self, $bucket, %opts) = @_;
     return { words => [], total => 0 }
         unless $bucket eq 'spam';
-    my $page = $opts{page} // 1;
-    my $per_page = $opts{per_page} // 50;
     return {
         words => [@words_spam],
         total => scalar @words_spam };
 }
 sub remove_word_from_bucket {
-    my ($self, $session, $bucket, $word) = @_;
+    my ($self, $bucket, $word) = @_;
     $removed = { bucket => $bucket, word => $word };
 }
 sub move_word_between_buckets {
-    my ($self, $session, $from, $to, $word) = @_;
+    my ($self, $from, $to, $word) = @_;
     $moved = { from => $from, to => $to, word => $word };
 }
 
