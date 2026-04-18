@@ -81,10 +81,20 @@ method _find_free_port() {
 method start() {
     require Mojo::Server::Daemon;
     my $port = $self->config('port');
+    my $port_file = $self->configuration()->get_user_path('popfile.port');
+    if ($port == 0 && -e $port_file && open my $fh, '<', $port_file) {
+        chomp(my $saved = <$fh>);
+        close $fh;
+        $port = $saved + 0
+            if $saved =~ /^\d+$/ && $saved > 0;
+    }
     if ($port == 0) {
         $port = $self->_find_free_port();
-        $self->config('port', $port);
-        $self->configuration()->save_configuration();
+    }
+    $self->config('port', $port);
+    if (open my $fh, '>', $port_file) {
+        print $fh $port;
+        close $fh;
     }
     my $app = $self->build_app($service, undef);
     my $daemon = Mojo::Server::Daemon->new(
