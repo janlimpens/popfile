@@ -324,6 +324,10 @@ deprecated-parameters store so they are not silently lost on the next save.
 method load_configuration() {
     $started = 1;
     my $config_file = $self->get_user_path('popfile.cfg');
+    my $sample_file = $self->get_root_path('popfile.cfg.sample');
+    if (!-e $config_file && -e $sample_file) {
+        copy($sample_file, $config_file);
+    }
     if (open my $config, '<', $config_file) {
         while (<$config>) {
             s/(\015|\012)//g;
