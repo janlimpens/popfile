@@ -6,6 +6,7 @@ use Object::Pad;
 use locale;
 use File::Path qw(make_path);
 use Log::Any::Adapter;
+use Mojo::IOLoop;
 use POPFile::Log::Adapter;
 
 my $seconds_per_day = 60 * 60 * 24;
@@ -35,7 +36,6 @@ via C<last_ten()>, used by the web UI to show recent activity.
 =cut
 
 field $debug_filename = '';
-field $last_tickd = 0;
 field $today = 0;
 
 BUILD {
@@ -58,7 +58,6 @@ method initialize() {
     $self->config('level', 0);
     $self->config('log_to_stdout', 0);
     $self->config('log_sql', 0);
-    $last_tickd = time;
     $self->mq_register('TICKD', $self);
     return 1
 }
@@ -88,9 +87,10 @@ method deliver ($type, @message) {
 
 =head2 start()
 
-Creates the log directory if necessary, computes today's log filename, and
-installs the L<POPFile::Log::Adapter>.  Logs the POPFile startup message.
-Returns 1.
+Creates the log directory if necessary, computes today's log filename,
+installs the L<POPFile::Log::Adapter>, and registers a recurring
+IOLoop timer to post C<TICKD> once per hour.  Logs the POPFile startup
+message.  Returns 1.
 
 =cut
 
@@ -99,6 +99,7 @@ method start() {
     make_path($dir) unless -d $dir;
     $self->calculate_today();
     $self->_reconfigure_adapter();
+    Mojo::IOLoop->recurring(3600 => sub { $self->mq()->post('TICKD', time()) });
     Log::Any->get_logger(category => 'POPFile')->error(
         'POPFile ' . $self->version() . ' starting');
     return 1
@@ -112,23 +113,6 @@ Logs the POPFile shutdown message.
 
 method stop() {
     Log::Any->get_logger(category => 'POPFile')->error('POPFile stopped');
-}
-
-=head2 service()
-
-Called every main-loop tick.  Reconfigures the adapter and posts C<TICKD>
-once per hour to trigger log-file rotation and pruning.  Returns 1.
-
-=cut
-
-method service() {
-    $self->calculate_today();
-    if ($self->time > ($last_tickd + 3600)) {
-        $self->_reconfigure_adapter();
-        $self->mq_post('TICKD');
-        $last_tickd = $self->time;
-    }
-    return 1
 }
 
 =head2 time()
