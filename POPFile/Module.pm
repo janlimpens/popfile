@@ -26,8 +26,6 @@ field $alive :reader :writer = 1;
 
 # Loader callbacks
 field $pipeready :reader :writer = 0;
-field $forker :reader :writer = 0;
-field $childexit = 0;
 field $version :reader :writer = '';
 
 =head1 NAME
@@ -284,27 +282,9 @@ method can_read ($handle, $timeout = undef) {
 
 =head1 ACCESSORS
 
-Fields C<configuration>, C<mq>, C<name>, C<alive>, C<forker>, C<pipeready>,
+Fields C<configuration>, C<mq>, C<name>, C<alive>, C<pipeready>,
 and C<version> have C<:reader> and C<:writer> generated accessors.
 Getters use the field name; setters use the C<set_> prefix (e.g. C<set_name>).
-
-C<setchildexit> is a combined getter/setter for the loader's child-exit callback
-(the name is kept to avoid a clash with the C<childexit> lifecycle hook).
-
-=head2 setchildexit
-
-my $code = $self->setchildexit();
-$self->setchildexit($coderef);
-
-Gets or sets the child-exit callback used by C<POPFile::Loader>.  The callback
-is invoked when a forked child process exits.
-
-=cut
-
-method setchildexit ($val = undef) {
-    $childexit = $val if defined $val;
-    return $childexit;
-}
 
 =head1 LIFECYCLE
 
@@ -333,36 +313,6 @@ Called repeatedly in the main loop.  Subclasses perform per-tick work (e.g.
 accepting connections, flushing queues).  Returns 1 to continue, 0 to
 request shutdown.
 
-=head2 prefork
-
-Called in the parent process just before C<fork()>.  Subclasses may close
-handles that must not be shared with the child.
-
-=head2 forked
-
-$self->forked($writer);
-
-Called in the child process after C<fork()>.  C<$writer> is the write end of
-a pipe back to the parent (may be C<undef>).  Subclasses reset per-process
-state here (e.g. database handles).
-
-=head2 postfork
-
-$self->postfork($pid, $reader);
-
-Called in the parent process after C<fork()>.  C<$pid> is the child PID;
-C<$reader> is the read end of a pipe from the child.
-
-=head2 childexit
-
-Called in the child process just before it exits.  Subclasses perform
-last-minute cleanup.
-
-=head2 reaper
-
-Called in the parent when a child process has exited (SIGCHLD).  Subclasses
-reap zombie processes and update internal state.
-
 =head2 deliver
 
 $self->deliver($type, @message);
@@ -376,11 +326,6 @@ method initialize() { return 1 }
 method start() { return 1 }
 method stop() {}
 method service() { return 1 }
-method prefork() {}
-method forked ($writer = undef) {}
-method postfork ($pid = undef, $reader = undef) {}
-method childexit() {}
-method reaper() {}
 method deliver ($type, @message) {}
 
 1;
