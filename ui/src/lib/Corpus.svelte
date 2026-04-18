@@ -133,6 +133,7 @@
             />
           </td>
           <td>
+            <a class="btn-link" href="#wordview/{b.name}">{t('Corpus_WordsLink')}</a>
             {#if !b.pseudo}
               <button class="btn-danger" onclick={() => deleteBucket(b.name)}>{t('Delete')}</button>
               <button onclick={() => clearBucket(b.name)}>{t('Corpus_Clear')}</button>
@@ -236,5 +237,7 @@
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; vertical-align: middle; }
   .desc { font-size: 0.85rem; color: var(--text-muted, #888); margin: 0.25rem 0 0.5rem; }
   .btn-small { padding: 0.1rem 0.4rem; font-size: 0.75rem; }
+  .btn-link { font-size: 0.8rem; color: var(--accent); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 4px; }
+  .btn-link:hover { text-decoration: underline; }
   input[type=number] { width: 5rem; padding: 0.25rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); }
 </style>

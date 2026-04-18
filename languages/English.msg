@@ -446,6 +446,7 @@ Imap_Saving                             Saving...
 Corpus_Color                            Color
 Corpus_Actions                          Actions
 Corpus_Clear                            Clear
+Corpus_WordsLink                        Words →
 Corpus_BucketList                       Buckets
 Corpus_Search                           Search
 Corpus_StopwordCandidates               Stop-word candidates

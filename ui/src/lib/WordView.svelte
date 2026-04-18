@@ -1,9 +1,9 @@
 <script>
   import { t } from './locale.svelte.js';
 
-  let { buckets = [] } = $props();
+  let { buckets = [], initialBucket = '' } = $props();
 
-  let selectedBucket = $state('');
+  let selectedBucket = $state(initialBucket);
   let words = $state([]);
   let total = $state(0);
   let page = $state(1);
@@ -25,6 +25,10 @@
     }
     loading = false;
   }
+
+  $effect(() => {
+    if (initialBucket) loadWords();
+  });
 
   function onBucketChange() {
     page = 1;

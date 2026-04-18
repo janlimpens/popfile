@@ -13,7 +13,15 @@
 
   installFetchInterceptor();
 
-  let page    = $state(window.location.hash.slice(1) || 'history');
+  function parseHash() {
+    const raw = window.location.hash.slice(1) || 'history';
+    const [p, sub] = raw.split('/');
+    return [p, sub ?? ''];
+  }
+
+  let [initPage, initSub] = parseHash();
+  let page    = $state(initPage);
+  let pageSub = $state(initSub);
   let buckets = $state([]);
   let theme   = $state(localStorage.getItem('pf-theme') || 'dark');
 
@@ -31,15 +39,16 @@
     const cfg = cfgRes.ok ? await cfgRes.json() : {};
     await initLocale(cfg.mojo_ui_locale || '');
     window.addEventListener('hashchange', () => {
-      page = window.location.hash.slice(1) || 'history';
+      const parsed = parseHash();
+      page = parsed.page;
+      pageSub = parsed.sub;
     });
   });
 
   const NAV = [
-    ['history',  'NavHistory',   'History'],
-    ['corpus',   'NavCorpus',    'Corpus'],
-    ['wordview', 'NavWordView',  'Words'],
-    ['magnets',  'NavMagnets',   'Magnets'],
+    ['history',  'NavHistory',  'History'],
+    ['corpus',   'NavCorpus',   'Corpus'],
+    ['magnets',  'NavMagnets',  'Magnets'],
     ['imap',     'NavIMAP',     'IMAP'],
     ['status',   'NavStatus',   'Status'],
     ['settings', 'NavSettings', 'Settings'],
@@ -70,7 +79,7 @@
   {:else if page === 'corpus'}
     <Corpus bind:buckets />
   {:else if page === 'wordview'}
-    <WordView {buckets} />
+    <WordView {buckets} initialBucket={pageSub} />
   {:else if page === 'magnets'}
     <Magnets {buckets} />
   {:else if page === 'imap'}
