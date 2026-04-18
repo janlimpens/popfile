@@ -28,6 +28,7 @@ requires 'Net::SSLeay', '0';
 requires 'Object::Pad', '0.800';
 requires 'Role::Tiny', '0';
 
+# carton exec cpanm -L local --notest Module::Name
 recommends 'DBD::mysql', '0';
 recommends 'DBD::Pg', '0';
 recommends 'Mojo::mysql', '1.25';
