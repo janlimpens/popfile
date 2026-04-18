@@ -56,15 +56,13 @@ subtest 'poll() does not run concurrently (guard flag)' => sub {
 
 subtest 'poll() resets guard after subprocess completes' => sub {
     my ($imap, $config, $mq) = make_imap();
-    my $start_count = 0;
-    no warnings 'redefine';
-    local *Services::IMAP::_run_poll_work = sub { $start_count++ };
     $imap->start();
     Mojo::IOLoop->next_tick(sub { $imap->poll() });
     Mojo::IOLoop->timer(0.3 => sub { $imap->poll() });
     Mojo::IOLoop->timer(0.8 => sub { Mojo::IOLoop->stop() });
     Mojo::IOLoop->start();
-    ok($start_count >= 2, "subprocess started at least twice (guard reset after completion) (count=$start_count)");
+    my @imap_done = grep { $_->{type} eq 'IMAP_DONE' } $mq->{posted}->@*;
+    ok(scalar(@imap_done) >= 2, "IMAP_DONE posted at least twice (guard reset between polls) (count=" . scalar(@imap_done) . ")");
     $imap->stop();
 };
 
