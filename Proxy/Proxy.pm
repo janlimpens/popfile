@@ -35,27 +35,20 @@ use IO::Handle;
 use IO::Socket;
 use IO::Select;
 
-# A handy variable containing the value of an EOL for networks
 my $eol = "\015\012";
 
-class Proxy::Proxy :isa(POPFile::Module);    # Reference to the classifier service facade
+class Proxy::Proxy :isa(POPFile::Module);
     field $service = undef;
 
-    # Code reference called to handle each proxy connection
-    field $child :reader :writer = 0;
-
-    # Error messages for subclasses to set
     field $connection_timeout_error :reader :writer = '';
     field $connection_failed_error :reader :writer = '';
     field $good_response :reader :writer = '';
     field $ssl_not_supported_error :reader = '-ERR SSL connection is not supported since required modules are not installed';
 
-    # Connect banner returned by the real server
     field $connect_banner :reader :writer = '';
 
-    # Listening socket and its selector
-    field $server = undef;
-    field $selector = undef;
+    field $server_id = undef;
+    field $bound_port :reader = 0;
 
 =head1 NAME
 
@@ -71,7 +64,7 @@ responses in both directions.
 
 Subclasses override the C<$child> coderef to implement protocol-specific
 command handling.  The base class provides the listening socket lifecycle
-(C<initialize>, C<start>, C<stop>, C<service>), connection helpers, and
+(C<initialize>, C<start>, C<stop>), connection helpers, and
 low-level I/O utilities used by all proxy implementations.
 
 =head1 METHODS
@@ -95,97 +88,72 @@ and C<socks_port>.  Returns 1.
 
 =head2 start()
 
-Opens the TCP listening socket on the configured C<port>.  If the C<local>
-config flag is set only connections from C<localhost> are accepted.  Prints a
-diagnostic to C<STDERR> and returns 0 if the socket cannot be bound; returns 1
-on success.
+Opens a Mojo::IOLoop TCP server on the configured C<port>.  For each
+incoming connection the raw filehandle is stolen from the Mojo stream and
+handled in a C<Mojo::IOLoop> subprocess that calls C<$child>.  If the port
+is 0, the OS chooses a free port; C<bound_port()> returns the actual port.
+Returns 0 if the server cannot be started; 1 on success.
 
 =cut
 
     method start() {
+        require Mojo::IOLoop;
         $self->log_msg(1, "Opening listening socket on port " . $self->config('port') . '.');
-        $server = IO::Socket::INET->new(
-            Proto => 'tcp',
-            ($self->config('local') || 0) == 1 ? (LocalAddr => 'localhost') : (),
-            LocalPort => $self->config('port'),
-            Listen => SOMAXCONN,
-            Reuse => 1);
+
+        my $local = ($self->config('local') || 0) == 1;
+        my %listen_args = (port => $self->config('port'));
+        $listen_args{address} = '127.0.0.1' if $local;
 
         my $name = $self->name();
 
-        if (!defined($server)) {
+        $server_id = Mojo::IOLoop->server(
+            \%listen_args,
+            sub ($loop, $stream, $id) {
+                my $fh = $stream->steal_handle();
+                $loop->subprocess(
+                    sub { $self->_handle_connection($fh) },
+                    sub ($loop, $err, @result) {
+                        $self->log_msg(1, "subprocess error: $err") if $err;
+                    }
+                );
+            }
+        );
+
+        if (!defined $server_id) {
             my $port = $self->config('port');
             $self->log_msg(0, "Couldn't start the $name proxy because POPFile could not bind to the listen port $port");
             print STDERR "\nCouldn't start the $name proxy because POPFile could not bind to the\nlisten port $port. This could be because there is another service\nusing that port or because you do not have the right privileges on\nyour system (On Unix systems this can happen if you are not root\nand the port you specified is less than 1024).\n\n";
             return 0;
         }
 
-        $selector = IO::Select->new($server);
-
+        $bound_port = Mojo::IOLoop->acceptor($server_id)->port();
+        $self->log_msg(1, "$name proxy listening on port $bound_port");
         return 1;
+    }
+
+=head2 _handle_connection($fh)
+
+Runs inside a C<Mojo::IOLoop> subprocess.  Wraps the raw filehandle as an
+C<IO::Socket> and calls the C<$child> coderef.
+
+=cut
+
+    method _handle_connection ($fh) {
+        my $sock = IO::Socket->new();
+        $sock->fdopen($fh, 'r+');
+        binmode $sock;
+        $self->child($sock);
     }
 
 =head2 stop()
 
-Closes the listening socket.
+Removes the Mojo::IOLoop server.
 
 =cut
 
     method stop() {
-        close $server if (defined($server));
-    }
-
-=head2 service()
-
-Called once per main-loop tick.  If a client is waiting on the listening
-socket and the module is still alive, accepts the connection and dispatches it
-to the C<$child> coderef — either in a forked child process (when
-C<force_fork> is configured) or inline.  Returns 1.
-
-=cut
-
-    method service() {
-        if ((defined($selector->can_read(0))) &&
-             ($self->alive())) {
-            if (my $client = $server->accept()) {
-                my ($remote_port, $remote_host) = sockaddr_in($client->peername());
-
-                if ((($self->config('local') || 0) == 0) ||
-                       ($remote_host eq inet_aton("127.0.0.1"))) {
-                    binmode($client);
-
-                    if ($self->config('force_fork')) {
-                        my ($pid, $pipe) = &{ $self->forker() };
-
-                        if (!defined($pid) || ($pid == 0)) {
-                            $child->($self, $client);
-                            if (defined($pid)) {
-                                &{ $self->setchildexit() }(0);
-                            }
-                        }
-                    } else {
-                        pipe my $reader, my $writer;
-                        $child->($self, $client);
-                        close $reader;
-                    }
-                }
-
-                close $client;
-            }
-        }
-
-        return 1;
-    }
-
-=head2 forked($writer)
-
-Called in the child process immediately after C<fork()>.  Closes the inherited
-listening socket so the child does not hold it open.
-
-=cut
-
-    method forked ($writer = undef) {
-        close $server;
+        Mojo::IOLoop->remove($server_id) if defined $server_id;
+        $server_id = undef;
     }
 
 =head2 tee($socket, $text)
@@ -428,5 +396,8 @@ Returns the current service.
         return $service
     }
 
+    method child ($client) {}
+
 
 1;
+

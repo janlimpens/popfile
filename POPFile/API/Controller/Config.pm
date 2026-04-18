@@ -55,6 +55,7 @@ use constant CFG => {
     imap_expunge => [imap => 'expunge'],
     imap_training_mode => [imap => 'training_mode'],
     imap_training_error => [imap => 'training_error'],
+    imap_training_limit => [imap => 'training_limit'],
     imap_uidnexts => [imap => 'uidnexts'],
     imap_uidvalidities => [imap => 'uidvalidities'],
 };
@@ -75,6 +76,10 @@ sub update_config($self) {
     for my $key (keys $body->%*) {
         next unless exists CFG->{$key};
         my ($mod, $param) = CFG->{$key}->@*;
+        if ($key =~ /^imap_(hostname|login|password)$/) {
+            my $val = $body->{$key} // '(undef)';
+            $self->app->log->info("CONFIG_DIAG: update_config setting $key='$val'");
+        }
         $api->module_config($mod, $param, $body->{$key});
     }
     $api->configuration()->save_configuration();
@@ -82,100 +87,88 @@ sub update_config($self) {
 }
 
 sub get_status($self) {
-    require Services::IMAP::Client;
     my $api = $self->popfile_api;
-    my @checks;
     my $hostname = $api->module_config('imap', 'hostname') // '';
     my $port = $api->module_config('imap', 'port') // '';
     my $login = $api->module_config('imap', 'login') // '';
+    my $password = $api->module_config('imap', 'password') // '';
+    my $use_ssl = $api->module_config('imap', 'use_ssl') // 0;
+    my $imap_sep = '-->';
+    my $watched_raw = $api->module_config('imap', 'watched_folders') // '';
+    my $mapping_raw = $api->module_config('imap', 'bucket_folder_mappings') // '';
+    my $training_mode = $api->module_config('imap', 'training_mode') // 0;
+    my $training_error = $api->module_config('imap', 'training_error') // '';
     unless ($hostname ne '' && $port ne '') {
-        push @checks, {
+        return $self->render(json => { checks => [{
             id => 'connectivity',
             label => 'IMAP Connectivity',
             status => 'warn',
             detail => 'IMAP not configured',
-        };
-        return $self->render(json => { checks => \@checks });
+        }] });
     }
-    my $client = Services::IMAP::Client->new();
-    $client->set_configuration($api->configuration());
-    $client->set_mq($api->mq());
-    $client->set_name('imap');
-    unless ($client->connect()) {
-        push @checks, {
-            id => 'connectivity',
-            label => 'IMAP Connectivity',
-            status => 'error',
-            detail => "Cannot reach $hostname:$port",
-        };
-        return $self->render(json => { checks => \@checks });
-    }
-    push @checks, {
-        id => 'connectivity',
-        label => 'IMAP Connectivity',
-        status => 'ok',
-        detail => "Connected to $hostname:$port",
-    };
-    unless ($client->login()) {
-        push @checks, {
-            id => 'authentication',
-            label => 'IMAP Authentication',
-            status => 'error',
-            detail => "Login failed for $login",
-        };
-        return $self->render(json => { checks => \@checks });
-    }
-    push @checks, {
-        id => 'authentication',
-        label => 'IMAP Authentication',
-        status => 'ok',
-        detail => "Logged in as $login",
-    };
-    my @server_folders = $client->get_mailbox_list();
-    $client->logout();
-    my %on_server = map { $_ => 1 } @server_folders;
-    my $imap_sep = '-->';
-    my $watched_raw = $api->module_config('imap', 'watched_folders') // '';
-    my @watched = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
-    my @missing_w = grep { !$on_server{$_} } @watched;
-    push @checks, {
-        id => 'watched_folders',
-        label => 'Watched Folders',
-        status => @missing_w ? 'warn' : 'ok',
-        detail => @missing_w
-            ? 'Missing on server: ' . join(', ', @missing_w)
-            : 'All ' . scalar(@watched) . ' watched folder(s) exist',
-    };
-    my $mapping_raw = $api->module_config('imap', 'bucket_folder_mappings') // '';
-    my %map_hash = split /\Q$imap_sep\E/, $mapping_raw;
-    my @missing_m = grep { $_ ne '' && !$on_server{$map_hash{$_}} } keys %map_hash;
-    push @checks, {
-        id => 'bucket_mappings',
-        label => 'Bucket → Folder Mappings',
-        status => @missing_m ? 'warn' : 'ok',
-        detail => @missing_m
-            ? 'Target folders missing: ' . join(', ', map { $map_hash{$_} } @missing_m)
-            : 'All ' . scalar(keys %map_hash) . ' mapping(s) valid',
-    };
-    my $training_mode = $api->module_config('imap', 'training_mode') // 0;
-    my $training_error = $api->module_config('imap', 'training_error') // '';
-    if ($training_mode) {
-        push @checks, {
-            id => 'training_mode',
-            label => 'Training Mode',
-            status => 'warn',
-            detail => 'Training in progress — will reset automatically when complete',
-        };
-    }
-    elsif ($training_error ne '') {
-        push @checks, {
-            id => 'training_mode',
-            label => 'Training Mode',
-            status => 'error',
-            detail => "Training failed: $training_error",
-        };
-    }
-    $self->render(json => { checks => \@checks })
+    my $cfg_obj = $api->configuration();
+    my $mq_obj = $api->mq();
+    $self->render_later();
+    Mojo::IOLoop->subprocess(
+        sub {
+            require Services::IMAP::Client;
+            my @c;
+            my $client = Services::IMAP::Client->new();
+            $client->set_configuration($cfg_obj);
+            $client->set_mq($mq_obj);
+            $client->set_name('imap');
+            $client->config('hostname', $hostname);
+            $client->config('port', $port);
+            $client->config('login', $login);
+            $client->config('password', $password);
+            $client->config('use_ssl', $use_ssl);
+            unless ($client->connect()) {
+                push @c, { id => 'connectivity', label => 'IMAP Connectivity',
+                    status => 'error', detail => "Cannot reach $hostname:$port" };
+                return \@c;
+            }
+            push @c, { id => 'connectivity', label => 'IMAP Connectivity',
+                status => 'ok', detail => "Connected to $hostname:$port" };
+            unless ($client->login()) {
+                push @c, { id => 'authentication', label => 'IMAP Authentication',
+                    status => 'error', detail => "Login failed for $login" };
+                return \@c;
+            }
+            push @c, { id => 'authentication', label => 'IMAP Authentication',
+                status => 'ok', detail => "Logged in as $login" };
+            my @server_folders = $client->get_mailbox_list();
+            $client->logout();
+            my %on_server = map { $_ => 1 } @server_folders;
+            my @watched = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
+            my @missing_w = grep { !$on_server{$_} } @watched;
+            push @c, { id => 'watched_folders', label => 'Watched Folders',
+                status => @missing_w ? 'warn' : 'ok',
+                detail => @missing_w
+                    ? 'Missing on server: ' . join(', ', @missing_w)
+                    : 'All ' . scalar(@watched) . ' watched folder(s) exist' };
+            my %map_hash = split /\Q$imap_sep\E/, $mapping_raw;
+            my @missing_m = grep { $_ ne '' && !$on_server{$map_hash{$_}} } keys %map_hash;
+            push @c, { id => 'bucket_mappings', label => 'Bucket → Folder Mappings',
+                status => @missing_m ? 'warn' : 'ok',
+                detail => @missing_m
+                    ? 'Target folders missing: ' . join(', ', map { $map_hash{$_} } @missing_m)
+                    : 'All ' . scalar(keys %map_hash) . ' mapping(s) valid' };
+            return \@c
+        },
+        sub ($loop, $err, $result) {
+            my @checks = defined $result ? $result->@* : ();
+            if ($training_mode) {
+                push @checks, { id => 'training_mode', label => 'Training Mode',
+                    status => 'warn',
+                    detail => 'Training in progress — will reset automatically when complete' };
+            }
+            elsif ($training_error ne '') {
+                push @checks, { id => 'training_mode', label => 'Training Mode',
+                    status => 'error', detail => "Training failed: $training_error" };
+            }
+            $self->render(json => { checks => \@checks });
+        }
+    );
 }
 
 __PACKAGE__

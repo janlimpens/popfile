@@ -452,6 +452,10 @@ registered.
 
 method parameter ($name, $value = undef) {
     if (defined($value)) {
+        if ($started && $name =~ /^imap_(hostname|login|password)$/ && $value eq '') {
+            require Carp;
+            Carp::cluck("CONFIG_DIAG: $name set to empty after load");
+        }
         $save_needed = 1;
         $configuration_parameters{$name}{value} = $value;
         if ($started == 0) {

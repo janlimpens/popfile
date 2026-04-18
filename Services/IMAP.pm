@@ -4,6 +4,7 @@ use Object::Pad;
 use Fcntl ();
 use feature 'try';
 no warnings 'experimental::try';
+use Mojo::IOLoop;
 use Services::IMAP::Client;
 
 class Services::IMAP :isa(POPFile::Module);
@@ -40,6 +41,8 @@ field %hash_values;
 field $api_session = '';
 field $imap_error = '';
 field $last_update = 0;
+field $timer_id = undef;
+field $poll_running = 0;
 
 my $cfg_separator = "-->";
 
@@ -71,49 +74,98 @@ method initialize() {
     $self->config('enabled', 0);
     $self->config('training_mode', 0);
     $self->config('training_error', '');
+    $self->config('training_limit', 0);
     $last_update = time - $self->config('update_interval');
     return 1
 }
 
 =head2 start()
 
-No-op for IMAP; the actual connection is deferred to C<service()>.  Returns 1.
+Registers a recurring C<Mojo::IOLoop> timer that calls C<poll()> every
+C<update_interval> seconds.  Returns 1.
 
 =cut
 
 method start() {
+    my $interval = $self->config('update_interval');
+    $timer_id = Mojo::IOLoop->recurring($interval => sub { $self->poll() });
     return 1
 }
 
 =head2 stop()
 
-Disconnects all open IMAP connections via C<disconnect_folders()>.
+Removes the recurring IOLoop timer and disconnects all open IMAP connections
+via C<disconnect_folders()>.
 
 =cut
 
 method stop() {
+    Mojo::IOLoop->remove($timer_id) if defined $timer_id;
+    $timer_id = undef;
     $self->disconnect_folders();
 }
 
 =head2 service()
 
-Called every main-loop tick.  Skips immediately if IMAP is disabled or the
-C<update_interval> has not elapsed.  Rebuilds the folder list if needed,
-connects to the server, then scans each watched folder for new messages.  In
-C<training_mode>, calls C<train_on_archive()> instead.  Disconnects and resets
-if an exception is thrown.  Returns 1.
+No-op; polling is driven by the C<Mojo::IOLoop> recurring timer registered in
+C<start()>.  Returns 1.
 
 =cut
 
 method service() {
-    return 1 if $self->config('enabled') == 0
-             && $self->config('training_mode') == 0;
-    return 1 if time - $last_update < $self->config('update_interval');
+    return 1
+}
+
+=head2 poll()
+
+Invoked by the recurring IOLoop timer.  Skips if IMAP is disabled and
+C<training_mode> is off, or if a previous poll is still running (C<$poll_running>
+guard).  Launches a C<Mojo::IOLoop-E<gt>subprocess> that runs all IMAP I/O and
+Bayes DB writes without blocking the IOLoop.  The result callback writes
+C<uid_nexts> config, clears C<training_mode> if training completed, and posts
+C<IMAP_DONE> to the MQ.
+
+=cut
+
+method poll() {
+    return if $self->config('enabled') == 0
+           && $self->config('training_mode') == 0;
+    return if $poll_running;
+    $poll_running = 1;
+    Mojo::IOLoop->subprocess(
+        sub { $self->_run_poll_work() },
+        sub ($loop, $err, $result) {
+            $poll_running = 0;
+            if ($err || !ref $result) {
+                $self->log_msg(0, "IMAP subprocess error: " . ($err // 'no result'));
+                return;
+            }
+            if ($result->{error}) {
+                $self->log_msg(0, $result->{error});
+                if ($result->{training_done} == -1) {
+                    $self->config('training_error', $result->{error});
+                    $self->config('training_mode', 0);
+                }
+            }
+            if (defined $result->{uid_nexts_str}) {
+                $self->config('uidnexts', $result->{uid_nexts_str});
+            }
+            if ($result->{training_done}) {
+                $self->config('training_mode', 0);
+            }
+            $self->mq()->post('IMAP_DONE', $result->{trained} // 0);
+        }
+    );
+}
+
+method _run_poll_work() {
+    my $result = { trained => 0, uid_nexts_str => undef, training_done => 0, error => undef };
     try {
         local $SIG{PIPE} = 'IGNORE';
         local $SIG{__DIE__};
         if ($self->config('training_mode') == 1) {
-            $self->train_on_archive();
+            $result->{trained} = $self->train_on_archive();
+            $result->{training_done} = 1;
         }
         else {
             if (!%folders || $folder_change_flag == 1) {
@@ -126,20 +178,19 @@ method service() {
                     if exists $folders{$folder}{imap};
             }
         }
+        $result->{uid_nexts_str} = $self->config('uidnexts');
     }
     catch ($err) {
         $self->disconnect_folders();
         my $msg = $err =~ /^POPFILE-IMAP-EXCEPTION: (.+\)\))/s
             ? $1
             : "Unexpected IMAP error: $err";
-        $self->log_msg(0, $msg);
+        $result->{error} = $msg;
         if ($self->config('training_mode') == 1) {
-            $self->config('training_error', $msg);
-            $self->config('training_mode', 0);
+            $result->{training_done} = -1;
         }
     }
-    $last_update = time;
-    return 1
+    return $result
 }
 
 =head2 api_session()
@@ -610,8 +661,9 @@ method watched_folders (@new_folders) {
 
 Bulk-trains the classifier from all output folders (skipping C<INBOX> and
 pseudo-buckets).  Iterates every message in each output folder and calls
-C<< Classifier::Bayes->add_message_to_bucket() >>.  Clears C<training_mode>
-on completion.
+C<< Classifier::Bayes->add_message_to_bucket() >> for new messages (UIDs >=
+stored uid_next).  Returns the number of trained messages.  C<training_mode>
+is cleared by the parent callback in C<poll()>.
 
 =cut
 
@@ -626,10 +678,10 @@ method train_on_archive() {
     unless (%folders) {
         $self->log_msg(0, "No output folders configured; nothing to train on.");
         %folders = ();
-        $self->config('training_mode', 0);
-        return;
+        return 0
     }
     $self->connect_server();
+    my $limit = $self->config('training_limit') || 0;
     my $total_msgs = 0;
     my $total_folders = 0;
     for my $folder (keys %folders) {
@@ -639,11 +691,13 @@ method train_on_archive() {
         my $imap = $folders{$folder}{imap};
         $imap->uid_next($folder, 1);
         my @uids = $imap->get_new_message_list_unselected($folder);
-        $self->log_msg(0, "Training on " . scalar(@uids) . " messages in folder $folder to bucket $bucket.");
+        @uids = @uids[0 .. $limit - 1] if $limit > 0 && @uids > $limit;
+        $self->log_msg(0, "Training on " . scalar(@uids) . " messages in folder $folder to bucket $bucket."
+            . ($limit > 0 ? " (limit: $limit)" : ''));
         $total_folders++;
         for my $msg (@uids) {
             my ($ok, @lines) = $imap->fetch_message_part($msg, '');
-            $imap->uid_next($folder, $msg);
+            $imap->uid_next($folder, $msg + 1);
             unless ($ok) {
                 $self->log_msg(0, "Could not fetch message $msg!");
                 next;
@@ -665,7 +719,7 @@ method train_on_archive() {
     }
     $self->log_msg(0, "Training complete: $total_msgs messages trained across $total_folders folders.");
     %folders = ();
-    $self->config('training_mode', 0);
+    return $total_msgs
 }
 
 1;

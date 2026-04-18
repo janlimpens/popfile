@@ -333,7 +333,7 @@
                       >
                         <option value="">{t('Settings_AutoDetect')}</option>
                         {#each availableLocales as l}
-                          <option value={l.name}>{l.name}</option>
+                          <option value={l.code}>{l.name}</option>
                         {/each}
                       </select>
                     {:else}

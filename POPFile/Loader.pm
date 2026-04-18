@@ -39,9 +39,6 @@ field $debug = 1;
 field $shutdown = 0;
 field $aborting = '';
 field $pipeready = '';
-field $forker = '';
-field $reaper = '';
-field $childexit = '';
 field $warning = '';
 field $die_cb = '';
 field $version_string = '';
@@ -62,9 +59,6 @@ method CORE_loader_init() {
 
     $aborting = sub { $self->CORE_aborting(@_) };
     $pipeready = sub { $self->pipeready(@_) };
-    $forker = sub { $self->CORE_forker(@_) };
-    $reaper = sub { $self->CORE_reaper(@_) };
-    $childexit = sub { $self->CORE_childexit(@_) };
     $warning = sub { $self->CORE_warning(@_) };
     $die_cb = sub { $self->CORE_die(@_) };
 
@@ -116,92 +110,6 @@ method pipeready ($pipe) {
     vec($rin, fileno($pipe), 1) = 1;
     my $ready = select($rin, undef, undef, 0.01);
     return ($ready > 0);
-}
-
-=head2 CORE_reaper
-
-C<SIGCHLD> handler.  Calls C<reaper()> on every module so each can wait
-for its own child processes, then reinstalls itself.
-
-=cut
-
-method CORE_reaper {
-    for my $type (sort keys %components) {
-        for my $name (sort keys $components{$type}->%*) {
-            $components{$type}{$name}->reaper();
-        }
-    }
-
-    $SIG{CHLD} = $reaper;
-}
-
-=head2 CORE_childexit
-
-    $self->CORE_childexit($exit_code);
-
-Called by a module running inside a forked child when it wants to exit.
-Notifies all other modules in the same process by calling their
-C<childexit()> methods, then calls C<exit($exit_code)>.
-
-=cut
-
-method CORE_childexit ($code) {
-    for my $type (sort keys %components) {
-        for my $name (sort keys $components{$type}->%*) {
-            $components{$type}{$name}->childexit();
-        }
-    }
-
-    exit $code;
-}
-
-=head2 CORE_forker
-
-Forks the POPFile process.  Calls C<prefork()> on all modules before
-forking, C<forked()> on all modules in the child, and C<postfork()> on all
-modules in the parent.  Returns C<($pid, $pipe_handle)>: C<$pid == 0> in
-the child (with the write end of the pipe), non-zero in the parent (with
-the read end).
-
-=cut
-
-method CORE_forker() {
-    my @types = sort keys %components;
-
-    for my $type (@types) {
-        for my $name (sort keys $components{$type}->%*) {
-            $components{$type}{$name}->prefork();
-        }
-    }
-
-    pipe my $reader, my $writer;
-    my $pid = fork();
-
-    if (!defined $pid) {
-        close $reader;
-        close $writer;
-        return (undef, undef);
-    }
-
-    if ($pid == 0) {
-        for my $type (@types) {
-            for my $name (sort keys $components{$type}->%*) {
-                $components{$type}{$name}->forked($writer);
-            }
-        }
-        close $reader;
-        $writer->autoflush(1);
-        return (0, $writer);
-    }
-
-    for my $type (@types) {
-        for my $name (sort keys $components{$type}->%*) {
-            $components{$type}{$name}->postfork($pid, $reader);
-        }
-    }
-
-    close $writer;
-    return ($pid, $reader);
 }
 
 =head2 CORE_warning
@@ -331,7 +239,7 @@ method CORE_signals() {
     $SIG{STOP} = $aborting;
     $SIG{TERM} = $aborting;
     $SIG{INT}  = $aborting;
-    $SIG{CHLD} = $reaper;
+    $SIG{CHLD} = 'DEFAULT';
     $SIG{ALRM} = 'IGNORE';
     $SIG{PIPE} = 'IGNORE';
     $SIG{__WARN__} = $warning;
@@ -420,15 +328,6 @@ method CORE_link_components() {
     $components{classifier}{bayes}->parser()->set_mangle(
         $components{classifier}{wordmangle});
 
-    if (defined $components{services}{database}) {
-        my $db_svc = $components{services}{database};
-        foreach my $type (sort keys %components) {
-            foreach my $name (sort keys $components{$type}->%*) {
-                $components{$type}{$name}->set_db_service($db_svc)
-                    if $components{$type}{$name}->can('set_db_service');
-            }
-        }
-    }
 }
 
 =head2 CORE_initialize
@@ -458,8 +357,6 @@ method CORE_initialize() {
 
             if ($code == 1) {
                 $mod->set_alive(1);
-                $mod->set_forker($forker);
-                $mod->setchildexit($childexit);
                 $mod->set_pipeready($pipeready);
             }
         }
@@ -518,20 +415,50 @@ method CORE_start() {
     STDOUT->flush();
 }
 
+=head2 CORE_register_timers
+
+Registers all module service callbacks as C<Mojo::IOLoop> recurring timers.
+Call this once before C<< Mojo::IOLoop->start() >>.
+
+Timers registered:
+- Logger tick: every 3600s
+- Configuration reload check: every 60s
+- MQ flush and deliver: every 0.1s
+- Proxy accept loop: every 0.05s (replaced by IOLoop::Server in T4)
+
+=cut
+
+method CORE_register_timers() {
+    require Mojo::IOLoop;
+    my $logger = $components{core}{logger};
+    my $config = $components{core}{config};
+    my $mq     = $components{core}{mq};
+    Mojo::IOLoop->recurring(3600 => sub { $logger->service() })
+        if defined $logger;
+    Mojo::IOLoop->recurring(60   => sub { $config->service() })
+        if defined $config;
+    Mojo::IOLoop->recurring(0.1  => sub { $mq->service() })
+        if defined $mq;
+    Mojo::IOLoop->recurring(0.05 => sub {
+        for my $name (sort keys $components{proxy}->%*) {
+            $components{proxy}{$name}->service();
+        }
+    }) if %{$components{proxy} // {}};
+}
+
 =head2 CORE_service
 
     $self->CORE_service();
     $self->CORE_service($nowait);
 
-The main service loop.  Calls C<service()> on every module; exits the loop
-if any module returns 0 or if C<$alive> becomes 0.  Sleeps 50 ms between
-rounds unless C<$nowait> is 1, in which case it runs exactly one round and
-returns.  Returns the final value of C<$alive>.
+Deprecated — kept for backward compatibility during T3 transition.
+When called without C<$nowait>, registers timers and runs C<Mojo::IOLoop>.
+When called with C<$nowait == 1>, runs a single service round (used by tests).
 
 =cut
 
 method CORE_service ($nowait = 0) {
-    while ($alive == 1) {
+    if ($nowait) {
         for my $type (sort keys %components) {
             for my $name (sort keys $components{$type}->%*) {
                 if ($components{$type}{$name}->service() == 0) {
@@ -540,16 +467,11 @@ method CORE_service ($nowait = 0) {
                 }
             }
         }
-
-        select(undef, undef, undef, 0.05) if !$nowait;
-
-        last if $nowait;
-
-        if ($shutdown == 1) {
-            $alive = 0;
-        }
+        return $alive;
     }
-
+    require Mojo::IOLoop;
+    $self->CORE_register_timers();
+    Mojo::IOLoop->start();
     return $alive;
 }
 

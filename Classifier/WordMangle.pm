@@ -126,14 +126,15 @@ Load the stop word list from the stopwords file.
 
 =cut
     method load_stopwords() {
-        if (open my $stops, '<', $self->get_user_path('stopwords')) {
+        my $path = $self->get_user_path('stopwords');
+        if (open my $stops, '<', $path) {
             %stop__ = ();
             while (<$stops>) {
                 s/[\r\n]//g;
                 $stop__{$_} = 1;
             }
             close $stops;
-        } else {
+        } elsif (-e $path) {
             $self->log_msg(0, 'Failed to open stopwords file');
         }
     }

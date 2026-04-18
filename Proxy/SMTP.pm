@@ -60,7 +60,6 @@ C<enabled> to 0 after calling C<< Proxy::Proxy->initialize() >>.
 
 BUILD {
         $self->set_name('smtp');
-        $self->set_child(\&child__);
         $self->set_connection_timeout_error('554 Transaction failed');
         $self->set_connection_failed_error('554 Transaction failed, can\'t connect to');
         $self->set_good_response('^[23]');
@@ -68,7 +67,6 @@ BUILD {
 
     # ----------------------------------------------------------------------------
     method initialize() {
-        $self->config('force_fork', 1);
         $self->config('port', 25);
         $self->config('chain_server', '');
         $self->config('chain_port', 25);
@@ -202,7 +200,6 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
         }
 
         close $client;
-        $self->mq_post('CMPLT', $$);
         $self->log_msg(0, "SMTP proxy done");
     }
 
