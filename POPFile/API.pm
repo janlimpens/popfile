@@ -84,6 +84,7 @@ method start() {
     if ($port == 0) {
         $port = $self->_find_free_port();
         $self->config('port', $port);
+        $self->configuration()->save_configuration();
     }
     my $app = $self->build_app($service, undef);
     my $daemon = Mojo::Server::Daemon->new(
