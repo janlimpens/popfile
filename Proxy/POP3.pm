@@ -403,7 +403,6 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
         }
 
         close $client;
-        $self->mq_post('CMPLT', $$);
         $self->log_msg(0, "POP3 proxy done");
     }
 

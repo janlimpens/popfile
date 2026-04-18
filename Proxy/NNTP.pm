@@ -409,7 +409,6 @@ classifying full articles via the classifier service.
             close $news;
         }
         close $client;
-        $self->mq_post('CMPLT', $$);
         $self->log_msg(0, "NNTP proxy done");
     }
 
