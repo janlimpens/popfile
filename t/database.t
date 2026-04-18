@@ -5,16 +5,32 @@ use FindBin qw($Bin);
 use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
 
 use Test2::V0;
-use Services::Database;
+use POPFile::Role::SQL;
+use Classifier::Bayes;
+use POPFile::History;
 
-my $db = Services::Database->new();
+ok(Classifier::Bayes->DOES('POPFile::Role::SQL'), 'Bayes composes POPFile::Role::SQL');
+ok(POPFile::History->DOES('POPFile::Role::SQL'),  'History composes POPFile::Role::SQL');
 
-ok($db->DOES('POPFile::Role::SQL'), 'Services::Database composes POPFile::Role::SQL');
-ok($db->can('normalize_sql'), 'normalize_sql available');
-ok($db->can('validate_sql_prepare_and_execute'), 'validate_sql_prepare_and_execute available');
-ok($db->can('db'), 'db() method present');
+for my $class (qw(Classifier::Bayes POPFile::History)) {
+    ok($class->can('normalize_sql'), "$class has normalize_sql()");
+    ok($class->can('validate_sql_prepare_and_execute'), "$class has validate_sql_prepare_and_execute()");
+    ok($class->can('qb'), "$class has qb()");
+}
 
-is($db->normalize_sql("  SELECT  *  FROM   foo  "), 'SELECT * FROM foo', 'normalize_sql strips and collapses whitespace');
-is($db->normalize_sql("SELECT\n*\nFROM\tfoo"), 'SELECT * FROM foo', 'normalize_sql handles tabs and newlines');
+{
+    package TestSQL;
+    use Object::Pad;
+    use lib 'vendor/perl-querybuilder/lib';
+    use POPFile::Role::SQL;
+    class TestSQL :does(POPFile::Role::SQL);
+    method db() { return undef }
+}
+
+my $obj = TestSQL->new();
+is($obj->normalize_sql("  SELECT  *  FROM   foo  "), 'SELECT * FROM foo',
+    'normalize_sql strips and collapses whitespace');
+is($obj->normalize_sql("SELECT\n*\nFROM\tfoo"), 'SELECT * FROM foo',
+    'normalize_sql handles tabs and newlines');
 
 done_testing;

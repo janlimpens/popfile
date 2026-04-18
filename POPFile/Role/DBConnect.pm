@@ -7,21 +7,16 @@ role POPFile::Role::DBConnect;
 field $_mojo    = undef;
 field $_mojo_db = undef;
 
-method _connect ($dbname, %opts) {
-    my $type = $self->config('dbtype') // 'sqlite';
-    if ($type eq 'mysql') {
+method _connect ($dsn, %opts) {
+    if ($dsn =~ /^mysql:/) {
         require Mojo::mysql;
-        my $user = $self->config('dbuser') // '';
-        my $auth = $self->config('dbauth') // '';
-        $_mojo = Mojo::mysql->new("mysql://$user:$auth\@$dbname");
-    } elsif ($type eq 'pg') {
+        $_mojo = Mojo::mysql->new($dsn);
+    } elsif ($dsn =~ /^postgresql:/) {
         require Mojo::Pg;
-        my $user = $self->config('dbuser') // '';
-        my $auth = $self->config('dbauth') // '';
-        $_mojo = Mojo::Pg->new("postgresql://$user:$auth\@$dbname");
+        $_mojo = Mojo::Pg->new($dsn);
     } else {
         require Mojo::SQLite;
-        $_mojo = Mojo::SQLite->new($dbname);
+        $_mojo = Mojo::SQLite->new($dsn);
     }
     $_mojo->options(\%opts)
         if %opts;

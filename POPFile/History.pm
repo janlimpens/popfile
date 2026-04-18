@@ -40,36 +40,22 @@ my @fields = (
 my $fields_slot = join ', ', @fields;
 
 use lib '.';
+use POPFile::Role::DBConnect;
+use POPFile::Role::SQL;
 class POPFile::History
-    :isa(POPFile::Module);
-    apply POPFile::Role::DBAccess;
-    apply POPFile::Role::SQL;
-
-    # use lib 'lib';
-
-    use Query::Builder;
+    :isa(POPFile::Module) :does(POPFile::Role::DBConnect) :does(POPFile::Role::SQL);
 
     use Date::Parse;
     use Digest::MD5 qw(md5_hex);
     use File::Path qw(make_path);
 
-    # List of committed history items waiting to be committed
-    # into the database, it consists of lists containing three
-    # elements: the slot id, the bucket classified to and the
-    # magnet if used
     field $commit_list = [];
 
-    # Contains queries started with start_query and consists
-    # of a mapping between unique IDs and quadruples containing
-    # a reference to the SELECT and a cache of already fetched
-    # rows and a total row count.  These quadruples are implemented
-    # as a sub-hash with keys query, count, cache, fields
     field %queries;
 
     field $firsttime = 1;
 
     field $classifier :writer(set_classifier) = 0;
-    field $db_service :writer(set_db_service) = undef;
 
     BUILD {
         $self->set_name('history');
@@ -130,22 +116,20 @@ method stop() {
     # added to the queue and before service() is called
 
     $self->commit_history();
-    $self->_clear_db();
+    $self->_disconnect();
 }
 
-# ---------------------------------------------------------------------------
-# db__ (private)
-#
-# Since we don't know the order in which the start() methods of PLMs
-# is called we cannot be sure that Classifier::Bayes will have started
-# and connected to the database before us, hence we can't set our
-# database handle at start time.  So instead we access the db handle
-# through this method.
-# ---------------------------------------------------------------------------
-method db() {
-    $self->_set_db($db_service->get_handle('history'))
-        unless defined $self->_db();
-    return $self->_db()
+method start () {
+    my $dbconnect = $self->module_config('bayes', 'dbconnect') // '';
+    my $dbname;
+    if ($dbconnect =~ /:memory:/i) {
+        $dbname = ':memory:';
+    } else {
+        $dbname = $self->get_user_path(
+            $self->module_config('bayes', 'database') // 'popfile.db');
+    }
+    $self->_connect($dbname, sqlite_unicode => 1);
+    return 1
 }
 
 =head2 service
@@ -192,17 +176,6 @@ method deliver ($type, @message) {
     if ($type eq 'COMIT') {
         push $commit_list->@*, \@message;
     }
-}
-
-=head2 forked($writer)
-
-Called after the process forks.  Clears the inherited database handle so the
-child opens its own connection.
-
-=cut
-
-method forked ($writer = undef) {
-    $self->_clear_db();
 }
 
 #----------------------------------------------------------------------------
@@ -892,7 +865,7 @@ method set_query ($id, $filter, $search, $sort, $not) {
     my $equal = $not ? '='   : '!=';
 
     if ($search ne '') {
-        my $qb = Query::Builder->new(dialect => $db_service->dialect());
+        my $qb = $self->qb();
         my $pat = '%' . $search . '%';
         my $like_expr = $qb->combine_or(
             $qb->like('hdr_from', $pat),
@@ -909,7 +882,7 @@ method set_query ($id, $filter, $search, $sort, $not) {
             if ($filter eq '__filter__reclassified') {
                 $queries{$id}{base} .= " and history.usedtobe $equal 0";
             } else {
-                my $qb = Query::Builder->new(dialect => $db_service->dialect());
+                my $qb = $self->qb();
                 my $expr = $qb->compare('buckets.name', $filter,
                     comparator => $not_equal);
                 $queries{$id}{base} .= ' and ' . $expr->as_sql();
@@ -954,7 +927,7 @@ method set_query ($id, $filter, $search, $sort, $not) {
 }
 
 method get_search_queries(%args) {
-    my $qb = Query::Builder->new(dialect => $db_service->dialect());
+    my $qb = $self->qb();
     my $where = $qb->combine(AND =>
         $qb->compare('history.userid', \1),
         $qb->compare('committed', \1),

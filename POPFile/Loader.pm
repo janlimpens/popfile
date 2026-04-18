@@ -420,15 +420,6 @@ method CORE_link_components() {
     $components{classifier}{bayes}->parser()->set_mangle(
         $components{classifier}{wordmangle});
 
-    if (defined $components{services}{database}) {
-        my $db_svc = $components{services}{database};
-        foreach my $type (sort keys %components) {
-            foreach my $name (sort keys $components{$type}->%*) {
-                $components{$type}{$name}->set_db_service($db_svc)
-                    if $components{$type}{$name}->can('set_db_service');
-            }
-        }
-    }
 }
 
 =head2 CORE_initialize

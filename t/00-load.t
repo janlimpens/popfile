@@ -25,8 +25,8 @@ my @modules = qw(
     Proxy::SMTP
     Proxy::NNTP
     POPFile::API
+    POPFile::Role::DBConnect
     Services::Classifier
-    Services::Database
     POPFile::Loader
 );
 
