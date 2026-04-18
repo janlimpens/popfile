@@ -64,7 +64,6 @@ C<enabled> to 0 after calling C<< Proxy::Proxy->initialize() >>.
 
 BUILD {
         $self->set_name('nntp');
-        $self->set_child(\&child__);
         $self->set_connection_timeout_error('500 no response from mail server');
         $self->set_connection_failed_error('500 can\'t connect to');
         $self->set_good_response('^(1|2|3)\d\d');
@@ -73,7 +72,6 @@ BUILD {
     # ----------------------------------------------------------------------------
     method initialize() {
         $self->config('enabled',        0);
-        $self->config('force_fork',     1);
         $self->config('port',           119);
         $self->config('local',          1);
         $self->config('headtoo',        0);
