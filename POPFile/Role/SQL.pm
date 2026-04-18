@@ -55,7 +55,7 @@ C<undef> or the empty string.
 
 method check_for_nullbytes($string) {
     return
-        unless $string;
+        unless defined $string && length $string;
     my $backup = $string;
     if (my $count = ($string =~ s/\x00//g)) {
         my ($package, $file, $line) = caller(1);
