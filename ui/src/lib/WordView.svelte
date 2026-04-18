@@ -1,4 +1,5 @@
 <script>
+  import { untrack } from 'svelte';
   import { t } from './locale.svelte.js';
 
   let { buckets = [], initialBucket = '' } = $props();
@@ -27,11 +28,14 @@
   }
 
   $effect(() => {
-    selectedBucket = initialBucket;
-    page = 1;
-    words = [];
-    total = 0;
-    if (initialBucket) loadWords();
+    const bucket = initialBucket;
+    untrack(() => {
+      selectedBucket = bucket;
+      page = 1;
+      words = [];
+      total = 0;
+      if (bucket) loadWords();
+    });
   });
 
   function onBucketChange() {
