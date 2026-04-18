@@ -4,6 +4,7 @@ use Object::Pad;
 use Fcntl ();
 use feature 'try';
 no warnings 'experimental::try';
+use Mojo::IOLoop;
 use Services::IMAP::Client;
 
 class Services::IMAP :isa(POPFile::Module);
@@ -40,6 +41,7 @@ field %hash_values;
 field $api_session = '';
 field $imap_error = '';
 field $last_update = 0;
+field $timer_id = undef;
 
 my $cfg_separator = "-->";
 
@@ -77,38 +79,53 @@ method initialize() {
 
 =head2 start()
 
-No-op for IMAP; the actual connection is deferred to C<service()>.  Returns 1.
+Registers a recurring C<Mojo::IOLoop> timer that calls C<poll()> every
+C<update_interval> seconds.  Returns 1.
 
 =cut
 
 method start() {
+    my $interval = $self->config('update_interval');
+    $timer_id = Mojo::IOLoop->recurring($interval => sub { $self->poll() });
     return 1
 }
 
 =head2 stop()
 
-Disconnects all open IMAP connections via C<disconnect_folders()>.
+Removes the recurring IOLoop timer and disconnects all open IMAP connections
+via C<disconnect_folders()>.
 
 =cut
 
 method stop() {
+    Mojo::IOLoop->remove($timer_id) if defined $timer_id;
+    $timer_id = undef;
     $self->disconnect_folders();
 }
 
 =head2 service()
 
-Called every main-loop tick.  Skips immediately if IMAP is disabled or the
-C<update_interval> has not elapsed.  Rebuilds the folder list if needed,
-connects to the server, then scans each watched folder for new messages.  In
-C<training_mode>, calls C<train_on_archive()> instead.  Disconnects and resets
-if an exception is thrown.  Returns 1.
+No-op; polling is driven by the C<Mojo::IOLoop> recurring timer registered in
+C<start()>.  Returns 1.
 
 =cut
 
 method service() {
-    return 1 if $self->config('enabled') == 0
-             && $self->config('training_mode') == 0;
-    return 1 if time - $last_update < $self->config('update_interval');
+    return 1
+}
+
+=head2 poll()
+
+Invoked by the recurring IOLoop timer.  Skips if IMAP is disabled and
+C<training_mode> is off.  Rebuilds the folder list if needed, connects to the
+server, then scans each watched folder for new messages.  In C<training_mode>,
+calls C<train_on_archive()> instead.  Disconnects and resets on exception.
+
+=cut
+
+method poll() {
+    return if $self->config('enabled') == 0
+           && $self->config('training_mode') == 0;
     try {
         local $SIG{PIPE} = 'IGNORE';
         local $SIG{__DIE__};
@@ -138,8 +155,6 @@ method service() {
             $self->config('training_mode', 0);
         }
     }
-    $last_update = time;
-    return 1
 }
 
 =head2 api_session()
