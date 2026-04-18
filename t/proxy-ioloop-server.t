@@ -12,7 +12,6 @@ use strict;
 use warnings;
 
 use Test2::V0;
-use IO::Socket::INET ();
 use Mojo::IOLoop ();
 use TestHelper;
 
@@ -47,18 +46,15 @@ ok($bound_port > 0, "proxy bound to port $bound_port");
 my $received = '';
 
 Mojo::IOLoop->timer(0.1 => sub {
-    my $sock = IO::Socket::INET->new(
-        PeerAddr => '127.0.0.1',
-        PeerPort => $bound_port,
-        Proto => 'tcp',
-        Timeout => 2,
-    );
-    if ($sock) {
-        local $/ = undef;
-        $received = <$sock>;
-        $sock->close();
-    }
-    Mojo::IOLoop->timer(0.5 => sub { Mojo::IOLoop->stop() });
+    Mojo::IOLoop->client({ port => $bound_port, address => '127.0.0.1' }, sub {
+        my ($loop, $err, $stream) = @_;
+        if ($err) {
+            Mojo::IOLoop->stop();
+            return;
+        }
+        $stream->on(read => sub { my ($s, $b) = @_; $received .= $b });
+        $stream->on(close => sub { Mojo::IOLoop->stop() });
+    });
 });
 
 Mojo::IOLoop->start();
