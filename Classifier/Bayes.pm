@@ -9,7 +9,7 @@ no warnings 'experimental::try';
 use locale;
 use Classifier::Bucket;
 use Classifier::MailParse;
-use POPFile::Role::DBAccess;
+use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
 use IO::Handle;
 use DBI;
@@ -36,7 +36,7 @@ my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
 
 my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
-class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::DBAccess) :does(POPFile::Role::SQL) :does(POPFile::Role::Logging);
+class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::DBConnect) :does(POPFile::Role::SQL) :does(POPFile::Role::Logging);
 
 =head1 NAME
 
@@ -131,43 +131,9 @@ field $api_sessions = {};
 
 field $db_is_sqlite = 0;
 field $db_name = '';
-field $db_service :writer(set_db_service) = undef;
 
 BUILD {
     $self->set_name('bayes');
-}
-
-=head2 db
-
-Returns the active database handle, opening it via C<db_connect> if necessary.
-
-=cut
-
-method db() {
-    return $self->_db()
-}
-
-=head2 forked
-
-Called in a child process after C<fork()>.  Reconnects to the database so
-the child has its own independent handle.
-
-=cut
-
-method forked ($writer = undef) {
-    $db_service->forked();
-    $self->db_connect();
-}
-
-=head2 childexit
-
-This is called inside a child process that is about to finish, since
-the child does not need access to the database we close it
-
-=cut
-
-method childexit() {
-    $self->db_disconnect();
 }
 
 =head2 initialize
@@ -702,8 +668,13 @@ method db_connect() {
     my $mysql = ($dbconnect =~ /mysql/i);
     my %connection_options = ();
     if ($sqlite) {
-        $dbname = $self->get_user_path($self->config('database'));
-        $dbpresent = (-e $dbname) || 0;
+        if ($dbconnect =~ /:memory:/i) {
+            $dbname = ':memory:';
+            $dbpresent = 0;
+        } else {
+            $dbname = $self->get_user_path($self->config('database'));
+            $dbpresent = (-e $dbname) || 0;
+        }
         $connection_options{sqlite_unicode} = 1;
     } else {
         $dbname = $self->config('database');
@@ -788,11 +759,23 @@ method db_connect() {
     }
 
 
-    $db_service->set_dsn($dbconnect);
-    $db_service->set_user($self->config('dbuser'));
-    $db_service->set_auth($self->config('dbauth'));
-    $db_service->set_options(\%connection_options);
-    $self->_set_db($db_service->get_handle());
+    my $dsn;
+    if ($sqlite) {
+        $dsn = $dbname;
+    } elsif ($mysql) {
+        my $user = $self->config('dbuser') // '';
+        my $auth = $self->config('dbauth') // '';
+        my ($host) = ($dbconnect =~ /host=([^;]+)/i);
+        $host //= 'localhost';
+        $dsn = "mysql://$user:$auth\@$host/$dbname";
+    } else {
+        my $user = $self->config('dbuser') // '';
+        my $auth = $self->config('dbauth') // '';
+        my ($host) = ($dbconnect =~ /host=([^;]+)/i);
+        $host //= 'localhost';
+        $dsn = "postgresql://$user:$auth\@$host/$dbname";
+    }
+    $self->_connect($dsn, %connection_options);
     my $db = $self->db();
     unless (defined($db)) {
         $self->log_msg(0, "Failed to connect to database and got error $DBI::errstr");
@@ -1165,7 +1148,7 @@ method db_disconnect() {
     undef $db_get_buckets_with_magnets;
     undef $db_delete_zero_words;
 
-    $self->_clear_db();
+    $self->_disconnect();
 }
 
 =head2 db_update_cache

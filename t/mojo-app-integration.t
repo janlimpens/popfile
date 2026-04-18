@@ -17,26 +17,7 @@ use TestHelper;
 
 my ($config, $mq, $tmpdir) = TestHelper::setup();
 
-require Services::Database;
-my $db_svc = Services::Database->new();
-TestHelper::wire($db_svc, $config, $mq);
-$db_svc->initialize();
-TestHelper::configure_db($config);
-
-require Classifier::WordMangle;
-my $wm = Classifier::WordMangle->new();
-TestHelper::wire($wm, $config, $mq);
-$wm->initialize();
-$wm->start();
-
-require Classifier::Bayes;
-my $bayes = Classifier::Bayes->new();
-TestHelper::wire($bayes, $config, $mq);
-$bayes->set_db_service($db_svc);
-$bayes->set_history(bless {}, 'TestHelper::History');
-$bayes->initialize();
-$bayes->parser()->set_mangle($wm);
-$bayes->start();
+my ($wm, $bayes) = TestHelper::setup_bayes($config, $mq);
 
 require Services::Classifier;
 my $svc = Services::Classifier->new();
@@ -104,6 +85,5 @@ subtest 'DELETE /api/v1/buckets/:name removes the bucket' => sub {
 # -----------------------------------------------------------------------
 $svc->stop();
 $bayes->stop();
-$db_svc->stop();
 
 done_testing;

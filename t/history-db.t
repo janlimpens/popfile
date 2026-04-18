@@ -10,11 +10,12 @@ use File::Temp qw(tempfile);
 
 my ($config, $mq, $tmpdir) = TestHelper::setup();
 
-require Services::Database;
-my $db_svc = Services::Database->new();
-TestHelper::wire($db_svc, $config, $mq);
-$db_svc->initialize();
-TestHelper::configure_db($config);
+my ($db_fh, $db_file) = tempfile(DIR => $tmpdir, SUFFIX => '.db');
+close $db_fh;
+unlink $db_file;
+
+$config->parameter('bayes_dbconnect', 'dbi:SQLite:dbname=$dbname');
+$config->parameter('bayes_database', $db_file);
 
 require Classifier::WordMangle;
 my $wm = Classifier::WordMangle->new();
@@ -25,7 +26,6 @@ $wm->start();
 require Classifier::Bayes;
 my $bayes = Classifier::Bayes->new();
 TestHelper::wire($bayes, $config, $mq);
-$bayes->set_db_service($db_svc);
 $bayes->set_history(bless {}, 'TestHelper::History');
 $bayes->initialize();
 $bayes->parser()->set_mangle($wm);
@@ -34,7 +34,6 @@ $bayes->start();
 require POPFile::History;
 my $history = POPFile::History->new();
 TestHelper::wire($history, $config, $mq);
-$history->set_db_service($db_svc);
 $history->set_classifier($bayes);
 $history->initialize();
 
@@ -64,7 +63,7 @@ subtest 'reserve_slot allocates a numeric slot and file path' => sub {
     my ($slot, $file);
     ok(lives { ($slot, $file) = $history->reserve_slot() }, 'reserve_slot does not die');
     ok(defined $slot && $slot =~ /^\d+$/, 'slot is a positive integer');
-    ok(defined $file,                     'file path is defined');
+    ok(defined $file, 'file path is defined');
 
     $history->release_slot($slot);
     $history->stop();
@@ -95,6 +94,5 @@ subtest 'commit_slot + service persists entry as valid slot' => sub {
 
 # -----------------------------------------------------------------------
 $bayes->stop();
-$db_svc->stop();
 
 done_testing;
