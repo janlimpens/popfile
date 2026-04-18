@@ -509,20 +509,50 @@ method CORE_start() {
     STDOUT->flush();
 }
 
+=head2 CORE_register_timers
+
+Registers all module service callbacks as C<Mojo::IOLoop> recurring timers.
+Call this once before C<< Mojo::IOLoop->start() >>.
+
+Timers registered:
+- Logger tick: every 3600s
+- Configuration reload check: every 60s
+- MQ flush and deliver: every 0.1s
+- Proxy accept loop: every 0.05s (replaced by IOLoop::Server in T4)
+
+=cut
+
+method CORE_register_timers() {
+    require Mojo::IOLoop;
+    my $logger = $components{core}{logger};
+    my $config = $components{core}{config};
+    my $mq     = $components{core}{mq};
+    Mojo::IOLoop->recurring(3600 => sub { $logger->service() })
+        if defined $logger;
+    Mojo::IOLoop->recurring(60   => sub { $config->service() })
+        if defined $config;
+    Mojo::IOLoop->recurring(0.1  => sub { $mq->service() })
+        if defined $mq;
+    Mojo::IOLoop->recurring(0.05 => sub {
+        for my $name (sort keys $components{proxy}->%*) {
+            $components{proxy}{$name}->service();
+        }
+    }) if %{$components{proxy} // {}};
+}
+
 =head2 CORE_service
 
     $self->CORE_service();
     $self->CORE_service($nowait);
 
-The main service loop.  Calls C<service()> on every module; exits the loop
-if any module returns 0 or if C<$alive> becomes 0.  Sleeps 50 ms between
-rounds unless C<$nowait> is 1, in which case it runs exactly one round and
-returns.  Returns the final value of C<$alive>.
+Deprecated — kept for backward compatibility during T3 transition.
+When called without C<$nowait>, registers timers and runs C<Mojo::IOLoop>.
+When called with C<$nowait == 1>, runs a single service round (used by tests).
 
 =cut
 
 method CORE_service ($nowait = 0) {
-    while ($alive == 1) {
+    if ($nowait) {
         for my $type (sort keys %components) {
             for my $name (sort keys $components{$type}->%*) {
                 if ($components{$type}{$name}->service() == 0) {
@@ -531,16 +561,11 @@ method CORE_service ($nowait = 0) {
                 }
             }
         }
-
-        select(undef, undef, undef, 0.05) if !$nowait;
-
-        last if $nowait;
-
-        if ($shutdown == 1) {
-            $alive = 0;
-        }
+        return $alive;
     }
-
+    require Mojo::IOLoop;
+    $self->CORE_register_timers();
+    Mojo::IOLoop->start();
     return $alive;
 }
 

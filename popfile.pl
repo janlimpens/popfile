@@ -91,10 +91,14 @@ if ($POPFile->CORE_config()) {
 
     $POPFile->get_module('POPFile::Logger')->debug(0, "POPFile successfully started");
 
-    # This is the main POPFile loop that services requests, it will
-    # exit only when we need to exit
+    # Register all module timers on Mojo::IOLoop, then start the loop.
+    # Signal handlers stop the loop gracefully.
 
-    $POPFile->CORE_service();
+    use Mojo::IOLoop;
+    $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub { Mojo::IOLoop->stop() };
+
+    $POPFile->CORE_register_timers();
+    Mojo::IOLoop->start();
 
     # Shutdown every POPFile module
 
