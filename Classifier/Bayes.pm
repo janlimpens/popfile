@@ -3226,13 +3226,13 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
     $prefix = '' unless (defined($prefix));
     $prefix =~ s/\0//g;
 
-    my $result = $self->db()->selectcol_arrayref('
-        SELECT words.word
+    my $rows = $self->db()->selectall_arrayref('
+        SELECT words.word, matrix.times
         FROM matrix, words
         WHERE matrix.wordid = words.id
             AND matrix.bucketid = ?
             AND words.word LIKE ?', undef, $bucketid, "$prefix%");
-    return $result->@*;
+    return $rows->@*;
 }
 
 =head2 get_words_for_bucket
