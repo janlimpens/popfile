@@ -3235,6 +3235,147 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
     return $result->@*;
 }
 
+=head2 get_words_for_bucket
+
+Returns a paginated list of words for a bucket sorted by accuracy descending.
+Accuracy = count in this bucket / total count across all buckets.
+
+C<$session> A valid session key
+C<$bucket> Bucket name
+C<%opts> page (1-based), per_page, sort (currently only 'accuracy')
+
+Returns a hashref with keys: words (arrayref of hashrefs), total (int).
+
+=cut
+
+method get_words_for_bucket ($session, $bucket, %opts) {
+    my $userid = $self->valid_session_key($session);
+    return { words => [], total => 0 }
+        unless defined $userid;
+    return { words => [], total => 0 }
+        unless exists $db_bucketid->{$userid}{$bucket};
+    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
+    my $page = ($opts{page} // 1) + 0;
+    my $per_page = ($opts{per_page} // 50) + 0;
+    $page = 1 if $page < 1;
+    $per_page = 50 if $per_page < 1 || $per_page > 500;
+    my $offset = ($page - 1) * $per_page;
+    my $count_row = $self->validate_sql_prepare_and_execute(
+        'SELECT COUNT(*) FROM matrix WHERE bucketid = ?',
+        $bucketid)->fetchrow_arrayref;
+    my $total = $count_row ? $count_row->[0] + 0 : 0;
+    my $sth = $self->validate_sql_prepare_and_execute(
+        'SELECT w.word,
+                m.times AS bucket_count,
+                (SELECT COALESCE(SUM(m2.times), 0)
+                 FROM matrix m2
+                 WHERE m2.wordid = m.wordid) AS total_count
+         FROM matrix m
+         JOIN words w ON w.id = m.wordid
+         WHERE m.bucketid = ?
+         ORDER BY CAST(m.times AS FLOAT) /
+             (SELECT COALESCE(SUM(m2.times), 1)
+              FROM matrix m2
+              WHERE m2.wordid = m.wordid) DESC
+         LIMIT ? OFFSET ?',
+        $bucketid, $per_page, $offset);
+    my @words;
+    while (my $row = $sth->fetchrow_hashref()) {
+        my $count = $row->{bucket_count} + 0;
+        my $total_count = $row->{total_count} + 0;
+        my $accuracy = $total_count > 0
+            ? $count / $total_count
+            : 0;
+        push @words, {
+            word => $row->{word},
+            count => $count,
+            total => $total_count,
+            accuracy => $accuracy };
+    }
+    return { words => \@words, total => $total }
+}
+
+=head2 remove_word_from_bucket
+
+Removes a word from a bucket's corpus (deletes the matrix row).
+
+C<$session> A valid session key
+C<$bucket>  Bucket name
+C<$word>    Word to remove
+
+=cut
+
+method remove_word_from_bucket ($session, $bucket, $word) {
+    my $userid = $self->valid_session_key($session);
+    return
+        unless defined $userid;
+    return
+        unless exists $db_bucketid->{$userid}{$bucket};
+    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
+    my $wordid_row = $self->validate_sql_prepare_and_execute(
+        'SELECT id FROM words WHERE word = ?',
+        $word)->fetchrow_arrayref;
+    return
+        unless defined $wordid_row;
+    my $wordid = $wordid_row->[0];
+    $self->validate_sql_prepare_and_execute(
+        'DELETE FROM matrix WHERE bucketid = ? AND wordid = ?',
+        $bucketid, $wordid);
+    $self->db_update_cache($session, $bucket);
+}
+
+=head2 move_word_between_buckets
+
+Moves a word's count from one bucket to another in the matrix.
+
+C<$session>     A valid session key
+C<$from_bucket> Source bucket name
+C<$to_bucket>   Target bucket name
+C<$word>        Word to move
+
+=cut
+
+method move_word_between_buckets ($session, $from_bucket, $to_bucket, $word) {
+    my $userid = $self->valid_session_key($session);
+    return
+        unless defined $userid;
+    return
+        unless exists $db_bucketid->{$userid}{$from_bucket};
+    return
+        unless exists $db_bucketid->{$userid}{$to_bucket};
+    my $from_id = $db_bucketid->{$userid}{$from_bucket}{id};
+    my $to_id = $db_bucketid->{$userid}{$to_bucket}{id};
+    my $wordid_row = $self->validate_sql_prepare_and_execute(
+        'SELECT id FROM words WHERE word = ?',
+        $word)->fetchrow_arrayref;
+    return
+        unless defined $wordid_row;
+    my $wordid = $wordid_row->[0];
+    my $count_row = $self->validate_sql_prepare_and_execute(
+        'SELECT times FROM matrix WHERE bucketid = ? AND wordid = ?',
+        $from_id, $wordid)->fetchrow_arrayref;
+    return
+        unless defined $count_row;
+    my $count = $count_row->[0];
+    $self->validate_sql_prepare_and_execute(
+        'DELETE FROM matrix WHERE bucketid = ? AND wordid = ?',
+        $from_id, $wordid);
+    my $existing_row = $self->validate_sql_prepare_and_execute(
+        'SELECT times FROM matrix WHERE bucketid = ? AND wordid = ?',
+        $to_id, $wordid)->fetchrow_arrayref;
+    if (defined $existing_row) {
+        $self->validate_sql_prepare_and_execute(
+            'UPDATE matrix SET times = times + ? WHERE bucketid = ? AND wordid = ?',
+            $count, $to_id, $wordid);
+    } else {
+        $self->validate_sql_prepare_and_execute(
+            'INSERT INTO matrix (bucketid, wordid, times) VALUES (?, ?, ?)',
+            $to_id, $wordid, $count);
+    }
+    $self->db_update_cache($session, $from_bucket);
+    $self->db_update_cache($session, $to_bucket);
+}
+
 =head2 get_bucket_word_prefixes
 
 Returns a list of all the initial letters of words in a bucket
@@ -3625,6 +3766,36 @@ method add_messages_to_bucket ($session, $bucket, @files) {
     $self->db_update_cache($session, $bucket);
 
     return 1;
+}
+
+=head2 train_messages_batch
+
+Parses a list of raw message texts and trains them all into C<$bucket> in a
+single DB transaction.  Aggregates word counts across all messages before
+writing.
+
+C<$session>  A valid session key returned by a call to get_session_key
+C<$bucket>   Name of the bucket to train into
+C<$texts>    Array-ref of raw message text strings
+
+=cut
+
+method train_messages_batch ($session, $bucket, $texts) {
+    my $userid = $self->valid_session_key($session);
+    return
+        unless defined $userid;
+    return 0
+        unless defined $db_bucketid->{$userid}{$bucket};
+    $parser->start_parse();
+    $parser->stop_parse();
+    for my $text ($texts->@*) {
+        $parser->start_parse(0);
+        $parser->parse_line($_) for split /(?<=\n)/, $text;
+        $parser->stop_parse();
+    }
+    $self->add_words_to_bucket($session, $bucket, 1);
+    $self->db_update_cache($session, $bucket);
+    return 1
 }
 
 =head2 add_message_to_bucket

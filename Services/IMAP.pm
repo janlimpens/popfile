@@ -682,6 +682,7 @@ method train_on_archive() {
     }
     $self->connect_server();
     my $limit = $self->config('training_limit') || 0;
+    my $batch_size = $limit > 0 ? $limit : 50;
     my $total_msgs = 0;
     my $total_folders = 0;
     for my $folder (keys %folders) {
@@ -695,26 +696,22 @@ method train_on_archive() {
         $self->log_msg(0, "Training on " . scalar(@uids) . " messages in folder $folder to bucket $bucket."
             . ($limit > 0 ? " (limit: $limit)" : ''));
         $total_folders++;
-        for my $msg (@uids) {
-            my ($ok, @lines) = $imap->fetch_message_part($msg, '');
-            $imap->uid_next($folder, $msg + 1);
-            unless ($ok) {
-                $self->log_msg(0, "Could not fetch message $msg!");
-                next;
+        while (@uids) {
+            my @batch = splice @uids, 0, $batch_size;
+            my @texts;
+            for my $msg (@batch) {
+                my ($ok, @lines) = $imap->fetch_message_part($msg, '');
+                $imap->uid_next($folder, $msg + 1);
+                unless ($ok) {
+                    $self->log_msg(0, "Could not fetch message $msg!");
+                    next;
+                }
+                push @texts, join('', @lines);
             }
-            my $file = $self->get_user_path('imap.tmp');
-            unless (open my $TMP, '>', $file) {
-                $self->log_msg(0, "Cannot open temp file $file");
-                next;
-            }
-            else {
-                print $TMP $_ for @lines;
-                close $TMP;
-            }
-            $classifier->add_message_to_bucket($self->api_session(), $bucket, $file);
-            $self->log_msg(0, "Training on the message with UID $msg to bucket $bucket.");
-            unlink $file;
-            $total_msgs++;
+            next unless @texts;
+            $self->log_msg(0, "Training batch of " . scalar(@texts) . " messages in folder $folder to bucket $bucket.");
+            $classifier->train_messages_batch($self->api_session(), $bucket, \@texts);
+            $total_msgs += scalar @texts;
         }
     }
     $self->log_msg(0, "Training complete: $total_msgs messages trained across $total_folders folders.");
