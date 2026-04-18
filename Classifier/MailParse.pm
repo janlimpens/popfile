@@ -1952,7 +1952,7 @@ method decode_string ($mystring, $lang = undef) {
 
     return '' if (!defined($mystring));
 
-    $lang = $lang if (!defined($lang) || ($lang eq ''));
+    $lang //= '';
 
     my $output = '';
     my $last_is_encoded = 0;
