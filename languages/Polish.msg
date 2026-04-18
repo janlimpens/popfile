@@ -296,6 +296,7 @@ NavIMAP IMAP
 NavMagnets Magnesy
 NavSettings Ustawienia
 NavStatus Status
+NavWordView Słowa
 Advanced_AllParameters Wszystkie parametry POPFile
 Advanced_ConfigFile Plik konfiguracyjny:
 Advanced_Parameter Parametr
@@ -334,6 +335,7 @@ Corpus_StopwordRatio Próg współczynnika maks/min
 Corpus_LoadCandidates Znajdź kandydatów
 Corpus_NoCandidates Nie znaleziono kandydatów przy tym progu.
 Corpus_AddStopword Dodaj do stoplisty
+Corpus_WordsLink Słowa →
 Date Data
 FAQ FAQ
 Footer_Wiki Dokumentacja
@@ -401,6 +403,7 @@ Imap_TestConnection Testuj połączenie
 Imap_Testing Testowanie...
 Imap_TrainingHint Tryb treningowy skanuje istniejące foldery archiwum i trenuje klasyfikator na ich zawartości. Flaga resetuje się automatycznie po zakończeniu treningu.
 Imap_TrainingMode Tryb treningowy
+Imap_TrainingLimit Wiadomości na folder (0 = bez limitu)
 Imap_UpdateError1 Nie można się zalogować. Sprawdź nazwę użytkownika i hasło.
 Imap_UpdateError2 Nie udało się połączyć z serwerem. Sprawdź nazwę hosta i port i upewnij się, że jesteś online.
 Imap_UpdateError3 Najpierw skonfiguruj szczegóły połączenia.
@@ -409,6 +412,20 @@ Imap_WatchedFolder Monitorowany folder nr
 Imap_WatchedFolders Monitorowane foldery
 Imap_WatchedHint POPFile monitoruje te foldery IMAP w poszukiwaniu nowych wiadomości do sklasyfikowania.
 Imap_WatchMore folder do listy monitorowanych folderów
+
+WordView_Title Dokładność słów
+WordView_SelectBucket wybierz kategorię
+WordView_Words słowa
+WordView_Loading Ładowanie...
+WordView_Empty Brak słów w tej kategorii.
+WordView_ColWord Słowo
+WordView_ColCount Liczba
+WordView_ColTotal Łącznie
+WordView_ColAccuracy Dokładność
+WordView_ColActions Akcje
+WordView_Remove Usuń
+WordView_MoveTo przenieś do
+WordView_Move Przenieś
 Locale_Date %d.%m.%Y %R
 Locale_Decimal ,
 Locale_Thousands .

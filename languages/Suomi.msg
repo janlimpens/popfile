@@ -387,6 +387,7 @@ NavIMAP IMAP
 NavMagnets Magneetit
 NavSettings Asetukset
 NavStatus Tila
+NavWordView Sanat
 ApplyChanges Ota muutokset käyttöön
 Configuration_Error9 Käyttöliittymäportti ei voi olla sama kuin POP3-kuunteluportti
 Configuration_Error10 POP3-kuunteluportti ei voi olla sama kuin käyttöliittymäportti
@@ -404,6 +405,7 @@ Corpus_StopwordRatio Maks/min-suhteen kynnysarvo
 Corpus_LoadCandidates Etsi ehdokkaat
 Corpus_NoCandidates Ei ehdokkaita löytynyt tällä kynnysarvolla.
 Corpus_AddStopword Lisää lopetussanoihin
+Corpus_WordsLink Sanat →
 Bucket_InIgnoredWords <b>%s</b> on ohitetuissa sanoissa. POPFile ohittaa tämän sanan
 BucketSelect_AddNew Lisää uusi...
 BucketSelect_AlreadyExists Luokka on jo olemassa
@@ -440,9 +442,24 @@ Imap_TestConnection Testaa yhteys
 Imap_Testing Testataan...
 Imap_TrainingHint Harjoitustila käy läpi olemassa olevat arkistokansiot ja harjoittaa luokittelijaa niiden sisällöllä. Lippu nollautuu automaattisesti harjoituksen päättyessä.
 Imap_TrainingMode Harjoitustila
+Imap_TrainingLimit Viestejä kansiota kohti (0 = rajoittamaton)
 Imap_WatchedFolders Seuratut kansiot
 Imap_WatchedHint POPFile seuraa näitä IMAP-kansioita uusien luokiteltavien viestien varalta.
 Imap_Use_SSL Käytä SSL:ää
+
+WordView_Title Sanojen tarkkuus
+WordView_SelectBucket valitse luokka
+WordView_Words sanat
+WordView_Loading Ladataan...
+WordView_Empty Tässä luokassa ei ole sanoja.
+WordView_ColWord Sana
+WordView_ColCount Määrä
+WordView_ColTotal Yhteensä
+WordView_ColAccuracy Tarkkuus
+WordView_ColActions Toiminnot
+WordView_Remove Poista
+WordView_MoveTo siirrä kohteeseen
+WordView_Move Siirrä
 Magnet_Created Magneetti luotu
 Magnet_Deleted Magneetti poistettu
 Reconnect_Connecting Yhdistetään...

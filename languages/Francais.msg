@@ -386,6 +386,7 @@ NavIMAP IMAP
 NavMagnets Aimants
 NavSettings Paramètres
 NavStatus Statut
+NavWordView Mots
 Corpus_BucketList Catégories
 Corpus_Color Couleur
 Corpus_Actions Actions
@@ -400,6 +401,7 @@ Corpus_StopwordRatio Seuil max/min du ratio
 Corpus_LoadCandidates Trouver des candidats
 Corpus_NoCandidates Aucun candidat trouvé à ce seuil.
 Corpus_AddStopword Ajouter aux mots vides
+Corpus_WordsLink Mots →
 BucketSelect_AddNew Ajouter nouveau...
 BucketSelect_AlreadyExists Existe déjà
 BucketSelect_CreateError Erreur lors de la création de la catégorie
@@ -436,6 +438,7 @@ Imap_TestConnection Tester la connexion
 Imap_Testing Test en cours...
 Imap_TrainingHint Le mode entraînement analyse les dossiers d'archives existants et entraîne le classifieur sur leur contenu. L'indicateur se réinitialise automatiquement à la fin de l'entraînement.
 Imap_TrainingMode Mode entraînement
+Imap_TrainingLimit Messages par dossier (0 = illimité)
 Imap_WatchedFolders Dossiers surveillés
 Imap_WatchedHint POPFile surveille ces dossiers IMAP pour les nouveaux messages à classifier.
 Magnet_Created Aimant créé
@@ -555,6 +558,20 @@ ApplyChanges Appliquer les modifications
 Configuration_Error10 Le port d'écoute POP3 ne peut pas avoir la même valeur que le port de l'interface utilisateur
 Configuration_Error9 Le port de l'interface utilisateur ne peut pas avoir la même valeur que le port d'écoute POP3
 Imap_Use_SSL Utiliser SSL
+
+WordView_Title Précision des mots
+WordView_SelectBucket sélectionner la catégorie
+WordView_Words mots
+WordView_Loading Chargement...
+WordView_Empty Aucun mot dans cette catégorie.
+WordView_ColWord Mot
+WordView_ColCount Nombre
+WordView_ColTotal Total
+WordView_ColAccuracy Précision
+WordView_ColActions Actions
+WordView_Remove Supprimer
+WordView_MoveTo déplacer vers
+WordView_Move Déplacer
 View_DownloadMessage Télécharger le message
 
 Language_Name                           Français

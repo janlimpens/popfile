@@ -391,6 +391,7 @@ NavIMAP IMAP
 NavMagnets Imants
 NavSettings Configuració
 NavStatus Estat
+NavWordView Paraules
 Corpus_BucketList Categories
 Corpus_Color Color
 Corpus_Actions Accions
@@ -405,6 +406,7 @@ Corpus_StopwordRatio Llindar màx/mín del ràtio
 Corpus_LoadCandidates Cerca candidates
 Corpus_NoCandidates No s'han trobat candidates amb aquest llindar.
 Corpus_AddStopword Afegeix a paraules buides
+Corpus_WordsLink Paraules →
 BucketSelect_AddNew Afegeix nova...
 BucketSelect_AlreadyExists Ja existeix
 BucketSelect_CreateError Error en crear la categoria
@@ -441,6 +443,7 @@ Imap_TestConnection Prova connexió
 Imap_Testing Provant...
 Imap_TrainingHint El mode d'entrenament analitza les carpetes d'arxiu existents i entrena el classificador amb el seu contingut. L'indicador es restableix automàticament quan acaba l'entrenament.
 Imap_TrainingMode Mode d'entrenament
+Imap_TrainingLimit Missatges per carpeta (0 = il·limitat)
 Imap_WatchedFolders Carpetes supervisades
 Imap_WatchedHint POPFile supervisa aquestes carpetes IMAP per a nous missatges a classificar.
 Magnet_Created Imant creat
@@ -560,6 +563,20 @@ ApplyChanges Aplica els canvis
 Configuration_Error10 El port d'escolta POP3 no pot tenir el mateix valor que el port de la interfície d'usuari
 Configuration_Error9 El port de la interfície d'usuari no pot tenir el mateix valor que el port d'escolta POP3
 Imap_Use_SSL Utilitza SSL
+
+WordView_Title Precisió de paraules
+WordView_SelectBucket selecciona categoria
+WordView_Words paraules
+WordView_Loading Carregant...
+WordView_Empty No hi ha paraules en aquesta categoria.
+WordView_ColWord Paraula
+WordView_ColCount Recompte
+WordView_ColTotal Total
+WordView_ColAccuracy Precisió
+WordView_ColActions Accions
+WordView_Remove Elimina
+WordView_MoveTo mou a
+WordView_Move Mou
 View_DownloadMessage Descarrega el missatge
 
 Language_Name                           Català

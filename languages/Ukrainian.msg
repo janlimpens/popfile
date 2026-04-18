@@ -341,6 +341,7 @@ Corpus_StopwordCandidatesDesc	Слова, що зустрічаються над
 Corpus_StopwordRatio	Поріг частоти
 Corpus_StopwordsDesc	Слова, які POPFile ігнорує під час класифікації.
 Corpus_StopwordsTitle	Стоп-слова
+Corpus_WordsLink	Слова →
 Help_Bucket_Setup	Налаштування категорій
 Help_No_More	Більше не показувати
 Help_Training	Навчання
@@ -404,6 +405,7 @@ Imap_TestConnection	Перевірити підключення
 Imap_Testing	Перевірка...
 Imap_TrainingHint	Перемістіть повідомлення до відповідної папки для навчання.
 Imap_TrainingMode	Режим навчання
+Imap_TrainingLimit	Повідомлень на папку (0 = необмежено)
 Imap_UpdateError1	Помилка оновлення: невідома категорія.
 Imap_UpdateError2	Помилка оновлення: невідома папка.
 Imap_UpdateError3	Помилка оновлення: не вдалося зберегти зміни.
@@ -412,6 +414,20 @@ Imap_WatchedFolder	Папка, що відстежується
 Imap_WatchedFolders	Папки, що відстежуються
 Imap_WatchedHint	Додайте папки для відстеження.
 Imap_WatchMore	Відстежувати ще
+
+WordView_Title	Точність слів
+WordView_SelectBucket	обрати категорію
+WordView_Words	слова
+WordView_Loading	Завантаження...
+WordView_Empty	У цій категорії немає слів.
+WordView_ColWord	Слово
+WordView_ColCount	Кількість
+WordView_ColTotal	Всього
+WordView_ColAccuracy	Точність
+WordView_ColActions	Дії
+WordView_Remove	Видалити
+WordView_MoveTo	перемістити до
+WordView_Move	Перемістити
 Magnet_Created	Магніт створено.
 Magnet_Deleted	Магніт видалено.
 NavCorpus	Корпус
@@ -420,6 +436,7 @@ NavIMAP	IMAP
 NavMagnets	Магніти
 NavSettings	Налаштування
 NavStatus	Стан
+NavWordView	Слова
 Reconnect_Connecting	Підключення...
 Reconnect_Message	POPFile втратив зв'язок. Повторне підключення.
 Reconnect_Now	Підключитись зараз

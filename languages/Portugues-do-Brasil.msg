@@ -392,6 +392,7 @@ NavIMAP IMAP
 NavMagnets Ímãs
 NavSettings Configurações
 NavStatus Status
+NavWordView Palavras
 Corpus_BucketList Categorias
 Corpus_Color Cor
 Corpus_Actions Ações
@@ -406,6 +407,7 @@ Corpus_StopwordRatio Limiar máx/mín do índice
 Corpus_LoadCandidates Encontrar candidatas
 Corpus_NoCandidates Nenhuma candidata encontrada neste limiar.
 Corpus_AddStopword Adicionar às palavras de parada
+Corpus_WordsLink Palavras →
 BucketSelect_AddNew Adicionar nova...
 BucketSelect_AlreadyExists Já existe
 BucketSelect_CreateError Erro ao criar categoria
@@ -442,6 +444,7 @@ Imap_TestConnection Testar conexão
 Imap_Testing Testando...
 Imap_TrainingHint O modo de treinamento analisa as pastas de arquivo existentes e treina o classificador com seu conteúdo. O indicador é redefinido automaticamente quando o treinamento termina.
 Imap_TrainingMode Modo de treinamento
+Imap_TrainingLimit Mensagens por pasta (0 = ilimitado)
 Imap_WatchedFolders Pastas monitoradas
 Imap_WatchedHint O POPFile monitora estas pastas IMAP para novas mensagens a classificar.
 Magnet_Created Ímã criado
@@ -560,6 +563,20 @@ View_MessageHeader Cabeçalho da mensagem
 Configuration_Error10 A porta de escuta POP3 não pode ter o mesmo valor que a porta da interface do usuário
 Configuration_Error9 A porta da interface do usuário não pode ter o mesmo valor que a porta de escuta POP3
 Imap_Use_SSL Usar SSL
+
+WordView_Title Precisão de palavras
+WordView_SelectBucket selecionar categoria
+WordView_Words palavras
+WordView_Loading Carregando...
+WordView_Empty Nenhuma palavra nesta categoria.
+WordView_ColWord Palavra
+WordView_ColCount Contagem
+WordView_ColTotal Total
+WordView_ColAccuracy Precisão
+WordView_ColActions Ações
+WordView_Remove Remover
+WordView_MoveTo mover para
+WordView_Move Mover
 View_DownloadMessage Baixar mensagem
 
 Language_Name                           Português (Brasil)

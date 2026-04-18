@@ -400,6 +400,7 @@ Corpus_StopwordCandidatesDesc           Tüm kategorilerde eşit görünen kelim
 Corpus_StopwordRatio                    Maksimum/minimum oran eşiği
 Corpus_StopwordsDesc                    Bu listedeki kelimeler sınıflandırma için hiçbir zaman kullanılmaz.
 Corpus_StopwordsTitle                   Dur-sözcükleri
+Corpus_WordsLink                        Kelimeler →
 DonateLink                              Donate
 History_AllBuckets                      Tüm kategoriler
 History_HighlightWords                  Kelimeleri kategoriye göre vurgula
@@ -431,9 +432,24 @@ Imap_TestConnection                     Bağlantıyı Test Et
 Imap_Testing                            Test ediliyor...
 Imap_TrainingHint                       Eğitim modu mevcut arşiv klasörlerini tarar ve içeriklerine göre sınıflandırıcıyı eğitir. Eğitim tamamlandığında bayrak otomatik sıfırlanır.
 Imap_TrainingMode                       Eğitim modu
+Imap_TrainingLimit                      Klasör başına ileti (0 = sınırsız)
 Imap_Use_SSL                            SSL kullan
 Imap_WatchedFolders                     İzlenen Klasörler
 Imap_WatchedHint                        POPFile sınıflandırılacak yeni mesajlar için bu IMAP klasörlerini izler.
+
+WordView_Title                          Kelime Doğruluğu
+WordView_SelectBucket                   kategori seç
+WordView_Words                          kelimeler
+WordView_Loading                        Yükleniyor...
+WordView_Empty                          Bu kategoride kelime yok.
+WordView_ColWord                        Kelime
+WordView_ColCount                       Sayı
+WordView_ColTotal                       Toplam
+WordView_ColAccuracy                    Doğruluk
+WordView_ColActions                     İşlemler
+WordView_Remove                         Kaldır
+WordView_MoveTo                         taşı:
+WordView_Move                           Taşı
 Magnet_Created                          Mıknatıs oluşturuldu
 Magnet_Deleted                          Mıknatıs silindi
 MailingListLink                         mailing_lists
@@ -443,6 +459,7 @@ NavIMAP                                 IMAP
 NavMagnets                              Mıknatıslar
 NavSettings                             Ayarlar
 NavStatus                               Durum
+NavWordView                             Kelimeler
 Reconnect_Connecting                    Bağlanıyor...
 Reconnect_Message                       Arka uç erişilemiyor. Yeniden bağlanmaya çalışılıyor...
 Reconnect_Now                           Şimdi yeniden bağlan

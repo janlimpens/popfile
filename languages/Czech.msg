@@ -307,6 +307,7 @@ NavIMAP IMAP
 NavMagnets Magnety
 NavSettings Nastavení
 NavStatus Stav
+NavWordView Slova
 Advanced_AllParameters Všechny parametry POPFile
 Advanced_ConfigFile Konfigurační soubor:
 Advanced_Parameter Parametr
@@ -345,6 +346,7 @@ Corpus_StopwordRatio Prahová hodnota poměru max/min
 Corpus_LoadCandidates Najít kandidáty
 Corpus_NoCandidates Při tomto prahu nebyli nalezeni žádní kandidáti.
 Corpus_AddStopword Přidat do stopslov
+Corpus_WordsLink Slova →
 Date Datum
 FAQ FAQ
 Footer_Wiki Dokumentace
@@ -412,6 +414,7 @@ Imap_TestConnection Testovat připojení
 Imap_Testing Testuji...
 Imap_TrainingHint Tréninkový režim prohledává existující archivní složky a trénuje klasifikátor na jejich obsahu. Příznak se automaticky resetuje po dokončení tréninku.
 Imap_TrainingMode Tréninkový režim
+Imap_TrainingLimit Zpráv na složku (0 = neomezeno)
 Imap_UpdateError1 Nelze se přihlásit. Ověřte prosím své přihlašovací jméno a heslo.
 Imap_UpdateError2 Nepodařilo se připojit k serveru. Zkontrolujte prosím název hostitele a port a ujistěte se, že jste online.
 Imap_UpdateError3 Nejprve nakonfigurujte podrobnosti připojení.
@@ -420,6 +423,20 @@ Imap_WatchedFolder Sledovaná složka č.
 Imap_WatchedFolders Sledované složky
 Imap_WatchedHint POPFile sleduje tyto složky IMAP kvůli novým zprávám ke klasifikaci.
 Imap_WatchMore složku do seznamu sledovaných složek
+
+WordView_Title Přesnost slov
+WordView_SelectBucket vybrat kategorii
+WordView_Words slova
+WordView_Loading Načítám...
+WordView_Empty V této kategorii nejsou žádná slova.
+WordView_ColWord Slovo
+WordView_ColCount Počet
+WordView_ColTotal Celkem
+WordView_ColAccuracy Přesnost
+WordView_ColActions Akce
+WordView_Remove Odebrat
+WordView_MoveTo přesunout do
+WordView_Move Přesunout
 Locale_Date %d.%m.%Y %R
 Locale_Decimal ,
 Locale_Thousands .

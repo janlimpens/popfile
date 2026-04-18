@@ -239,6 +239,7 @@ NavIMAP IMAP
 NavMagnets Mágnesek
 NavSettings Beállítások
 NavStatus Állapot
+NavWordView Szavak
 ApplyChanges Változtatások alkalmazása
 Arrived Érkezett
 Cc Másolat
@@ -319,6 +320,7 @@ Corpus_StopwordRatio Max/min arány küszöbérték
 Corpus_LoadCandidates Jelöltek keresése
 Corpus_NoCandidates Ennél a küszöbértéknél nem találhatók jelöltek.
 Corpus_AddStopword Hozzáadás a tiltott szavakhoz
+Corpus_WordsLink Szavak →
 Help_Bucket_Setup A POPFile legalább két kategóriát igényel az "osztályozatlan" álkategórián kívül. A POPFile egyedülállósága abban rejlik, hogy az e-maileket ennél több kategóriába is besorolhatja; tetszőleges számú kategóriát hozhat létre. Egy egyszerű konfiguráció lehet egy "spam", "személyes" és "munka" kategória.
 Help_No_More Ne mutasd ezt újra
 Help_Training Amikor először használja a POPFile-t, semmit sem tud, és betanításra van szüksége. A POPFile minden kategóriához üzeneteken alapuló betanítást igényel; a betanítás akkor történik, amikor egy tévesen besorolt üzenetet átsorol a helyes kategóriába. Mielőtt a POPFile besorolná az első üzenetet, legalább két kategóriába kell átsorolt üzeneteknek lenniük.
@@ -387,6 +389,7 @@ Imap_TestConnection Kapcsolat tesztelése
 Imap_Testing Tesztelés...
 Imap_TrainingHint A betanítási mód átvizsgálja a meglévő archívummappákat, és azok tartalmával betanítja a besorolót. A jelző automatikusan törlődik a betanítás befejezésekor.
 Imap_TrainingMode Betanítási mód
+Imap_TrainingLimit Üzenet mappánként (0 = korlátlan)
 Imap_UpdateError1 Nem sikerült bejelentkezni. Ellenőrizze felhasználónevét és jelszavát.
 Imap_UpdateError2 Nem sikerült csatlakozni a kiszolgálóhoz. Ellenőrizze a hosztnevet és a portot, és győződjön meg, hogy online van.
 Imap_UpdateError3 Kérjük, először konfigurálja a kapcsolati adatokat.
@@ -395,6 +398,20 @@ Imap_WatchedFolder Figyelt mappa sz.
 Imap_WatchedFolders Figyelt mappák
 Imap_WatchedHint A POPFile ezeket az IMAP-mappákat figyeli az osztályozandó új üzenetek érdekében.
 Imap_WatchMore egy mappát a figyelt mappák listájához
+
+WordView_Title Szó pontosság
+WordView_SelectBucket kategória kiválasztása
+WordView_Words szavak
+WordView_Loading Betöltés...
+WordView_Empty Nincsenek szavak ebben a kategóriában.
+WordView_ColWord Szó
+WordView_ColCount Darab
+WordView_ColTotal Összesen
+WordView_ColAccuracy Pontosság
+WordView_ColActions Műveletek
+WordView_Remove Eltávolítás
+WordView_MoveTo áthelyezés ide
+WordView_Move Áthelyezés
 Locale_Date %Y.%m.%d %R
 Locale_Decimal ,
 Locale_Thousands .

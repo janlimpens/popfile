@@ -297,6 +297,7 @@ NavIMAP IMAP
 NavMagnets Ímanes
 NavSettings Definições
 NavStatus Estado
+NavWordView Palavras
 Corpus_BucketList Categorias
 Corpus_Color Cor
 Corpus_Actions Ações
@@ -311,6 +312,7 @@ Corpus_StopwordRatio Limiar máx/mín do rácio
 Corpus_LoadCandidates Encontrar candidatas
 Corpus_NoCandidates Nenhuma candidata encontrada neste limiar.
 Corpus_AddStopword Adicionar às palavras de paragem
+Corpus_WordsLink Palavras →
 BucketSelect_AddNew Adicionar nova...
 BucketSelect_AlreadyExists Já existe
 BucketSelect_CreateError Erro ao criar categoria
@@ -347,6 +349,7 @@ Imap_TestConnection Testar ligação
 Imap_Testing A testar...
 Imap_TrainingHint O modo de treino analisa as pastas de arquivo existentes e treina o classificador com o seu conteúdo. O indicador é reposto automaticamente quando o treino termina.
 Imap_TrainingMode Modo de treino
+Imap_TrainingLimit Mensagens por pasta (0 = ilimitado)
 Imap_WatchedFolders Pastas monitorizadas
 Imap_WatchedHint O POPFile monitoriza estas pastas IMAP para novas mensagens a classificar.
 Magnet_Created Íman criado
@@ -522,6 +525,20 @@ Imap_UpdateError3 Por favor, configure primeiro os detalhes de ligação.
 Imap_Use_SSL Usar SSL
 Imap_WatchedFolder Pasta monitorizada nº
 Imap_WatchMore uma pasta à lista de pastas monitorizadas
+
+WordView_Title Precisão de palavras
+WordView_SelectBucket selecionar categoria
+WordView_Words palavras
+WordView_Loading A carregar...
+WordView_Empty Nenhuma palavra nesta categoria.
+WordView_ColWord Palavra
+WordView_ColCount Contagem
+WordView_ColTotal Total
+WordView_ColAccuracy Precisão
+WordView_ColActions Ações
+WordView_Remove Remover
+WordView_MoveTo mover para
+WordView_Move Mover
 Locale_Date %a %R | %D %R
 Locale_Decimal ,
 Locale_Thousands .

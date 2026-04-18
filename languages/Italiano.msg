@@ -391,6 +391,7 @@ NavIMAP IMAP
 NavMagnets Magneti
 NavSettings Impostazioni
 NavStatus Stato
+NavWordView Parole
 Corpus_BucketList Categorie
 Corpus_Color Colore
 Corpus_Actions Azioni
@@ -405,6 +406,7 @@ Corpus_StopwordRatio Soglia rapporto max/min
 Corpus_LoadCandidates Trova candidati
 Corpus_NoCandidates Nessun candidato trovato con questa soglia.
 Corpus_AddStopword Aggiungi alle parole di stop
+Corpus_WordsLink Parole →
 BucketSelect_AddNew Aggiungi nuova...
 BucketSelect_AlreadyExists Esiste già
 BucketSelect_CreateError Errore nella creazione della categoria
@@ -441,6 +443,7 @@ Imap_TestConnection Testa connessione
 Imap_Testing Test in corso...
 Imap_TrainingHint La modalità addestramento analizza le cartelle di archivio esistenti e addestra il classificatore sul loro contenuto. Il flag si ripristina automaticamente al termine dell'addestramento.
 Imap_TrainingMode Modalità addestramento
+Imap_TrainingLimit Messaggi per cartella (0 = illimitato)
 Imap_WatchedFolders Cartelle monitorate
 Imap_WatchedHint POPFile monitora queste cartelle IMAP per nuovi messaggi da classificare.
 Magnet_Created Magnete creato
@@ -560,6 +563,20 @@ ApplyChanges Applica modifiche
 Configuration_Error10 La porta di ascolto POP3 non può avere lo stesso valore della porta dell'interfaccia utente
 Configuration_Error9 La porta dell'interfaccia utente non può avere lo stesso valore della porta di ascolto POP3
 Imap_Use_SSL Usa SSL
+
+WordView_Title Accuratezza parole
+WordView_SelectBucket seleziona categoria
+WordView_Words parole
+WordView_Loading Caricamento...
+WordView_Empty Nessuna parola in questa categoria.
+WordView_ColWord Parola
+WordView_ColCount Conteggio
+WordView_ColTotal Totale
+WordView_ColAccuracy Accuratezza
+WordView_ColActions Azioni
+WordView_Remove Rimuovi
+WordView_MoveTo sposta in
+WordView_Move Sposta
 View_DownloadMessage Scarica messaggio
 
 Language_Name                           Italiano

@@ -255,6 +255,7 @@ NavIMAP IMAP
 NavMagnets Magneten
 NavSettings Instellingen
 NavStatus Status
+NavWordView Woorden
 Corpus_BucketList Categorieën
 Corpus_Color Kleur
 Corpus_Actions Acties
@@ -269,6 +270,7 @@ Corpus_StopwordRatio Max/min-verhoudrempelwaarde
 Corpus_LoadCandidates Kandidaten zoeken
 Corpus_NoCandidates Geen kandidaten gevonden bij deze drempelwaarde.
 Corpus_AddStopword Toevoegen aan stopwoorden
+Corpus_WordsLink Woorden →
 BucketSelect_AddNew Nieuwe toevoegen...
 BucketSelect_AlreadyExists Bestaat al
 BucketSelect_CreateError Fout bij aanmaken categorie
@@ -385,6 +387,7 @@ Imap_TestConnection Verbinding testen
 Imap_Testing Testen...
 Imap_TrainingHint De trainingsmodus doorzoekt bestaande archiefmappen en traint de classificator op hun inhoud. De vlag wordt automatisch gereset wanneer de training is voltooid.
 Imap_TrainingMode Trainingsmodus
+Imap_TrainingLimit Berichten per map (0 = onbeperkt)
 Imap_UpdateError1 Aanmelden mislukt. Controleer uw gebruikersnaam en wachtwoord.
 Imap_UpdateError2 Verbinding met server mislukt. Controleer de hostnaam en poort en zorg dat u online bent.
 Imap_UpdateError3 Configureer eerst de verbindingsdetails.
@@ -393,6 +396,20 @@ Imap_WatchedFolder Bewaakte map nr.
 Imap_WatchedFolders Bewaakte mappen
 Imap_WatchedHint POPFile bewaakt deze IMAP-mappen op nieuwe berichten om te classificeren.
 Imap_WatchMore een map toevoegen aan de lijst met bewaakte mappen
+
+WordView_Title Woordnauwkeurigheid
+WordView_SelectBucket selecteer categorie
+WordView_Words woorden
+WordView_Loading Laden...
+WordView_Empty Geen woorden in deze categorie.
+WordView_ColWord Woord
+WordView_ColCount Aantal
+WordView_ColTotal Totaal
+WordView_ColAccuracy Nauwkeurigheid
+WordView_ColActions Acties
+WordView_Remove Verwijderen
+WordView_MoveTo verplaatsen naar
+WordView_Move Verplaatsen
 Locale_Date %a %R | %D %R
 Locale_Decimal ,
 Locale_Thousands .

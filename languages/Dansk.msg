@@ -279,6 +279,7 @@ NavIMAP IMAP
 NavMagnets Magneter
 NavSettings Indstillinger
 NavStatus Status
+NavWordView Ord
 Corpus_BucketList Kategorier
 Corpus_Color Farve
 Corpus_Actions Handlinger
@@ -293,6 +294,7 @@ Corpus_StopwordRatio Maks/min-forholdsgrænse
 Corpus_LoadCandidates Find kandidater
 Corpus_NoCandidates Ingen kandidater fundet ved denne grænse.
 Corpus_AddStopword Tilføj til stopord
+Corpus_WordsLink Ord →
 BucketSelect_AddNew Tilføj ny...
 BucketSelect_AlreadyExists Eksisterer allerede
 BucketSelect_CreateError Fejl ved oprettelse af kategori
@@ -394,6 +396,7 @@ Imap_TestConnection Test forbindelse
 Imap_Testing Tester...
 Imap_TrainingHint Træningstilstand gennemgår eksisterende arkivmapper og træner klassificereren på deres indhold. Flaget nulstilles automatisk, når træningen er færdig.
 Imap_TrainingMode Træningstilstand
+Imap_TrainingLimit Beskeder pr. mappe (0 = ubegrænset)
 Imap_UpdateError1 Kunne ikke logge ind. Kontroller venligst dit loginnavn og adgangskode.
 Imap_UpdateError2 Forbindelsen til serveren mislykkedes. Kontroller venligst værtsnavn og port, og sørg for at du er online.
 Imap_UpdateError3 Konfigurer venligst forbindelsesdetaljerne først.
@@ -402,6 +405,20 @@ Imap_WatchedFolder Overvåget mappe nr.
 Imap_WatchedFolders Overvågede mapper
 Imap_WatchedHint POPFile overvåger disse IMAP-mapper for nye beskeder at klassificere.
 Imap_WatchMore en mappe til listen over overvågede mapper
+
+WordView_Title Ordnøjagtighed
+WordView_SelectBucket vælg kategori
+WordView_Words ord
+WordView_Loading Indlæser...
+WordView_Empty Ingen ord i denne kategori.
+WordView_ColWord Ord
+WordView_ColCount Antal
+WordView_ColTotal Total
+WordView_ColAccuracy Nøjagtighed
+WordView_ColActions Handlinger
+WordView_Remove Fjern
+WordView_MoveTo flyt til
+WordView_Move Flyt
 Locale_Date %a %R | %D %R
 Locale_Decimal ,
 Locale_Thousands .
