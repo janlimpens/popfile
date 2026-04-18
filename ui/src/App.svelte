@@ -39,9 +39,9 @@
     const cfg = cfgRes.ok ? await cfgRes.json() : {};
     await initLocale(cfg.mojo_ui_locale || '');
     window.addEventListener('hashchange', () => {
-      const parsed = parseHash();
-      page = parsed.page;
-      pageSub = parsed.sub;
+      const [p, sub] = parseHash();
+      page = p;
+      pageSub = sub;
     });
   });
 
