@@ -222,6 +222,13 @@
           onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; saveCfg(); }}
         />
       </div>
+      <div class="field-row">
+        <label for="imap_training_limit">{t('Imap_TrainingLimit')}</label>
+        <input id="imap_training_limit" type="number" min="0"
+          bind:value={cfg.imap_training_limit}
+          onchange={saveCfg}
+        />
+      </div>
     </div>
     <p class="hint" style="margin-top:0.75rem">{t('Imap_TrainingHint')}</p>
   </section>

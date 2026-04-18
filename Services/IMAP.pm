@@ -74,6 +74,7 @@ method initialize() {
     $self->config('enabled', 0);
     $self->config('training_mode', 0);
     $self->config('training_error', '');
+    $self->config('training_limit', 0);
     $last_update = time - $self->config('update_interval');
     return 1
 }
@@ -680,6 +681,7 @@ method train_on_archive() {
         return 0
     }
     $self->connect_server();
+    my $limit = $self->config('training_limit') || 0;
     my $total_msgs = 0;
     my $total_folders = 0;
     for my $folder (keys %folders) {
@@ -689,7 +691,9 @@ method train_on_archive() {
         my $imap = $folders{$folder}{imap};
         $imap->uid_next($folder, 1);
         my @uids = $imap->get_new_message_list_unselected($folder);
-        $self->log_msg(0, "Training on " . scalar(@uids) . " messages in folder $folder to bucket $bucket.");
+        @uids = @uids[0 .. $limit - 1] if $limit > 0 && @uids > $limit;
+        $self->log_msg(0, "Training on " . scalar(@uids) . " messages in folder $folder to bucket $bucket."
+            . ($limit > 0 ? " (limit: $limit)" : ''));
         $total_folders++;
         for my $msg (@uids) {
             my ($ok, @lines) = $imap->fetch_message_part($msg, '');

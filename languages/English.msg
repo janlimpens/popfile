@@ -428,6 +428,7 @@ Imap_SaveConnection                     Save Connection
 Imap_Service                            Service
 Imap_EnableService                      Enable IMAP service
 Imap_TrainingMode                       Training mode
+Imap_TrainingLimit                      Messages per folder (0 = unlimited)
 Imap_TrainingHint                       Training mode scans existing archive folders and trains the classifier on their contents. The flag resets automatically when training completes.
 Imap_WatchedFolders                     Watched Folders
 Imap_WatchedHint                        POPFile monitors these IMAP folders for new messages to classify.

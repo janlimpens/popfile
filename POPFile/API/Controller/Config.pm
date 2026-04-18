@@ -55,6 +55,7 @@ use constant CFG => {
     imap_expunge => [imap => 'expunge'],
     imap_training_mode => [imap => 'training_mode'],
     imap_training_error => [imap => 'training_error'],
+    imap_training_limit => [imap => 'training_limit'],
     imap_uidnexts => [imap => 'uidnexts'],
     imap_uidvalidities => [imap => 'uidvalidities'],
 };
