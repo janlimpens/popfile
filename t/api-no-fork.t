@@ -28,8 +28,9 @@ subtest 'run_server removed from POPFile::API' => sub {
     ok(!POPFile::API->can('run_server'), 'run_server() has been removed');
 };
 
-subtest 'forked removed from Services::Classifier' => sub {
-    ok(!Services::Classifier->can('forked'), 'Services::Classifier::forked() has been removed');
+subtest 'forked override removed from Services::Classifier' => sub {
+    ok(!defined(&Services::Classifier::forked),
+        'Services::Classifier no longer overrides forked()');
 };
 
 subtest 'start() registers in-process Mojo daemon without fork' => sub {
