@@ -390,6 +390,7 @@ Help_No_More                            Don't show this again
 
 NavHistory                              History
 NavCorpus                               Corpus
+NavWordView                             Words
 NavMagnets                              Magnets
 NavIMAP                                 IMAP
 NavStatus                               Status
@@ -456,6 +457,20 @@ Corpus_StopwordsTitle                   Stop-words
 Corpus_StopwordsDesc                    Words in this list are never used for classification.
 Corpus_RemoveStopword                   Remove
 Corpus_NoCandidates                     No candidates found at this threshold.
+
+WordView_Title                          Word Accuracy
+WordView_SelectBucket                   select bucket
+WordView_Words                          words
+WordView_Loading                        Loading...
+WordView_Empty                          No words in this bucket.
+WordView_ColWord                        Word
+WordView_ColCount                       Count
+WordView_ColTotal                       Total
+WordView_ColAccuracy                    Accuracy
+WordView_ColActions                     Actions
+WordView_Remove                         Remove
+WordView_MoveTo                         move to
+WordView_Move                           Move
 
 History_AllBuckets                      All buckets
 History_Reclassifying                   Reclassifying...

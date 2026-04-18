@@ -96,6 +96,41 @@ sub get_bucket ($self) {
     });
 }
 
+sub list_bucket_words_with_accuracy ($self) {
+    my $svc = $self->popfile_svc;
+    my $session = $self->popfile_session;
+    my $bucket = $self->param('bucket');
+    my $page = ($self->param('page') // 1) + 0;
+    my $per_page = ($self->param('per_page') // 50) + 0;
+    my $result = $svc->get_words_for_bucket($session, $bucket,
+        page => $page,
+        per_page => $per_page,
+        sort => 'accuracy' );
+    $self->render(json => {
+        words => $result->{words},
+        total => $result->{total} + 0,
+        page => $page,
+        per_page => $per_page });
+}
+
+sub remove_bucket_word ($self) {
+    my $svc = $self->popfile_svc;
+    my $session = $self->popfile_session;
+    $svc->remove_word_from_bucket($session, $self->param('bucket'), $self->param('word'));
+    $self->render(json => { ok => \1 });
+}
+
+sub move_bucket_word ($self) {
+    my $svc = $self->popfile_svc;
+    my $session = $self->popfile_session;
+    my $body = $self->req->json // {};
+    my $to = $body->{to} // '';
+    return $self->render(status => 400, json => { error => 'to required' })
+        if $to eq '';
+    $svc->move_word_between_buckets($session, $self->param('bucket'), $to, $self->param('word'));
+    $self->render(json => { ok => \1 });
+}
+
 sub list_stopwords ($self) {
     my @words = sort $self->popfile_svc->get_stopword_list();
     $self->render(json => \@words);

@@ -189,6 +189,10 @@ method build_app ($svc, $session = undef) {
     $r->put('/api/v1/buckets/:name/params')->to('corpus#update_bucket_params');
     $r->get('/api/v1/buckets/:name/words')->to('corpus#get_bucket_words');
     $r->get('/api/v1/buckets/:name')->to('corpus#get_bucket');
+    $r->get('/api/v1/corpus/:bucket/words')->to('corpus#list_bucket_words_with_accuracy');
+    $r->delete('/api/v1/corpus/:bucket/word/:word')->to('corpus#remove_bucket_word');
+    $r->post('/api/v1/corpus/:bucket/word/:word/move')->to('corpus#move_bucket_word');
+
     $r->get('/api/v1/stopwords')->to('corpus#list_stopwords');
     $r->post('/api/v1/stopwords')->to('corpus#create_stopword');
     $r->delete('/api/v1/stopwords/:word')->to('corpus#delete_stopword');
