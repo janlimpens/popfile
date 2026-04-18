@@ -397,11 +397,13 @@ NavIMAP IMAP
 NavMagnets Magnete
 NavSettings Einstellungen
 NavStatus Status
+NavWordView Wortansicht
 Corpus_BucketList Kategorien
 Corpus_Color Farbe
 Corpus_Actions Aktionen
 Corpus_Clear Leeren
 Corpus_Search Suchen
+Corpus_WordsLink Wörter →
 Corpus_StopwordsTitle Stoppwörter
 Corpus_StopwordsDesc Wörter in dieser Liste werden nie zur Klassifizierung verwendet.
 Corpus_RemoveStopword Entfernen
@@ -446,8 +448,22 @@ Imap_Service Dienst
 Imap_TestConnection Verbindung testen
 Imap_Testing Teste...
 Imap_TrainingHint Der Trainingsmodus durchsucht vorhandene Archivordner und trainiert den Klassifizierer anhand ihrer Inhalte. Das Flag wird automatisch zurückgesetzt, wenn das Training abgeschlossen ist.
+Imap_TrainingLimit Nachrichten pro Ordner (0 = unbegrenzt)
 Imap_TrainingMode Trainingsmodus
 Imap_WatchedFolders Überwachte Ordner
+WordView_Title Wortgenauigkeit
+WordView_SelectBucket Kategorie wählen
+WordView_Words Wörter
+WordView_Loading Lade...
+WordView_Empty Keine Wörter in dieser Kategorie.
+WordView_ColWord Wort
+WordView_ColCount Anzahl
+WordView_ColTotal Gesamt
+WordView_ColAccuracy Genauigkeit
+WordView_ColActions Aktionen
+WordView_Remove Entfernen
+WordView_MoveTo verschieben nach
+WordView_Move Verschieben
 Imap_WatchedHint POPFile überwacht diese IMAP-Ordner auf neue Nachrichten zur Klassifizierung.
 Magnet_Created Magnet erstellt
 Magnet_Deleted Magnet gelöscht

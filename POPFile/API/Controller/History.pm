@@ -14,6 +14,13 @@ and C<popfile_history>.
 =cut
 
 use Mojo::Base 'Mojolicious::Controller', -signatures;
+use Encode qw();
+
+my sub decode_header($value) {
+    return ''
+        unless defined $value && length $value;
+    return Encode::decode('MIME-Header', $value)
+}
 
 sub list_history ($self) {
     my $svc = $self->popfile_svc;
@@ -37,6 +44,9 @@ sub list_history ($self) {
     my @items =
         map {
             $_->{color} = $svc->get_bucket_color($_->{'bucket'} // '') // '#666666';
+            $_->{hdr_from}    = decode_header($_->{hdr_from});
+            $_->{hdr_subject} = decode_header($_->{hdr_subject});
+            $_->{hdr_to}      = decode_header($_->{hdr_to});
             $_
         }
         grep { $_ }
