@@ -89,7 +89,7 @@ field $use_apop = 0;
         $self->config('toptoo', 0);
         $self->config('separator', ':');
         $self->config('welcome_string',
-            "POP3 POPFile ($self->version()) server ready");
+            "POP3 POPFile (" . $self->version() . ") server ready");
 
         return $self->SUPER::initialize();
     }
@@ -110,7 +110,7 @@ then calls C<< Proxy::Proxy->start() >> to open the listening socket.
         if ($self->config('welcome_string') =~
              /^POP3 POPFile \(v\d+\.\d+\.\d+\) server ready$/) {
             $self->config('welcome_string',
-                            "POP3 POPFile ($self->version()) server ready");
+                            "POP3 POPFile (" . $self->version() . ") server ready");
         }
 
         return $self->SUPER::start();

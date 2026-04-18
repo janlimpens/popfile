@@ -71,7 +71,7 @@ BUILD {
         $self->config('chain_server', '');
         $self->config('chain_port', 25);
         $self->config('local', 1);
-        $self->config('welcome_string', "SMTP POPFile ($self->version()) welcome");
+        $self->config('welcome_string', "SMTP POPFile (" . $self->version() . ") welcome");
 
         if (!$self->SUPER::initialize()) {
             return 0;
@@ -95,7 +95,7 @@ then calls C<< Proxy::Proxy->start() >> to open the listening socket.
         }
 
         if ($self->config('welcome_string') =~ /^SMTP POPFile \(v\d+\.\d+\.\d+\) welcome$/) {
-            $self->config('welcome_string', "SMTP POPFile ($self->version()) welcome");
+            $self->config('welcome_string', "SMTP POPFile (" . $self->version() . ") welcome");
         }
 
         return $self->SUPER::start();

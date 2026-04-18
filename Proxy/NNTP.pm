@@ -77,7 +77,7 @@ BUILD {
         $self->config('headtoo',        0);
         $self->config('separator',      ':');
         $self->config('welcome_string',
-            "NNTP POPFile ($self->version()) server ready");
+            "NNTP POPFile (" . $self->version() . ") server ready");
 
         if (!$self->SUPER::initialize()) {
             return 0;
@@ -103,7 +103,7 @@ then calls C<< Proxy::Proxy->start() >> to open the listening socket.
         if ($self->config('welcome_string') =~
              /^NNTP POPFile \(v\d+\.\d+\.\d+\) server ready$/) {
             $self->config('welcome_string',
-                            "NNTP POPFile ($self->version()) server ready");
+                            "NNTP POPFile (" . $self->version() . ") server ready");
         }
 
         return $self->SUPER::start();
