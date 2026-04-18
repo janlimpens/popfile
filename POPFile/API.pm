@@ -10,9 +10,7 @@ POPFile::API - Mojolicious-based HTTP server for the POPFile web UI
 =head1 DESCRIPTION
 
 Provides the POPFile web interface as a Mojolicious application.  The server
-runs in a forked child process so that it does not block POPFile's
-C<service()> event loop.  The child opens its own database connection and
-session key; no in-process state is shared with the parent.
+runs in-process on C<Mojo::IOLoop> (started by T3).
 
 The application exposes a REST API at C</api/v1/*> consumed by the Svelte
 single-page application, and serves the built Svelte bundle from the
@@ -24,14 +22,13 @@ use Object::Pad;
 use utf8;
 use POPFile::Features;
 
-use POSIX ':sys_wait_h';
 use Scalar::Util qw(looks_like_number);
 use Data::Page;
 
 class POPFile::API :isa(POPFile::Module);
 
 field $service = undef;
-field $child_pid = undef;
+field $daemon_ref = undef;
 
 BUILD {
     $self->set_name('mojo_ui');
@@ -63,7 +60,8 @@ method initialize() {
 
 =head2 start
 
-Forks a child process running the Mojolicious daemon. Returns 1 on success.
+Registers the Mojo HTTP daemon on the IOLoop. Does not start the loop — T3
+starts it. Returns 1 on success.
 
 =cut
 
@@ -81,57 +79,60 @@ method _find_free_port() {
 }
 
 method start() {
+    require Mojo::Server::Daemon;
     my $port = $self->config('port');
     if ($port == 0) {
         $port = $self->_find_free_port();
         $self->config('port', $port);
     }
-    my $pid = fork();
-    if (!defined $pid) {
-        $self->log_msg(0, "POPFile::API: fork failed: $!");
-        return 0;
+    my $session = '';
+    if (defined $service) {
+        $session = $service->bayes()->get_session_key('admin', '')
+            if defined $service->bayes();
     }
-    if ($pid == 0) {
-        try { $self->run_server() }
-        catch ($e) { $self->log_msg(0, "POPFile::API child error: $e") }
-        exit 0;
+    my $app = $self->build_app($service, $session);
+    my $daemon = Mojo::Server::Daemon->new(
+        app => $app,
+        listen => ["http://*:$port"] );
+    $daemon->start();
+    $daemon_ref = $daemon;
+    $self->log_msg(0, "POPFile::API: listening on port $port");
+    if ($self->config('open_browser')) {
+        require Browser::Open;
+        Browser::Open::open_browser("http://localhost:$port/");
     }
-    $child_pid = $pid;
-    $self->log_msg(0, "POPFile::API: started on port $port (pid $pid)");
     return 1
 }
 
+=head2 daemon
+
+Returns the in-process L<Mojo::Server::Daemon> instance, or C<undef> before
+C<start()> is called.
+
+=cut
+
+method daemon() { $daemon_ref }
+
 =head2 stop
 
-Sends SIGTERM to the child process and waits for it to exit.
+Stops the in-process daemon.
 
 =cut
 
 method stop() {
-    if (defined $child_pid) {
-        kill 'TERM', $child_pid;
-        waitpid($child_pid, 0);
-        $child_pid = undef;
+    if (defined $daemon_ref) {
+        $daemon_ref->stop();
+        $daemon_ref = undef;
     }
 }
 
 =head2 service
 
-Checks whether the child process is still alive; logs a warning if it exited
-unexpectedly. Returns 1.
+No-op stub kept for Loader compatibility. Returns 1.
 
 =cut
 
-method service() {
-    if (defined $child_pid) {
-        my $gone = waitpid($child_pid, WNOHANG);
-        if ($gone == $child_pid) {
-            $self->log_msg(0, "POPFile::API child exited unexpectedly");
-            $child_pid = undef;
-        }
-    }
-    return 1;
-}
+method service() { return 1 }
 
 =head2 set_service
 
@@ -225,57 +226,6 @@ method build_app ($svc, $session) {
     $r->post('/api/v1/imap/test-connection')->to('imap#test_connection');
 
     return $app
-}
-
-=head2 run_server
-
-$self->run_server();
-
-Entry point for the forked child process.  Notifies the history and Bayes
-modules that they are running in a fork, then calls L</build_app> and starts
-the L<Mojo::Server::Daemon> on the configured port.  Does not return while
-the server is running.
-
-=cut
-
-method run_server() {
-    $ENV{MOJO_NO_SOCKS} = 1;
-    require Mojo::Server::Daemon;
-
-    my $svc = $service;
-    my $port = $self->config('port');
-
-    if (defined $svc) {
-        my $history = $svc->history_obj();
-        $history->forked() if defined $history;
-        my $bayes = $svc->bayes();
-        $bayes->forked(undef) if defined $bayes;
-        $svc->forked();
-    }
-
-    my $session = '';
-    if (defined $svc && defined $svc->bayes()) {
-        $session = $svc->bayes()->get_session_key('admin', '');
-    }
-
-    my $app = $self->build_app($svc, $session);
-
-    my $daemon = Mojo::Server::Daemon->new(
-        app => $app,
-        listen => ["http://*:$port"],
-);
-    $daemon->start();
-
-    my $loop = $daemon->ioloop;
-    $SIG{INT}  = sub { $loop->stop() };
-    $SIG{TERM} = sub { $loop->stop() };
-
-    if ($self->config('open_browser')) {
-        require Browser::Open;
-        Browser::Open::open_browser("http://localhost:$port/");
-    }
-
-    $loop->start();
 }
 
 
