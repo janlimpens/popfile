@@ -139,8 +139,7 @@
         { key: 'logger_log_to_stdout', label: t('Settings_LogToStdout'), type: 'bool',
           desc: t('Settings_DescLogToStdout') },
         { key: 'logger_log_sql', label: t('Settings_LogSQLToStdout'), type: 'bool',
-          desc: t('Settings_DescLogSQLToStdout'),
-          disabledWhen: (cfg) => cfg.logger_log_to_stdout != 1 },
+          desc: t('Settings_DescLogSQLToStdout') },
       ],
     },
   ]);
