@@ -77,7 +77,7 @@ sub get_bucket_words ($self) {
     my $svc = $self->popfile_svc;
     my $prefix = $self->param('prefix') // '';
     my @words = $svc->get_bucket_word_list($self->param('name'), $prefix);
-    my @result = map { { word => $_->[0], count => $_->[1] + 0 } } @words;
+    my @result = map { { word => $_ } } @words;
     $self->render(json => \@result);
 }
 
