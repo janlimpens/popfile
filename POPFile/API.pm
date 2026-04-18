@@ -216,10 +216,10 @@ method build_app ($svc, $session = undef) {
     $r->put('/api/v1/config')->to('Config#update_config');
     $r->get('/api/v1/status')->to('Config#get_status');
 
-    $r->get('/api/v1/imap/folders')->to('imap#get_folders');
-    $r->put('/api/v1/imap/folders')->to('imap#update_folders');
-    $r->get('/api/v1/imap/server-folders')->to('imap#get_server_folders');
-    $r->post('/api/v1/imap/test-connection')->to('imap#test_connection');
+    $r->get('/api/v1/imap/folders')->to('IMAP#get_folders');
+    $r->put('/api/v1/imap/folders')->to('IMAP#update_folders');
+    $r->get('/api/v1/imap/server-folders')->to('IMAP#get_server_folders');
+    $r->post('/api/v1/imap/test-connection')->to('IMAP#test_connection');
 
     return $app
 }
