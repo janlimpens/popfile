@@ -97,7 +97,7 @@
 
 {#if loading}
   <p class="desc">{t('WordView_Loading')}</p>
-{:else if selectedBucket && words.length === 0}
+{:else if selectedBucket && total === 0}
   <p class="desc">{t('WordView_Empty')}</p>
 {:else if words.length}
   <table>
