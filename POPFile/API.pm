@@ -85,12 +85,7 @@ method start() {
         $port = $self->_find_free_port();
         $self->config('port', $port);
     }
-    my $session = '';
-    if (defined $service) {
-        $session = $service->bayes()->get_session_key('admin', '')
-            if defined $service->bayes();
-    }
-    my $app = $self->build_app($service, $session);
+    my $app = $self->build_app($service, undef);
     my $daemon = Mojo::Server::Daemon->new(
         app => $app,
         listen => ["http://*:$port"] );
@@ -156,7 +151,7 @@ by all request handlers.
 
 =cut
 
-method build_app ($svc, $session) {
+method build_app ($svc, $session = undef) {
     require Mojolicious;
     require Mojo::Path;
 
@@ -180,7 +175,8 @@ method build_app ($svc, $session) {
     my $languages_dir = $self->get_root_path('languages');
     $app->helper(popfile_api => sub ($c) { $self });
     $app->helper(popfile_svc => sub ($c) { $svc });
-    $app->helper(popfile_session => sub ($c) { $session });
+    $app->helper(popfile_session => sub ($c) {
+        defined $svc && $svc->can('session') ? $svc->session() : ($session // '') });
     $app->helper(popfile_history => sub ($c) { defined $svc ? $svc->history_obj() : undef });
     $app->helper(popfile_lang_dir => sub ($c) { $languages_dir });
 
