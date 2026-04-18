@@ -200,7 +200,6 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
         }
 
         close $client;
-        $self->mq_post('CMPLT', $$);
         $self->log_msg(0, "SMTP proxy done");
     }
 
