@@ -1,0 +1,320 @@
+#!/usr/bin/env perl
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2001-2011 John Graham-Cumming
+# Copyright (C) 2026 Jan Limpens
+
+BEGIN {
+    $| = 1;
+    for my $i (0..$#ARGV) {
+        if ($ARGV[$i] =~ /^--root=(.+)$/) {
+            $ENV{POPFILE_ROOT} = $1;
+            last;
+        }
+        if ($ARGV[$i] eq '--root' && defined $ARGV[$i + 1]) {
+            $ENV{POPFILE_ROOT} = $ARGV[$i + 1];
+            last;
+        }
+    }
+    $ENV{POPFILE_ROOT} //= '.';
+}
+
+use strict;
+use warnings;
+use Getopt::Long qw(:config pass_through no_auto_abbrev);
+use lib $ENV{POPFILE_ROOT};
+use lib "$ENV{POPFILE_ROOT}/vendor/perl-querybuilder/lib";
+
+my @orig_argv = @ARGV;
+
+my ($opt_help, $opt_version, $opt_log_stdout, $opt_log_sql);
+my ($opt_log_level, $opt_root);
+
+GetOptions(
+    'help|h'      => \$opt_help,
+    'version|V'   => \$opt_version,
+    'log-stdout'  => \$opt_log_stdout,
+    'log-sql'     => \$opt_log_sql,
+    'log-level=i' => \$opt_log_level,
+    'root=s'      => \$opt_root,
+) or usage(1);
+
+my $verb = 'start';
+my @verb_args;
+
+if (@ARGV && $ARGV[0] !~ /^-/) {
+    $verb = shift @ARGV;
+}
+while (@ARGV && $ARGV[0] !~ /^-/) {
+    push @verb_args, shift @ARGV;
+}
+
+if ($opt_version) {
+    my $root = $ENV{POPFILE_ROOT};
+    my $v = 'unknown';
+    if (open my $fh, '<', "$root/VERSION") {
+        chomp($v = <$fh> // 'unknown');
+    }
+    print "POPFile $v\n";
+    exit 0;
+}
+
+usage(0) if $opt_help;
+usage(0) if $verb eq 'help';
+
+if ($verb eq 'stop')    { exit do_stop() }
+if ($verb eq 'status')  { exit do_status() }
+if ($verb eq 'restart') { do_restart(@orig_argv) }
+
+push @ARGV, '--set', "logger_log_to_stdout=1"
+    if $opt_log_stdout;
+push @ARGV, '--set', "logger_level=$opt_log_level"
+    if defined $opt_log_level;
+push @ARGV, '--set', "logger_log_sql=1"
+    if $opt_log_sql;
+
+use POPFile::Loader;
+
+my $noserver = $verb ne 'start' ? 1 : 0;
+my $POPFile = POPFile::Loader->new();
+$POPFile->debug($noserver ? 0 : 1);
+$POPFile->CORE_loader_init();
+$POPFile->CORE_signals();
+$POPFile->CORE_load($noserver);
+$POPFile->CORE_link_components();
+$POPFile->CORE_initialize();
+
+unless ($POPFile->CORE_config()) {
+    print STDERR "Configuration error\n";
+    exit 1;
+}
+
+if    ($verb eq 'start')    { do_start($POPFile) }
+elsif ($verb eq 'insert')   { exit do_insert($POPFile, @verb_args) }
+elsif ($verb eq 'classify') { exit do_classify($POPFile, @verb_args) }
+elsif ($verb eq 'pipe')     { exit do_pipe($POPFile) }
+else {
+    print STDERR "Unknown verb: $verb\n\n";
+    usage(1);
+}
+
+sub _cfg_value {
+    my ($key) = @_;
+    my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
+    $user =~ s{[\\/]+$}{};
+    open my $fh, '<', "$user/popfile.cfg" or return undef;
+    while (<$fh>) {
+        return $1 if /^\Q$key\E[ \t]+(.+)/;
+    }
+    return undef;
+}
+
+sub _pid_file {
+    my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
+    $user =~ s{[\\/]+$}{};
+    my $piddir = _cfg_value('config_piddir') // '';
+    $piddir =~ s{[\\/]+$}{};
+    return length($piddir) ? "$user/$piddir/popfile.pid" : "$user/popfile.pid";
+}
+
+sub _read_pid {
+    open my $fh, '<', _pid_file() or return undef;
+    chomp(my $pid = <$fh> // '');
+    return $pid =~ /^\d+$/ ? $pid : undef;
+}
+
+sub do_stop {
+    my $pid = _read_pid();
+    unless (defined $pid) {
+        print "POPFile is not running\n";
+        return 0;
+    }
+    unless (kill 0, $pid) {
+        print "POPFile is not running (stale pid $pid)\n";
+        return 0;
+    }
+    print "Stopping POPFile (pid $pid)...";
+    kill 'TERM', $pid;
+    for (1..20) {
+        select undef, undef, undef, 0.5;
+        unless (kill 0, $pid) {
+            print " stopped\n";
+            return 0;
+        }
+    }
+    print " timed out — process may still be running\n";
+    return 1;
+}
+
+sub do_status {
+    my $pid = _read_pid();
+    unless (defined $pid) {
+        print "POPFile is not running\n";
+        return 0;
+    }
+    if (kill 0, $pid) {
+        my $port = _cfg_value('mojo_ui_port') // '?';
+        print "POPFile is running (pid $pid, port $port)\n";
+    } else {
+        print "POPFile is not running (stale pid $pid)\n";
+    }
+    return 0;
+}
+
+sub do_restart {
+    my @args = @_;
+    my @new;
+    my $replaced;
+    for my $arg (@args) {
+        if (!$replaced && $arg eq 'restart') {
+            push @new, 'start';
+            $replaced = 1;
+        } else {
+            push @new, $arg;
+        }
+    }
+    do_stop();
+    sleep 1;
+    exec { $0 } $0, @new
+        or die "exec failed: $!\n";
+}
+
+sub do_start {
+    my ($POPFile) = @_;
+    print "POPFile " . $POPFile->CORE_version() . "\n";
+    $POPFile->CORE_start();
+    my $ui = $POPFile->get_module('mojo_ui', 'interface');
+    print "Web UI: http://localhost:" . $ui->config('port') . "/\n"
+        if defined $ui;
+    require Mojo::IOLoop;
+    $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub { Mojo::IOLoop->stop() };
+    $POPFile->CORE_register_timers();
+    Mojo::IOLoop->start();
+    $POPFile->CORE_stop();
+}
+
+sub _tool_setup {
+    my ($POPFile, $name) = @_;
+    my $c = $POPFile->get_module('POPFile::Config');
+    my $orig = $c->config('piddir');
+    $c->config('piddir', $orig . "$name.");
+    $POPFile->CORE_start();
+    my $b = $POPFile->get_module('Classifier::Bayes');
+    my $session = $b->get_session_key('admin', '');
+    return ($c, $b, $session, $orig);
+}
+
+sub _tool_teardown {
+    my ($POPFile, $c, $b, $session, $orig) = @_;
+    $c->config('piddir', $orig);
+    $c->load_configuration();
+    $b->release_session_key($session);
+    $POPFile->CORE_stop();
+}
+
+sub _stdin_to_tempfile {
+    require File::Temp;
+    my $tmp = File::Temp->new(SUFFIX => '.eml', UNLINK => 1);
+    print $tmp $_ while <STDIN>;
+    $tmp->flush();
+    return $tmp;
+}
+
+sub do_insert {
+    my ($POPFile, $bucket, @files) = @_;
+    unless (defined $bucket && $bucket ne '') {
+        print STDERR "Usage: popfile insert <bucket> [file...]\n";
+        return 1;
+    }
+    my ($c, $b, $session, $orig) = _tool_setup($POPFile, 'insert');
+    my $tmp;
+    unless (@files) {
+        $tmp = _stdin_to_tempfile();
+        push @files, $tmp->filename;
+    }
+    unless ($b->is_bucket($session, $bucket)) {
+        print STDERR "Error: bucket '$bucket' does not exist\n";
+        _tool_teardown($POPFile, $c, $b, $session, $orig);
+        return 1;
+    }
+    $b->add_messages_to_bucket($session, $bucket, @files);
+    print "Added " . scalar(@files) . " message(s) to '$bucket'\n";
+    _tool_teardown($POPFile, $c, $b, $session, $orig);
+    return 0;
+}
+
+sub do_classify {
+    my ($POPFile, @files) = @_;
+    my ($c, $b, $session, $orig) = _tool_setup($POPFile, 'classify');
+    my $tmp;
+    unless (@files) {
+        $tmp = _stdin_to_tempfile();
+        push @files, $tmp->filename;
+    }
+    for my $file (@files) {
+        unless (-e $file) {
+            print STDERR "Error: '$file' does not exist\n";
+            next;
+        }
+        printf "%s: %s\n", $file, $b->classify($session, $file);
+    }
+    _tool_teardown($POPFile, $c, $b, $session, $orig);
+    return 0;
+}
+
+sub do_pipe {
+    my ($POPFile) = @_;
+    my ($c, $b, $session, $orig) = _tool_setup($POPFile, 'pipe');
+    $b->classify_and_modify($session, \*STDIN, \*STDOUT, 1, '', 0, 1, "\n");
+    _tool_teardown($POPFile, $c, $b, $session, $orig);
+    return 0;
+}
+
+sub usage {
+    my ($code) = @_;
+    print <<'END';
+Usage: popfile [options] [verb] [verb-args]
+
+Verbs:
+  start                     Start the POPFile daemon (default)
+  stop                      Stop a running daemon
+  restart                   Stop then restart the daemon
+  status                    Show daemon status
+  insert <bucket> [file...] Train message(s) into a bucket (stdin if no file)
+  classify [file...]        Classify a message and print the result
+  pipe                      Classify stdin, write modified message to stdout
+  help                      Show this help
+
+Options:
+  --set key=value           Override a config parameter (repeatable)
+  --log-stdout              Log to stdout  (logger_log_to_stdout=1)
+  --log-level N             Log verbosity 0-5  (logger_level=N)
+  --log-sql                 Log SQL queries  (logger_log_sql=1)
+  --root DIR                POPFile root directory (overrides POPFILE_ROOT)
+  --version                 Print version and exit
+  --help, -h                Show this help
+
+Useful config keys (see popfile.cfg.sample for all):
+  mojo_ui_port=N            Web UI port (0 = automatic)
+  mojo_ui_page_size=N       History page size
+  mojo_ui_open_browser=1    Open browser on start
+  bayes_database=FILE       SQLite database file
+  logger_level=N            Log level (0=off, 5=verbose)
+  imap_enabled=1            Enable IMAP classification service
+
+Examples:
+  popfile                                   Start with defaults
+  popfile --set mojo_ui_port=8080           Start on a fixed port
+  popfile --log-stdout --log-level 3 start  Debug run with console logging
+  popfile insert spam < message.eml         Train a message as spam
+  popfile insert spam mail1.eml mail2.eml   Train multiple messages
+  popfile classify < message.eml            Show classification result
+  popfile stop                              Stop the running instance
+  popfile restart                           Restart the running instance
+  popfile status                            Check if POPFile is running
+
+Environment:
+  POPFILE_ROOT    Root directory for code, config, and database
+  POPFILE_USER    User data directory (default: POPFILE_ROOT)
+END
+    exit $code;
+}

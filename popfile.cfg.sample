@@ -1,56 +1,97 @@
+# POPFile sample configuration — copy to popfile.cfg to use.
+# Format: one parameter per line: key value
+# Override any key at startup: popfile --set key=value
+
+# ── Web UI ──────────────────────────────────────────────────────────────────
+mojo_ui_port 0
+mojo_ui_local 1
+mojo_ui_password
+mojo_ui_page_size 25
+mojo_ui_date_format
+mojo_ui_locale
+mojo_ui_session_dividers 1
+mojo_ui_wordtable_format
+mojo_ui_open_browser 0
+mojo_ui_static_dir public
+
+# ── Classifier (Bayes) ───────────────────────────────────────────────────────
+bayes_database popfile.db
+bayes_corpus corpus
 bayes_hostname 127.0.0.1
-bayes_message_cutoff 15
-bayes_sqlite_journal_mode delete
-bayes_sqlite_tweaks 0
-bayes_subject_mod_left [
-bayes_subject_mod_pos 0
-bayes_subject_mod_right ]
+bayes_dbconnect dbi:SQLite:dbname=$dbname
+bayes_dbuser
+bayes_dbauth
 bayes_unclassified_weight 100
+bayes_stopword_ratio 0
+bayes_subject_mod_left [
+bayes_subject_mod_right ]
+bayes_subject_mod_pos 1
+bayes_xpl_angle 0
+bayes_nihongo_parser kakasi
+bayes_sqlite_journal_mode delete
+bayes_sqlite_tweaks 4294967295
+
+# ── Logging ──────────────────────────────────────────────────────────────────
+logger_level 0
+logger_logdir
+logger_format default
+logger_log_to_stdout 0
+logger_log_sql 0
+
+# ── History ──────────────────────────────────────────────────────────────────
+history_history_days 2
 history_archive 0
 history_archive_classes
 history_archive_dir archive
-history_history_days 2
+
+# ── IMAP ─────────────────────────────────────────────────────────────────────
 imap_enabled 0
-imap_expunge 0
 imap_hostname
+imap_port 143
+imap_use_ssl 0
 imap_login
 imap_password
-imap_port 143
-imap_training_error
-imap_training_limit 0
+imap_watched_folders INBOX
+imap_bucket_folder_mappings
 imap_training_mode 0
-imap_uidnexts
-imap_uidvalidities
+imap_training_limit 0
 imap_update_interval 20
-imap_use_ssl 0
-logger_level 5
-logger_logdir
-logger_log_sql 0
-logger_log_to_stdout 0
-mojo_ui_date_format %Y-%m-%d %H:%M
-mojo_ui_locale
-mojo_ui_local 1
-mojo_ui_page_size 20
-mojo_ui_password
-mojo_ui_port 0
-mojo_ui_session_dividers 1
-mojo_ui_wordtable_format freq
-nntp_force_fork 0
-nntp_headtoo 0
+imap_expunge 0
+
+# ── POP3 proxy ───────────────────────────────────────────────────────────────
+pop3_local 1
+pop3_port 110
+pop3_separator :
+pop3_toptoo 0
+pop3_force_fork 0
+pop3_secure_server
+pop3_secure_port 995
+pop3_socks_server
+pop3_socks_port 1080
+
+# ── SMTP proxy ───────────────────────────────────────────────────────────────
+smtp_local 1
+smtp_port 25
+smtp_chain_server
+smtp_chain_port 25
+smtp_force_fork 0
+
+# ── NNTP proxy ───────────────────────────────────────────────────────────────
 nntp_local 1
 nntp_port 119
 nntp_separator :
-pop3_force_fork 0
-pop3_local 1
-pop3_port 110
-pop3_secure_port 995
-pop3_secure_server
-pop3_separator :
-pop3_toptoo 0
-smtp_chain_port 25
-smtp_chain_server
-smtp_force_fork 0
-smtp_local 1
-smtp_port 25
-wordmangle_auto_detect_language 0
+nntp_headtoo 0
+nntp_force_fork 0
+
+# ── Word processing ──────────────────────────────────────────────────────────
 wordmangle_stemming 0
+wordmangle_auto_detect_language 0
+
+# ── Global ───────────────────────────────────────────────────────────────────
+GLOBAL_message_cutoff 100000
+GLOBAL_msgdir messages/
+GLOBAL_timeout 60
+
+# ── Process ──────────────────────────────────────────────────────────────────
+config_piddir
+config_pidcheck_interval 5
