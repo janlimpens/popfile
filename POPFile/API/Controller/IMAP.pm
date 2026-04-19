@@ -111,6 +111,13 @@ sub test_connection ($self) {
     $self->render(json => { ok => \1 });
 }
 
+sub _touch {
+    my ($path) = @_;
+    open my $fh, '>', $path or return 0;
+    close $fh;
+    return 1
+}
+
 sub trigger_training ($self) {
     my $api = $self->popfile_api;
     my $body = $self->req->json // {};
@@ -120,12 +127,12 @@ sub trigger_training ($self) {
     if ($all) {
         my $flag = $api->get_user_path('popfile.train');
         return $self->render(status => 500, json => { error => 'cannot create flag' })
-            unless defined $flag && open(my $fh, '>', $flag) && close($fh);
+            unless defined $flag && _touch($flag);
         push @queued, '*';
     } else {
         for my $bucket (grep { /^[a-z0-9_-]+$/ } @buckets) {
             my $flag = $api->get_user_path("popfile.train.$bucket");
-            next unless defined $flag && open(my $fh, '>', $flag) && close($fh);
+            next unless defined $flag && _touch($flag);
             push @queued, $bucket;
         }
     }
