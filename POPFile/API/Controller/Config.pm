@@ -96,8 +96,9 @@ sub get_status($self) {
     my $imap_sep = '-->';
     my $watched_raw = $api->module_config('imap', 'watched_folders') // '';
     my $mapping_raw = $api->module_config('imap', 'bucket_folder_mappings') // '';
-    my $training_mode = $api->module_config('imap', 'training_mode') // 0;
-    my $training_error = $api->module_config('imap', 'training_error') // '';
+    my $flag_pattern = $api->get_user_path('popfile.train*', 0);
+    my @train_flags = defined $flag_pattern ? glob($flag_pattern) : ();
+    my @train_pending = map { /popfile\.train\.(.+)$/ ? $1 : '*' } @train_flags;
     unless ($hostname ne '' && $port ne '') {
         return $self->render(json => { checks => [{
             id => 'connectivity',
@@ -157,14 +158,11 @@ sub get_status($self) {
         },
         sub ($loop, $err, $result) {
             my @checks = defined $result ? $result->@* : ();
-            if ($training_mode) {
-                push @checks, { id => 'training_mode', label => 'Training Mode',
+            if (@train_pending) {
+                my $who = join(', ', map { $_ eq '*' ? 'all' : $_ } @train_pending);
+                push @checks, { id => 'training', label => 'Training',
                     status => 'warn',
-                    detail => 'Training in progress — will reset automatically when complete' };
-            }
-            elsif ($training_error ne '') {
-                push @checks, { id => 'training_mode', label => 'Training Mode',
-                    status => 'error', detail => "Training failed: $training_error" };
+                    detail => "Training pending: $who" };
             }
             $self->render(json => { checks => \@checks });
         }

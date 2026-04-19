@@ -123,6 +123,8 @@ sub trigger_training ($self) {
     my $body = $self->req->json // {};
     my @buckets = ref $body->{buckets} eq 'ARRAY' ? $body->{buckets}->@* : ();
     my $all = $body->{all} || !@buckets;
+    $api->module_config('imap', 'training_error', '');
+    $api->configuration()->save_configuration();
     my @queued;
     if ($all) {
         my $flag = $api->get_user_path('popfile.train');
