@@ -3427,7 +3427,7 @@ method get_word_count ($session) {
 
     my $word_count = 0;
     for my $bucket (keys $db_bucketid->{$userid}->%*) {
-        $word_count += $db_bucketcount->{$userid}{$bucket};
+        $word_count += $db_bucketcount->{$userid}{$bucket} // 0;
     }
 
     return $word_count;
