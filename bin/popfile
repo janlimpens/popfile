@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+if ! command -v carton >/dev/null 2>&1; then
+    echo "carton not found. Install it with:"
+    echo "  cpan Carton"
+    echo "  # or: curl -L https://cpanmin.us | perl - Carton"
+    exit 1
+fi
+
+if [ ! -d "$ROOT/local" ]; then
+    echo "Installing dependencies (first run)..."
+    cd "$ROOT" && carton install
+fi
+
+exec carton exec -- perl "$ROOT/script/popfile" "$@"
