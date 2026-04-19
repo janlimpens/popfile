@@ -2184,11 +2184,23 @@ method parse_header ($header, $argument, $mime, $encoding) {
         $self->update_pseudoword( 'encoding', $compact_encoding,                                  0, $encoding );        return ( $mime, $encoding );
     }
 
-    # Some headers to discard
-
     return ( $mime, $encoding )
-        if ( $header =~ /^(Thread-Index|X-UIDL|Message-ID|
-                           X-Text-Classification|X-Mime-Key)$/ix );
+        if ( $header =~ /^(
+            Thread-Index | X-UIDL | Message-ID |
+            X-Text-Classification | X-Mime-Key |
+            Received | X-Received | X-Forwarded-To | X-Original-To |
+            Delivered-To | Return-Path | Envelope-To |
+            MIME-Version |
+            References | In-Reply-To |
+            DKIM-Signature | DomainKey-Signature |
+            ARC-Seal | ARC-Message-Signature | ARC-Authentication-Results |
+            Authentication-Results |
+            Errors-To | Bounce-To | X-Complaints-To |
+            List-Id | List-Unsubscribe | List-Unsubscribe-Post |
+            List-Archive | List-Help | List-Post | List-Subscribe |
+            Auto-Submitted | X-Auto-Response-Suppress |
+            Feedback-ID | X-Feedback-ID | X-Report-Abuse
+        )$/ix );
     # Some headers should never be RFC 2047 decoded
 
     $argument = $self->decode_string( $argument, $lang )
