@@ -26,4 +26,4 @@ if [ -d "$ROOT/ui" ]; then
     fi
 fi
 
-exec carton exec -- perl "$ROOT/script/popfile" "$@"
+POPFILE_ROOT="$ROOT" exec carton exec -- perl "$ROOT/script/popfile" "$@"
