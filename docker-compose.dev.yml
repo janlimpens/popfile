@@ -1,0 +1,13 @@
+services:
+  imap:
+    image: dovecot/dovecot
+    ports:
+      - "10143:31143"
+    volumes:
+      - ./t/fixtures/dovecot/conf:/etc/dovecot/conf.d:ro
+      - dev-imap-mail:/var/mail
+    environment:
+      - DOVECOT_DISABLE_PLAINTEXT_AUTH=no
+
+volumes:
+  dev-imap-mail:

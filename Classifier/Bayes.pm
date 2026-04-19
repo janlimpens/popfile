@@ -981,12 +981,10 @@ C<$db_from> Database handle convert from
 
 =cut
 
-method db_upgrade ($db_from) {
+method db_upgrade ($db_from = undef) {
     my $drop_table;
 
     unless (defined($db_from)) {
-        # Upgrade
-
         $drop_table = 1;
         $db_from = $self->db();
     }
