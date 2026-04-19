@@ -15,4 +15,15 @@ if [ ! -d "$ROOT/local" ]; then
     cd "$ROOT" && carton install
 fi
 
+if [ -d "$ROOT/ui" ]; then
+    if [ ! -d "$ROOT/ui/node_modules" ]; then
+        echo "Installing UI dependencies..."
+        cd "$ROOT/ui" && npm install
+    fi
+    if [ "$ROOT/ui/src" -nt "$ROOT/public/assets" ]; then
+        echo "Building UI..."
+        cd "$ROOT/ui" && npm run build
+    fi
+fi
+
 exec carton exec -- perl "$ROOT/script/popfile" "$@"
