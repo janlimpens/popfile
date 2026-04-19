@@ -1436,14 +1436,19 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
     if ( defined $mangle && $mangle->config('auto_detect_language') ) {
         open my $sample_fh, '<', $file;
         my $sample = '';
+        my $in_body = 0;
         while ( <$sample_fh> ) {
+            $in_body = 1 if !$in_body && /^\r?\n$/;
+            next unless $in_body;
             $sample .= $_;
             last if length($sample) >= 1000;
         }
         close $sample_fh;
-        my $detected = Lingua::Identify::langof($sample);
-        $mangle->set_language($detected)
-            if defined $detected;
+        if ( length($sample) >= 50 ) {
+            my $detected = Lingua::Identify::langof($sample);
+            $mangle->set_language($detected)
+                if defined $detected;
+        }
     }
 
     $self->start_parse( $reset );
