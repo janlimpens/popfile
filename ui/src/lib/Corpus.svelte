@@ -1,8 +1,9 @@
 <script>
   import { onMount } from 'svelte';
   import { t } from './locale.svelte.js';
+  import WordView from './WordView.svelte';
 
-  let { buckets = $bindable([]) } = $props();
+  let { buckets = $bindable([]), initialBucket = '' } = $props();
 
   let newName = $state('');
   let newColor = $state('#888888');
@@ -110,6 +111,10 @@
 
 <div class="page">
 
+{#if initialBucket}
+  <WordView {buckets} {initialBucket} />
+{:else}
+
 <h2>{t('NavCorpus')}</h2>
 
 {#if status}
@@ -133,7 +138,7 @@
             />
           </td>
           <td>
-            <a class="btn-link" href="#wordview/{b.name}">{t('Corpus_WordsLink')}</a>
+            <a class="btn-link" href="#corpus/{b.name}">{t('Corpus_WordsLink')}</a>
             {#if !b.pseudo}
               <button class="btn-danger" onclick={() => deleteBucket(b.name)}>{t('Delete')}</button>
               <button onclick={() => clearBucket(b.name)}>{t('Corpus_Clear')}</button>
@@ -221,6 +226,7 @@
   {/if}
 </section>
 
+{/if}
 </div>
 
 <style>

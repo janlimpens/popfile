@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import History  from './lib/History.svelte';
   import Corpus   from './lib/Corpus.svelte';
-  import WordView from './lib/WordView.svelte';
   import IMAP     from './lib/IMAP.svelte';
   import Magnets  from './lib/Magnets.svelte';
   import Settings from './lib/Settings.svelte';
@@ -77,9 +76,7 @@
   {#if page === 'history'}
     <History {buckets} />
   {:else if page === 'corpus'}
-    <Corpus bind:buckets />
-  {:else if page === 'wordview'}
-    <WordView {buckets} initialBucket={pageSub} />
+    <Corpus bind:buckets initialBucket={pageSub} />
   {:else if page === 'magnets'}
     <Magnets {buckets} />
   {:else if page === 'imap'}
