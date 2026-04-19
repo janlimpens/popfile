@@ -174,6 +174,7 @@ method _run_poll_work() {
             $self->connect_server();
             %hash_values = ();
             for my $folder (keys %folders) {
+                next unless exists $folders{$folder}{watched};
                 $self->scan_folder($folder)
                     if exists $folders{$folder}{imap};
             }
