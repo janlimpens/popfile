@@ -438,6 +438,9 @@ Imap_Service	IMAP 服務
 Imap_TestConnection	測試連線
 Imap_Testing	測試中...
 Imap_TrainingHint	將郵件移到相應資料夾以進行訓練。
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode	訓練模式
 Imap_TrainingLimit	每資料夾郵件數（0 = 不限）
 Imap_WatchedFolders	監視中的資料夾

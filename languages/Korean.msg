@@ -409,6 +409,9 @@ Imap_Service	IMAP 서비스
 Imap_TestConnection	연결 테스트
 Imap_Testing	테스트 중...
 Imap_TrainingHint	학습하려면 메시지를 적절한 폴더로 이동하세요.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode	학습 모드
 Imap_TrainingLimit	폴더당 메시지 수 (0 = 무제한)
 Imap_UpdateError1	업데이트 오류: 알 수 없는 카테고리.

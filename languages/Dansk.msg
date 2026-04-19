@@ -395,6 +395,9 @@ Imap_Service Tjeneste
 Imap_TestConnection Test forbindelse
 Imap_Testing Tester...
 Imap_TrainingHint Træningstilstand gennemgår eksisterende arkivmapper og træner klassificereren på deres indhold. Flaget nulstilles automatisk, når træningen er færdig.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Træningstilstand
 Imap_TrainingLimit Beskeder pr. mappe (0 = ubegrænset)
 Imap_UpdateError1 Kunne ikke logge ind. Kontroller venligst dit loginnavn og adgangskode.

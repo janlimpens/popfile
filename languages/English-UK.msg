@@ -436,6 +436,9 @@ Imap_Service Service
 Imap_TestConnection Test Connection
 Imap_Testing Testing...
 Imap_TrainingHint Training mode scans existing archive folders and trains the classifier on their contents. The flag resets automatically when training completes.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Training mode
 Imap_WatchedFolders Watched Folders
 Imap_WatchedHint POPFile monitors these IMAP folders for new messages to classify.

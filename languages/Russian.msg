@@ -393,6 +393,9 @@ Imap_Service Сервис
 Imap_TestConnection Проверить подключение
 Imap_Testing Тестирование...
 Imap_TrainingHint Режим обучения сканирует существующие архивные папки и обучает классификатор на их содержимом. Флаг автоматически сбрасывается по завершении обучения.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Режим обучения
 Imap_TrainingLimit Сообщений на папку (0 = без ограничений)
 Imap_UpdateError1 Не удалось войти. Проверьте имя пользователя и пароль.

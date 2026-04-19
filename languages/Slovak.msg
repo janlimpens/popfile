@@ -388,6 +388,9 @@ Imap_Service Služba
 Imap_TestConnection Testovať pripojenie
 Imap_Testing Testujem...
 Imap_TrainingHint Tréningový režim prehľadáva existujúce archívne priečinky a trénuje klasifikátor na ich obsahu. Príznak sa automaticky resetuje po dokončení tréningu.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Tréningový režim
 Imap_TrainingLimit Správ na priečinok (0 = neobmedzene)
 Imap_UpdateError1 Nedá sa prihlásiť. Skontrolujte prosím svoje prihlasovacie meno a heslo.

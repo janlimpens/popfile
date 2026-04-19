@@ -98,6 +98,18 @@
     foldersDirty = true;
   }
 
+  let trainStatus = $state('');
+  async function triggerTrain(buckets) {
+    const body = buckets.length ? { buckets } : { all: true };
+    const res = await fetch('/api/v1/imap/train', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    trainStatus = res.ok ? t('Imap_TrainQueued') : t('Error');
+    setTimeout(() => trainStatus = '', 4000);
+  }
+
   async function fetchServerFolders() {
     fetchingFolders = true;
     fetchError = '';
@@ -310,7 +322,8 @@
                   <span class="warn" title="Folder not found on server">⚠</span>
                 {/if}
               </td>
-              <td>
+              <td class="row-actions">
+                <button class="btn-train" onclick={() => triggerTrain([m.bucket])}>{t('Imap_Train')}</button>
                 <button class="btn-remove" onclick={() => removeMapping(m.bucket)} title={t('Remove')}>×</button>
               </td>
             </tr>
@@ -319,6 +332,13 @@
       </table>
     {:else}
       <p class="empty">{t('Imap_NoMappings')}</p>
+    {/if}
+
+    {#if mappings.length > 0}
+      <div class="train-row">
+        <button onclick={() => triggerTrain([])}>{t('Imap_TrainAll')}</button>
+        {#if trainStatus}<span class="train-status">{trainStatus}</span>{/if}
+      </div>
     {/if}
 
     <div class="add-row">
@@ -546,6 +566,11 @@
     transition: color .15s, background .15s;
   }
   .btn-remove:hover { color: var(--danger); background: rgba(247,118,142,.12); }
+  .btn-train { font-size: 0.78rem; padding: 0.15rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
+  .btn-train:hover { border-color: var(--accent); color: var(--accent); }
+  .row-actions { display: flex; gap: 0.4rem; align-items: center; }
+  .train-row { display: flex; gap: 0.75rem; align-items: center; margin-top: 0.5rem; }
+  .train-status { font-size: 0.85rem; color: var(--success); }
 
   /* ── Footer ── */
   .card-footer {

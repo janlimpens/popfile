@@ -404,6 +404,9 @@ Imap_Service	Сервіс IMAP
 Imap_TestConnection	Перевірити підключення
 Imap_Testing	Перевірка...
 Imap_TrainingHint	Перемістіть повідомлення до відповідної папки для навчання.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode	Режим навчання
 Imap_TrainingLimit	Повідомлень на папку (0 = необмежено)
 Imap_UpdateError1	Помилка оновлення: невідома категорія.

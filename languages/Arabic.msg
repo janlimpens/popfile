@@ -428,6 +428,9 @@ Imap_Service                            الخدمة
 Imap_TestConnection                     اختبار الاتصال
 Imap_Testing                            جارٍ الاختبار...
 Imap_TrainingHint                       وضع التدريب يفحص مجلدات الأرشيف الموجودة ويدرب المصنف على محتوياتها. تتم إعادة تعيين العلامة تلقائياً عند اكتمال التدريب.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode                       وضع التدريب
 Imap_TrainingLimit                      رسائل لكل مجلد (0 = غير محدود)
 Imap_Use_SSL                            استخدام SSL

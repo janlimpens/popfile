@@ -431,6 +431,9 @@ Imap_Service                            Hizmet
 Imap_TestConnection                     Bağlantıyı Test Et
 Imap_Testing                            Test ediliyor...
 Imap_TrainingHint                       Eğitim modu mevcut arşiv klasörlerini tarar ve içeriklerine göre sınıflandırıcıyı eğitir. Eğitim tamamlandığında bayrak otomatik sıfırlanır.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode                       Eğitim modu
 Imap_TrainingLimit                      Klasör başına ileti (0 = sınırsız)
 Imap_Use_SSL                            SSL kullan

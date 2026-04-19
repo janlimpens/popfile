@@ -236,6 +236,8 @@ method build_app ($svc, $session = undef) {
     $r->put('/api/v1/imap/folders')->to('IMAP#update_folders');
     $r->get('/api/v1/imap/server-folders')->to('IMAP#get_server_folders');
     $r->post('/api/v1/imap/test-connection')->to('IMAP#test_connection');
+    $r->post('/api/v1/imap/train')->to('IMAP#trigger_training');
+    $r->get('/api/v1/imap/train')->to('IMAP#training_status');
 
     return $app
 }

@@ -386,6 +386,9 @@ Imap_Service Service
 Imap_TestConnection Verbinding testen
 Imap_Testing Testen...
 Imap_TrainingHint De trainingsmodus doorzoekt bestaande archiefmappen en traint de classificator op hun inhoud. De vlag wordt automatisch gereset wanneer de training is voltooid.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Trainingsmodus
 Imap_TrainingLimit Berichten per map (0 = onbeperkt)
 Imap_UpdateError1 Aanmelden mislukt. Controleer uw gebruikersnaam en wachtwoord.

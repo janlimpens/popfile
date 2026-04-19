@@ -387,6 +387,9 @@ Imap_Service	IMAP услуга
 Imap_TestConnection	Тествай връзката
 Imap_Testing	Тестване...
 Imap_TrainingHint	Преместете съобщение в подходяща папка за обучение.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode	Режим на обучение
 Imap_TrainingLimit	Съобщения на папка (0 = без ограничение)
 Imap_UpdateError1	Грешка при актуализиране: непозната категория.

@@ -388,6 +388,9 @@ Imap_Service Szolgáltatás
 Imap_TestConnection Kapcsolat tesztelése
 Imap_Testing Tesztelés...
 Imap_TrainingHint A betanítási mód átvizsgálja a meglévő archívummappákat, és azok tartalmával betanítja a besorolót. A jelző automatikusan törlődik a betanítás befejezésekor.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Betanítási mód
 Imap_TrainingLimit Üzenet mappánként (0 = korlátlan)
 Imap_UpdateError1 Nem sikerült bejelentkezni. Ellenőrizze felhasználónevét és jelszavát.

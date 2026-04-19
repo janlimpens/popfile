@@ -438,6 +438,9 @@ Imap_Service	IMAP サービス
 Imap_TestConnection	接続をテスト
 Imap_Testing	テスト中...
 Imap_TrainingHint	学習させるにはメールを適切なフォルダに移動してください。
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode	学習モード
 Imap_TrainingLimit	フォルダあたりのメッセージ数（0 = 無制限）
 Imap_WatchedFolders	監視中のフォルダ

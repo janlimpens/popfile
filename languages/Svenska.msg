@@ -383,6 +383,9 @@ Imap_Service Tjänst
 Imap_TestConnection Testa anslutning
 Imap_Testing Testar...
 Imap_TrainingHint Träningsläget söker igenom befintliga arkivmappar och tränar klassificeraren på deras innehåll. Flaggan återställs automatiskt när träningen är klar.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Träningsläge
 Imap_TrainingLimit Meddelanden per mapp (0 = obegränsat)
 Imap_UpdateError1 Kunde inte logga in. Kontrollera användarnamn och lösenord.

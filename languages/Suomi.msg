@@ -441,6 +441,9 @@ Imap_Service Palvelu
 Imap_TestConnection Testaa yhteys
 Imap_Testing Testataan...
 Imap_TrainingHint Harjoitustila käy läpi olemassa olevat arkistokansiot ja harjoittaa luokittelijaa niiden sisällöllä. Lippu nollautuu automaattisesti harjoituksen päättyessä.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Harjoitustila
 Imap_TrainingLimit Viestejä kansiota kohti (0 = rajoittamaton)
 Imap_WatchedFolders Seuratut kansiot

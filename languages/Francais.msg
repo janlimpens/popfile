@@ -437,6 +437,9 @@ Imap_Service Service
 Imap_TestConnection Tester la connexion
 Imap_Testing Test en cours...
 Imap_TrainingHint Le mode entraînement analyse les dossiers d'archives existants et entraîne le classifieur sur leur contenu. L'indicateur se réinitialise automatiquement à la fin de l'entraînement.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Mode entraînement
 Imap_TrainingLimit Messages par dossier (0 = illimité)
 Imap_WatchedFolders Dossiers surveillés

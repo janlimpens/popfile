@@ -402,6 +402,9 @@ Imap_Service Usługa
 Imap_TestConnection Testuj połączenie
 Imap_Testing Testowanie...
 Imap_TrainingHint Tryb treningowy skanuje istniejące foldery archiwum i trenuje klasyfikator na ich zawartości. Flaga resetuje się automatycznie po zakończeniu treningu.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Tryb treningowy
 Imap_TrainingLimit Wiadomości na folder (0 = bez limitu)
 Imap_UpdateError1 Nie można się zalogować. Sprawdź nazwę użytkownika i hasło.

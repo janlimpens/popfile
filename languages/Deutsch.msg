@@ -448,6 +448,9 @@ Imap_Service Dienst
 Imap_TestConnection Verbindung testen
 Imap_Testing Teste...
 Imap_TrainingHint Der Trainingsmodus durchsucht vorhandene Archivordner und trainiert den Klassifizierer anhand ihrer Inhalte. Das Flag wird automatisch zurückgesetzt, wenn das Training abgeschlossen ist.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingLimit Nachrichten pro Ordner (0 = unbegrenzt)
 Imap_TrainingMode Trainingsmodus
 Imap_WatchedFolders Überwachte Ordner

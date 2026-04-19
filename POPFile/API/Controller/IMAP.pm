@@ -111,6 +111,37 @@ sub test_connection ($self) {
     $self->render(json => { ok => \1 });
 }
 
+sub trigger_training ($self) {
+    my $api = $self->popfile_api;
+    my $body = $self->req->json // {};
+    my @buckets = ref $body->{buckets} eq 'ARRAY' ? $body->{buckets}->@* : ();
+    my $all = $body->{all} || !@buckets;
+    my @queued;
+    if ($all) {
+        my $flag = $api->get_user_path('popfile.train');
+        return $self->render(status => 500, json => { error => 'cannot create flag' })
+            unless defined $flag && open(my $fh, '>', $flag) && close($fh);
+        push @queued, '*';
+    } else {
+        for my $bucket (grep { /^[a-z0-9_-]+$/ } @buckets) {
+            my $flag = $api->get_user_path("popfile.train.$bucket");
+            next unless defined $flag && open(my $fh, '>', $flag) && close($fh);
+            push @queued, $bucket;
+        }
+    }
+    $self->render(json => { ok => \1, queued => \@queued });
+}
+
+sub training_status ($self) {
+    my $api = $self->popfile_api;
+    my $pattern = $api->get_user_path('popfile.train*', 0);
+    my @flags = defined $pattern ? glob($pattern) : ();
+    my @pending = map {
+        /popfile\.train\.(.+)$/ ? $1 : '*'
+    } @flags;
+    $self->render(json => { pending => \@pending });
+}
+
 sub _imap_sep ($self) {
     return '-->'
 }

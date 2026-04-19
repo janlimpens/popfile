@@ -43,6 +43,8 @@ field $imap_error = '';
 field $last_update = 0;
 field $timer_id = undef;
 field $poll_running = 0;
+field @pending_train_flags;
+field @pending_train_buckets;
 
 my $cfg_separator = "-->";
 
@@ -127,7 +129,22 @@ C<IMAP_DONE> to the MQ.
 
 =cut
 
+method _find_train_flags() {
+    my $pattern = $self->get_user_path('popfile.train*', 0);
+    return defined $pattern ? glob($pattern) : ()
+}
+
 method poll() {
+    my @flags = $self->_find_train_flags();
+    if (@flags && !$poll_running) {
+        @pending_train_flags = @flags;
+        @pending_train_buckets = ();
+        for my $flag (@flags) {
+            push @pending_train_buckets, $1
+                if $flag =~ /popfile\.train\.(.+)$/;
+        }
+        $self->config('training_mode', 1);
+    }
     return if $self->config('enabled') == 0
            && $self->config('training_mode') == 0;
     return if $poll_running;
@@ -151,6 +168,9 @@ method poll() {
                 $self->config('uidnexts', $result->{uid_nexts_str});
             }
             if ($result->{training_done}) {
+                unlink @pending_train_flags;
+                @pending_train_flags = ();
+                @pending_train_buckets = ();
                 $self->config('training_mode', 0);
             }
             $self->mq()->post('IMAP_DONE', $result->{trained} // 0);
@@ -686,8 +706,10 @@ method train_on_archive() {
     my $batch_size = $limit > 0 ? $limit : 50;
     my $total_msgs = 0;
     my $total_folders = 0;
+    my %only = map { $_ => 1 } @pending_train_buckets;
     for my $folder (keys %folders) {
         my $bucket = $folders{$folder}{output};
+        next if %only && !$only{$bucket};
         next if $classifier->is_pseudo_bucket($self->api_session(), $bucket);
         next if $folder eq 'INBOX';
         my $imap = $folders{$folder}{imap};

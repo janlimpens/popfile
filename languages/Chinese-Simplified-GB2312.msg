@@ -439,6 +439,9 @@ Imap_Service	IMAP 服务
 Imap_TestConnection	测试连接
 Imap_Testing	测试中...
 Imap_TrainingHint	将邮件移到相应文件夹以进行训练。
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode	训练模式
 Imap_TrainingLimit	每文件夹消息数（0 = 不限）
 Imap_WatchedFolders	监视中的文件夹

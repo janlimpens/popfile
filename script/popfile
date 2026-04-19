@@ -65,6 +65,7 @@ usage(0) if $verb eq 'help';
 if ($verb eq 'stop')    { exit do_stop() }
 if ($verb eq 'status')  { exit do_status() }
 if ($verb eq 'restart') { do_restart(@orig_argv) }
+if ($verb eq 'train')   { exit do_train(@verb_args) }
 
 push @ARGV, '--set', "logger_log_to_stdout=1"
     if $opt_log_stdout;
@@ -121,6 +122,26 @@ sub _read_pid {
     open my $fh, '<', _pid_file() or return undef;
     chomp(my $pid = <$fh> // '');
     return $pid =~ /^\d+$/ ? $pid : undef;
+}
+
+sub do_train {
+    my @buckets = @_;
+    my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
+    $user =~ s{[\\/]+$}{};
+    if (!@buckets) {
+        open my $fh, '>', "$user/popfile.train"
+            or die "Cannot create training flag: $!\n";
+        close $fh;
+        print "Training queued for all configured buckets\n";
+    } else {
+        for my $bucket (@buckets) {
+            open my $fh, '>', "$user/popfile.train.$bucket"
+                or die "Cannot create training flag for '$bucket': $!\n";
+            close $fh;
+        }
+        print "Training queued for: " . join(', ', @buckets) . "\n";
+    }
+    return 0;
 }
 
 sub do_stop {
@@ -282,6 +303,7 @@ Verbs:
   stop                      Stop a running daemon
   restart                   Stop then restart the daemon
   status                    Show daemon status
+  train [bucket...]         Queue IMAP training (all mappings if no bucket given)
   insert <bucket> [file...] Train message(s) into a bucket (stdin if no file)
   classify [file...]        Classify a message and print the result
   pipe                      Classify stdin, write modified message to stdout

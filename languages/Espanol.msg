@@ -365,6 +365,9 @@ Imap_Service Servicio
 Imap_TestConnection Probar conexión
 Imap_Testing Probando...
 Imap_TrainingHint El modo de entrenamiento analiza las carpetas de archivo existentes y entrena al clasificador con su contenido. El indicador se restablece automáticamente cuando finaliza el entrenamiento.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Modo de entrenamiento
 Imap_TrainingLimit Mensajes por carpeta (0 = ilimitado)
 Imap_WatchedFolders Carpetas supervisadas

@@ -389,6 +389,9 @@ Imap_Service                            שירות
 Imap_TestConnection                     בדוק חיבור
 Imap_Testing                            בודק...
 Imap_TrainingHint                       מצב אימון סורק תיקיות ארכיון קיימות ומאמן את המסווג על תוכנן. הדגל מתאפס אוטומטית כשהאימון מסתיים.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode                       מצב אימון
 Imap_TrainingLimit                      הודעות לכל תיקייה (0 = ללא הגבלה)
 Imap_UpdateError1                       לא ניתן להתחבר. אמת את שם המשתמש והסיסמה.

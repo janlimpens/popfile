@@ -386,6 +386,9 @@ Imap_Service Tjeneste
 Imap_TestConnection Test tilkobling
 Imap_Testing Tester...
 Imap_TrainingHint Opplæringsmodus gjennomgår eksisterende arkivmapper og trener klassifikatoren på innholdet. Flagget tilbakestilles automatisk når opplæringen er fullført.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Opplæringsmodus
 Imap_TrainingLimit Meldinger per mappe (0 = ubegrenset)
 Imap_UpdateError1 Kunne ikke logge inn. Bekreft brukernavn og passord.

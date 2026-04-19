@@ -442,6 +442,9 @@ Imap_Service Servizio
 Imap_TestConnection Testa connessione
 Imap_Testing Test in corso...
 Imap_TrainingHint La modalità addestramento analizza le cartelle di archivio esistenti e addestra il classificatore sul loro contenuto. Il flag si ripristina automaticamente al termine dell'addestramento.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Modalità addestramento
 Imap_TrainingLimit Messaggi per cartella (0 = illimitato)
 Imap_WatchedFolders Cartelle monitorate

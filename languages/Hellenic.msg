@@ -388,6 +388,9 @@ Imap_Service                            Υπηρεσία
 Imap_TestConnection                     Δοκιμή σύνδεσης
 Imap_Testing                            Δοκιμή...
 Imap_TrainingHint                       Η λειτουργία εκπαίδευσης σαρώνει τους υπάρχοντες φακέλους αρχείου και εκπαιδεύει τον ταξινομητή στα περιεχόμενά τους. Η σημαία επαναφέρεται αυτόματα όταν ολοκληρωθεί η εκπαίδευση.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode                       Λειτουργία εκπαίδευσης
 Imap_TrainingLimit                      Μηνύματα ανά φάκελο (0 = απεριόριστο)
 Imap_UpdateError1                       Αδυναμία σύνδεσης. Ελέγξτε το όνομα χρήστη και τον κωδικό σας.

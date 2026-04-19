@@ -443,6 +443,9 @@ Imap_Service Serviço
 Imap_TestConnection Testar conexão
 Imap_Testing Testando...
 Imap_TrainingHint O modo de treinamento analisa as pastas de arquivo existentes e treina o classificador com seu conteúdo. O indicador é redefinido automaticamente quando o treinamento termina.
+Imap_Train                              Train
+Imap_TrainAll                           Train all buckets
+Imap_TrainQueued                        Training queued
 Imap_TrainingMode Modo de treinamento
 Imap_TrainingLimit Mensagens por pasta (0 = ilimitado)
 Imap_WatchedFolders Pastas monitoradas
