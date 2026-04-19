@@ -145,8 +145,9 @@ method _reconfigure_adapter() {
         to_stdout => $self->config('log_to_stdout') ? 1 : 0,
         filename => $debug_filename,
         popfile_level => $self->config('level') // 0,
+        log_sql => $self->config('log_sql') ? 1 : 0,
         format => $self->config('format') // 'default',
-);
+    );
     Log::Any::Adapter->set('+POPFile::Log::Adapter');
 }
 

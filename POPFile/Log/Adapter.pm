@@ -64,6 +64,7 @@ my %cfg = (
     to_stdout => 0,
     filename => '',
     popfile_level => 0,
+    log_sql => 0,
     format => 'default',
     ring => [],
 );
@@ -97,6 +98,7 @@ for my $method (logging_methods()) {
 }
 
 sub _write($msg) {
+    return if $msg =~ /\[SQL\]/ && !$cfg{log_sql};
     $msg =~ s/((--)?)(USER|PASS)\s+\S*(\1)/"$`$1$3 XXXXXX$4"/ei;
     $msg =~ s/([\x00-\x1f])/sprintf("[%2.2x]", ord($1))/eg;
     my $delim = $cfg{format} eq 'tabbed' ? "\t"

@@ -699,7 +699,7 @@ method db_connect() {
     # by the dbconnect parameter.
 
     $dbconnect =~ s/\$dbname/$dbname/g;
-    $self->log_msg(0, "Attempting to connect to $dbconnect ($dbpresent)");
+    $self->log_msg(1, "Attempting to connect to $dbconnect ($dbpresent)");
     my $need_convert = 0;
     my $old_dbh;
 
@@ -724,7 +724,7 @@ method db_connect() {
             catch ($e) {}
 
             if ($ver ge '1.00') {
-                $self->log_msg(0, "DBD::SQLite $ver found");
+                $self->log_msg(1, "DBD::SQLite $ver found");
 
                 # Backup SQLite2 database
 
@@ -783,7 +783,7 @@ method db_connect() {
     }
 
     if ($sqlite) {
-        $self->log_msg(0, "Using SQLite library version " . $db->{sqlite_version});
+        $self->log_msg(1, "Using SQLite library version " . $db->{sqlite_version});
 
         if ($need_convert) {
         $self->log_msg(0, 'Convert SQLite2 database to SQLite3 database');
