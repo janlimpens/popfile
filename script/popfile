@@ -20,6 +20,7 @@ BEGIN {
 
 use strict;
 use warnings;
+use File::Spec;
 use Getopt::Long qw(:config pass_through no_auto_abbrev);
 use lib $ENV{POPFILE_ROOT};
 use lib "$ENV{POPFILE_ROOT}/vendor/perl-querybuilder/lib";
@@ -182,7 +183,7 @@ sub do_start {
     my ($POPFile) = @_;
     my $cfg_mod = $POPFile->get_module('POPFile::Config');
     print "POPFile " . $POPFile->CORE_version() . "\n";
-    print "Config: " . $cfg_mod->get_user_path('popfile.cfg') . "\n";
+    print "Config: " . File::Spec->rel2abs($cfg_mod->get_user_path('popfile.cfg')) . "\n";
     $POPFile->CORE_start();
     my $ui = $POPFile->get_module('mojo_ui', 'interface');
     print "Web UI: http://localhost:" . $ui->config('port') . "/\n"
