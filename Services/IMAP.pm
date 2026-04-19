@@ -167,6 +167,9 @@ method poll() {
             if (defined $result->{uid_nexts_str}) {
                 $self->config('uidnexts', $result->{uid_nexts_str});
             }
+            if (defined $result->{uid_validities_str}) {
+                $self->config('uidvalidities', $result->{uid_validities_str});
+            }
             if ($result->{training_done}) {
                 unlink @pending_train_flags;
                 @pending_train_flags = ();
@@ -179,7 +182,7 @@ method poll() {
 }
 
 method _run_poll_work() {
-    my $result = { trained => 0, uid_nexts_str => undef, training_done => 0, error => undef };
+    my $result = { trained => 0, uid_nexts_str => undef, uid_validities_str => undef, training_done => 0, error => undef };
     try {
         local $SIG{PIPE} = 'IGNORE';
         local $SIG{__DIE__};
@@ -200,6 +203,7 @@ method _run_poll_work() {
             }
         }
         $result->{uid_nexts_str} = $self->config('uidnexts');
+        $result->{uid_validities_str} = $self->config('uidvalidities');
     }
     catch ($err) {
         $self->disconnect_folders();
@@ -461,6 +465,7 @@ method classify_message ($msg, $hash, $folder) {
         sysseek $pseudo_mailer, 0, 0;
         ($class, $slot, $magnet_used) = $classifier->classify_and_modify(
             $self->api_session(), $pseudo_mailer, undef, 0, '', undef, 0, undef);
+        $self->_flush_history();
         close $pseudo_mailer;
         unlink $file;
         if ($magnet_used || $part eq 'TEXT') {
@@ -510,6 +515,11 @@ method insert_message_into_bucket ($folder, $msg, $bucket) {
     $self->log_msg(0, "Trained message with UID $msg into bucket $bucket.");
     unlink $file;
     return 1
+}
+
+method _flush_history() {
+    $self->mq()->service();
+    $history->commit_history() if ref $history;
 }
 
 =head2 reclassify_message($folder, $msg, $old_bucket, $hash)
