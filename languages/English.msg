@@ -453,14 +453,14 @@ Corpus_WordsLink                        Words →
 Corpus_BucketList                       Buckets
 Corpus_Search                           Search
 Corpus_StopwordCandidates               Stop-word candidates
-Corpus_StopwordCandidatesDesc           Words appearing evenly across all buckets — little discriminative power.
-Corpus_StopwordRatio                    Max/min ratio threshold
+Corpus_StopwordCandidatesDesc           Words appearing in every bucket with similar frequency — little discriminative power. Requires at least two non-pseudo buckets. Higher threshold = more candidates.
+Corpus_StopwordRatio                    Max/min count ratio (e.g. 5 = one bucket has at most 5× the count of another)
 Corpus_LoadCandidates                   Find candidates
 Corpus_AddStopword                      Add to stop-words
 Corpus_StopwordsTitle                   Stop-words
 Corpus_StopwordsDesc                    Words in this list are never used for classification.
 Corpus_RemoveStopword                   Remove
-Corpus_NoCandidates                     No candidates found at this threshold.
+Corpus_NoCandidates                     No candidates found. Try a higher ratio or train more messages first.
 
 WordView_Title                          Word Accuracy
 WordView_SelectBucket                   select bucket

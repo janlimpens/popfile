@@ -150,7 +150,7 @@ sub delete_stopword ($self) {
 
 sub list_stopword_candidates ($self) {
     my $svc = $self->popfile_svc;
-    my $ratio = ($self->param('ratio') // 2.0) + 0;
+    my $ratio = ($self->param('ratio') // 5.0) + 0;
     my $limit = ($self->param('limit') // 50) + 0;
     $ratio = 2.0 if $ratio <= 1;
     $limit = 50 if $limit < 1 || $limit > 500;

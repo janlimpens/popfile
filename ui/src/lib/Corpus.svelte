@@ -15,7 +15,7 @@
   let words = $state([]);
   let stopwords = $state([]);
   let candidates = $state([]);
-  let candidateRatio = $state(2.0);
+  let candidateRatio = $state(5.0);
   let candidatesLoaded = $state(false);
 
   async function refresh() {
