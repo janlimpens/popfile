@@ -15,6 +15,8 @@ and C<popfile_history>.
 
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use Encode qw();
+use MIME::QuotedPrint qw(decode_qp);
+use MIME::Base64 qw(decode_base64);
 
 my sub decode_header($value) {
     return ''
@@ -123,19 +125,36 @@ sub get_history_item ($self) {
     my $file = $hist->get_slot_file($slot);
     return $self->render(status => 404, json => { error => 'not found' })
         unless defined $file && -f $file;
-    open my $fh, '<', $file
+    open my $fh, '<:encoding(UTF-8)', $file
         or return $self->render(status => 500, json => { error => 'cannot read' });
     my $in_headers = 1;
     my $body = '';
+    my $cte = '';
+    my $charset = 'UTF-8';
     while (<$fh>) {
         s/[\r\n]//g;
         if ($in_headers) {
+            if (/^content-transfer-encoding:\s*(.+)$/i) {
+                $cte = lc $1;
+            }
+            elsif (/^content-type:.*charset=["']?([^\s;"'>]+)/i) {
+                $charset = $1;
+            }
             $in_headers = 0 if $_ eq '';
             next;
         }
         $body .= "$_\n";
     }
     close $fh;
+    if ($cte eq 'quoted-printable') {
+        $body = decode_qp($body);
+        eval { $body = Encode::decode($charset, $body) };
+    }
+    elsif ($cte eq 'base64') {
+        $body =~ s/\s+//g;
+        $body = decode_base64($body);
+        eval { $body = Encode::decode($charset, $body) };
+    }
     my %orig_for;
     for my $raw (split /\W+/, $body) {
         next if $raw eq '';
