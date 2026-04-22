@@ -511,7 +511,8 @@ method update_word ($word, $encoded, $before, $after, $prefix) {
     }
 
     for my $mword (@mwords) {
-        $mword = $prefix . ':' . $mword if ($prefix ne '');
+        $mword = $prefix . ':' . $mword
+            if ($prefix ne '' && $prefix !~ /^(?:from|to|cc|subject)$/i);
 
         if (defined($color_resolver)) {
             my $color = $self->get_color($mword);

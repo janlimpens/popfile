@@ -35,9 +35,9 @@ subtest 'parse ham email' => sub {
     ok( exists $words{project},  'found "project"' );
     ok( exists $words{report},   'found "report"' );
 
-    # Header pseudowords should be present
+    # Header words are now stored without prefix
     my @header_words = grep { /^from:|^to:|^subject:/ } keys %words;
-    ok( @header_words > 0, 'header pseudowords extracted' );
+    is( scalar @header_words, 0, 'no header-prefixed words in corpus' );
 };
 
 # -----------------------------------------------------------------------
