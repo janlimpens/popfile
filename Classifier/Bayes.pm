@@ -880,7 +880,7 @@ method db_connect() {
          WHERE matrix.bucketid = ? AND
             matrix.wordid = ? LIMIT 1'));
     $db_put_word_count = $db->prepare($self->normalize_sql(
-        'REPLACE INTO matrix (bucketid, wordid, times) VALUES (?, ?, ?)'));
+        'REPLACE INTO matrix (bucketid, wordid, times, lastseen) VALUES (?, ?, ?, date(\'now\'))'));
     $db_get_bucket_word_counts = $db->prepare($self->normalize_sql(
         'SELECT sum(matrix.times), count(matrix.id), buckets.name FROM matrix, buckets
          WHERE matrix.bucketid = buckets.id
@@ -3363,7 +3363,7 @@ method move_word_between_buckets ($session, $from_bucket, $to_bucket, $word) {
         $to_id, $wordid)->fetchrow_arrayref;
     if (defined $existing_row) {
         $self->validate_sql_prepare_and_execute(
-            'UPDATE matrix SET times = times + ? WHERE bucketid = ? AND wordid = ?',
+            'UPDATE matrix SET times = times + ?, lastseen = date(\'now\') WHERE bucketid = ? AND wordid = ?',
             $count, $to_id, $wordid);
     } else {
         $self->validate_sql_prepare_and_execute(
