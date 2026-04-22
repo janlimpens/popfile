@@ -15,27 +15,27 @@
     {
       id: 'ui', label: t('Settings_SectionUI'), icon: '⚙',
       settings: [
-        { key: 'mojo_ui_port', label: t('Settings_HTTPPort'), type: 'number',
+        { key: 'api_port', label: t('Settings_HTTPPort'), type: 'number',
           desc: t('Settings_DescHTTPPort') },
-        { key: 'mojo_ui_local', label: t('Settings_LocalOnly'), type: 'bool',
+        { key: 'api_local', label: t('Settings_LocalOnly'), type: 'bool',
           desc: t('Settings_DescLocalOnly_UI') },
-        { key: 'mojo_ui_page_size', label: t('Settings_ItemsPerPage'), type: 'number',
+        { key: 'api_page_size', label: t('Settings_ItemsPerPage'), type: 'number',
           desc: t('Settings_DescItemsPerPage') },
-        { key: 'mojo_ui_date_format', label: t('Settings_DateFormat'), type: 'text',
+        { key: 'api_date_format', label: t('Settings_DateFormat'), type: 'text',
           desc: t('Settings_DescDateFormat') },
-        { key: 'mojo_ui_session_dividers', label: t('Settings_SessionDividers'), type: 'bool',
+        { key: 'api_session_dividers', label: t('Settings_SessionDividers'), type: 'bool',
           desc: t('Settings_DescSessionDividers') },
-        { key: 'mojo_ui_wordtable_format', label: t('Settings_WordTable'), type: 'select',
+        { key: 'api_wordtable_format', label: t('Settings_WordTable'), type: 'select',
           options: [['', t('Settings_OptHidden')], ['freq', t('Settings_OptFrequencies')], ['prob', t('Settings_OptProbabilities')], ['score', t('Settings_OptLogScores')]],
           desc: t('Settings_DescWordTable') },
-        { key: 'mojo_ui_locale', label: t('Configuration_Language'), type: 'locale',
+        { key: 'api_locale', label: t('Configuration_Language'), type: 'locale',
           desc: t('Settings_DescLanguage') },
       ],
     },
     {
       id: 'security', label: t('Settings_SectionSecurity'), icon: '🔒',
       settings: [
-        { key: 'mojo_ui_password', label: t('Settings_AdminPassword'), type: 'password',
+        { key: 'api_password', label: t('Settings_AdminPassword'), type: 'password',
           desc: t('Settings_DescAdminPassword') },
       ],
     },
@@ -186,7 +186,7 @@
       status = 'ok';
       dirty = false;
       setTimeout(() => { status = ''; }, 2500);
-      await initLocale(config.mojo_ui_locale || '');
+      await initLocale(config.api_locale || '');
     } else {
       status = 'error';
     }

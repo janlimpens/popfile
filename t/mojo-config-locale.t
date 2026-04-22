@@ -42,21 +42,21 @@ my $app = $ui->build_app(undef, '');
 $app->log->level('fatal');
 my $t = Test::Mojo->new($app);
 
-subtest 'mojo_ui_locale config key is registered and returned' => sub {
+subtest 'api_locale config key is registered and returned' => sub {
     $t->get_ok('/api/v1/config')
       ->status_is(200)
-      ->json_has('/mojo_ui_locale', 'mojo_ui_locale key exists in config');
-    my $val = $t->tx->res->json->{mojo_ui_locale};
+      ->json_has('/api_locale', 'api_locale key exists in config');
+    my $val = $t->tx->res->json->{api_locale};
     is($val, '', 'default locale is empty string (auto-detect)');
 };
 
-subtest 'PUT /api/v1/config persists mojo_ui_locale' => sub {
-    $t->put_ok('/api/v1/config', json => { mojo_ui_locale => 'Deutsch' })
+subtest 'PUT /api/v1/config persists api_locale' => sub {
+    $t->put_ok('/api/v1/config', json => { api_locale => 'Deutsch' })
       ->status_is(200)
       ->json_is('/ok', 1);
     $t->get_ok('/api/v1/config')
       ->status_is(200)
-      ->json_is('/mojo_ui_locale', 'Deutsch', 'locale persisted across GET');
+      ->json_is('/api_locale', 'Deutsch', 'locale persisted across GET');
 };
 
 subtest 'GET /api/v1/i18n returns locale list' => sub {

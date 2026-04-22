@@ -36,7 +36,7 @@
     ]);
     if (bucketsRes.ok) buckets = await bucketsRes.json();
     const cfg = cfgRes.ok ? await cfgRes.json() : {};
-    await initLocale(cfg.mojo_ui_locale || '');
+    await initLocale(cfg.api_locale || '');
     window.addEventListener('hashchange', () => {
       const [p, sub] = parseHash();
       page = p;

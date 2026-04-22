@@ -241,7 +241,7 @@ sub do_start {
         }
         exit 1;
     }
-    my $ui = $POPFile->get_module('mojo_ui', 'interface');
+    my $ui = $POPFile->get_module('api', 'interface');
     print "Web UI: http://localhost:" . $ui->config('port') . "/\n"
         if defined $ui;
     require Mojo::IOLoop;
@@ -354,16 +354,16 @@ Options:
   --help, -h                Show this help
 
 Useful config keys (see popfile.cfg.sample for all):
-  mojo_ui_port=N            Web UI port (0 = automatic)
-  mojo_ui_page_size=N       History page size
-  mojo_ui_open_browser=1    Open browser on start
+  api_port=N            Web UI port (0 = automatic)
+  api_page_size=N       History page size
+  api_open_browser=1    Open browser on start
   bayes_database=FILE       SQLite database file
   logger_level=N            Log level (0=off, 5=verbose)
   imap_enabled=1            Enable IMAP classification service
 
 Examples:
   popfile                                   Start with defaults
-  popfile --set mojo_ui_port=8080           Start on a fixed port
+  popfile --set api_port=8080           Start on a fixed port
   popfile --log-stdout --log-level 3 start  Debug run with console logging
   popfile insert spam < message.eml         Train a message as spam
   popfile insert spam mail1.eml mail2.eml   Train multiple messages

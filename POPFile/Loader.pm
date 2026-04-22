@@ -321,8 +321,8 @@ method CORE_link_components() {
         }
     }
 
-    if (defined $components{services}{imap} && defined $components{core}{mojo_ui}) {
-        $components{core}{mojo_ui}->set_imap($components{services}{imap});
+    if (defined $components{services}{imap} && defined $components{core}{api}) {
+        $components{core}{api}->set_imap($components{services}{imap});
     }
 
     $components{core}{history}->set_classifier(

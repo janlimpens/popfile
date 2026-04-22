@@ -32,7 +32,7 @@ field $imap_service = undef;
 field $daemon_ref = undef;
 
 BUILD {
-    $self->set_name('mojo_ui');
+    $self->set_name('api');
 }
 
 =head2 initialize

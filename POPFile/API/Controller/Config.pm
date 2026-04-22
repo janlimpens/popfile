@@ -2,14 +2,14 @@ package POPFile::API::Controller::Config;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 
 use constant CFG => {
-    mojo_ui_port => [mojo_ui => 'port'],
-    mojo_ui_password => [mojo_ui => 'password'],
-    mojo_ui_local => [mojo_ui => 'local'],
-    mojo_ui_page_size => [mojo_ui => 'page_size'],
-    mojo_ui_date_format => [mojo_ui => 'date_format'],
-    mojo_ui_session_dividers => [mojo_ui => 'session_dividers'],
-    mojo_ui_wordtable_format => [mojo_ui => 'wordtable_format'],
-    mojo_ui_locale => [mojo_ui => 'locale'],
+    api_port => [api => 'port'],
+    api_password => [api => 'password'],
+    api_local => [api => 'local'],
+    api_page_size => [api => 'page_size'],
+    api_date_format => [api => 'date_format'],
+    api_session_dividers => [api => 'session_dividers'],
+    api_wordtable_format => [api => 'wordtable_format'],
+    api_locale => [api => 'locale'],
     pop3_port => [pop3 => 'port'],
     pop3_separator => [pop3 => 'separator'],
     pop3_local => [pop3 => 'local'],

@@ -30,7 +30,7 @@
     const res = await fetch('/api/v1/config');
     if (res.ok) {
       const cfg = await res.json();
-      pageSize = parseInt(cfg.mojo_ui_page_size) || 25;
+      pageSize = parseInt(cfg.api_page_size) || 25;
     }
   }
 

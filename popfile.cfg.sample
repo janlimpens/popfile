@@ -3,16 +3,16 @@
 # Override any key at startup: popfile --set key=value
 
 # ── Web UI ──────────────────────────────────────────────────────────────────
-mojo_ui_port 0
-mojo_ui_local 1
-mojo_ui_password
-mojo_ui_page_size 25
-mojo_ui_date_format
-mojo_ui_locale
-mojo_ui_session_dividers 1
-mojo_ui_wordtable_format
-mojo_ui_open_browser 0
-mojo_ui_static_dir public
+api_port 0
+api_local 1
+api_password
+api_page_size 25
+api_date_format
+api_locale
+api_session_dividers 1
+api_wordtable_format
+api_open_browser 0
+api_static_dir public
 
 # ── Classifier (Bayes) ───────────────────────────────────────────────────────
 bayes_database popfile.db

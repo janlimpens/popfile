@@ -64,10 +64,10 @@ subtest 'GET /api/v1/status returns 200' => sub {
 };
 
 # -----------------------------------------------------------------------
-subtest 'GET /api/v1/config has mojo_ui_locale key' => sub {
+subtest 'GET /api/v1/config has api_locale key' => sub {
     $t->get_ok('/api/v1/config')
       ->status_is(200)
-      ->json_has('/mojo_ui_locale');
+      ->json_has('/api_locale');
 };
 
 # -----------------------------------------------------------------------

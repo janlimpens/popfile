@@ -27,7 +27,7 @@ carton exec perl popfile.pl
 ```
 
 The web UI is available at `http://localhost:<port>/` — the port is printed to
-the console on startup (default 8080, configurable via `mojo_ui_port`).
+the console on startup (default 8080, configurable via `api_port`).
 
 `POPFILE_ROOT` overrides the root directory for config, database, and message
 cache (default: `./`).
