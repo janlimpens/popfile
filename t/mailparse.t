@@ -85,4 +85,34 @@ subtest 'header extraction' => sub {
     like( $mp->get_header('subject'), qr/Meeting/i, 'Subject header extracted' );
 };
 
+# -----------------------------------------------------------------------
+subtest 'URL query parameters are not tokenized as words' => sub {
+    require Classifier::MailParse;
+    my $mp2 = Classifier::MailParse->new();
+    $mp2->set_mangle($wm);
+
+    my $tmpfile = "$fixture_dir/url_noise_test.eml";
+    open my $fh, '>', $tmpfile or die "cannot write $tmpfile: $!";
+    print $fh <<'END';
+From: sender@example.com
+To: recipient@example.com
+Subject: URL noise test
+Date: Mon, 1 Jan 2024 00:00:00 +0000
+
+Visit https://tracker.example.com/click?utm_source=newsletter&utm_medium=email&campaign_id=abc123 for details.
+END
+    close $fh;
+
+    $mp2->parse_file($tmpfile);
+    unlink $tmpfile;
+    my %words = %{ $mp2->words() };
+
+    ok( !exists $words{utm},    'utm not in word list' );
+    ok( !exists $words{source}, 'source not in word list from query param' );
+    ok( !exists $words{medium}, 'medium not in word list from query param' );
+    ok( !exists $words{abc},    'abc not in word list from query param' );
+    ok( exists $words{'tracker.example.com'} || exists $words{'example.com'},
+        'hostname is still extracted' );
+};
+
 done_testing;

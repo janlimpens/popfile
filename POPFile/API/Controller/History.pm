@@ -162,12 +162,16 @@ sub _do_reclassify ($self, $slot, $bucket) {
     return { error => 'invalid slot' }
         unless @fields;
     my $old_bucket = $fields[8];
+    my $hash = $fields[6];
     $hist->change_slot_classification($slot, $bucket, $session, 0);
     return {}
         unless defined $old_bucket && $old_bucket ne $bucket;
     my $file = $hist->get_slot_file($slot);
     $svc->remove_message_from_bucket($old_bucket, $file);
     $svc->add_message_to_bucket($bucket, $file);
+    my $imap = $self->popfile_imap;
+    $imap->request_folder_move($hash, $bucket)
+        if defined $imap && defined $hash;
     return {}
 }
 

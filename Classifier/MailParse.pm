@@ -607,6 +607,14 @@ method add_line ($bigline, $encoded, $prefix) {
                 }
             }
 
+            # Strip full scheme-prefixed URLs, extracting only the hostname.
+            # This prevents URL path segments and query parameters from being
+            # tokenized as ordinary words.
+            while ($line =~ s{(?:https?|ftp)://([^\s<>"]+)}{}) {
+                (my $url_part = $1) =~ s/[.,;:!)?]+$//;
+                $self->add_url($url_part, $encoded, '', '', $prefix);
+            }
+
             # Pull out any email addresses in the line that are marked
             # with <> and have an @ in them
 

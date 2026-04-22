@@ -38,6 +38,7 @@ field %folders;
 field @mailboxes;
 field $folder_change_flag = 0;
 field %hash_values;
+field %pending_folder_moves;
 field $api_session = '';
 field $imap_error = '';
 field $last_update = 0;
@@ -363,6 +364,18 @@ method disconnect_folders() {
     %folders = ();
 }
 
+=head2 request_folder_move($hash, $target_bucket)
+
+Queues a folder move for the message identified by C<$hash>.  On the next
+IMAP scan cycle the message will be moved to the folder mapped to
+C<$target_bucket>.
+
+=cut
+
+method request_folder_move ($hash, $target_bucket) {
+    $pending_folder_moves{$hash} = $target_bucket;
+}
+
 =head2 scan_folder($folder)
 
 Scans one IMAP folder for new messages (UIDs ≥ stored C<UIDNEXT>).  For each
@@ -387,6 +400,16 @@ method scan_folder ($folder) {
         $imap->uid_next($folder, $msg + 1);
         unless (defined $hash) {
             $self->log_msg(0, "Skipping message $msg.");
+            next;
+        }
+        if (exists $pending_folder_moves{$hash}) {
+            my $target_bucket = delete $pending_folder_moves{$hash};
+            my $destination = $self->folder_for_bucket($target_bucket);
+            if (defined $destination && $destination ne $folder) {
+                $self->log_msg(0, "UI reclassification: moving message $msg to $destination.");
+                $imap->move_message($msg, $destination);
+                $moved_message++;
+            }
             next;
         }
         if (exists $hash_values{$hash}) {

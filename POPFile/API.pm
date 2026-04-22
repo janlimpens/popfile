@@ -28,6 +28,7 @@ use Data::Page;
 class POPFile::API :isa(POPFile::Module);
 
 field $service = undef;
+field $imap_service = undef;
 field $daemon_ref = undef;
 
 BUILD {
@@ -151,6 +152,10 @@ method set_service ($svc = undef) {
     $service = $svc;
 }
 
+method set_imap ($svc = undef) {
+    $imap_service = $svc;
+}
+
 
 =head2 build_app
 
@@ -190,6 +195,7 @@ method build_app ($svc, $session = undef) {
     $app->helper(popfile_session => sub ($c) {
         defined $svc && $svc->can('session') ? $svc->session() : ($session // '') });
     $app->helper(popfile_history => sub ($c) { defined $svc ? $svc->history_obj() : undef });
+    $app->helper(popfile_imap => sub ($c) { $imap_service });
     $app->helper(popfile_lang_dir => sub ($c) { $languages_dir });
 
     $r->get('/api/v1/buckets')->to('corpus#list_buckets');
