@@ -515,8 +515,6 @@ method commit_history() {
         my @required = qw(from to cc subject);
 
         for my $h (@required) {
-            $header{$h}->[0] = $classifier->parser()->decode_string(
-                $header{$h}->[0]);
             if (!defined $header{$h}->[0] || $header{$h}->[0] =~ /^\s*$/) {
                 if ($h ne 'cc') {
                     $header{$h}->[0] = "<$h header missing>";

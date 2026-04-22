@@ -313,9 +313,11 @@ method CORE_link_components() {
             my $mod = $components{proxy}{$name};
             $mod->set_service($svc) if $mod->can('set_service');
         }
-        for my $name (sort keys $components{interface}->%*) {
-            my $mod = $components{interface}{$name};
-            $mod->set_service($svc) if $mod->can('set_service');
+        if (exists $components{interface}) {
+            for my $name (sort keys $components{interface}->%*) {
+                my $mod = $components{interface}{$name};
+                $mod->set_service($svc) if $mod->can('set_service');
+            }
         }
     }
 
