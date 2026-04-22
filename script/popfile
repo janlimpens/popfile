@@ -242,8 +242,12 @@ sub do_start {
         exit 1;
     }
     my $ui = $POPFile->get_module('api', 'interface');
-    print "Web UI: http://localhost:" . $ui->config('port') . "/\n"
-        if defined $ui;
+    if (defined $ui) {
+        my $url = "http://localhost:" . $ui->config('port') . "/";
+        print "\n--------------------------------------------------\n";
+        print "  Web UI ready: $url\n";
+        print "--------------------------------------------------\n\n";
+    }
     require Mojo::IOLoop;
     $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = sub { Mojo::IOLoop->stop() };
     $POPFile->CORE_register_timers();
