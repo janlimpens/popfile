@@ -42,6 +42,8 @@
     {
       id: 'pop3', label: t('Settings_SectionPOP3'), icon: '📬',
       settings: [
+        { key: 'pop3_enabled', label: t('Settings_EnableService'), type: 'bool',
+          desc: t('Settings_DescEnableProxy') },
         { key: 'pop3_port', label: t('Settings_ListenPort'), type: 'number',
           desc: t('Settings_DescPOP3Port') },
         { key: 'pop3_separator', label: t('Settings_ServerSeparator'), type: 'text',
@@ -61,6 +63,8 @@
     {
       id: 'smtp', label: t('Settings_SectionSMTP'), icon: '📤',
       settings: [
+        { key: 'smtp_enabled', label: t('Settings_EnableService'), type: 'bool',
+          desc: t('Settings_DescEnableProxy') },
         { key: 'smtp_port', label: t('Settings_ListenPort'), type: 'number',
           desc: t('Settings_DescSMTPPort') },
         { key: 'smtp_chain_server', label: t('Settings_ChainServer'), type: 'text',
@@ -76,6 +80,8 @@
     {
       id: 'nntp', label: t('Settings_SectionNNTP'), icon: '📰',
       settings: [
+        { key: 'nntp_enabled', label: t('Settings_EnableService'), type: 'bool',
+          desc: t('Settings_DescEnableProxy') },
         { key: 'nntp_port', label: t('Settings_ListenPort'), type: 'number',
           desc: t('Settings_DescNNTPPort') },
         { key: 'nntp_separator', label: t('Settings_ServerSeparator'), type: 'text',
