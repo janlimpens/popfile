@@ -68,12 +68,15 @@ starts it. Returns 1 on success.
 
 method _find_free_port() {
     require IO::Socket::INET;
-    my $sock = IO::Socket::INET->new(
+    my %socket_args = (
         Listen => 1,
         Proto => 'tcp',
-        LocalAddr => '0.0.0.0',
         LocalPort => 0,
         ReuseAddr => 1 );
+    $socket_args{LocalAddr} = '127.0.0.1'
+        if $self->config('local');
+    my $sock = IO::Socket::INET->new(
+        %socket_args );
     my $port = $sock->sockport();
     $sock->close();
     return $port
@@ -99,9 +102,12 @@ method start() {
         }
     }
     my $app = $self->build_app($service, undef);
+    my $host = $self->config('local')
+        ? '127.0.0.1'
+        : '*';
     my $daemon = Mojo::Server::Daemon->new(
         app => $app,
-        listen => ["http://*:$port"] );
+        listen => ["http://$host:$port"] );
     $daemon->start();
     $daemon_ref = $daemon;
     $self->log_msg(0, "POPFile::API: listening on port $port");
