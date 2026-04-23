@@ -298,16 +298,8 @@ method connect_server() {
             next;
         }
         unless (defined $imap) {
-            $imap = $folders{$folder}{imap};
-            unless (defined $imap) {
-                $imap = $self->new_imap_client();
-                if ($imap) {
-                    $folders{$folder}{imap} = $imap;
-                }
-                else {
-                    die "POPFILE-IMAP-EXCEPTION: Could not connect: $imap_error " . __FILE__ . '(' . __LINE__ . '))';
-                }
-            }
+            $imap = $self->new_imap_client()
+                or die "POPFILE-IMAP-EXCEPTION: Could not connect: $imap_error " . __FILE__ . '(' . __LINE__ . '))';
         }
         @mailboxes = $imap->get_mailbox_list() unless @mailboxes;
         my $info = $imap->status($folder);
