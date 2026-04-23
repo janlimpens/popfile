@@ -18,6 +18,31 @@ L<POPFile::API/build_app>: C<popfile_api> for configuration access.
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use POPFile::Features;
 
+sub _make_test_client($self, $body) {
+    require POPFile::Configuration;
+    require Services::IMAP::Client;
+    my $api = $self->popfile_api;
+    my $base = $api->configuration();
+    my $config = POPFile::Configuration->new();
+    $config->set_configuration($config);
+    $config->set_mq($api->mq());
+    $config->set_popfile_root($base->popfile_root());
+    $config->set_popfile_user($base->popfile_user());
+    $config->initialize();
+    $config->set_started(1);
+    $config->parameter('GLOBAL_timeout', $base->parameter('GLOBAL_timeout') // 60);
+    my $client = Services::IMAP::Client->new();
+    $client->set_configuration($config);
+    $client->set_mq($api->mq());
+    $client->set_name('imap');
+    $client->config('hostname', $body->{hostname} // '');
+    $client->config('port', $body->{port} // 143);
+    $client->config('login', $body->{login} // '');
+    $client->config('password', $body->{password} // '');
+    $client->config('use_ssl', $body->{use_ssl} // 0);
+    return $client
+}
+
 sub get_folders ($self) {
     my $api = $self->popfile_api;
     my $watched_raw = $api->module_config('imap', 'watched_folders') // '';
@@ -71,18 +96,8 @@ sub get_server_folders ($self) {
 }
 
 sub test_connection ($self) {
-    require Services::IMAP::Client;
-    my $api = $self->popfile_api;
     my $body = $self->req->json // {};
-    my $client = Services::IMAP::Client->new();
-    $client->set_configuration($api->configuration());
-    $client->set_mq($api->mq());
-    $client->set_name('imap');
-    $client->config('hostname', $body->{hostname} // '');
-    $client->config('port', $body->{port} // 143);
-    $client->config('login', $body->{login} // '');
-    $client->config('password', $body->{password} // '');
-    $client->config('use_ssl', $body->{use_ssl} // 0);
+    my $client = $self->_make_test_client($body);
     my $err = '';
     try {
         unless ($client->connect()) {
