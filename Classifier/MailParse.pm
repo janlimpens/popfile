@@ -1483,15 +1483,19 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
 
     if (defined $mangle && $mangle->config('auto_detect_language')) {
         open my $sample_fh, '<', $file;
-        my $sample = '';
+        my ($sample, $in_body) = ('', 0);
         while (<$sample_fh>) {
+            $in_body = 1 if !$in_body && /^\r?\n$/;
+            next unless $in_body;
             $sample .= $_;
             last if length($sample) >= 1000;
         }
         close $sample_fh;
-        my $detected = Lingua::Identify::langof($sample);
-        $mangle->set_language($detected)
-            if defined $detected;
+        if (length($sample) >= 50) {
+            my $detected = Lingua::Identify::langof($sample);
+            $mangle->set_language($detected)
+                if defined $detected;
+        }
     }
 
     $self->start_parse($reset);
@@ -2240,11 +2244,23 @@ method parse_header ($header, $argument, $mime, $encoding) {
         $self->update_pseudoword('encoding', $compact_encoding,                                  0, $encoding);        return ($mime, $encoding);
     }
 
-    # Some headers to discard
-
     return ($mime, $encoding)
-        if ($header =~ /^(Thread-Index|X-UIDL|Message-ID|
-                           X-Text-Classification|X-Mime-Key)$/ix);
+        if ($header =~ /^(
+            Thread-Index | X-UIDL | Message-ID |
+            X-Text-Classification | X-Mime-Key |
+            Received | X-Received | X-Forwarded-To | X-Original-To |
+            Delivered-To | Return-Path | Envelope-To |
+            MIME-Version |
+            References | In-Reply-To |
+            DKIM-Signature | DomainKey-Signature |
+            ARC-Seal | ARC-Message-Signature | ARC-Authentication-Results |
+            Authentication-Results |
+            Errors-To | Bounce-To | X-Complaints-To |
+            List-Id | List-Unsubscribe | List-Unsubscribe-Post |
+            List-Archive | List-Help | List-Post | List-Subscribe |
+            Auto-Submitted | X-Auto-Response-Suppress |
+            Feedback-ID | X-Feedback-ID | X-Report-Abuse
+        )$/ix);
     # Some headers should never be RFC 2047 decoded
 
     $argument = $self->decode_string($argument, $lang)
