@@ -1,0 +1,21 @@
+Message-ID: <seed-5-1776597266@popfile.test>
+From: manager@company.example.com
+To: team@company.example.com
+Subject: Weekly sync - agenda for Thursday
+Date: Sun Apr 19 13:14:26 2026
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+
+Hi everyone,
+
+Agenda for Thursday's weekly sync (3pm, room B2):
+
+1. Sprint review - what shipped last week
+2. Blockers and dependencies
+3. Q1 planning status
+4. AOB
+
+Please add any items you want to discuss to the shared doc before Wednesday EOD.
+
+Thanks,
+Sarah

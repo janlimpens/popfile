@@ -1,0 +1,20 @@
+Message-ID: <seed-2-1776597266@popfile.test>
+From: peter@friends.example.com
+To: user@example.com
+Subject: Re: that article about LLMs
+Date: Sun Apr 19 13:14:26 2026
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+
+Yeah I read it too. The point about emergent capabilities is interesting
+but I think they overstate the case a bit. The benchmark results are hard
+to interpret when the training data almost certainly contains the test set.
+
+The part about reasoning I found more convincing. There does seem to be
+something qualitatively different happening at scale, though whether that
+counts as "reasoning" in any meaningful sense is another question.
+
+Did you see the follow-up post by the same author? Goes into the scaling
+laws in more detail. I'll send you the link.
+
+Peter

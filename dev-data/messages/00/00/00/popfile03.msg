@@ -1,0 +1,24 @@
+Message-ID: <seed-3-1776597266@popfile.test>
+From: billing@saas-vendor.example.com
+To: accounts@company.example.com
+Subject: Invoice #INV-2024-0047 for January subscription
+Date: Sun Apr 19 13:14:26 2026
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+
+Dear Accounts Team,
+
+Please find attached invoice #INV-2024-0047 for your January subscription.
+
+  Plan: Professional (50 seats)
+  Period: 2024-01-01 to 2024-01-31
+  Amount: EUR 490.00
+  Due date: 2024-01-15
+
+Payment details are on the invoice. Please reference the invoice number
+when making the transfer.
+
+If you have any questions please contact billing@saas-vendor.example.com.
+
+Kind regards,
+SaaS Vendor Billing Team

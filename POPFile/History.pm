@@ -48,6 +48,8 @@ class POPFile::History
     use Date::Parse;
     use Digest::MD5 qw(md5_hex);
     use File::Path qw(make_path);
+    use builtin qw(trim);
+    no warnings 'experimental::builtin';
 
     field $commit_list = [];
 
