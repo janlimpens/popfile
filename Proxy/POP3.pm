@@ -81,7 +81,6 @@ field $use_apop = 0;
     #
     # ----------------------------------------------------------------------------
     method initialize() {
-        $self->config('enabled', 1);
         $self->config('port', 1110);
         $self->config('secure_server', '');
         $self->config('secure_port', 995);
@@ -91,7 +90,10 @@ field $use_apop = 0;
         $self->config('welcome_string',
             "POP3 POPFile (" . $self->version() . ") server ready");
 
-        return $self->SUPER::initialize();
+        return 0
+            unless $self->SUPER::initialize();
+        $self->config('enabled', 0);
+        return 1;
     }
 
 =head2 start()

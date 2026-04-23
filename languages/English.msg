@@ -499,6 +499,7 @@ Settings_SectionSecurity                Security
 Settings_SectionPOP3                    POP3 Proxy
 Settings_SectionSMTP                    SMTP Proxy
 Settings_SectionNNTP                    NNTP Proxy
+Settings_EnableService                  Enable service
 Settings_SectionClassifier              Classifier
 Settings_SectionHistory                 History
 Settings_SectionLogging                 Logging
@@ -549,6 +550,7 @@ Settings_DescAdminPassword              Leave empty to disable password protecti
 Settings_DescPOP3Port                   Port POPFile listens on for POP3 (default 1110).
 Settings_DescPOP3Separator              Character that separates user from server (e.g. user:mailhost).
 Settings_DescPOP3LocalOnly              Only accept POP3 connections from localhost.
+Settings_DescEnableProxy                Start this proxy listener when POPFile starts.
 Settings_DescForceFork                  Fork a new process for each connection.
 Settings_DescTOPFetchesBody             Also retrieve message body with the TOP command.
 Settings_DescSSLChainServer             Upstream SSL POP3 server hostname for SSL chaining.
