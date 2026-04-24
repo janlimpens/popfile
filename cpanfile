@@ -6,6 +6,7 @@ requires 'Data::Page', '0';
 requires 'Date::Parse', '0';
 requires 'DBD::SQLite', '1.00';
 requires 'DBI', '1.643';
+requires 'Email::MIME', '0';
 requires 'EV', '0';
 requires 'CryptX', '0.080';
 requires 'Future::AsyncAwait', '0.52';

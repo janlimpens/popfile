@@ -14,10 +14,9 @@ and C<popfile_history>.
 =cut
 
 use Mojo::Base 'Mojolicious::Controller', -signatures;
+use Email::MIME;
 use Encode qw();
-use feature 'current_sub';
-use MIME::Base64 qw(decode_base64);
-use MIME::QuotedPrint qw(decode_qp);
+use HTML::Entities qw(decode_entities);
 
 my sub decode_header($value) {
     return '' unless defined $value && length $value;
@@ -27,42 +26,35 @@ my sub decode_header($value) {
     return Encode::decode('MIME-Header', $bytes)
 }
 
-my sub _parse_mime_headers($raw_head) {
-    $raw_head =~ s/\r?\n[ \t]+/ /g;
-    my %h;
-    $h{lc $1} //= $2 while $raw_head =~ /^([\w-]+):\s*(.+)$/mg;
-    return %h
+my sub _strip_html($html) {
+    $html =~ s/<(?:style|script)[^>]*>.*?<\/(?:style|script)>//gsi;
+    $html =~ s/<br\s*\/?>/ /gi;
+    $html =~ s/<\/(?:p|div|tr|li|h\d)>/ /gi;
+    $html =~ s/<[^>]+>//g;
+    $html = decode_entities($html);
+    $html =~ s/[^\S\n]+/ /g;
+    $html =~ s/\n{3,}/\n\n/g;
+    return $html
 }
 
-my sub _decode_part_body($body, $cte, $charset) {
-    my $bytes =
-        $cte eq 'quoted-printable' ? decode_qp($body) :
-        $cte eq 'base64' ? do { (my $b = $body) =~ s/\s+//g; decode_base64($b) } :
-        $body;
-    return eval { Encode::decode($charset, $bytes) } // $bytes
+my sub _part_text($part) {
+    my $ct = $part->content_type // 'text/plain';
+    return '' unless $ct =~ m{^text/}i;
+    my $body = eval { $part->body_str } // $part->body // '';
+    $body = _strip_html($body) if $ct =~ m{text/html}i;
+    return $body
 }
 
-my sub _mime_plain_text($raw) {
-    my ($head, $body) = split /\r?\n\r?\n/, $raw, 2;
-    return '' unless defined $body;
-    my %h = _parse_mime_headers($head);
-    my $ct = $h{'content-type'} // 'text/plain';
-    my $cte = lc($h{'content-transfer-encoding'} // '');
-    if ($ct =~ m{^multipart/}i) {
-        my ($boundary) = $ct =~ /boundary=["']?([^"';\s]+)/i;
-        return '' unless $boundary;
-        my @parts = split /\r?\n--\Q$boundary\E(?:--)?(?:\r?\n|$)/, "\r\n$body";
-        shift @parts;
-        for my $part (@parts) {
-            my $text = __SUB__->($part);
-            return $text if $text ne '';
-        }
-        return ''
+my sub _extract_body($email) {
+    my @parts = $email->subparts;
+    return _part_text($email) unless @parts;
+    my ($plain) = grep { ($_->content_type // '') =~ m{^text/plain}i } @parts;
+    return _part_text($plain) if $plain;
+    for my $part (@parts) {
+        my $text = _extract_body($part);
+        return $text if $text ne '';
     }
-    return '' unless $ct =~ m{^text/plain}i;
-    my ($charset) = $ct =~ /charset=["']?([^\s;"'>]+)/i;
-    $charset //= 'US-ASCII';
-    return _decode_part_body($body, $cte, $charset)
+    return ''
 }
 
 sub list_history ($self) {
@@ -170,7 +162,10 @@ sub get_history_item ($self) {
         or return $self->render(status => 500, json => { error => 'cannot read' });
     my $raw = do { local $/; <$fh> };
     close $fh;
-    my $body = _mime_plain_text($raw);
+    my $email = eval { Email::MIME->new($raw) };
+    return $self->render(status => 500, json => { error => 'cannot parse' })
+        unless defined $email;
+    my $body = _extract_body($email);
     my %orig_for;
     for my $word (split /\W+/, $body) {
         next if $word eq '';

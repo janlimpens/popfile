@@ -389,6 +389,106 @@ DISTRIBUTIONS
       Canary::Stability 0
       ExtUtils::MakeMaker 6.52
       common::sense 0
+  Email-Address-XS-1.05
+    pathname: P/PA/PALI/Email-Address-XS-1.05.tar.gz
+    provides:
+      Email::Address::XS 1.05
+    requirements:
+      Carp 0
+      Exporter 0
+      ExtUtils::MakeMaker 0
+      XSLoader 0
+      base 0
+      overload 0
+      perl 5.006000
+      strict 0
+      warnings 0
+  Email-Date-Format-1.008
+    pathname: R/RJ/RJBS/Email-Date-Format-1.008.tar.gz
+    provides:
+      Email::Date::Format 1.008
+    requirements:
+      Exporter 5.57
+      ExtUtils::MakeMaker 6.78
+      Time::Local 1.27
+      perl 5.012
+      warnings 0
+  Email-MIME-1.954
+    pathname: R/RJ/RJBS/Email-MIME-1.954.tar.gz
+    provides:
+      Email::MIME 1.954
+      Email::MIME::Creator 1.954
+      Email::MIME::Encode 1.954
+      Email::MIME::Header 1.954
+      Email::MIME::Header::AddressList 1.954
+      Email::MIME::Modifier 1.954
+    requirements:
+      Carp 0
+      Email::Address::XS 0
+      Email::MIME::ContentType 1.023
+      Email::MIME::Encodings 1.314
+      Email::MessageID 0
+      Email::Simple 2.212
+      Email::Simple::Creator 0
+      Email::Simple::Header 0
+      Encode 1.9801
+      ExtUtils::MakeMaker 6.78
+      MIME::Base64 0
+      MIME::Types 1.13
+      Module::Runtime 0
+      Scalar::Util 0
+      parent 0
+      perl 5.012
+      strict 0
+      warnings 0
+  Email-MIME-ContentType-1.028
+    pathname: R/RJ/RJBS/Email-MIME-ContentType-1.028.tar.gz
+    provides:
+      Email::MIME::ContentType 1.028
+    requirements:
+      Carp 0
+      Encode 2.87
+      Exporter 5.57
+      ExtUtils::MakeMaker 6.78
+      Text::Unidecode 0
+      perl 5.012
+      warnings 0
+  Email-MIME-Encodings-1.317
+    pathname: R/RJ/RJBS/Email-MIME-Encodings-1.317.tar.gz
+    provides:
+      Email::MIME::Encodings 1.317
+    requirements:
+      Carp 0
+      ExtUtils::MakeMaker 6.78
+      MIME::Base64 3.05
+      MIME::QuotedPrint 3.05
+      perl 5.012
+      strict 0
+      warnings 0
+  Email-MessageID-1.408
+    pathname: R/RJ/RJBS/Email-MessageID-1.408.tar.gz
+    provides:
+      Email::MessageID 1.408
+    requirements:
+      ExtUtils::MakeMaker 6.78
+      Sys::Hostname 0
+      overload 0
+      perl 5.012
+      strict 0
+      warnings 0
+  Email-Simple-2.218
+    pathname: R/RJ/RJBS/Email-Simple-2.218.tar.gz
+    provides:
+      Email::Simple 2.218
+      Email::Simple::Creator 2.218
+      Email::Simple::Header 2.218
+    requirements:
+      Carp 0
+      Email::Date::Format 0
+      ExtUtils::MakeMaker 6.78
+      perl 5.012
+      strict 0
+      warnings 0
   Encode-Locale-1.05
     pathname: G/GA/GAAS/Encode-Locale-1.05.tar.gz
     provides:
@@ -767,6 +867,17 @@ DISTRIBUTIONS
       ExtUtils::MakeMaker 0
       perl 5.008001
       utf8 0
+  MIME-Types-2.30
+    pathname: M/MA/MARKOV/MIME-Types-2.30.tar.gz
+    provides:
+      MIME::Type 2.30
+      MIME::Types 2.30
+      MojoX::MIME::Types 2.30
+    requirements:
+      ExtUtils::MakeMaker 0
+      File::Basename 0
+      File::Spec 0
+      List::Util 0
   MRO-Compat-0.15
     pathname: H/HA/HAARG/MRO-Compat-0.15.tar.gz
     provides:
@@ -872,6 +983,13 @@ DISTRIBUTIONS
       perl 5.006
       strict 0
       warnings 0
+  Module-Runtime-0.018
+    pathname: H/HA/HAARG/Module-Runtime-0.018.tar.gz
+    provides:
+      Module::Runtime 0.018
+    requirements:
+      ExtUtils::MakeMaker 0
+      perl 5.006000
   Mojo-Pg-4.29
     pathname: S/SR/SRI/Mojo-Pg-4.29.tar.gz
     provides:
@@ -1278,6 +1396,13 @@ DISTRIBUTIONS
     requirements:
       ExtUtils::MakeMaker 0
       Unicode::CaseFold 1.00
+  Text-Unidecode-1.30
+    pathname: S/SB/SBURKE/Text-Unidecode-1.30.tar.gz
+    provides:
+      Text::Unidecode 1.30
+    requirements:
+      ExtUtils::MakeMaker 0
+      perl 5.008
   TimeDate-2.35
     pathname: A/AT/ATOOMIC/TimeDate-2.35.tar.gz
     provides:
