@@ -28,12 +28,14 @@ my sub decode_header($value) {
 
 my sub _strip_html($html) {
     $html =~ s/<(?:style|script)[^>]*>.*?<\/(?:style|script)>//gsi;
-    $html =~ s/<br\s*\/?>/ /gi;
-    $html =~ s/<\/(?:p|div|tr|li|h\d)>/ /gi;
+    $html =~ s/<br\s*\/?>/ \n/gi;
+    $html =~ s/<\/(?:p|div|tr|li|blockquote|h\d)>/\n/gi;
     $html =~ s/<[^>]+>//g;
     $html = decode_entities($html);
     $html =~ s/[^\S\n]+/ /g;
+    $html =~ s/ *\n */\n/g;
     $html =~ s/\n{3,}/\n\n/g;
+    $html =~ s/\A[\s\n]+//;
     return $html
 }
 
@@ -42,6 +44,8 @@ my sub _part_text($part) {
     return '' unless $ct =~ m{^text/}i;
     my $body = eval { $part->body_str } // $part->body // '';
     $body = _strip_html($body) if $ct =~ m{text/html}i;
+    $body =~ s/\A[\s\n]+//;
+    $body =~ s/\n{3,}/\n\n/g;
     return $body
 }
 
