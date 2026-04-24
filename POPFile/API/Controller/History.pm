@@ -86,10 +86,10 @@ sub list_history ($self) {
         sort => 'date DESC' );
     my @items =
         map {
-            $_->{color} = $svc->get_bucket_color($_->{'bucket'} // '') // '#666666';
-            $_->{hdr_from}    = decode_header($_->{hdr_from});
-            $_->{hdr_subject} = decode_header($_->{hdr_subject});
-            $_->{hdr_to}      = decode_header($_->{hdr_to});
+            $_->{color}   = $svc->get_bucket_color($_->{'bucket'} // '') // '#666666';
+            $_->{from}    = decode_header($_->{from});
+            $_->{subject} = decode_header($_->{subject});
+            $_->{to}      = decode_header($_->{to});
             $_
         }
         grep { $_ }
