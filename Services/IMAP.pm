@@ -44,6 +44,7 @@ field $imap_error = '';
 field $last_update = 0;
 field $timer_id = undef;
 field $poll_running = 0;
+field $poll_started_at = 0;
 field @pending_train_flags;
 field @pending_train_buckets;
 
@@ -135,6 +136,9 @@ method _find_train_flags() {
     return defined $pattern ? glob($pattern) : ()
 }
 
+method _now()      { time() }
+method _poll_age() { $self->_now() - $poll_started_at }
+
 method poll() {
     my @flags = $self->_find_train_flags();
     if (@flags && !$poll_running) {
@@ -148,7 +152,19 @@ method poll() {
     }
     return if $self->config('enabled') == 0
            && $self->config('training_mode') == 0;
-    return if $poll_running;
+    if ($poll_running) {
+        my $age = $self->_poll_age();
+        my $limit = $self->config('update_interval') * 3;
+        if ($age > $limit) {
+            $self->log_msg(0, "IMAP poll watchdog: subprocess hung for ${age}s, resetting.");
+            $poll_running = 0;
+        }
+        else {
+            $self->log_msg(1, "IMAP poll skipped: previous poll still running (${age}s).");
+            return;
+        }
+    }
+    $poll_started_at = $self->_now();
     $poll_running = 1;
     Mojo::IOLoop->subprocess(
         sub { $self->_run_poll_work() },
@@ -418,10 +434,12 @@ method scan_folder ($folder) {
         }
         if ($is_watched && $self->can_classify($hash)) {
             my $result = $self->classify_message($msg, $hash, $folder);
-            if (defined $result) {
-                $moved_message++ if $result ne '';
-                $hash_values{$hash} = $result ne '' ? $result : $folder;
+            unless (defined $result) {
+                $self->log_msg(0, "classify_message failed for UID $msg in $folder — message left in place.");
+                next;
             }
+            $moved_message++ if $result ne '';
+            $hash_values{$hash} = $result ne '' ? $result : $folder;
             next;
         }
         if (my $bucket = $is_output) {
