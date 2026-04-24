@@ -47,6 +47,7 @@ field $poll_running = 0;
 field $poll_started_at = 0;
 field @pending_train_flags;
 field @pending_train_buckets;
+field %_uid_next_override;
 
 my $cfg_separator = "-->";
 
@@ -58,8 +59,8 @@ BUILD {
 
 Registers all IMAP configuration parameters with their defaults: C<hostname>,
 C<port> (143), C<login>, C<password>, C<update_interval> (20 s), C<expunge>,
-C<use_ssl>, C<watched_folders>, C<bucket_folder_mappings>, C<uidvalidities>,
-C<uidnexts>, C<enabled> (0), C<training_mode> (0).  Returns 1.
+C<use_ssl>, C<watched_folders>, C<bucket_folder_mappings>,
+C<enabled> (0), C<training_mode> (0).  Returns 1.
 
 =cut
 
@@ -73,8 +74,6 @@ method initialize() {
     $self->config('use_ssl', 0);
     $self->config('watched_folders', 'INBOX');
     $self->config('bucket_folder_mappings', '');
-    $self->config('uidvalidities', '');
-    $self->config('uidnexts', '');
     $self->config('enabled', 0);
     $self->config('training_mode', 0);
     $self->config('training_error', '');
@@ -181,12 +180,6 @@ method poll() {
                     $self->config('training_mode', 0);
                 }
             }
-            if (defined $result->{uid_nexts_str}) {
-                $self->config('uidnexts', $result->{uid_nexts_str});
-            }
-            if (defined $result->{uid_validities_str}) {
-                $self->config('uidvalidities', $result->{uid_validities_str});
-            }
             if ($result->{training_done}) {
                 unlink @pending_train_flags;
                 @pending_train_flags = ();
@@ -199,7 +192,14 @@ method poll() {
 }
 
 method _run_poll_work() {
-    my $result = { trained => 0, uid_nexts_str => undef, uid_validities_str => undef, training_done => 0, error => undef };
+    my $result = { trained => 0, training_done => 0, error => undef };
+    my $dbh;
+    try {
+        $dbh = $self->_open_uid_db();
+    }
+    catch ($e) {
+        $self->log_msg(0, "Could not open uid state DB: $e");
+    }
     try {
         local $SIG{PIPE} = 'IGNORE';
         local $SIG{__DIE__};
@@ -208,19 +208,23 @@ method _run_poll_work() {
             $result->{training_done} = 1;
         }
         else {
+            my ($nexts, $validities) = defined $dbh
+                ? $self->_load_uid_state($dbh)
+                : ({}, {});
             if (!%folders || $folder_change_flag == 1) {
                 $self->build_folder_list();
             }
-            $self->connect_server();
+            $self->connect_server(nexts => $nexts, validities => $validities);
             %hash_values = ();
             for my $folder (keys %folders) {
-                next unless exists $folders{$folder}{watched};
-                $self->scan_folder($folder)
-                    if exists $folders{$folder}{imap};
+                next unless exists $folders{$folder}{imap};
+                $self->scan_folder($folder);
             }
+            my ($any_imap) = map { $_->{imap} }
+                grep { defined $_->{imap} } values %folders;
+            $self->_save_uid_state($dbh, $any_imap)
+                if defined $dbh && defined $any_imap;
         }
-        $result->{uid_nexts_str} = $self->config('uidnexts');
-        $result->{uid_validities_str} = $self->config('uidvalidities');
     }
     catch ($err) {
         $self->disconnect_folders();
@@ -232,6 +236,7 @@ method _run_poll_work() {
             $result->{training_done} = -1;
         }
     }
+    $dbh->disconnect() if defined $dbh;
     return $result
 }
 
@@ -247,19 +252,102 @@ method api_session() {
     return $api_session
 }
 
-=head2 new_imap_client()
+=head2 _db_path()
 
-Creates, configures, and connects a new L<Services::IMAP::Client> instance.
-Returns the connected client on success, or C<undef> and sets C<$imap_error>
-on failure.
+Returns the full filesystem path of the POPFile SQLite database.
 
 =cut
 
-method new_imap_client() {
+method _db_path() {
+    $self->get_user_path($self->module_config('bayes', 'database'))
+}
+
+=head2 _open_uid_db()
+
+Opens a fresh, self-contained DBI connection to the SQLite database for
+reading and writing C<imap_folder_state>.  The caller is responsible for
+calling C<disconnect()> when done.  Safe to call in forked subprocesses.
+
+=cut
+
+method _open_uid_db() {
+    require DBI;
+    return DBI->connect(
+        'dbi:SQLite:dbname=' . $self->_db_path(), '', '',
+        { RaiseError => 1, PrintError => 0, AutoCommit => 1 })
+}
+
+=head2 _load_uid_state($dbh)
+
+Reads all rows from C<imap_folder_state> and returns two hash-refs:
+C<\%uid_nexts> and C<\%uid_validities>, keyed by folder name.
+
+=cut
+
+method _load_uid_state($dbh) {
+    my (%nexts, %validities);
+    my $rows = $dbh->selectall_arrayref(
+        'SELECT folder, uid_next, uid_validity FROM imap_folder_state',
+        { Slice => {} });
+    for my $row ($rows->@*) {
+        $nexts{$row->{folder}} = $row->{uid_next}
+            if defined $row->{uid_next};
+        $validities{$row->{folder}} = $row->{uid_validity}
+            if defined $row->{uid_validity};
+    }
+    for my $folder (keys %_uid_next_override) {
+        $nexts{$folder} = $_uid_next_override{$folder};
+    }
+    return \%nexts, \%validities
+}
+
+=head2 _save_uid_state($dbh, $imap)
+
+Reads uid_next and uid_validity from C<$imap> (a L<Services::IMAP::Client>)
+and upserts them into C<imap_folder_state>.
+
+=cut
+
+method _save_uid_state($dbh, $imap) {
+    my $nexts = $imap->uid_nexts();
+    my $validities = $imap->uid_validities();
+    for my $folder (keys %$nexts) {
+        $dbh->do(
+            'INSERT OR REPLACE INTO imap_folder_state (folder, uid_next, uid_validity) VALUES (?,?,?)',
+            undef, $folder, $nexts->{$folder}, $validities->{$folder});
+    }
+    %_uid_next_override = ();
+}
+
+=head2 _reset_uid_next($folder)
+
+Registers an override that forces the next poll to scan C<$folder> from the
+beginning (uid_next = 1).  Used when a UI reclassification request arrives
+for a message that may be below the current C<uid_next> watermark.
+
+=cut
+
+method _reset_uid_next($folder) {
+    $self->log_msg(1, "Scheduling uid_next reset for folder $folder to force re-scan.");
+    $_uid_next_override{$folder} = 1;
+}
+
+=head2 new_imap_client()
+
+Creates, configures, and connects a new L<Services::IMAP::Client> instance,
+pre-seeding it with uid state loaded from the database.  Returns the
+connected client on success, or C<undef> and sets C<$imap_error> on failure.
+
+=cut
+
+method new_imap_client(%args) {
     my $client = Services::IMAP::Client->new();
     $client->set_configuration($self->configuration());
     $client->set_mq($self->mq());
     $client->set_name($self->name());
+    if (defined $args{nexts}) {
+        $client->load_uid_state(nexts => $args{nexts}, validities => $args{validities});
+    }
     if ($client->connect()) {
         if ($client->login()) {
             return $client
@@ -294,17 +382,18 @@ method build_folder_list() {
     $folder_change_flag = 0;
 }
 
-=head2 connect_server()
+=head2 connect_server(%uid_state)
 
 Opens IMAP connections for all folders in C<%folders> that do not yet have
 one.  For each folder it verifies (or creates) the folder on the server,
 retrieves C<UIDVALIDITY> and C<UIDNEXT>, and persists those values via the
-client.  Dies with a C<POPFILE-IMAP-EXCEPTION> if a connection cannot be
-established.
+client.  C<%uid_state> may contain C<nexts> and C<validities> hash-refs for
+pre-loading uid state into the client.  Dies with a C<POPFILE-IMAP-EXCEPTION>
+if a connection cannot be established.
 
 =cut
 
-method connect_server() {
+method connect_server(%uid_state) {
     my $imap;
     for my $folder (keys %folders) {
         next if exists $folders{$folder}{imap};
@@ -314,7 +403,7 @@ method connect_server() {
             next;
         }
         unless (defined $imap) {
-            $imap = $self->new_imap_client()
+            $imap = $self->new_imap_client(%uid_state)
                 or die "POPFILE-IMAP-EXCEPTION: Could not connect: $imap_error " . __FILE__ . '(' . __LINE__ . '))';
         }
         @mailboxes = $imap->get_mailbox_list() unless @mailboxes;
@@ -374,14 +463,26 @@ method disconnect_folders() {
 
 =head2 request_folder_move($hash, $target_bucket)
 
-Queues a folder move for the message identified by C<$hash>.  On the next
-IMAP scan cycle the message will be moved to the folder mapped to
-C<$target_bucket>.
+Queues a folder move for the message identified by C<$hash>.  Also resets
+C<uid_next> for the message's current folder so the next poll re-scans from
+the beginning of that folder and can find the message regardless of where
+C<uid_next> currently stands.
 
 =cut
 
 method request_folder_move ($hash, $target_bucket) {
     $pending_folder_moves{$hash} = $target_bucket;
+    $self->_reset_uid_next($_) for $self->watched_folders();
+    return unless ref $history;
+    my $slot = $history->get_slot_from_hash($hash);
+    return if $slot eq '';
+    my @fields = $history->get_slot_fields($slot);
+    my $current_bucket = $fields[8];
+    my $current_folder = defined $current_bucket
+        ? $self->folder_for_bucket($current_bucket)
+        : undef;
+    $self->_reset_uid_next($current_folder)
+        if defined $current_folder;
 }
 
 =head2 scan_folder($folder)
@@ -446,7 +547,7 @@ method scan_folder ($folder) {
             if (my $old_bucket = $self->can_reclassify($hash, $bucket)) {
                 $self->reclassify_message($folder, $msg, $old_bucket, $hash);
             }
-            else {
+            elsif (!ref $history || $history->get_slot_from_hash($hash) eq '') {
                 $self->insert_message_into_bucket($folder, $msg, $bucket);
             }
             next;

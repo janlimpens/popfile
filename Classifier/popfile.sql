@@ -1,4 +1,4 @@
--- POPFILE SCHEMA 3
+-- POPFILE SCHEMA 4
 -- ---------------------------------------------------------------------------
 --
 -- popfile.schema - POPFile's database schema
@@ -399,11 +399,25 @@ create trigger delete_bucket_template delete on bucket_template
                  delete from bucket_params where btid = old.id;
              end;
 
+-- ---------------------------------------------------------------------------
+--
+-- imap_folder_state - persists IMAP UIDNEXT and UIDVALIDITY per folder so
+--                     that this state survives config resets.
+--
+-- ---------------------------------------------------------------------------
+
+create table imap_folder_state (
+    id integer primary key,
+    folder varchar(255) unique not null,
+    uid_next integer,
+    uid_validity integer
+);
+
 -- Default data
 
--- This is schema version 3
+-- This is schema version 4
 
-insert into popfile ( version ) values ( 3 );
+insert into popfile ( version ) values ( 4 );
 
 -- There's always a user called 'admin'
 
