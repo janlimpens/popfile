@@ -11,6 +11,7 @@ requires 'EV', '0';
 requires 'CryptX', '0.080';
 requires 'Future::AsyncAwait', '0.52';
 requires 'Future::XS', '0';
+requires 'HTML::Parser', '0';
 requires 'HTML::Tagset', '0';
 requires 'IO::Socket::Socks', '0';
 requires 'IO::Socket::SSL', '0';
