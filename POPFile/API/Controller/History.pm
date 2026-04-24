@@ -20,9 +20,10 @@ use MIME::Base64 qw(decode_base64);
 use MIME::QuotedPrint qw(decode_qp);
 
 my sub decode_header($value) {
-    return ''
-        unless defined $value && length $value;
-    return Encode::decode('MIME-Header', $value)
+    return '' unless defined $value && length $value;
+    return $value unless $value =~ /=\?[\w-]+\?[BbQq]\?/;
+    my $bytes = Encode::is_utf8($value) ? Encode::encode('UTF-8', $value) : $value;
+    return Encode::decode('MIME-Header', $bytes)
 }
 
 my sub _parse_mime_headers($raw_head) {
