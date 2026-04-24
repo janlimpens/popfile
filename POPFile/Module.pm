@@ -192,7 +192,7 @@ method slurp ($handle, $timeout = undef) {
 
     my $c;
     if ($self->can_read($handle, $timeout)) {
-        while (sysread($handle, $c, 160) > 0) {
+        while ((sysread($handle, $c, 160) // 0) > 0) {
             $slurp_data{"$handle"}{data} .= $c;
             $self->log_msg(2, "Read slurp data $c");
             $result = $self->flush_slurp_data($handle);

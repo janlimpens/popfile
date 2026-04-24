@@ -97,6 +97,7 @@ method connect() {
     }
     $self->log_msg(0, "Connected to $hostname:$port timeout $timeout");
     my $buf = $self->slurp($imap);
+    return unless defined $buf;
     $self->log_msg(1, ">> $buf");
     $socket = $imap;
     return 1

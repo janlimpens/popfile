@@ -15,13 +15,52 @@ and C<popfile_history>.
 
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 use Encode qw();
-use MIME::QuotedPrint qw(decode_qp);
+use feature 'current_sub';
 use MIME::Base64 qw(decode_base64);
+use MIME::QuotedPrint qw(decode_qp);
 
 my sub decode_header($value) {
     return ''
         unless defined $value && length $value;
     return Encode::decode('MIME-Header', $value)
+}
+
+my sub _parse_mime_headers($raw_head) {
+    $raw_head =~ s/\r?\n[ \t]+/ /g;
+    my %h;
+    $h{lc $1} //= $2 while $raw_head =~ /^([\w-]+):\s*(.+)$/mg;
+    return %h
+}
+
+my sub _decode_part_body($body, $cte, $charset) {
+    my $bytes =
+        $cte eq 'quoted-printable' ? decode_qp($body) :
+        $cte eq 'base64' ? do { (my $b = $body) =~ s/\s+//g; decode_base64($b) } :
+        $body;
+    return eval { Encode::decode($charset, $bytes) } // $bytes
+}
+
+my sub _mime_plain_text($raw) {
+    my ($head, $body) = split /\r?\n\r?\n/, $raw, 2;
+    return '' unless defined $body;
+    my %h = _parse_mime_headers($head);
+    my $ct = $h{'content-type'} // 'text/plain';
+    my $cte = lc($h{'content-transfer-encoding'} // '');
+    if ($ct =~ m{^multipart/}i) {
+        my ($boundary) = $ct =~ /boundary=["']?([^"';\s]+)/i;
+        return '' unless $boundary;
+        my @parts = split /\r?\n--\Q$boundary\E(?:--)?(?:\r?\n|$)/, "\r\n$body";
+        shift @parts;
+        for my $part (@parts) {
+            my $text = __SUB__->($part);
+            return $text if $text ne '';
+        }
+        return ''
+    }
+    return '' unless $ct =~ m{^text/plain}i;
+    my ($charset) = $ct =~ /charset=["']?([^\s;"'>]+)/i;
+    $charset //= 'US-ASCII';
+    return _decode_part_body($body, $cte, $charset)
 }
 
 sub list_history ($self) {
@@ -125,42 +164,17 @@ sub get_history_item ($self) {
     my $file = $hist->get_slot_file($slot);
     return $self->render(status => 404, json => { error => 'not found' })
         unless defined $file && -f $file;
-    open my $fh, '<:encoding(UTF-8)', $file
+    open my $fh, '<:raw', $file
         or return $self->render(status => 500, json => { error => 'cannot read' });
-    my $in_headers = 1;
-    my $body = '';
-    my $cte = '';
-    my $charset = 'UTF-8';
-    while (<$fh>) {
-        s/[\r\n]//g;
-        if ($in_headers) {
-            if (/^content-transfer-encoding:\s*(.+)$/i) {
-                $cte = lc $1;
-            }
-            elsif (/^content-type:.*charset=["']?([^\s;"'>]+)/i) {
-                $charset = $1;
-            }
-            $in_headers = 0 if $_ eq '';
-            next;
-        }
-        $body .= "$_\n";
-    }
+    my $raw = do { local $/; <$fh> };
     close $fh;
-    if ($cte eq 'quoted-printable') {
-        $body = decode_qp($body);
-        eval { $body = Encode::decode($charset, $body) };
-    }
-    elsif ($cte eq 'base64') {
-        $body =~ s/\s+//g;
-        $body = decode_base64($body);
-        eval { $body = Encode::decode($charset, $body) };
-    }
+    my $body = _mime_plain_text($raw);
     my %orig_for;
-    for my $raw (split /\W+/, $body) {
-        next if $raw eq '';
-        my $mangled = $svc->mangle_word($raw);
+    for my $word (split /\W+/, $body) {
+        next if $word eq '';
+        my $mangled = $svc->mangle_word($word);
         next if $mangled eq '' || exists $orig_for{$mangled};
-        $orig_for{$mangled} = lc $raw;
+        $orig_for{$mangled} = lc $word;
     }
     my %mangled_colors = $svc->get_word_colors(keys %orig_for);
     my %word_colors;
