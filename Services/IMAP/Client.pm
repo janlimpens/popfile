@@ -39,9 +39,10 @@ field $folder = undef;
 field $tag = 0;
 field $last_response = '';
 field $last_command = '';
+field %_uid_next;
+field %_uid_validity;
 
 my $eol = "\015\012";
-my $cfg_separator = "-->";
 
 method _imap_utf7_decode($chunk) {
     return '&'
@@ -447,55 +448,69 @@ method fetch_message_part ($msg, $part) {
     return 1, @lines
 }
 
+=head2 load_uid_state(%nexts, %validities)
+
+Pre-loads in-memory UID state from the caller (typically after reading from
+the database).  Both arguments are plain hashes keyed by folder name.
+
+=cut
+
+method load_uid_state (%args) {
+    %_uid_next = $args{nexts}->%*
+        if ref $args{nexts} eq 'HASH';
+    %_uid_validity = $args{validities}->%*
+        if ref $args{validities} eq 'HASH';
+}
+
+=head2 uid_nexts() / uid_validities()
+
+Return references to the in-memory uid_next / uid_validity hashes so that
+the caller can persist the current state to the database.
+
+=cut
+
+method uid_nexts ()     { \%_uid_next }
+method uid_validities () { \%_uid_validity }
+
 =head2 uid_validity($folder_name, $uidval)
 
-Get/set the persisted C<UIDVALIDITY> for C<$folder_name>.  With one argument,
+Get/set the in-memory C<UIDVALIDITY> for C<$folder_name>.  With one argument,
 returns the stored value or C<undef>.  With two arguments, stores the new
-value in config and returns nothing.
+value and returns nothing.
 
 =cut
 
 method uid_validity ($folder_name, $uidval = undef) {
     Carp::confess("gimme a folder!") unless $folder_name;
-    my $all = $self->config('uidvalidities');
-    my %hash = defined $all ? split(/$cfg_separator/, $all) : ();
     if (defined $uidval) {
-        $hash{$folder_name} = $uidval;
-        my $new = '';
-        $new .= "$_$cfg_separator$hash{$_}$cfg_separator" for keys %hash;
-        $self->config('uidvalidities', $new);
+        $_uid_validity{$folder_name} = $uidval;
         $self->log_msg(1, "Updated UIDVALIDITY value for folder $folder_name to $uidval.");
         return
     }
     return undef
-        unless defined $hash{$folder_name};
-    return $hash{$folder_name} =~ /^\d+$/
-        ? $hash{$folder_name}
+        unless exists $_uid_validity{$folder_name};
+    return $_uid_validity{$folder_name} =~ /^\d+$/
+        ? $_uid_validity{$folder_name}
         : undef
 }
 
 =head2 uid_next($folder_name, $uidnext)
 
-Get/set the persisted C<UIDNEXT> for C<$folder_name>.  With one argument,
+Get/set the in-memory C<UIDNEXT> for C<$folder_name>.  With one argument,
 returns the stored value or C<undef>.  With two arguments, stores the new
-value in config and returns nothing.
+value and returns nothing.
 
 =cut
 
 method uid_next ($folder_name, $uidnext = undef) {
     Carp::confess("I need a folder") unless $folder_name;
-    my $all = $self->config('uidnexts');
-    my %hash = defined $all ? split(/$cfg_separator/, $all) : ();
     if (defined $uidnext) {
-        $hash{$folder_name} = $uidnext;
-        my $new = '';
-        $new .= "$_$cfg_separator$hash{$_}$cfg_separator" for keys %hash;
-        $self->config('uidnexts', $new);
+        $_uid_next{$folder_name} = $uidnext;
         $self->log_msg(1, "Updated UIDNEXT value for folder $folder_name to $uidnext.");
         return
     }
-    return exists $hash{$folder_name} && $hash{$folder_name} =~ /^\d+$/
-        ? $hash{$folder_name}
+    return exists $_uid_next{$folder_name} && $_uid_next{$folder_name} =~ /^\d+$/
+        ? $_uid_next{$folder_name}
         : undef
 }
 
