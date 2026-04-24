@@ -23,6 +23,7 @@ my sub decode_header($value) {
     return '' unless defined $value && length $value;
     return $value unless $value =~ /=\?[\w-]+\?[BbQq]\?/;
     my $bytes = Encode::is_utf8($value) ? Encode::encode('UTF-8', $value) : $value;
+    $bytes .= '?=' unless $bytes =~ /\?=\s*$/;
     return Encode::decode('MIME-Header', $bytes)
 }
 
