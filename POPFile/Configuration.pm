@@ -55,8 +55,6 @@ method initialize() {
     $self->global_config('timeout', 60);
     $self->global_config('msgdir', 'messages/');
     $self->global_config('message_cutoff', 100000);
-    $self->global_config('update_check', 0);
-    $self->global_config('last_update_check', 0);
     $self->mq_register('TICKD', $self);
     return 1;
 }

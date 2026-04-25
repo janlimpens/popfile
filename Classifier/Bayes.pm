@@ -162,11 +162,6 @@ method initialize() {
     $self->config(dbuser => '');
     $self->config(dbauth => '');
 
-    # SQLite 1.05+ had some problems we've resolved.
-    # This parameter is no longer used but we leave it for future use
-
-    $self->config(bad_sqlite_version => '4.0.0');
-
     # No default unclassified weight is the number of times more sure
     # POPFile must be of the top class vs the second class, default is
     # 100 times more
