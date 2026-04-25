@@ -4,6 +4,8 @@
 package Classifier::MailParse;
 
 use Object::Pad;
+use feature 'try';
+no warnings 'experimental::try';
 use locale;
 
 use MIME::Base64;
@@ -2613,16 +2615,17 @@ sub convert_encoding($string, $from, $to, $default, @candidates) {
     if ($from ne $to) {
         my ($orig_string) = $string;
 
-        # Workaround for Encode::Unicode error bug.
-        eval {
+        try {
             no warnings 'utf8';
             if (ref $enc) {
                 $string = Encode::encode($to, $enc->decode($string));
             } else {
                 Encode::from_to($string, $from, $to);
             }
-        };
-        $string = $orig_string if ($@);
+        }
+        catch ($e) {
+            $string = $orig_string;
+        }
     }
     return $string;
 }
