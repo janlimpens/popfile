@@ -355,7 +355,7 @@ method save_configuration() {
         return
     }
     if (open my $tmp, '>', $config_temp) {
-        foreach my $key (sort keys %configuration_parameters) {
+        for my $key (sort keys %configuration_parameters) {
             print $tmp "$key $configuration_parameters{$key}{value}\n";
         }
         close $tmp;

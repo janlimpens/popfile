@@ -998,7 +998,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
             if ($debug) {
                 print "      CSS properties: ";
-                foreach my $key (keys($style->%*)) {
+                for my $key (keys($style->%*)) {
                     print "$key($style->{$key}), ";
                 }
                 print "\n";
@@ -1810,7 +1810,7 @@ method parse_line ($read) {
 
                     my $temp_mime = '';
 
-                    foreach my $aboundary (split(/\|/, $cur_mime)) {
+                    for my $aboundary (split(/\|/, $cur_mime)) {
                         if ($boundary ne $aboundary) {
                             if ($temp_mime ne '') {
                                 $temp_mime = join('|',                                                   $temp_mime, $aboundary);                            } else {
@@ -2145,7 +2145,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
         # remove all spaces that may still be present:
         $sa_keywords =~ s/[\t ]//g;
 
-        foreach (split /,/, $sa_keywords) {
+        for (split /,/, $sa_keywords) {
             $self->update_pseudoword('spamassassin', lc($_), 0, $argument);
         }
     }
@@ -2162,7 +2162,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
         $sv_keywords =~ s/Mail scored \d+ points //;
         $sv_keywords =~ s/[\t ]//g;
 
-        foreach (split /,/, $sv_keywords) {
+        for (split /,/, $sv_keywords) {
             $self->update_pseudoword('spamviper', lc($_), 0, $argument);
         }
     }
@@ -2777,7 +2777,7 @@ method setup_nihongo_parser ($nihongo_parser) {
     if ($nihongo_parser eq 'mecab') {
         my $has_mecab = 0;
 
-        foreach my $prefix (@INC) {
+        for my $prefix (@INC) {
             my $realfilename = "$prefix/MeCab.pm";
             if (-f $realfilename) {
                 $has_mecab = 1;
@@ -2793,7 +2793,7 @@ method setup_nihongo_parser ($nihongo_parser) {
     if ($nihongo_parser eq 'kakasi') {
         my $has_kakasi = 0;
 
-        foreach my $prefix (@INC) {
+        for my $prefix (@INC) {
             my $realfilename = "$prefix/Text/Kakasi.pm";
             if (-f $realfilename) {
                 $has_kakasi = 1;
