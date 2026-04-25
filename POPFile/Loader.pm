@@ -422,7 +422,7 @@ method CORE_start() {
         print '} ' if $debug;
     }
 
-    print "\n\nPOPFile Engine ", scalar($self->CORE_version()), " running\n"
+    print "\n\nrunning\n"
         if $debug;
     STDOUT->flush();
 }
@@ -496,7 +496,7 @@ they can flush pending state; all others follow in sorted order.
 
 method CORE_stop() {
     if ($debug) {
-        print "\n\nPOPFile Engine $version_string stopping\n";
+        print "\n\nstopping\n";
         STDOUT->flush();
         print "\n    Stopping... ";
     }
@@ -520,7 +520,7 @@ method CORE_stop() {
         print '} ' if $debug;
     }
 
-    print "\n\nPOPFile Engine $version_string terminated\n"
+    print "\n\nterminated\n"
         if $debug;
 }
 

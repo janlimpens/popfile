@@ -110,6 +110,7 @@ method start() {
     $daemon->start();
     $daemon_ref = $daemon;
     $self->log_msg(WARN => "POPFile::API: listening on port $port");
+    print "\n    \e[38;5;80mhttp://localhost:$port/\e[0m\n";
     if ($self->config('open_browser')) {
         require Browser::Open;
         Browser::Open::open_browser("http://localhost:$port/");
