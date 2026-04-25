@@ -55,10 +55,9 @@ methods (C<create_bucket>, C<add_message_to_bucket>, etc.).
 
 =cut
 
-# Set this to 1 to get scores for individual words in message detail
 field $wordscores :reader :writer = 0;
 
-# Choice for the format of the "word matrix" display.
+# wmformat: format of the word-matrix display in message detail
 field $wmformat :reader :writer = '';
 
 field $hostname = '';
@@ -101,7 +100,6 @@ field $db_bucketunique = {};
 
 field $parser :reader = Classifier::MailParse->new();
 
-# The possible colors for buckets
 field $possible_colors = [qw(
     red green blue brown
     orange purple magenta gray
@@ -112,7 +110,6 @@ field $possible_colors = [qw(
 # Precomputed per-bucket log-probabilities
 field $bucket_start = {};
 
-# A very unlikely word
 field $not_likely = {};
 
 # DEPRECATED: only used when upgrading old flat-file corpus files
@@ -122,7 +119,6 @@ field $corpus_version = 1;
 # than the second probability (default 100×)
 field $unclassified = log(100);
 
-# Whether a magnet was used in the last classification
 field $magnet_used = 0;
 field $magnet_detail = 0;
 
