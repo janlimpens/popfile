@@ -3,6 +3,7 @@
 use Object::Pad;
 
 class Services::IMAP::Client :isa(POPFile::Module);
+use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 use Carp qw(confess);
 use Encode qw(decode);
@@ -64,9 +65,9 @@ method connect() {
     my $port = $self->config('port');
     my $use_ssl = $self->config('use_ssl');
     my $timeout = $self->global_config('timeout');
-    $self->log_msg(1, "Connecting to $hostname:$port");
+    $self->log_msg(LOG_INFO, "Connecting to $hostname:$port");
     unless ($hostname ne '' && $port ne '') {
-        $self->log_msg(0, "Invalid port or hostname. Will not connect to server.");
+        $self->log_msg(LOG_ERROR, "Invalid port or hostname. Will not connect to server.");
         return
     }
     my $imap;
@@ -78,7 +79,7 @@ method connect() {
             PeerPort => $port,
             Timeout => $timeout,
             Domain => Socket::AF_INET(),
-) or $self->log_msg(0, "IO::Socket::SSL error: $@");
+) or $self->log_msg(LOG_ERROR, "IO::Socket::SSL error: $@");
     }
     else {
         $imap = IO::Socket::INET->new(
@@ -86,19 +87,19 @@ method connect() {
             PeerAddr => $hostname,
             PeerPort => $port,
             Timeout => $timeout,
-) or $self->log_msg(0, "IO::Socket::INET error: $@");
+) or $self->log_msg(LOG_ERROR, "IO::Socket::INET error: $@");
     }
     return unless $imap && $imap->connected();
     binmode $imap unless $use_ssl;
     my $selector = IO::Select->new($imap);
     unless (() = $selector->can_read($timeout)) {
-        $self->log_msg(0, "Connection timed out for $hostname:$port");
+        $self->log_msg(LOG_ERROR, "Connection timed out for $hostname:$port");
         return
     }
-    $self->log_msg(0, "Connected to $hostname:$port timeout $timeout");
+    $self->log_msg(LOG_INFO, "Connected to $hostname:$port timeout $timeout");
     my $buf = $self->slurp($imap);
     return unless defined $buf;
-    $self->log_msg(1, ">> $buf");
+    $self->log_msg(LOG_INFO, ">> $buf");
     $socket = $imap;
     return 1
 }
@@ -113,7 +114,7 @@ C<undef> on failure.  Credentials are masked in the log.
 method login() {
     my $login = $self->config('login');
     my $pass = $self->config('password');
-    $self->log_msg(1, "Logging in");
+    $self->log_msg(LOG_INFO, "Logging in");
     $self->say('LOGIN "' . $login . '" "' . $pass . '"');
     return $self->get_response() == 1 ? 1 : undef
 }
@@ -126,7 +127,7 @@ Returns 1 on success, 0 on failure.
 =cut
 
 method logout() {
-    $self->log_msg(1, "Logging out");
+    $self->log_msg(LOG_INFO, "Logging out");
     $self->say('LOGOUT');
     if ($self->get_response() == 1) {
         $socket->shutdown(2);
@@ -147,7 +148,7 @@ Returns the response code.
 method noop() {
     $self->say('NOOP');
     my $result = $self->get_response();
-    $self->log_msg(0, "NOOP failed (return value $result)") unless $result == 1;
+    $self->log_msg(LOG_ERROR, "NOOP failed (return value $result)") unless $result == 1;
     return $result
 }
 
@@ -173,7 +174,7 @@ method status ($folder_name) {
         }
     }
     for my $k (keys %$ret) {
-        $self->log_msg(0, "Could not get $k STATUS for folder $folder_name.")
+        $self->log_msg(LOG_ERROR, "Could not get $k STATUS for folder $folder_name.")
             unless defined $ret->{$k};
     }
     return $ret
@@ -229,7 +230,7 @@ method say ($command) {
         $self->bail_out("Lost connection while I tried to say '$cmdstr'.");
     }
     (my $logged = $cmdstr) =~ s/^(A\d+) LOGIN ".+?" ".+"(.+)/$1 LOGIN "xxxxx" "xxxxx"$2/;
-    $self->log_msg(2, "<< $logged");
+    $self->log_msg(LOG_DEBUG, "<< $logged");
     return 1
 }
 
@@ -263,23 +264,23 @@ method get_response() {
         if ($count_octets) {
             $octet_count += length $buf;
             $count_octets = 0 if $octet_count >= $count_octets;
-            $self->log_msg(2, ">> $buf");
+            $self->log_msg(LOG_DEBUG, ">> $buf");
         }
         if ($count_octets == 0) {
             if ($buf =~ /^$actual_tag (OK|BAD|NO)/) {
-                $self->log_msg($1 ne 'OK' ? 0 : 2, ">> $buf");
+                $self->log_msg($1 ne 'OK' ? LOG_ERROR : LOG_DEBUG, ">> $buf");
                 last;
             }
             if ($buf =~ /^\* (.+)/) {
                 my $untagged = $1;
-                $self->log_msg(2, ">> $buf");
+                $self->log_msg(LOG_DEBUG, ">> $buf");
                 if ($untagged =~ /UIDVALIDITY/
                      && $last_command !~ /^SELECT/
                      && $last_command !~ /^STATUS/) {
-                    $self->log_msg(0, "Got unsolicited UIDVALIDITY response from server while reading response for $last_command.");
+                    $self->log_msg(LOG_ERROR, "Got unsolicited UIDVALIDITY response from server while reading response for $last_command.");
                 }
                 if ($untagged =~ /^BYE/ && $last_command !~ /^LOGOUT/) {
-                    $self->log_msg(0, "Got unsolicited BYE response from server while reading response for $last_command.");
+                    $self->log_msg(LOG_ERROR, "Got unsolicited BYE response from server while reading response for $last_command.");
                 }
             }
         }
@@ -292,7 +293,7 @@ method get_response() {
     return 1  if $response =~ /^$actual_tag OK/m;
     return 0  if $response =~ /^$actual_tag NO/m;
     return -1 if $response =~ /^$actual_tag BAD/m;
-    $self->log_msg(0, "!!! Server said something unexpected !!!");
+    $self->log_msg(LOG_ERROR, "!!! Server said something unexpected !!!");
     return -2
 }
 
@@ -304,7 +305,7 @@ original C<\Deleted>.  Returns 1 on success, 0 on failure.
 =cut
 
 method move_message ($msg, $destination) {
-    $self->log_msg(1, "Moving message $msg to $destination");
+    $self->log_msg(LOG_INFO, "Moving message $msg to $destination");
     $self->say("UID COPY $msg \"$destination\"");
     my $ok = $self->get_response();
     if ($ok == 1) {
@@ -312,7 +313,7 @@ method move_message ($msg, $destination) {
         $ok = $self->get_response();
     }
     else {
-        $self->log_msg(0, "Could not copy message ($ok)!");
+        $self->log_msg(LOG_ERROR, "Could not copy message ($ok)!");
     }
     return $ok ? 1 : 0
 }
@@ -326,11 +327,11 @@ Returns an empty list on failure.
 =cut
 
 method get_mailbox_list() {
-    $self->log_msg(2, "Getting mailbox list");
+    $self->log_msg(LOG_DEBUG, "Getting mailbox list");
     $self->say('LIST "" "*"');
     my $result = $self->get_response();
     unless ($result == 1) {
-        $self->log_msg(0, "LIST command failed (return value [$result]).");
+        $self->log_msg(LOG_ERROR, "LIST command failed (return value [$result]).");
         return
     }
     my @lines = split /$eol/, $last_response;
@@ -354,11 +355,11 @@ Requires that C<select()> has been called first.
 
 method get_new_message_list() {
     my $uid = $self->uid_next($folder);
-    $self->log_msg(2, "Getting uids ge $uid in folder $folder");
+    $self->log_msg(LOG_DEBUG, "Getting uids ge $uid in folder $folder");
     $self->say("UID SEARCH UID $uid:* UNDELETED");
     my $result = $self->get_response();
     unless ($result == 1) {
-        $self->log_msg(0, "SEARCH command failed (return value: $result, used UID was [$uid])!");
+        $self->log_msg(LOG_ERROR, "SEARCH command failed (return value: $result, used UID was [$uid])!");
     }
     my @matching;
     @matching = split / /, $1 if $last_response =~ /\* SEARCH (.+)$eol/;
@@ -382,7 +383,7 @@ method get_new_message_list_unselected ($folder_name) {
     my $new_next = $info->{UIDNEXT};
     my $new_vali = $info->{UIDVALIDITY};
     if ($new_vali != $self->uid_validity($folder_name)) {
-        $self->log_msg(0, "The folder $folder_name has a new UIDVALIDTIY value! Skipping new messages (if any).");
+        $self->log_msg(LOG_ERROR, "The folder $folder_name has a new UIDVALIDTIY value! Skipping new messages (if any).");
         $self->uid_validity($folder_name, $new_vali);
         return
     }
@@ -405,10 +406,10 @@ C<(0)> on failure.
 
 method fetch_message_part ($msg, $part) {
     if ($part ne '') {
-        $self->log_msg(2, "Fetching $part of message $msg");
+        $self->log_msg(LOG_DEBUG, "Fetching $part of message $msg");
     }
     else {
-        $self->log_msg(2, "Fetching message $msg");
+        $self->log_msg(LOG_DEBUG, "Fetching message $msg");
     }
     if ($part eq 'TEXT' || $part eq '') {
         my $limit = $self->global_config('message_cutoff') || 0;
@@ -418,7 +419,7 @@ method fetch_message_part ($msg, $part) {
         $self->say("UID FETCH $msg (FLAGS BODY.PEEK[$part])");
     }
     my $result = $self->get_response();
-    $self->log_msg(2, "Got " . ($part ne '' ? $part : 'message') . " # $msg, result: $result.");
+    $self->log_msg(LOG_DEBUG, "Got " . ($part ne '' ? $part : 'message') . " # $msg, result: $result.");
     unless ($result == 1) {
         return 0
     }
@@ -440,11 +441,11 @@ method fetch_message_part ($msg, $part) {
             shift @lines;
             pop @lines;
             pop @lines;
-            $self->log_msg(0, "Could not find octet count in server's response!");
+            $self->log_msg(LOG_ERROR, "Could not find octet count in server's response!");
         }
     }
     else {
-        $self->log_msg(0, "Unexpected server response to the FETCH command!");
+        $self->log_msg(LOG_ERROR, "Unexpected server response to the FETCH command!");
     }
     return 1, @lines
 }
@@ -485,7 +486,7 @@ method uid_validity ($folder_name, $uidval = undef) {
     Carp::confess("gimme a folder!") unless $folder_name;
     if (defined $uidval) {
         $_uid_validity{$folder_name} = $uidval;
-        $self->log_msg(2, "Updated UIDVALIDITY value for folder $folder_name to $uidval.");
+        $self->log_msg(LOG_DEBUG, "Updated UIDVALIDITY value for folder $folder_name to $uidval.");
         return
     }
     return undef
@@ -507,7 +508,7 @@ method uid_next ($folder_name, $uidnext = undef) {
     Carp::confess("I need a folder") unless $folder_name;
     if (defined $uidnext) {
         $_uid_next{$folder_name} = $uidnext;
-        $self->log_msg(2, "Updated UIDNEXT value for folder $folder_name to $uidnext.");
+        $self->log_msg(LOG_DEBUG, "Updated UIDNEXT value for folder $folder_name to $uidnext.");
         return
     }
     return exists $_uid_next{$folder_name} && $_uid_next{$folder_name} =~ /^\d+$/
@@ -550,7 +551,7 @@ method bail_out ($msg) {
     $socket->shutdown(2) if defined $socket;
     $socket = undef;
     my (undef, $filename, $line) = caller;
-    $self->log_msg(0, $msg);
+    $self->log_msg(LOG_ERROR, $msg);
     die "POPFILE-IMAP-EXCEPTION: $msg ($filename ($line))"
 }
 

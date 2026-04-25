@@ -12,6 +12,7 @@ use IO::Select;
 my %slurp_data;
 
 class POPFile::Module;
+use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 use lib '.';
 apply POPFile::Role::Logging;
 
@@ -194,7 +195,7 @@ method slurp ($handle, $timeout = undef) {
     if ($self->can_read($handle, $timeout)) {
         while ((sysread($handle, $c, 160) // 0) > 0) {
             $slurp_data{"$handle"}{data} .= $c;
-            $self->log_msg(2, "Read slurp data $c");
+            $self->log_msg(LOG_DEBUG, "Read slurp data $c");
             $result = $self->flush_slurp_data($handle);
             return $result if $result ne '';
         }

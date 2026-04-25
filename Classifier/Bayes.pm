@@ -37,6 +37,7 @@ my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
 my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
 class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::DBConnect) :does(POPFile::Role::SQL) :does(POPFile::Role::Logging);
+use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 =head1 NAME
 
@@ -320,7 +321,7 @@ method start() {
 
         $nihongo_parser = $parser->setup_nihongo_parser($nihongo_parser);
 
-        $self->log_msg(2, "Use Nihongo (Japanese) parser : $nihongo_parser");
+        $self->log_msg(LOG_DEBUG, "Use Nihongo (Japanese) parser : $nihongo_parser");
         $self->config(nihongo_parser => $nihongo_parser);
     }
 
@@ -374,7 +375,7 @@ method backup_database() {
     # TODO: separate implementations
     if (($self->config('sqlite_tweaks') & 2) && $db_is_sqlite) {
         unless (copy($db_name, "$db_name.backup")) {
-            $self->log_msg(0, "Failed to backup database ".$db_name);
+            $self->log_msg(LOG_ERROR, "Failed to backup database ".$db_name);
         }
     }
 }
@@ -392,7 +393,7 @@ C<$db> The db handle to tweak
 method tweak_sqlite ($tweak, $state, $db) {
     if ($db_is_sqlite &&
          ($self->config('sqlite_tweaks') & $tweak)) {
-         $self->log_msg(1, "Performing tweak $tweak to $state");
+         $self->log_msg(LOG_INFO, "Performing tweak $tweak to $state");
 
          if ($tweak == 1) {
             my $sync = $state
@@ -419,7 +420,7 @@ C<undo> 1 if this is an undo operation
 =cut
 
 method reclassified ($session, $bucket, $newbucket, $undo) {
-    $self->log_msg(0, "Reclassification from $bucket to $newbucket");
+    $self->log_msg(LOG_ERROR, "Reclassification from $bucket to $newbucket");
 
     my $c = $undo
         ? -1
@@ -699,7 +700,7 @@ method db_connect() {
     # by the dbconnect parameter.
 
     $dbconnect =~ s/\$dbname/$dbname/g;
-    $self->log_msg(1, "Attempting to connect to $dbconnect ($dbpresent)");
+    $self->log_msg(LOG_INFO, "Attempting to connect to $dbconnect ($dbpresent)");
     my $need_convert = 0;
     my $old_dbh;
 
@@ -712,7 +713,7 @@ method db_connect() {
         close $dbfile;
 
         if ($buffer eq '** This file contains an SQLite 2.1 database **') {
-            $self->log_msg(0, 'SQLite 2 database found. Try to upgrade');
+            $self->log_msg(LOG_ERROR, 'SQLite 2 database found. Try to upgrade');
 
             # Test DBD::SQLite version
 
@@ -724,7 +725,7 @@ method db_connect() {
             catch ($e) {}
 
             if ($ver ge '1.00') {
-                $self->log_msg(1, "DBD::SQLite $ver found");
+                $self->log_msg(LOG_INFO, "DBD::SQLite $ver found");
 
                 # Backup SQLite2 database
 
@@ -778,20 +779,20 @@ method db_connect() {
     $self->_connect($dsn, %connection_options);
     my $db = $self->db();
     unless (defined($db)) {
-        $self->log_msg(0, "Failed to connect to database and got error $DBI::errstr");
+        $self->log_msg(LOG_ERROR, "Failed to connect to database and got error $DBI::errstr");
         return 0;
     }
 
     if ($sqlite) {
-        $self->log_msg(1, "Using SQLite library version " . $db->{sqlite_version});
+        $self->log_msg(LOG_INFO, "Using SQLite library version " . $db->{sqlite_version});
 
         if ($need_convert) {
-        $self->log_msg(0, 'Convert SQLite2 database to SQLite3 database');
+        $self->log_msg(LOG_ERROR, 'Convert SQLite2 database to SQLite3 database');
 
         $self->db_upgrade($old_dbh);
             $old_dbh->disconnect;
 
-            $self->log_msg(0, 'Database convert completed');
+            $self->log_msg(LOG_ERROR, 'Database convert completed');
         }
 
         # Set the synchronous mode to normal (default of SQLite 2.x).
@@ -942,7 +943,7 @@ method insert_schema ($sqlite) {
     if (-e $self->get_root_path('Classifier/popfile.sql')) {
         my $schema = '';
 
-        $self->log_msg(0, "Creating database schema");
+        $self->log_msg(LOG_ERROR, "Creating database schema");
 
         open my $schema_fh, '<', $self->get_root_path('Classifier/popfile.sql');
         while (<$schema_fh>) {
@@ -967,7 +968,7 @@ method insert_schema ($sqlite) {
         close $schema_fh;
         return 1;
     } else {
-        $self->log_msg(0, "Can't find the database schema");
+        $self->log_msg(LOG_ERROR, "Can't find the database schema");
         return 0;
     }
 }
@@ -1275,7 +1276,7 @@ method db_put_word_count ($session, $bucket, $word, $count) {
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
     unless (defined $bucketid) {
-        $self->log_msg(0, "db_put_word_count: bucketid undef for user=$userid bucket=$bucket word=$word");
+        $self->log_msg(LOG_ERROR, "db_put_word_count: bucketid undef for user=$userid bucket=$bucket word=$word");
         return 0;
     }
 
@@ -1319,7 +1320,7 @@ method upgrade_predatabase_data() {
     my $session = $self->get_session_key('admin', '');
 
     unless (defined($session)) {
-        $self->log_msg(0, "Tried to get the session key for user admin and failed; cannot upgrade old data");
+        $self->log_msg(LOG_ERROR, "Tried to get the session key for user admin and failed; cannot upgrade old data");
         return;
     }
 
@@ -1403,10 +1404,10 @@ method upgrade_bucket ($session, $bucket) {
     # per bucket to off
 
     for my $gl ('subject', 'xtc', 'xpl') {
-        $self->log_msg(1, "Checking deprecated parameter GLOBAL_$gl for $bucket\n");
+        $self->log_msg(LOG_INFO, "Checking deprecated parameter GLOBAL_$gl for $bucket\n");
         my $val = $self->configuration()->deprecated_parameter("GLOBAL_$gl");
         if (defined($val) && ($val == 0)) {
-            $self->log_msg(1, "GLOBAL_$gl is 0 for $bucket, overriding $gl\n");
+            $self->log_msg(LOG_INFO, "GLOBAL_$gl is 0 for $bucket, overriding $gl\n");
             $self->set_bucket_parameter($session, $bucket, $gl, 0);
         }
     }
@@ -1451,7 +1452,7 @@ method upgrade_bucket ($session, $bucket) {
     # database from it thus performing an automatic upgrade.
 
     if (-e $self->get_user_path($self->config('corpus') . "/$bucket/table")) {
-        $self->log_msg(0, "Performing automatic upgrade of $bucket corpus from flat file to DBI");
+        $self->log_msg(LOG_ERROR, "Performing automatic upgrade of $bucket corpus from flat file to DBI");
 
         $self->db()->begin_work();
 
@@ -1466,11 +1467,11 @@ method upgrade_bucket ($session, $bucket) {
                     $self->db()->rollback;
                     return 0;
                 } else {
-                    $self->log_msg(0, "Upgrading bucket $bucket...");
+                    $self->log_msg(LOG_ERROR, "Upgrading bucket $bucket...");
 
                     while (<WORDS>) {
                         if ($wc % 100 == 0) {
-                            $self->log_msg(0, "$wc");
+                            $self->log_msg(LOG_ERROR, "$wc");
                         }
                         $wc += 1;
                         s/[\r\n]//g;
@@ -1480,14 +1481,14 @@ method upgrade_bucket ($session, $bucket) {
                                 $self->db_put_word_count($session, $bucket, $1, $2);
                             }
                         } else {
-                            $self->log_msg(0, "Found entry in corpus for $bucket that looks wrong: \"$_\" (ignoring)");
+                            $self->log_msg(LOG_ERROR, "Found entry in corpus for $bucket that looks wrong: \"$_\" (ignoring)");
                         }
                     }
                 }
 
                 if ($wc > 1) {
                     $wc -= 1;
-                    $self->log_msg(0, "(completed $wc words)");
+                    $self->log_msg(LOG_ERROR, "(completed $wc words)");
                 }
                 close WORDS;
             } else {
@@ -1507,21 +1508,21 @@ method upgrade_bucket ($session, $bucket) {
     my $bdb_file = $self->get_user_path($self->config('corpus') . "/$bucket/table.db");
 
     if (-e $bdb_file) {
-        $self->log_msg(0, "Performing automatic upgrade of $bucket corpus from BerkeleyDB to DBI");
+        $self->log_msg(LOG_ERROR, "Performing automatic upgrade of $bucket corpus from BerkeleyDB to DBI");
 
         require BerkeleyDB;
 
         my %h;
         tie %h, "BerkeleyDB::Hash", -Filename => $bdb_file;
 
-        $self->log_msg(0, "Upgrading bucket $bucket...");
+        $self->log_msg(LOG_ERROR, "Upgrading bucket $bucket...");
         $self->db()->begin_work;
 
         my $wc = 1;
 
         for my $word (keys %h) {
             if ($wc % 100 == 0) {
-            $self->log_msg(0, "$wc");
+            $self->log_msg(LOG_ERROR, "$wc");
             }
 
             next if ($word =~ /__POPFILE__(LOG__TOTAL|TOTAL|UNIQUE)__/);
@@ -1533,7 +1534,7 @@ method upgrade_bucket ($session, $bucket) {
         }
 
         $wc -= 1;
-        $self->log_msg(0, "(completed $wc words)");
+        $self->log_msg(LOG_ERROR, "(completed $wc words)");
         $self->db()->commit();
         untie %h;
         unlink $bdb_file;
@@ -1664,7 +1665,7 @@ method write_line ($file, $line, $class) {
             print $file $line;
         } else {
             my ($package, $filename, $line, $subroutine) = caller;
-            $self->log_msg(0, "Tried to write to a closed file. Called from $package line $line");
+            $self->log_msg(LOG_ERROR, "Tried to write to a closed file. Called from $package line $line");
         }
     }
 
@@ -1692,12 +1693,12 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
 
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
     unless (defined $bucketid) {
-        $self->log_msg(0, "add_words_to_bucket: bucketid undef for user=$userid bucket=$bucket; skipping");
+        $self->log_msg(LOG_ERROR, "add_words_to_bucket: bucketid undef for user=$userid bucket=$bucket; skipping");
         return;
     }
 
     unless (keys $parser->words()->%*) {
-        $self->log_msg(1, "add_words_to_bucket: no words parsed for user=$userid bucket=$bucket; skipping");
+        $self->log_msg(LOG_INFO, "add_words_to_bucket: no words parsed for user=$userid bucket=$bucket; skipping");
         return;
     }
     $self->log_msg(5, "add_words_to_bucket: user=$userid bucket=$bucket bucketid=$bucketid words=" . scalar(keys $parser->words()->%*));
@@ -1908,7 +1909,7 @@ C<$session> A session key previously returned by get_session_key
 
 method release_session_key_private ($session) {
     if (defined $api_sessions->{$session}) {
-        $self->log_msg(1, "release_session_key releasing key $session for user $api_sessions->{$session}");
+        $self->log_msg(LOG_INFO, "release_session_key releasing key $session for user $api_sessions->{$session}");
         delete $api_sessions->{$session};
     }
 }
@@ -1941,7 +1942,7 @@ method valid_session_key($session) {
 
     unless (defined $api_sessions->{$session}) {
         my ($package, $filename, $line, $subroutine) = caller;
-        $self->log_msg(0, "Invalid session key $session provided in $package @ $line");
+        $self->log_msg(LOG_ERROR, "Invalid session key $session provided in $package @ $line");
         select(undef, undef, undef, 1);
     }
 
@@ -1977,7 +1978,7 @@ method get_session_key ($user, $pwd) {
         # username/password combinations at high speed to determine the
         # credentials of a valid user
 
-        $self->log_msg(0, "Attempt to login with incorrect credentials for user $user");
+        $self->log_msg(LOG_ERROR, "Attempt to login with incorrect credentials for user $user");
         select(undef, undef, undef, 1);
         return;
     }
@@ -1988,7 +1989,7 @@ method get_session_key ($user, $pwd) {
 
     $self->db_update_cache($session);
 
-    $self->log_msg(1, "get_session_key returning key $session for user $api_sessions->{$session}");
+    $self->log_msg(LOG_INFO, "get_session_key returning key $session for user $api_sessions->{$session}");
 
     return $session;
 }
@@ -2673,7 +2674,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     my $msg;
     if (!$nosave) {
-        open $msg, '>', $msg_file or $self->log_msg(0, "Could not open $msg_file : $!");
+        open $msg, '>', $msg_file or $self->log_msg(LOG_ERROR, "Could not open $msg_file : $!");
     }
 
     while (my $line = $self->slurp($mail)) {
@@ -2756,7 +2757,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
                     } else {
                         # Gather up any header lines that are questionable
 
-                        $self->log_msg(1, "Found odd email header: $line");
+                        $self->log_msg(LOG_INFO, "Found odd email header: $line");
                         $msg_head_q .= $line;
                     }
                 }
@@ -3140,7 +3141,7 @@ method get_all_buckets ($session) {
     if (my $userid = $self->valid_session_key($session)) {
         return sort keys $db_bucketid->{$userid}->%*
     }
-    $self->log_msg(0, 'Could not get user ID');
+    $self->log_msg(LOG_ERROR, 'Could not get user ID');
     return
 }
 
@@ -3702,12 +3703,12 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
     # Make sure that the bucket passed in actually exists
 
     unless (defined($db_bucketid->{$userid}{$old_bucket})) {
-        $self->log_msg(0, "Bad bucket name $old_bucket to rename_bucket");
+        $self->log_msg(LOG_ERROR, "Bad bucket name $old_bucket to rename_bucket");
         return 0;
     }
 
     if (defined($db_bucketid->{$userid}{$new_bucket})) {
-        $self->log_msg(0, "Bucket named $new_bucket already exists");
+        $self->log_msg(LOG_ERROR, "Bucket named $new_bucket already exists");
         return 0;
     }
 
@@ -3716,7 +3717,7 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
 
     my $id = $db_bucketid->{$userid}{$old_bucket}{id};
 
-    $self->log_msg(1, "Rename bucket $old_bucket to $new_bucket");
+    $self->log_msg(LOG_INFO, "Rename bucket $old_bucket to $new_bucket");
 
     my $result = $self->validate_sql_prepare_and_execute(
         'UPDATE buckets SET name = ? WHERE id = ?',
@@ -3812,7 +3813,7 @@ method add_message_to_bucket ($session, $bucket, $file) {
         unless defined $userid;
 
     unless (defined($db_bucketid->{$userid}{$bucket})) {
-        $self->log_msg(0, "add_message_to_bucket: bucket '$bucket' not found for user=$userid file=$file");
+        $self->log_msg(LOG_ERROR, "add_message_to_bucket: bucket '$bucket' not found for user=$userid file=$file");
         return 0;
     }
 
@@ -4252,7 +4253,7 @@ method db_quote ($string) {
     my $backup = $string;
     if ($string =~ s/\x00//g) {
         my ($package, $file, $line) = caller;
-        $self->log_msg(0, "Found null-byte in string '$backup'. Called from package '$package' ($file), line $line.");
+        $self->log_msg(LOG_ERROR, "Found null-byte in string '$backup'. Called from package '$package' ($file), line $line.");
     }
     return $self->db()->quote($string);
 }

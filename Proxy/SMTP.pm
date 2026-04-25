@@ -33,6 +33,7 @@ use locale;
 my $eol = "\015\012";
 
 class Proxy::SMTP :isa(Proxy::Proxy);
+use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 =head1 NAME
 
@@ -120,7 +121,7 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
         while (<$client>) {
             my $command = $_;
             $command =~ s/(\015|\012)//g;
-            $self->log_msg(2, "Command: --$command--");
+            $self->log_msg(LOG_DEBUG, "Command: --$command--");
 
             if ($command =~ /HELO/i) {
                 if ($self->config('chain_server')) {
@@ -200,7 +201,7 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
         }
 
         close $client;
-        $self->log_msg(0, "SMTP proxy done");
+        $self->log_msg(LOG_ERROR, "SMTP proxy done");
     }
 
 =head2 smtp_echo_response($mail, $client, $command, $suppress)

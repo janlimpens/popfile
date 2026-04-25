@@ -27,6 +27,7 @@ use Getopt::Long;
 
 class POPFile::Configuration
     :isa(POPFile::Module);
+use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 field %configuration_parameters;
 field $pid_file = '';
@@ -92,7 +93,7 @@ method service() {
             $pid_check = $time;
             if (!$self->check_pid()) {
                 $self->write_pid();
-                $self->log_msg(0, "New POPFile instance detected and signalled");
+                $self->log_msg(LOG_ERROR, "New POPFile instance detected and signalled");
             }
         }
     }
@@ -347,7 +348,7 @@ method load_configuration() {
         close $config;
     } else {
         if (-e $config_file && !-r _) {
-            $self->log_msg(0, "Couldn't load from the configuration file $config_file");
+            $self->log_msg(LOG_ERROR, "Couldn't load from the configuration file $config_file");
         }
     }
     $save_needed = 0;
@@ -366,7 +367,7 @@ method save_configuration() {
     my $config_file = $self->get_user_path('popfile.cfg');
     my $config_temp = $self->get_user_path('popfile.cfg.tmp');
     if (-e $config_file && !-w _) {
-        $self->log_msg(0, "Can't write to the configuration file $config_file");
+        $self->log_msg(LOG_ERROR, "Can't write to the configuration file $config_file");
         return
     }
     if (open my $tmp, '>', $config_temp) {
@@ -378,10 +379,10 @@ method save_configuration() {
             unlink $config_temp;
             $save_needed = 0;
         } else {
-            $self->log_msg(0, "Couldn't write configuration to $config_file: $!");
+            $self->log_msg(LOG_ERROR, "Couldn't write configuration to $config_file: $!");
         }
     } else {
-        $self->log_msg(0, "Couldn't open a temporary configuration file $config_temp");
+        $self->log_msg(LOG_ERROR, "Couldn't open a temporary configuration file $config_temp");
     }
 }
 
@@ -427,14 +428,14 @@ method path_join ($left, $right, $sandbox = undef) {
          ($right =~ /^[A-Za-z]:[\/\\]/) ||
          ($right =~ /\\\\/ ) ) {
         if ( $sandbox ) {
-            $self->log_msg(0, "Attempt to access path $right outside sandbox" );
+            $self->log_msg(LOG_ERROR, "Attempt to access path $right outside sandbox" );
             return undef;
         } else {
             return $right;
         }
     }
     if ( $sandbox && ( $right =~ /\.\./)) {
-        $self->log_msg(0, "Attempt to access path $right outside sandbox");
+        $self->log_msg(LOG_ERROR, "Attempt to access path $right outside sandbox");
         return undef;
     }
     $left  =~ s/\/$//;

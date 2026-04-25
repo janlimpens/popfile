@@ -3,6 +3,7 @@
 use Object::Pad;
 
 role POPFile::Role::SQL;
+use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 use lib 'vendor/perl-querybuilder/lib';
 use Carp;
@@ -59,7 +60,7 @@ method check_for_nullbytes($string) {
     my $backup = $string;
     if (my $count = ($string =~ s/\x00//g)) {
         my ($package, $file, $line) = caller(1);
-        $self->log_msg(0, "Found $count null-character(s) in string '$backup'. Called from package '$package' ($file), line $line.");
+        $self->log_msg(LOG_ERROR, "Found $count null-character(s) in string '$backup'. Called from package '$package' ($file), line $line.");
     }
     return $string
 }
@@ -94,11 +95,11 @@ method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
     if ($self->module_config('logger', 'log_sql')) {
         my @vals = @args;
         (my $logged = $sth->{Statement} // '') =~ s/\?/do { my $v = shift @vals; defined $v ? "'$v'" : 'NULL' }/ge;
-        $self->log_msg(1, "[SQL] $logged");
+        $self->log_msg(LOG_INFO, "[SQL] $logged");
     }
     unless ($execute_result) {
         my ($package, $file, $line) = caller;
-        $self->log_msg(0, "DBI::execute failed.  Called from package '$package' ($file), line $line.");
+        $self->log_msg(LOG_ERROR, "DBI::execute failed.  Called from package '$package' ($file), line $line.");
     }
     return $sth
 }
