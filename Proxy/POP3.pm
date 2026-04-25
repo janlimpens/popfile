@@ -150,7 +150,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
                     $self->mq_post('LOGIN', $user);
 
                     my $ssl = defined($options) && ($options =~ /ssl/i);
-                    $port = $ssl ? 995 : 110 if (!defined($port));
+                    $port //= $ssl ? 995 : 110;
 
                     if ($mail = $self->verify_connected($mail, $client, $host, $port, $ssl)) {
                         if (defined($options) && ($options =~ /apop/i)) {

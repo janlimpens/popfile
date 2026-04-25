@@ -50,7 +50,7 @@ timeout (in seconds) expires. Returns 1 on success, 0 on failure.
     method acquire ($timeout = undef) {
         return 0 if defined $locked;
 
-        $timeout = 0xFFFFFFFF if !defined $timeout;
+        $timeout //= 0xFFFFFFFF;
         my $now = time;
 
         do {

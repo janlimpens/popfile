@@ -187,7 +187,7 @@ classifying full articles via the classifier service.
                     if ($1 =~ /^\d*$/) {
                         ($message_id, $response) =
                             $self->get_message_id($news, $client, $command);
-                        if (!defined($message_id)) {
+                        unless (defined $message_id) {
                             $self->tee($client, $response);
                             next;
                         }
@@ -226,7 +226,7 @@ classifying full articles via the classifier service.
                     if ($1 =~ /^\d*$/) {
                         ($message_id, $response) =
                             $self->get_message_id($news, $client, $command);
-                        if (!defined($message_id)) {
+                        unless (defined $message_id) {
                             $self->tee($client, $response);
                             next;
                         }
@@ -279,7 +279,7 @@ classifying full articles via the classifier service.
                     if ($1 =~ /^\d*$/) {
                         ($message_id, $response) =
                             $self->get_message_id($news, $client, $command);
-                        if (!defined($message_id)) {
+                        unless (defined $message_id) {
                             $self->tee($client, $response);
                             next;
                         }
