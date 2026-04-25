@@ -5,19 +5,11 @@ use Log::Any ();
 
 role POPFile::Role::Logging;
 
-use constant {
-    LOG_ERROR => 0,
-    LOG_INFO => 1,
-    LOG_DEBUG => 2,
-};
-
-sub import {
-    my $class = shift;
-    my @names = @_ ? @_ : qw(LOG_ERROR LOG_INFO LOG_DEBUG);
-    my $caller = caller;
-    no strict 'refs';
-    *{"${caller}::${_}"} = \&{"${class}::${_}"} for @names;
-}
+my %_level = (
+    WARN => 0, ERROR => 0,
+    INFO => 1,
+    DEBUG => 2,
+);
 
 =head1 NAME
 
@@ -25,20 +17,27 @@ POPFile::Role::Logging — structured logging via Log::Any
 
 =head1 DESCRIPTION
 
-Provides a single C<log_msg> method that maps POPFile's three-level numeric
-severity scale to L<Log::Any> severity methods.  Any class that composes this
-role gains consistent, category-tagged log output without depending directly
-on a specific logging backend.
+Provides a single C<log_msg> method that maps POPFile's severity levels to
+L<Log::Any> severity methods.  Any class that composes this role gains
+consistent, category-tagged log output without depending directly on a
+specific logging backend.
 
-Exports three constants via C<< use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG) >>:
+The first argument is a severity indicator — either a numeric level or a
+word.  Use the fat-comma form for readability:
+
+    $self->log_msg(WARN  => "something went wrong");
+    $self->log_msg(INFO  => "started up");
+    $self->log_msg(DEBUG => "value is $x");
+
+Numeric levels are also accepted for backwards compatibility:
 
 =over 4
 
-=item LOG_ERROR (0) — error (C<< Log::Any->error >>)
+=item 0 / WARN / ERROR — C<< Log::Any->error >>
 
-=item LOG_INFO (1) — info  (C<< Log::Any->info >>)
+=item 1 / INFO — C<< Log::Any->info >>
 
-=item LOG_DEBUG (2) — debug (C<< Log::Any->debug >>)
+=item 2 / DEBUG — C<< Log::Any->debug >>
 
 =back
 
@@ -46,20 +45,21 @@ Exports three constants via C<< use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO
 
 =head2 log_msg($level, $message)
 
-Emits C<$message> at the severity determined by C<$level>.
-The log category is set to the class name of the calling object
-(C<ref($self)>).  The line number of the immediate caller is prepended to
-the message text to aid tracing.
+Emits C<$message> at the resolved severity.  The log category is the class
+name of the calling object (C<ref($self)>).  The caller's line number is
+prepended to the message to aid tracing.
 
 =cut
 
 method log_msg ($level, $message) {
+    $level = $_level{$level} // 0
+        unless $level =~ /^\d+$/;
     my $log = Log::Any->get_logger(category => ref($self));
     my (undef, undef, $line) = caller;
     my $msg = ref($self) . ": $line: $message";
-    if ($level == LOG_ERROR) {
+    if ($level == 0) {
         $log->error($msg)
-    } elsif ($level == LOG_INFO) {
+    } elsif ($level == 1) {
         $log->info($msg)
     } else {
         $log->debug($msg)

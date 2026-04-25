@@ -35,7 +35,6 @@ use locale;
 my $eol = "\015\012";
 
 class Proxy::NNTP :isa(Proxy::Proxy);
-use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 =head1 NAME
 
@@ -132,7 +131,7 @@ classifying full articles via the classifier service.
             my $command = $_;
             my ($response, $ok);
             $command =~ s/(\015|\012)//g;
-            $self->log_msg(LOG_DEBUG, "Command: --$command--");
+            $self->log_msg(DEBUG => "Command: --$command--");
 
             if ($command =~ /^ *QUIT/i) {
                 if ($news) {
@@ -226,7 +225,7 @@ classifying full articles via the classifier service.
                                $downloaded{$message_id}{slot})) &&
                          (open my $retrfile, '<', $file)) {
                         binmode $retrfile;
-                        $self->log_msg(LOG_INFO, "Printing message from cache");
+                        $self->log_msg(INFO => "Printing message from cache");
                         $self->tee($client, "220 0 $message_id$eol");
 
                         (my $class, undef) = $self->set_service()->classify_message(
@@ -318,7 +317,7 @@ classifying full articles via the classifier service.
                                $downloaded{$message_id}{slot})) &&
                          (open my $retrfile, '<', $file)) {
                         binmode $retrfile;
-                        $self->log_msg(LOG_INFO, "Printing message from cache");
+                        $self->log_msg(INFO => "Printing message from cache");
                         $self->tee($client, "222 0 $message_id$eol");
 
                         while (my $line = $self->slurp($retrfile)) {
@@ -410,7 +409,7 @@ classifying full articles via the classifier service.
             close $news;
         }
         close $client;
-        $self->log_msg(LOG_ERROR, "NNTP proxy done");
+        $self->log_msg(WARN => "NNTP proxy done");
     }
 
 =head2 get_message_id($news, $client, $command)

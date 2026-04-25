@@ -38,7 +38,6 @@ use IO::Select;
 my $eol = "\015\012";
 
 class Proxy::Proxy :isa(POPFile::Module);
-use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
     field $service = undef;
 
     field $connection_timeout_error :reader :writer = '';
@@ -99,7 +98,7 @@ Returns 0 if the server cannot be started; 1 on success.
 
     method start() {
         require Mojo::IOLoop;
-        $self->log_msg(LOG_INFO, "Opening listening socket on port " . $self->config('port') . '.');
+        $self->log_msg(INFO => "Opening listening socket on port " . $self->config('port') . '.');
 
         my $local = ($self->config('local') || 0) == 1;
         my %listen_args = (port => $self->config('port'));
@@ -114,7 +113,7 @@ Returns 0 if the server cannot be started; 1 on success.
                 $loop->subprocess(
                     sub { $self->_handle_connection($fh) },
                     sub ($loop, $err, @result) {
-                        $self->log_msg(LOG_INFO, "subprocess error: $err") if $err;
+                        $self->log_msg(INFO => "subprocess error: $err") if $err;
                     }
                 );
             }
@@ -122,13 +121,13 @@ Returns 0 if the server cannot be started; 1 on success.
 
         if (!defined $server_id) {
             my $port = $self->config('port');
-            $self->log_msg(LOG_ERROR, "Couldn't start the $name proxy because POPFile could not bind to the listen port $port");
+            $self->log_msg(WARN => "Couldn't start the $name proxy because POPFile could not bind to the listen port $port");
             print STDERR "\nCouldn't start the $name proxy because POPFile could not bind to the\nlisten port $port. This could be because there is another service\nusing that port or because you do not have the right privileges on\nyour system (On Unix systems this can happen if you are not root\nand the port you specified is less than 1024).\n\n";
             return 0;
         }
 
         $bound_port = Mojo::IOLoop->acceptor($server_id)->port();
-        $self->log_msg(LOG_INFO, "$name proxy listening on port $bound_port");
+        $self->log_msg(INFO => "$name proxy listening on port $bound_port");
         return 1;
     }
 
@@ -164,7 +163,7 @@ Logs C<$text> at info level and sends it to C<$socket>.
 =cut
 
     method tee ($socket, $text) {
-        $self->log_msg(LOG_INFO, $text);
+        $self->log_msg(INFO => $text);
         print $socket $text;
     }
 
@@ -186,7 +185,7 @@ are dropped silently.
                     $self->tee($client, $line);
                 }
             } else {
-                $self->log_msg(LOG_DEBUG, "Suppressed: $line");
+                $self->log_msg(DEBUG => "Suppressed: $line");
             }
 
             if ($line =~ $regexp) {
@@ -291,7 +290,7 @@ the connected socket on success, C<undef> on failure.
 
         if ($self->config('socks_server') ne '') {
             require IO::Socket::Socks;
-            $self->log_msg(LOG_ERROR, "Attempting to connect to socks server at "
+            $self->log_msg(WARN => "Attempting to connect to socks server at "
                         . $self->config('socks_server') . ":"
                         . $self->config('socks_port'));
 
@@ -308,7 +307,7 @@ the connected socket on success, C<undef> on failure.
                     return undef;
                 }
 
-                $self->log_msg(LOG_ERROR, "Attempting to connect to SSL server at $hostname:$port");
+                $self->log_msg(WARN => "Attempting to connect to SSL server at $hostname:$port");
 
                 $mail = IO::Socket::SSL->new(
                             Proto => "tcp",
@@ -317,7 +316,7 @@ the connected socket on success, C<undef> on failure.
                             Timeout => $self->global_config('timeout'),
                             Domain => AF_INET);
             } else {
-                $self->log_msg(LOG_ERROR, "Attempting to connect to POP server at $hostname:$port");
+                $self->log_msg(WARN => "Attempting to connect to POP server at $hostname:$port");
 
                 $mail = IO::Socket::INET->new(
                             Proto => "tcp",
@@ -329,7 +328,7 @@ the connected socket on success, C<undef> on failure.
 
         if ($mail) {
             if ($mail->connected) {
-                $self->log_msg(LOG_ERROR, "Connected to $hostname:$port timeout " . $self->global_config('timeout'));
+                $self->log_msg(WARN => "Connected to $hostname:$port timeout " . $self->global_config('timeout'));
 
                 if (!$ssl) {
                     binmode($mail);
@@ -363,7 +362,7 @@ the connected socket on success, C<undef> on failure.
                     }
                 }
 
-                $self->log_msg(LOG_INFO, "Connection returned: $buf");
+                $self->log_msg(INFO => "Connection returned: $buf");
 
                 if ($buf eq '') {
                     close $mail;
@@ -380,7 +379,7 @@ the connected socket on success, C<undef> on failure.
             }
         }
 
-        $self->log_msg(LOG_ERROR, "IO::Socket::INET or IO::Socket::SSL gets an error: $@");
+        $self->log_msg(WARN => "IO::Socket::INET or IO::Socket::SSL gets an error: $@");
         $self->tee($client, "$connection_failed_error $hostname:$port$eol");
         return undef;
     }

@@ -44,7 +44,6 @@ use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
 class POPFile::History
     :isa(POPFile::Module) :does(POPFile::Role::DBConnect) :does(POPFile::Role::SQL);
-use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
     use Date::Parse;
     use Digest::MD5 qw(md5_hex);
@@ -242,7 +241,7 @@ method reserve_slot ($inserted_time = undef) {
     while (!defined($slot) || $slot == 0) {
         my $r = int(rand(1000000000)+2);
 
-        $self->log_msg(LOG_DEBUG, "reserve_slot selected random number $r");
+        $self->log_msg(DEBUG => "reserve_slot selected random number $r");
 
         # Get the date/time now which will be stored in the database
         # so that we can sort on the Date: header in the message and
@@ -260,7 +259,7 @@ method reserve_slot ($inserted_time = undef) {
 
     $insert_sth->finish;
 
-    $self->log_msg(LOG_DEBUG, "reserve_slot returning slot id $slot");
+    $self->log_msg(DEBUG => "reserve_slot returning slot id $slot");
 
     return ($slot, $self->get_slot_file($slot));
 }
@@ -335,7 +334,7 @@ updated.  Invalidates all open query caches.
 =cut
 
 method change_slot_classification ($slot, $class, $session, $undo) {
-    $self->log_msg(LOG_ERROR, "Change slot classification of $slot to $class");
+    $self->log_msg(WARN => "Change slot classification of $slot to $class");
 
     # Get the bucket ID associated with the new classification
     # then retrieve the current classification for this slot
@@ -483,7 +482,7 @@ method commit_history() {
             close $file_fh;
         }
         else {
-            $self->log_msg(LOG_ERROR, "Could not open history message file $file for reading.");
+            $self->log_msg(WARN => "Could not open history message file $file for reading.");
         }
 
         my $hash = $self->get_message_hash(
@@ -571,7 +570,7 @@ method commit_history() {
                     $slot                   # id
                     );
         } else {
-            $self->log_msg(LOG_ERROR, "Couldn't find bucket ID for bucket $bucket when committing $slot");
+            $self->log_msg(WARN => "Couldn't find bucket ID for bucket $bucket when committing $slot");
             $self->release_slot($slot);
         }
     }
@@ -593,7 +592,7 @@ Invalidates all open query caches.
 
 method delete_slot ($slot, $archive) {
     my $file = $self->get_slot_file($slot);
-    $self->log_msg(LOG_DEBUG, "delete_slot called for slot $slot, file $file");
+    $self->log_msg(DEBUG => "delete_slot called for slot $slot, file $file");
 
     if ($archive && $self->config('archive')) {
         my $path = $self->get_user_path($self->config('archive_dir'), 0);
@@ -914,7 +913,7 @@ method set_query ($id, $filter, $search, $sort, $not) {
     }
 
     my $count = $queries{$id}{base};
-    $self->log_msg(LOG_DEBUG, "Base query is $count");
+    $self->log_msg(DEBUG => "Base query is $count");
     $count =~ s/XXX/COUNT(*)/;
 
     my $h = $self->validate_sql_prepare_and_execute($count, $queries{$id}{params}->@*);
@@ -1026,11 +1025,11 @@ method get_query_rows ($id, $start, $count) {
 
     my $size = $#{$queries{$id}{cache}}+1;
 
-    $self->log_msg(LOG_DEBUG, "Request for rows $start ($count), current size $size");
+    $self->log_msg(DEBUG => "Request for rows $start ($count), current size $size");
 
     if (($size < ($start + $count - 1))) {
         my $rows = $start + $count - $size;
-        $self->log_msg(LOG_DEBUG, "Getting $rows rows from database");
+        $self->log_msg(DEBUG => "Getting $rows rows from database");
         $queries{$id}{query}->execute($queries{$id}{params}->@*);
         $queries{$id}{cache} = $queries{$id}{query}->fetchall_arrayref(
             undef, $start + $count - 1);
@@ -1039,7 +1038,7 @@ method get_query_rows ($id, $start, $count) {
 
     my ($from, $to) = ($start-1, $start+$count-2);
 
-    $self->log_msg(LOG_DEBUG, "Returning $from..$to");
+    $self->log_msg(DEBUG => "Returning $from..$to");
 
     return $queries{$id}{cache}->@[$from..$to];
 }

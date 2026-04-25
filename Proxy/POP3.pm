@@ -37,7 +37,6 @@ use Digest::MD5;
 my $eol = "\015\012";
 
 class Proxy::POP3 :isa(Proxy::Proxy);
-use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 =head1 NAME
 
@@ -146,12 +145,12 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
         my $user_command = "USER ([^$s]+)($s(\\d{1,5}))?$s([^$s]+)($s([^$s]+))?";
         my $apop_command = "APOP ([^$s]+)($s(\\d{1,5}))?$s([^$s]+) (.*?)";
 
-        $self->log_msg(LOG_DEBUG, "Regexps: $transparent, $user_command, $apop_command");
+        $self->log_msg(DEBUG => "Regexps: $transparent, $user_command, $apop_command");
 
         while (<$client>) {
             my $command = $_;
             $command =~ s/(\015|\012)//g;
-            $self->log_msg(LOG_DEBUG, "Command: --$command--");
+            $self->log_msg(DEBUG => "Command: --$command--");
 
             if ($command =~ /$transparent/i) {
                 if ($self->config('secure_server') ne '') {
@@ -182,7 +181,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
                         if (defined($options) && ($options =~ /apop/i)) {
                             $apop_banner = $1
                                 if $self->connect_banner() =~ /(<[^>]+>)/;
-                            $self->log_msg(LOG_DEBUG, "banner=" . $apop_banner)
+                            $self->log_msg(DEBUG => "banner=" . $apop_banner)
                                 if defined($apop_banner);
 
                             if (defined($apop_banner)) {
@@ -212,7 +211,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
                     my $md5 = Digest::MD5->new;
                     $md5->add($apop_banner, $1);
                     my $md5hex = $md5->hexdigest;
-                    $self->log_msg(LOG_DEBUG, "digest='$md5hex'");
+                    $self->log_msg(DEBUG => "digest='$md5hex'");
 
                     my ($response, $ok) = $self->get_response($mail, $client,
                         "APOP $apop_user $md5hex", 0, 1);
@@ -357,7 +356,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
                      ($file = $history->get_slot_file($downloaded{$count}{slot})) &&
                      (open my $retrfile, '<', $file)) {
                     binmode $retrfile;
-                    $self->log_msg(LOG_INFO, "Printing message from cache");
+                    $self->log_msg(INFO => "Printing message from cache");
                     $self->tee($client,
                         "+OK " . (-s $file) . " bytes from POPFile cache$eol");
 
@@ -406,7 +405,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
         }
 
         close $client;
-        $self->log_msg(LOG_ERROR, "POP3 proxy done");
+        $self->log_msg(WARN => "POP3 proxy done");
     }
 
 

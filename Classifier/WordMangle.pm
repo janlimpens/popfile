@@ -51,7 +51,6 @@ my %ui_to_iso = (
 );
 
 class Classifier::WordMangle :isa(POPFile::Module);
-use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 field %stop__;
 field $language = 'en';
@@ -136,7 +135,7 @@ Load the stop word list from the stopwords file.
             }
             close $stops;
         } elsif (-e $path) {
-            $self->log_msg(LOG_ERROR, 'Failed to open stopwords file');
+            $self->log_msg(WARN => 'Failed to open stopwords file');
         }
     }
 

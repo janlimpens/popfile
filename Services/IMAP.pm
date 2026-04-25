@@ -8,7 +8,6 @@ use Mojo::IOLoop;
 use Services::IMAP::Client;
 
 class Services::IMAP :isa(POPFile::Module);
-use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 =head1 NAME
 
@@ -156,11 +155,11 @@ method poll() {
         my $age = $self->_poll_age();
         my $limit = $self->config('update_interval') * 3;
         if ($age > $limit) {
-            $self->log_msg(LOG_ERROR, "IMAP poll watchdog: subprocess hung for ${age}s, resetting.");
+            $self->log_msg(WARN => "IMAP poll watchdog: subprocess hung for ${age}s, resetting.");
             $poll_running = 0;
         }
         else {
-            $self->log_msg(LOG_INFO, "IMAP poll skipped: previous poll still running (${age}s).");
+            $self->log_msg(INFO => "IMAP poll skipped: previous poll still running (${age}s).");
             return;
         }
     }
@@ -171,11 +170,11 @@ method poll() {
         sub ($loop, $err, $result) {
             $poll_running = 0;
             if ($err || !ref $result) {
-                $self->log_msg(LOG_ERROR, "IMAP subprocess error: " . ($err // 'no result'));
+                $self->log_msg(WARN => "IMAP subprocess error: " . ($err // 'no result'));
                 return;
             }
             if ($result->{error}) {
-                $self->log_msg(LOG_ERROR, $result->{error});
+                $self->log_msg(WARN => $result->{error});
                 if ($result->{training_done} == -1) {
                     $self->config('training_error', $result->{error});
                     $self->config('training_mode', 0);
@@ -199,7 +198,7 @@ method _run_poll_work() {
         $dbh = $self->_open_uid_db();
     }
     catch ($e) {
-        $self->log_msg(LOG_ERROR, "Could not open uid state DB: $e");
+        $self->log_msg(WARN => "Could not open uid state DB: $e");
     }
     try {
         local $SIG{PIPE} = 'IGNORE';
@@ -329,7 +328,7 @@ for a message that may be below the current C<uid_next> watermark.
 =cut
 
 method _reset_uid_next($folder) {
-    $self->log_msg(LOG_INFO, "Scheduling uid_next reset for folder $folder to force re-scan.");
+    $self->log_msg(INFO => "Scheduling uid_next reset for folder $folder to force re-scan.");
     $_uid_next_override{$folder} = 1;
 }
 
@@ -353,11 +352,11 @@ method new_imap_client(%args) {
         if ($client->login()) {
             return $client
         }
-        $self->log_msg(LOG_ERROR, "Could not LOGIN.");
+        $self->log_msg(WARN => "Could not LOGIN.");
         $imap_error = 'NO_LOGIN';
     }
     else {
-        $self->log_msg(LOG_ERROR, "Could not CONNECT to server.");
+        $self->log_msg(WARN => "Could not CONNECT to server.");
         $imap_error = 'NO_CONNECT';
     }
     return
@@ -371,7 +370,7 @@ mappings.  Resets C<$folder_change_flag>.
 =cut
 
 method build_folder_list() {
-    $self->log_msg(LOG_DEBUG, "Building list of serviced folders.");
+    $self->log_msg(DEBUG => "Building list of serviced folders.");
     %folders = ();
     for my $folder ($self->watched_folders()) {
         $folders{$folder}{watched} = 1;
@@ -412,13 +411,13 @@ method connect_server(%uid_state) {
         my $uidnext = $info->{UIDNEXT};
         my $uidvalidity = $info->{UIDVALIDITY};
         unless (defined $uidvalidity && defined $uidnext) {
-            $self->log_msg(LOG_INFO, "Folder $folder does not exist, creating it.");
+            $self->log_msg(INFO => "Folder $folder does not exist, creating it.");
             $imap->create_folder($folder);
             my $info2 = $imap->status($folder);
             $uidnext = $info2->{UIDNEXT};
             $uidvalidity = $info2->{UIDVALIDITY};
             unless (defined $uidvalidity && defined $uidnext) {
-                $self->log_msg(LOG_ERROR, "Could not create or STATUS folder $folder, skipping.");
+                $self->log_msg(WARN => "Could not create or STATUS folder $folder, skipping.");
                 delete $folders{$folder};
                 next;
             }
@@ -427,18 +426,18 @@ method connect_server(%uid_state) {
         if (defined $imap->uid_validity($folder)) {
             if ($imap->check_uidvalidity($folder, $uidvalidity)) {
                 unless (defined $imap->uid_next($folder)) {
-                    $self->log_msg(LOG_ERROR, "Detected invalid UIDNEXT configuration value for folder $folder. Some new messages might have been skipped.");
+                    $self->log_msg(WARN => "Detected invalid UIDNEXT configuration value for folder $folder. Some new messages might have been skipped.");
                     $imap->uid_next($folder, $uidnext);
                 }
             }
             else {
-                $self->log_msg(LOG_ERROR, "Changed UIDVALIDITY for folder $folder. Some new messages might have been skipped.");
+                $self->log_msg(WARN => "Changed UIDVALIDITY for folder $folder. Some new messages might have been skipped.");
                 $imap->uid_validity($folder, $uidvalidity);
                 $imap->uid_next($folder, $uidnext);
             }
         }
         else {
-            $self->log_msg(LOG_ERROR, "Storing UIDVALIDITY for folder $folder.");
+            $self->log_msg(WARN => "Storing UIDVALIDITY for folder $folder.");
             $imap->uid_validity($folder, $uidvalidity);
             $imap->uid_next($folder, $uidnext);
         }
@@ -452,7 +451,7 @@ Logs out of every open IMAP connection and clears C<%folders>.
 =cut
 
 method disconnect_folders() {
-    $self->log_msg(LOG_INFO, "Trying to disconnect all connections.");
+    $self->log_msg(INFO => "Trying to disconnect all connections.");
     for my $folder (keys %folders) {
         my $imap = $folders{$folder}{imap};
         if (defined $imap && $imap->connected()) {
@@ -499,24 +498,24 @@ moved and C<expunge> is configured.
 method scan_folder ($folder) {
     my $is_watched = exists $folders{$folder}{watched} ? 1 : 0;
     my $is_output = exists $folders{$folder}{output}  ? $folders{$folder}{output} : '';
-    $self->log_msg(LOG_DEBUG, "Looking for new messages in folder $folder.");
+    $self->log_msg(DEBUG => "Looking for new messages in folder $folder.");
     my $imap = $folders{$folder}{imap};
     $imap->noop();
     my $moved_message = 0;
     my @uids = $imap->get_new_message_list_unselected($folder);
     for my $msg (@uids) {
-        $self->log_msg(LOG_INFO, "Found new message in folder $folder (UID: $msg)");
+        $self->log_msg(INFO => "Found new message in folder $folder (UID: $msg)");
         my $hash = $self->get_hash($folder, $msg);
         $imap->uid_next($folder, $msg + 1);
         unless (defined $hash) {
-            $self->log_msg(LOG_ERROR, "Skipping message $msg.");
+            $self->log_msg(WARN => "Skipping message $msg.");
             next;
         }
         if (exists $pending_folder_moves{$hash}) {
             my $target_bucket = delete $pending_folder_moves{$hash};
             my $destination = $self->folder_for_bucket($target_bucket);
             if (defined $destination && $destination ne $folder) {
-                $self->log_msg(LOG_ERROR, "UI reclassification: moving message $msg to $destination.");
+                $self->log_msg(WARN => "UI reclassification: moving message $msg to $destination.");
                 $imap->move_message($msg, $destination);
                 $moved_message++;
             }
@@ -525,19 +524,19 @@ method scan_folder ($folder) {
         if (exists $hash_values{$hash}) {
             my $destination = $hash_values{$hash};
             if ($destination ne $folder) {
-                $self->log_msg(LOG_ERROR, "Found duplicate hash value: $hash. Moving the message to $destination.");
+                $self->log_msg(WARN => "Found duplicate hash value: $hash. Moving the message to $destination.");
                 $imap->move_message($msg, $destination);
                 $moved_message++;
             }
             else {
-                $self->log_msg(LOG_ERROR, "Found duplicate hash value: $hash. Ignoring duplicate in folder $folder.");
+                $self->log_msg(WARN => "Found duplicate hash value: $hash. Ignoring duplicate in folder $folder.");
             }
             next;
         }
         if ($is_watched && $self->can_classify($hash)) {
             my $result = $self->classify_message($msg, $hash, $folder);
             unless (defined $result) {
-                $self->log_msg(LOG_ERROR, "classify_message failed for UID $msg in $folder — message left in place.");
+                $self->log_msg(WARN => "classify_message failed for UID $msg in $folder — message left in place.");
                 next;
             }
             $moved_message++ if $result ne '';
@@ -553,7 +552,7 @@ method scan_folder ($folder) {
             }
             next;
         }
-        $self->log_msg(LOG_DEBUG, "Ignoring message $msg");
+        $self->log_msg(DEBUG => "Ignoring message $msg");
     }
     $imap->expunge() if $moved_message && $self->config('expunge');
 }
@@ -571,7 +570,7 @@ method classify_message ($msg, $hash, $folder) {
     my $file = $self->get_user_path('imap.tmp');
     my $pseudo_mailer;
     unless (sysopen($pseudo_mailer, $file, Fcntl::O_RDWR() | Fcntl::O_CREAT())) {
-        $self->log_msg(LOG_ERROR, "Unable to open temporary file $file. Nothing done to message $msg. ($!)");
+        $self->log_msg(WARN => "Unable to open temporary file $file. Nothing done to message $msg. ($!)");
         return
     }
     binmode $pseudo_mailer;
@@ -580,7 +579,7 @@ method classify_message ($msg, $hash, $folder) {
     PART: for my $part (qw/ HEADER TEXT /) {
         my ($ok, @lines) = $imap->fetch_message_part($msg, $part);
         unless ($ok) {
-            $self->log_msg(LOG_ERROR, "Could not fetch the $part part of message $msg.");
+            $self->log_msg(WARN => "Could not fetch the $part part of message $msg.");
             return
         }
         syswrite $pseudo_mailer, $_ for @lines;
@@ -590,7 +589,7 @@ method classify_message ($msg, $hash, $folder) {
             ($class, $slot, $magnet_used) = $classifier->classify_and_modify(
                 $self->api_session(), $pseudo_mailer, undef, 1, '', undef, 0, undef);
             if ($magnet_used) {
-                $self->log_msg(LOG_ERROR, "Message with slot $slot was classified as $class using a magnet.");
+                $self->log_msg(WARN => "Message with slot $slot was classified as $class using a magnet.");
                 syswrite $pseudo_mailer, "\nThis message was classified based on a magnet.\nThe body of the message was not retrieved from the server.\n";
             }
             else {
@@ -612,9 +611,9 @@ method classify_message ($msg, $hash, $folder) {
                 }
             }
             else {
-                $self->log_msg(LOG_ERROR, "Message cannot be moved because output folder for bucket $class is not defined.");
+                $self->log_msg(WARN => "Message cannot be moved because output folder for bucket $class is not defined.");
             }
-            $self->log_msg(LOG_ERROR, "Message was classified as $class.");
+            $self->log_msg(WARN => "Message was classified as $class.");
             last PART;
         }
     }
@@ -634,12 +633,12 @@ method insert_message_into_bucket ($folder, $msg, $bucket) {
     my $imap = $folders{$folder}{imap};
     my ($ok, @lines) = $imap->fetch_message_part($msg, '');
     unless ($ok) {
-        $self->log_msg(LOG_ERROR, "Could not fetch message $msg!");
+        $self->log_msg(WARN => "Could not fetch message $msg!");
         return
     }
     my $file = $self->get_user_path('imap.tmp');
     unless (open my $TMP, '>', $file) {
-        $self->log_msg(LOG_ERROR, "Cannot open temp file $file");
+        $self->log_msg(WARN => "Cannot open temp file $file");
         return
     }
     else {
@@ -647,7 +646,7 @@ method insert_message_into_bucket ($folder, $msg, $bucket) {
         close $TMP;
     }
     $classifier->add_message_to_bucket($self->api_session(), $bucket, $file);
-    $self->log_msg(LOG_ERROR, "Trained message with UID $msg into bucket $bucket.");
+    $self->log_msg(WARN => "Trained message with UID $msg into bucket $bucket.");
     unlink $file;
     return 1
 }
@@ -670,12 +669,12 @@ method reclassify_message ($folder, $msg, $old_bucket, $hash) {
     my $imap = $folders{$folder}{imap};
     my ($ok, @lines) = $imap->fetch_message_part($msg, '');
     unless ($ok) {
-        $self->log_msg(LOG_ERROR, "Could not fetch message $msg!");
+        $self->log_msg(WARN => "Could not fetch message $msg!");
         return
     }
     my $file = $self->get_user_path('imap.tmp');
     unless (open my $TMP, '>', $file) {
-        $self->log_msg(LOG_ERROR, "Cannot open temp file $file");
+        $self->log_msg(WARN => "Cannot open temp file $file");
         return
     }
     else {
@@ -686,7 +685,7 @@ method reclassify_message ($folder, $msg, $old_bucket, $hash) {
     $classifier->add_message_to_bucket($self->api_session(), $new_bucket, $file);
     $classifier->reclassified($self->api_session(), $old_bucket, $new_bucket, 0);
     $history->change_slot_classification($slot, $new_bucket, $self->api_session(), 0);
-    $self->log_msg(LOG_ERROR, "Reclassified the message with UID $msg from bucket $old_bucket to bucket $new_bucket.");
+    $self->log_msg(WARN => "Reclassified the message with UID $msg from bucket $old_bucket to bucket $new_bucket.");
     unlink $file;
     return 1
 }
@@ -704,7 +703,7 @@ method get_hash ($folder, $msg) {
     my ($ok, @lines) = $imap->fetch_message_part(
         $msg, "HEADER.FIELDS (Message-id Date Subject Received)");
     unless ($ok) {
-        $self->log_msg(LOG_ERROR, "Could not FETCH the header fields of message $msg!");
+        $self->log_msg(WARN => "Could not FETCH the header fields of message $msg!");
         return
     }
     my (%header, $last);
@@ -724,8 +723,8 @@ method get_hash ($folder, $msg) {
     my $subject = $header{'subject'}[0];
     my $received = $header{'received'}[0];
     my $hash = $history->get_message_hash($mid, $date, $subject, $received);
-    $self->log_msg(LOG_DEBUG, sprintf('Hashed message: %s.', $subject // 'undef'));
-    $self->log_msg(LOG_DEBUG, "Message $msg has hash value $hash");
+    $self->log_msg(DEBUG => sprintf('Hashed message: %s.', $subject // 'undef'));
+    $self->log_msg(DEBUG => "Message $msg has hash value $hash");
     return $hash
 }
 
@@ -739,10 +738,10 @@ history (i.e. it is safe to classify it fresh), C<undef> otherwise.
 method can_classify ($hash) {
     my $slot = $history->get_slot_from_hash($hash);
     if ($slot ne '') {
-        $self->log_msg(LOG_DEBUG, "Message was already classified (slot $slot).");
+        $self->log_msg(DEBUG => "Message was already classified (slot $slot).");
         return
     }
-    $self->log_msg(LOG_DEBUG, "The message is not yet in history.");
+    $self->log_msg(DEBUG => "The message is not yet in history.");
     return 1
 }
 
@@ -759,26 +758,26 @@ pseudo-bucket.
 method can_reclassify ($hash, $new_bucket) {
     my $slot = $history->get_slot_from_hash($hash);
     unless ($slot ne '') {
-        $self->log_msg(LOG_DEBUG, "Message not in history; will train directly.");
+        $self->log_msg(DEBUG => "Message not in history; will train directly.");
         return
     }
     my ($id, $from, $to, $cc, $subject, $date, undef, $inserted,
         $bucket, $reclassified, undef, $magnetized) = $history->get_slot_fields($slot);
-    $self->log_msg(LOG_DEBUG, "get_slot_fields: slot=$slot bucket=$bucket reclassified=$reclassified magnetized=$magnetized");
+    $self->log_msg(DEBUG => "get_slot_fields: slot=$slot bucket=$bucket reclassified=$reclassified magnetized=$magnetized");
     if ($magnetized) {
-        $self->log_msg(LOG_DEBUG, "The message was classified using a magnet and cannot be reclassified.");
+        $self->log_msg(DEBUG => "The message was classified using a magnet and cannot be reclassified.");
         return
     }
     if ($reclassified) {
-        $self->log_msg(LOG_DEBUG, "The message was already reclassified.");
+        $self->log_msg(DEBUG => "The message was already reclassified.");
         return
     }
     if ($new_bucket eq $bucket) {
-        $self->log_msg(LOG_DEBUG, "Will not reclassify to same bucket ($new_bucket).");
+        $self->log_msg(DEBUG => "Will not reclassify to same bucket ($new_bucket).");
         return
     }
     if ($classifier->is_pseudo_bucket($self->api_session(), $new_bucket)) {
-        $self->log_msg(LOG_DEBUG, "Will not reclassify to pseudo-bucket ($new_bucket)");
+        $self->log_msg(DEBUG => "Will not reclassify to pseudo-bucket ($new_bucket)");
         return
     }
     return $bucket
@@ -799,7 +798,7 @@ method folder_for_bucket ($bucket, $folder = undef) {
         $mapping{$bucket} = $folder;
         my $new = '';
         $new .= "$_$cfg_separator$mapping{$_}$cfg_separator" for keys %mapping;
-        $self->log_msg(LOG_DEBUG, $new);
+        $self->log_msg(DEBUG => $new);
         $self->config('bucket_folder_mappings', $new);
         return
     }
@@ -835,14 +834,14 @@ is cleared by the parent callback in C<poll()>.
 
 method train_on_archive() {
     $self->config('training_error', '');
-    $self->log_msg(LOG_ERROR, "Training on existing archive.");
+    $self->log_msg(WARN => "Training on existing archive.");
     %folders = ();
     $self->build_folder_list();
     for my $folder (keys %folders) {
         delete $folders{$folder} if exists $folders{$folder}{watched};
     }
     unless (%folders) {
-        $self->log_msg(LOG_ERROR, "No output folders configured; nothing to train on.");
+        $self->log_msg(WARN => "No output folders configured; nothing to train on.");
         %folders = ();
         return 0
     }
@@ -861,7 +860,7 @@ method train_on_archive() {
         $imap->uid_next($folder, 1);
         my @uids = $imap->get_new_message_list_unselected($folder);
         @uids = @uids[0 .. $limit - 1] if $limit > 0 && @uids > $limit;
-        $self->log_msg(LOG_ERROR, "Training on " . scalar(@uids) . " messages in folder $folder to bucket $bucket."
+        $self->log_msg(WARN => "Training on " . scalar(@uids) . " messages in folder $folder to bucket $bucket."
             . ($limit > 0 ? " (limit: $limit)" : ''));
         $total_folders++;
         while (@uids) {
@@ -871,18 +870,18 @@ method train_on_archive() {
                 my ($ok, @lines) = $imap->fetch_message_part($msg, '');
                 $imap->uid_next($folder, $msg + 1);
                 unless ($ok) {
-                    $self->log_msg(LOG_ERROR, "Could not fetch message $msg!");
+                    $self->log_msg(WARN => "Could not fetch message $msg!");
                     next;
                 }
                 push @texts, join('', @lines);
             }
             next unless @texts;
-            $self->log_msg(LOG_ERROR, "Training batch of " . scalar(@texts) . " messages in folder $folder to bucket $bucket.");
+            $self->log_msg(WARN => "Training batch of " . scalar(@texts) . " messages in folder $folder to bucket $bucket.");
             $classifier->train_messages_batch($self->api_session(), $bucket, \@texts);
             $total_msgs += scalar @texts;
         }
     }
-    $self->log_msg(LOG_ERROR, "Training complete: $total_msgs messages trained across $total_folders folders.");
+    $self->log_msg(WARN => "Training complete: $total_msgs messages trained across $total_folders folders.");
     %folders = ();
     return $total_msgs
 }

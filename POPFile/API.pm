@@ -26,7 +26,6 @@ use Scalar::Util qw(looks_like_number);
 use Data::Page;
 
 class POPFile::API :isa(POPFile::Module);
-use POPFile::Role::Logging qw(LOG_ERROR LOG_INFO LOG_DEBUG);
 
 field $service = undef;
 field $imap_service = undef;
@@ -111,7 +110,7 @@ method start() {
         listen => ["http://$host:$port"] );
     $daemon->start();
     $daemon_ref = $daemon;
-    $self->log_msg(LOG_ERROR, "POPFile::API: listening on port $port");
+    $self->log_msg(WARN => "POPFile::API: listening on port $port");
     if ($self->config('open_browser')) {
         require Browser::Open;
         Browser::Open::open_browser("http://localhost:$port/");
