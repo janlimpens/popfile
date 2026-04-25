@@ -43,6 +43,7 @@ field $api_session = '';
 field $imap_error = '';
 field $last_update = 0;
 field $timer_id = undef;
+field $poll_pid = undef;
 field $poll_running = 0;
 field $poll_started_at = 0;
 field @pending_train_flags;
@@ -105,6 +106,10 @@ via C<disconnect_folders()>.
 method stop() {
     Mojo::IOLoop->remove($timer_id) if defined $timer_id;
     $timer_id = undef;
+    if (defined $poll_pid) {
+        kill 'TERM', $poll_pid;
+        $poll_pid = undef;
+    }
     $self->disconnect_folders();
 }
 
@@ -165,9 +170,10 @@ method poll() {
     }
     $poll_started_at = $self->_now();
     $poll_running = 1;
-    Mojo::IOLoop->subprocess(
+    my $sp = Mojo::IOLoop->subprocess(
         sub { $self->_run_poll_work() },
         sub ($loop, $err, $result) {
+            $poll_pid = undef;
             $poll_running = 0;
             if ($err || !ref $result) {
                 $self->log_msg(WARN => "IMAP subprocess error: " . ($err // 'no result'));
@@ -186,13 +192,15 @@ method poll() {
                 @pending_train_buckets = ();
                 $self->config('training_mode', 0);
             }
+            delete $pending_folder_moves{$_} for $result->{moved_hashes}->@*;
             $self->mq()->post('IMAP_DONE', $result->{trained} // 0);
         }
     );
+    $poll_pid = ref $sp ? $sp->pid() : undef;
 }
 
 method _run_poll_work() {
-    my $result = { trained => 0, training_done => 0, error => undef };
+    my $result = { trained => 0, training_done => 0, error => undef, moved_hashes => [] };
     my $dbh;
     try {
         $dbh = $self->_open_uid_db();
@@ -216,10 +224,12 @@ method _run_poll_work() {
             }
             $self->connect_server(nexts => $nexts, validities => $validities);
             %hash_values = ();
+            my %pending_before = %pending_folder_moves;
             for my $folder (keys %folders) {
                 next unless exists $folders{$folder}{imap};
                 $self->scan_folder($folder);
             }
+            $result->{moved_hashes} = [grep { !exists $pending_folder_moves{$_} } keys %pending_before];
             my ($any_imap) = map { $_->{imap} }
                 grep { defined $_->{imap} } values %folders;
             $self->_save_uid_state($dbh, $any_imap)
@@ -461,28 +471,22 @@ method disconnect_folders() {
     %folders = ();
 }
 
-=head2 request_folder_move($hash, $target_bucket)
+=head2 request_folder_move($hash, $target_bucket, $source_bucket)
 
-Queues a folder move for the message identified by C<$hash>.  Also resets
-C<uid_next> for the message's current folder so the next poll re-scans from
-the beginning of that folder and can find the message regardless of where
-C<uid_next> currently stands.
+Queues a folder move for the message identified by C<$hash>.  C<$source_bucket>
+is the bucket the message is currently classified as (read before the DB is
+updated); its mapped IMAP folder has its C<uid_next> reset so the next poll
+finds the message regardless of where the watermark stands.
 
 =cut
 
-method request_folder_move ($hash, $target_bucket) {
+method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
     $pending_folder_moves{$hash} = $target_bucket;
-    $self->_reset_uid_next($_) for $self->watched_folders();
-    return unless ref $history;
-    my $slot = $history->get_slot_from_hash($hash);
-    return if $slot eq '';
-    my @fields = $history->get_slot_fields($slot);
-    my $current_bucket = $fields[8];
-    my $current_folder = defined $current_bucket
-        ? $self->folder_for_bucket($current_bucket)
+    my $source_folder = defined $source_bucket
+        ? $self->folder_for_bucket($source_bucket)
         : undef;
-    $self->_reset_uid_next($current_folder)
-        if defined $current_folder;
+    $self->_reset_uid_next($source_folder)
+        if defined $source_folder;
 }
 
 =head2 scan_folder($folder)

@@ -66,21 +66,21 @@ subtest 'request_folder_move schedules uid_next reset for watched folder' => sub
     my ($imap) = make_imap();
     $log->clear();
 
-    $imap->request_folder_move('deadbeef', 'work');
+    $imap->request_folder_move('deadbeef', 'personal', 'work');
 
     my @reset_msgs = grep { /Scheduling uid_next reset/ } map { $_->{message} } @{ $log->msgs() };
     ok(scalar @reset_msgs >= 1, 'uid_next reset scheduled for at least one folder');
 };
 
-subtest 'request_folder_move resets output folder when message is in history' => sub {
+subtest 'request_folder_move resets source folder, not destination' => sub {
     my ($imap) = make_imap();
     $log->clear();
 
-    $imap->request_folder_move('deadbeef', 'personal');
+    $imap->request_folder_move('deadbeef', 'personal', 'work');
 
     my @reset_msgs = grep { /Scheduling uid_next reset/ } map { $_->{message} } @{ $log->msgs() };
     my $reset_for_work = grep { /Work/ } @reset_msgs;
-    ok($reset_for_work >= 1, 'uid_next reset scheduled for output folder Work');
+    ok($reset_for_work >= 1, 'uid_next reset scheduled for source folder Work, not destination');
 };
 
 subtest 'output folder is scanned for pending_folder_moves' => sub {

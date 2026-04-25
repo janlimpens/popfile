@@ -218,7 +218,7 @@ sub _do_reclassify ($self, $slot, $bucket) {
     $svc->remove_message_from_bucket($old_bucket, $file);
     $svc->add_message_to_bucket($bucket, $file);
     my $imap = $self->popfile_imap;
-    $imap->request_folder_move($hash, $bucket)
+    $imap->request_folder_move($hash, $bucket, $old_bucket)
         if defined $imap && defined $hash;
     return {}
 }

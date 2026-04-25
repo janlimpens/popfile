@@ -1480,7 +1480,10 @@ message body; otherwise returns an empty string.
 method parse_file ($file, $max_size = undef, $reset = undef) {
     $reset = 1 if (!defined($reset));
     $max_size = 0 if (!defined($max_size) || ($max_size =~ /\D/));
-
+    unless (defined $file && -f $file) {
+        $self->log_msg(WARN => "parse_file: file not found: " . ($file // 'undef'));
+        return ''
+    }
     if (defined $mangle && $mangle->config('auto_detect_language')) {
         open my $sample_fh, '<', $file;
         my ($sample, $in_body) = ('', 0);
@@ -1502,7 +1505,12 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
 
     my $size_read = 0;
 
-    open my $msg, '<', $file;
+    open my $msg, '<', $file
+        or do {
+            $self->log_msg(WARN => "parse_file: cannot open '$file': $!");
+            $self->stop_parse();
+            return ''
+        };
     binmode $msg;
 
     # Read each line and find each "word" which we define as a
