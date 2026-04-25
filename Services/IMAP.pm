@@ -573,7 +573,7 @@ C<undef> on error.
 method classify_message ($msg, $hash, $folder) {
     my $file = $self->get_user_path('imap.tmp');
     my $pseudo_mailer;
-    unless (sysopen($pseudo_mailer, $file, Fcntl::O_RDWR() | Fcntl::O_CREAT())) {
+    unless (sysopen($pseudo_mailer, $file, Fcntl::O_RDWR() | Fcntl::O_CREAT() | Fcntl::O_TRUNC())) {
         $self->log_msg(WARN => "Unable to open temporary file $file. Nothing done to message $msg. ($!)");
         return
     }

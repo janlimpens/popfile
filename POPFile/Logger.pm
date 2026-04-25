@@ -7,6 +7,7 @@ use locale;
 use File::Path qw(make_path);
 use Log::Any::Adapter;
 use Mojo::IOLoop;
+use POSIX qw(strftime);
 use POPFile::Log::Adapter;
 
 my $seconds_per_day = 60 * 60 * 24;
@@ -24,9 +25,10 @@ configures a L<POPFile::Log::Adapter> instance (a L<Log::Any> adapter) that
 writes timestamped lines to a daily rotating log file and/or standard output
 depending on the C<debug> global config flag.
 
-Log files are named C<popfileNNNNN.log> where C<NNNNN> is the Unix timestamp
-of midnight for that day.  Files older than three days are pruned automatically
-on the C<TICKD> message-queue event.
+The active log file is always named C<popfile.log>.  On midnight rollover,
+the current file is renamed to C<popfile-YYYY-MM-DD.log> for the previous
+date.  Files older than three days are pruned automatically on the C<TICKD>
+message-queue event.
 
 The module also maintains a ten-line ring buffer of recent log lines accessible
 via C<last_ten()>, used by the web UI to show recent activity.
@@ -125,17 +127,25 @@ method time() { return time }
 
 =head2 calculate_today()
 
-Updates the current log filename when the calendar day changes.  No-op if the
-date has not changed since last call.
+Updates the log filename when the calendar day changes.  On first call, sets
+the active log to C<popfile.log>.  On subsequent calls (midnight rollover),
+renames the current C<popfile.log> to C<popfile-YYYY-MM-DD.log> for the
+previous day before opening a fresh C<popfile.log>.  No-op if the date has
+not changed since the last call.
 
 =cut
 
 method calculate_today() {
     my $new_today = int($self->time / $seconds_per_day) * $seconds_per_day;
     return if $new_today == $today;
+    my $log = $self->get_user_path($self->config('logdir') . 'popfile.log', 0);
+    if ($today != 0 && defined $log && -f $log) {
+        my $dated = $self->get_user_path(
+            $self->config('logdir') . strftime('popfile-%Y-%m-%d.log', localtime($today)), 0);
+        rename $log, $dated;
+    }
     $today = $new_today;
-    $debug_filename = $self->get_user_path(
-        $self->config('logdir') . "popfile$today.log", 0);
+    $debug_filename = $log;
 }
 
 method _reconfigure_adapter() {
@@ -153,18 +163,20 @@ method _reconfigure_adapter() {
 
 =head2 remove_debug_files()
 
-Deletes log files in the configured C<logdir> that are more than three days
-old.
+Deletes rotated log files (C<popfile-YYYY-MM-DD.log>) in the configured
+C<logdir> that are more than three days old.  The active C<popfile.log> is
+never removed.
 
 =cut
 
 method remove_debug_files() {
+    my $cutoff = strftime('%Y-%m-%d', localtime($self->time - 3 * $seconds_per_day));
     my @files = glob($self->get_user_path(
-        $self->config('logdir') . 'popfile*.log', 0));
+        $self->config('logdir') . 'popfile-????-??-??.log', 0));
     for my $f (@files) {
-        if ($f =~ /popfile([0-9]+)\.log/) {
-            unlink $f if $1 < ($self->time - 3 * $seconds_per_day);
-        }
+        next unless $f =~ /popfile-(\d{4}-\d{2}-\d{2})\.log$/;
+        my $date = $1;
+        unlink $f if $date lt $cutoff;
     }
 }
 
