@@ -497,8 +497,8 @@ method update_word ($word, $encoded, $before, $after, $prefix) {
             my $color = $self->get_color($mword);
             if ($encoded == 0) {
                 $after = '&' if ($after eq '>');
-                if (!($ut =~                        s/($before)\Q$word\E($after)
-                         /$1<b><font color=\"$color\">$word<\/font><\/b>$2/x)) {                    print "Could not find $word for colorization\n" if $debug;
+                if ($ut !~ s/($before)\Q$word\E($after)/$1<b><font color="$color">$word<\/font><\/b>$2/x) {
+                    print "Could not find $word for colorization\n" if $debug;
                 }
             } else {
                 $ut .= "<font color=\"$color\">$word<\/font> ";
@@ -520,7 +520,7 @@ Words hidden by invisible-ink colors generate a pseudoword instead.
 method add_line ($bigline, $encoded, $prefix) {
     my $p = 0;
 
-    return if (!defined($bigline));
+    return unless defined $bigline;
 
     print "add_line: [$bigline]\n" if $debug;
 
@@ -1253,7 +1253,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
 
                 # No more IP dots?
 
-                if (!defined($more_dots)) {
+                unless (defined $more_dots) {
                     # Expand final decimal/octal/hex to extra quads
 
                     while ($quad <= 4) {
@@ -1286,7 +1286,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
         }
     }
 
-    if (!defined($host) || ($host eq '')) {
+    if (!defined $host || $host eq '') {
         print "no hostname found: [$temp_url]\n" if $debug;
         return '';
     }
@@ -1296,7 +1296,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
     $query = $1 if ($url =~ s/^[\?]([^\#\n]*|$)?//);
     $hash = $1 if ($url =~ s/^[\#](.*)$//);
 
-    if (!defined($protocol) || ($protocol =~ /^(http|https)$/)) {
+    if (!defined $protocol || $protocol =~ /^(http|https)$/) {
         $temp_before = $before;
         $temp_before = "\:\/\/" if (defined $protocol);
         $temp_before = "[\@]" if (defined $authinfo);
@@ -1309,8 +1309,8 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
 
         # add the entire domain
 
-        $self->update_word($host, $encoded,
-            $temp_before, $temp_after, $prefix) if (!defined($noadd));
+        $self->update_word($host, $encoded, $temp_before, $temp_after, $prefix)
+            unless defined $noadd;
         # decided not to care about tld's beyond the verification
         # performed when grabbing $host special subTLD's can just get
         # their own classification weight (eg, .bc.ca)
@@ -1321,12 +1321,14 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
             # recursively add the roots of the domain
 
             while ($host =~ s/^([^\.]+\.)?(([^\.]+\.?)*)(\.[^\.]+)$/$2$4/) {
-                if (!defined($1)) {
-                    $self->update_word($4, $encoded,
-                        $2, '[<]', $prefix) if (!defined($noadd));                    last;
+                unless (defined $1) {
+                    $self->update_word($4, $encoded, $2, '[<]', $prefix)
+                        unless defined $noadd;
+                    last;
                 }
-                $self->update_word($host, $encoded,
-                    $1 || $2, '[<]', $prefix) if (!defined($noadd));            }
+                $self->update_word($host, $encoded, $1 || $2, '[<]', $prefix)
+                    unless defined $noadd;
+            }
         }
     }
 
@@ -1457,8 +1459,8 @@ message body; otherwise returns an empty string.
 =cut
 
 method parse_file ($file, $max_size = undef, $reset = undef) {
-    $reset = 1 if (!defined($reset));
-    $max_size = 0 if (!defined($max_size) || ($max_size =~ /\D/));
+    $reset //= 1;
+    $max_size = 0 if !defined($max_size) || $max_size =~ /\D/;
     unless (defined $file && -f $file) {
         $self->log_msg(WARN => "parse_file: file not found: " . ($file // 'undef'));
         return ''
@@ -1533,7 +1535,7 @@ previous parse.
 =cut
 
 method start_parse ($reset = undef) {
-    $reset = 1 if (!defined($reset));
+    $reset //= 1;
 
     # This will contain the mime boundary information in a mime message
 
@@ -1677,7 +1679,7 @@ method parse_line ($read) {
         while ($read =~ s/(.*?)[\r\n]+//) {
             my $line = "$1\r\n";
 
-            next if (!defined($line));
+            next unless defined $line;
 
             print ">>> $line" if $debug;
 
@@ -1777,7 +1779,7 @@ method parse_line ($read) {
 
                 $cur_encoding = '';
 
-                if (!defined($2)) {
+                unless (defined $2) {
                     # This means there was no trailing -- on the mime
                     # boundary (which would have indicated the end of
                     # a boundary, so now we have a new part of the
@@ -1840,7 +1842,7 @@ method parse_line ($read) {
                 next;
             }
 
-            next if (!defined($line));
+            next unless defined $line;
 
             $self->parse_html($line, 0);
         }
@@ -1950,7 +1952,7 @@ method decode_string ($mystring, $lang = undef) {
 
     my $charset = '';
 
-    return '' if (!defined($mystring));
+    return '' unless defined $mystring;
 
     $lang //= '';
 
@@ -2605,7 +2607,7 @@ sub convert_encoding($string, $from, $to, $default, @candidates) {
     } else {
         # If guess does not work, check whether $from is valid.
 
-        if (!(Encode::resolve_alias($from))) {
+        unless (Encode::resolve_alias($from)) {
             # Use $default as $from when $from is invalid.
 
             $from = $default;
