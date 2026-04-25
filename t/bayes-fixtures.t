@@ -45,8 +45,8 @@ subtest 'load_fixture inline hashref' => sub {
 
     TestHelper::load_fixture($bayes, $session, {
         buckets => [qw(work personal)],
-        train   => {
-            work     => ['ham.eml'],
+        train => {
+            work => ['ham.eml'],
             personal => ['ham.eml'],
         },
     });

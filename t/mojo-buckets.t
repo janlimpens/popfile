@@ -15,13 +15,13 @@ use Test2::V0;
 use Test::Mojo;
 
 my %buckets = (
-    ham  => { color => '#00cc00', word_count => 42, pseudo => 0, fpcount => 1, fncount => 2 },
+    ham => { color => '#00cc00', word_count => 42, pseudo => 0, fpcount => 1, fncount => 2 },
     spam => { color => '#cc0000', word_count => 17, pseudo => 0, fpcount => 0, fncount => 0 },
     unclassified => { color => '#666666', word_count => 0, pseudo => 1, fpcount => 0, fncount => 0 },
 );
 
 my %words = (
-    ham  => [ ['hello', 5], ['world', 3] ],
+    ham => [ ['hello', 5], ['world', 3] ],
     spam => [ ['buy', 10], ['now', 7] ],
 );
 
