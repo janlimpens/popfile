@@ -28,6 +28,9 @@ field $alive :reader :writer = 1;
 field $pipeready :reader :writer = 0;
 field $version :reader :writer = '';
 
+field $health_status :reader = 'ok';
+field $health_message :reader = '';
+
 =head1 NAME
 
 POPFile::Module - base class for all POPFile loadable modules
@@ -94,6 +97,24 @@ Register this object to receive messages of C<$type> from the MQ.
 
 method mq_register ($type, $object) {
     return $mq->register($type, $object);
+}
+
+=head2 set_health
+
+    $self->set_health('warning', 'poll subprocess hanging');
+    $self->set_health('ok');
+
+Sets the module's health status (C<ok>, C<warning>, or C<critical>) and an
+optional human-readable message.  Posts a C<HLTH_SET> message to the MQ so
+that C<POPFile::Loader> can aggregate health across all services.
+
+=cut
+
+method set_health ($status, $message = '') {
+    $health_status = $status;
+    $health_message = $message;
+    $mq->post('HLTH_SET', $self->name(), $status, $message)
+        if ref $mq;
 }
 
 =head2 get_user_path

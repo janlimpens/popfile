@@ -29,6 +29,7 @@ class POPFile::API :isa(POPFile::Module);
 
 field $service = undef;
 field $imap_service = undef;
+field $loader_ref = undef;
 field $daemon_ref = undef;
 
 BUILD {
@@ -160,6 +161,10 @@ method set_imap ($svc = undef) {
     $imap_service = $svc;
 }
 
+method set_loader ($loader = undef) {
+    $loader_ref = $loader;
+}
+
 
 =head2 build_app
 
@@ -204,6 +209,7 @@ method build_app ($svc, $session = undef) {
         defined $svc && $svc->can('session') ? $svc->session() : ($session // '') });
     $app->helper(popfile_history => sub ($c) { defined $svc ? $svc->history_obj() : undef });
     $app->helper(popfile_imap => sub ($c) { $imap_service });
+    $app->helper(popfile_loader => sub ($c) { $loader_ref });
     $app->helper(popfile_lang_dir => sub ($c) { $languages_dir });
 
     $r->get('/api/v1/buckets')->to('corpus#list_buckets');
@@ -237,6 +243,8 @@ method build_app ($svc, $session = undef) {
     $r->get('/api/v1/i18n')->to('Locale#list_locales');
     $r->get('/api/v1/languages')->to('Locale#list_languages');
     $r->get('/api/v1/i18n/:locale')->to('Locale#get_locale');
+
+    $r->get('/api/v1/health')->to('Health#get_health');
 
     $r->get('/api/v1/config')->to('Config#get_config');
     $r->put('/api/v1/config')->to('Config#update_config');

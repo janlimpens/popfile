@@ -43,6 +43,7 @@ field $warning = '';
 field $die_cb = '';
 field $version_string = '';
 field $popfile_root = './';
+field %module_health;
 
 =head2 CORE_loader_init
 
@@ -323,6 +324,12 @@ method CORE_link_components() {
     if (defined $components{services}{imap} && defined $components{core}{api}) {
         $components{core}{api}->set_imap($components{services}{imap});
     }
+
+    if (defined $components{core}{api}) {
+        $components{core}{api}->set_loader($self);
+    }
+
+    $components{core}{mq}->register('HLTH_SET', $self);
 
     $components{core}{history}->set_classifier(
         $components{classifier}{bayes});
@@ -624,5 +631,28 @@ Thin proxy to C<< POPFile::Configuration->module_config() >>.
 method module_config ($module, $item, $value = undef) {
     return $components{core}{config}->module_config($module, $item, $value);
 }
+
+=head2 deliver
+
+Handles C<HLTH_SET> messages posted by individual modules.  Updates
+C<%module_health> with the new status and message for the named module.
+
+=cut
+
+method deliver ($type, @msg) {
+    if ($type eq 'HLTH_SET') {
+        my ($module_name, $status, $message) = @msg;
+        $module_health{$module_name} = { status => $status, message => $message };
+    }
+}
+
+=head2 module_health
+
+Returns a copy of the current health map as a plain hash:
+C<{ module_name => { status => '...', message => '...' } }>.
+
+=cut
+
+method module_health() { %module_health }
 
 1;
