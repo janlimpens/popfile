@@ -489,6 +489,7 @@ Settings_DescMessageCutoff Número máximo de palavras analisadas por mensagem (
 Settings_DescNNTPLocalOnly Aceitar apenas conexões NNTP do localhost.
 Settings_DescNNTPPort Porta em que o POPFile escuta para NNTP (padrão 119).
 Settings_DescNNTPSeparator Caractere que separa o usuário do servidor.
+Settings_DescEnableProxy Iniciar este proxy quando o POPFile iniciar.
 Settings_DescPOP3LocalOnly Aceitar apenas conexões POP3 do localhost.
 Settings_DescPOP3Port Porta em que o POPFile escuta para POP3 (padrão 1110).
 Settings_DescPOP3Separator Caractere que separa o usuário do servidor (ex. usuário:mailhost).
@@ -535,6 +536,7 @@ Settings_SaveChanges Salvar alterações
 Settings_Saved Salvo
 Settings_Saving Salvando...
 Settings_Search Pesquisar configurações...
+Settings_EnableService Ativar serviço
 Settings_SectionClassifier Classificador
 Settings_SectionHistory Histórico
 Settings_SectionLogging Log
