@@ -52,6 +52,12 @@ my sub _part_text($part) {
     return _normalise($body)
 }
 
+my sub _has_content($text) {
+    (my $t = $text) =~ s{https?://\S+}{}g;
+    $t =~ s/\s+/ /gr =~ s/^\s+|\s+$//gr;
+    return length($t) >= 200
+}
+
 my sub _extract_body($email) {
     my @parts = $email->subparts;
     return _part_text($email) unless @parts;
@@ -59,7 +65,7 @@ my sub _extract_body($email) {
     my ($html)  = grep { ($_->content_type // '') =~ m{^text/html}i  } @parts;
     if ($plain) {
         my $text = _part_text($plain);
-        return $text if !$html || length($text) >= 200;
+        return $text if !$html || _has_content($text);
         my $html_text = _part_text($html);
         return length($html_text) > length($text) ? $html_text : $text;
     }
