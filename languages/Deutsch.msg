@@ -516,7 +516,8 @@ Settings_DescSessionDividers Trennlinien zwischen Browsersitzungen im Verlauf an
 Settings_DescSMTPLocalOnly Nur SMTP-Verbindungen von localhost akzeptieren.
 Settings_DescSMTPPort Port, auf dem POPFile für SMTP lauscht (Standard 25).
 Settings_DescSQLiteJournal SQLite Journal / WAL-Modus.
-Settings_DescSQLiteTweaks Bitmaske: 1 = schnelleres Schreiben (weniger sicher), 2 = regelmäßige Sicherung.
+Settings_DescSQLiteBackup Datenbank stündlich als .backup-Datei sichern.
+Settings_DescSQLiteFastWrites SQLite-Schreib-Sync deaktivieren für schnellere Einfügeoperationen. Geringes Datenverlustrisiko bei Absturz.
 Settings_DescSSLChainPort Port des vorgelagerten SSL POP3-Servers.
 Settings_DescSSLChainServer Hostname des vorgelagerten SSL POP3-Servers für SSL-Verkettung.
 Settings_DescSubjectTagLeft Präfix, das in den Betreff-Header eingefügt wird, z.B. [SPAM].
@@ -566,7 +567,8 @@ Settings_SectionUI Benutzeroberfläche
 Settings_ServerSeparator Server-Trennzeichen
 Settings_SessionDividers Sitzungstrennlinien
 Settings_SQLiteJournalMode SQLite-Journalmodus
-Settings_SQLiteTweaks SQLite-Optimierungen
+Settings_SQLiteBackup SQLite: regelmäßige Sicherung
+Settings_SQLiteFastWrites SQLite: schnelles Schreiben (weniger sicher)
 Settings_SSLChainPort SSL-Chain-Port
 Settings_SSLChainServer SSL-Chain-Server
 Settings_SubjectTagLeft Betreff-Tag links

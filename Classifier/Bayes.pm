@@ -209,13 +209,8 @@ method initialize() {
 
     $self->config(localhostname => '');
 
-    # This is a bit mask used to control options when we are using the
-    # default SQLite database.  By default all the options are on.
-    #
-    # 1 = Asynchronous deletes
-    # 2 = Backup database every hour
-
-    $self->config(sqlite_tweaks => 0xFFFFFFFF);
+    $self->config(sqlite_fast_writes => 1);
+    $self->config(sqlite_backup => 1);
 
     # SQLite Journal mode.
     # To use this option, DBD::SQLite v1.20 or later is required.
@@ -242,10 +237,6 @@ method initialize() {
 
     $self->mq_register('COMIT', $self);
     $self->mq_register('RELSE', $self);
-
-    # Register for the TICKD message which is sent hourly by the
-    # Logger module.  We use this to hourly save the database if bit 1
-    # of the sqlite_tweaks is set and we are using SQLite
 
     $self->mq_register('TICKD', $self);
 
@@ -367,34 +358,26 @@ method backup_database() {
     # If database backup is turned on and we are using SQLite then
     # backup the database by copying it
     # TODO: separate implementations
-    if (($self->config('sqlite_tweaks') & 2) && $db_is_sqlite) {
+    if ($self->config('sqlite_backup') && $db_is_sqlite) {
         unless (copy($db_name, "$db_name.backup")) {
             $self->log_msg(WARN => "Failed to backup database ".$db_name);
         }
     }
 }
 
-=head2 tweak_sqlite
+=head2 tweak_sqlite($tweak, $state, $db)
 
-Called when a module wants is to tweak access to the SQLite database.
-
-C<$tweak> The tweak to apply (a bit in the sqlite_tweaks mask)
-C<$state> 1 to enable the tweak, 0 to disable
-C<$db> The db handle to tweak
+Applies or reverts a named SQLite optimisation.  Currently only tweak
+C<1> (async writes via C<PRAGMA synchronous=off>) is implemented and
+is guarded by the C<sqlite_fast_writes> config flag.
 
 =cut
 
 method tweak_sqlite ($tweak, $state, $db) {
-    if ($db_is_sqlite &&
-         ($self->config('sqlite_tweaks') & $tweak)) {
-         $self->log_msg(INFO => "Performing tweak $tweak to $state");
-
-         if ($tweak == 1) {
-            my $sync = $state
-                ? 'off'
-                : 'normal';
-            $db->do("pragma synchronous=$sync");
-        }
+    return unless $db_is_sqlite;
+    if ($tweak == 1 && $self->config('sqlite_fast_writes')) {
+        $self->log_msg(INFO => "sqlite_fast_writes: synchronous=" . ($state ? 'off' : 'normal'));
+        $db->do('pragma synchronous=' . ($state ? 'off' : 'normal'));
     }
 }
 

@@ -526,7 +526,8 @@ Settings_UnclassifiedWeight             Unclassified Weight
 Settings_SubjectTagLeft                 Subject Tag Left
 Settings_SubjectTagRight                Subject Tag Right
 Settings_TagPosition                    Tag Position
-Settings_SQLiteTweaks                   SQLite Tweaks
+Settings_SQLiteBackup                   SQLite: periodic backup
+Settings_SQLiteFastWrites               SQLite: fast writes (less safe)
 Settings_SQLiteJournalMode              SQLite Journal Mode
 Settings_WordStemming                   Word Stemming
 Settings_AutoDetectLanguage             Auto-detect Language
@@ -569,7 +570,8 @@ Settings_DescUnclassifiedWeight         Probability threshold below which mail i
 Settings_DescSubjectTagLeft             Prefix inserted into Subject header, e.g. [SPAM].
 Settings_DescSubjectTagRight            Suffix appended to Subject header.
 Settings_DescTagPosition                Where to place the subject tag.
-Settings_DescSQLiteTweaks               Bitmask: 1 = faster writes (less safe), 2 = periodic backup.
+Settings_DescSQLiteBackup               Copy the database to a .backup file every hour.
+Settings_DescSQLiteFastWrites           Disable SQLite write-ahead sync for faster inserts. Risks minor data loss on crash.
 Settings_DescSQLiteJournal              SQLite journal / WAL mode.
 Settings_DescWordStemming               Reduce words to their stem before classification (e.g. "running" to "run"). Improves recall for morphologically rich languages at ~10% latency cost.
 Settings_DescAutoDetectLang             Detect the language of each message and apply matching stopwords and stemmer. Adds ~130% classify latency; useful for mixed-language mailboxes.

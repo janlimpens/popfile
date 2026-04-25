@@ -498,7 +498,8 @@ Settings_DescSessionDividers Mostrar divisores entre sessões de navegação no 
 Settings_DescSMTPLocalOnly Aceitar apenas conexões SMTP do localhost.
 Settings_DescSMTPPort Porta em que o POPFile escuta para SMTP (padrão 25).
 Settings_DescSQLiteJournal Modo de diário SQLite / WAL.
-Settings_DescSQLiteTweaks Máscara de bits: 1 = escritas mais rápidas (menos seguro), 2 = backup periódico.
+Settings_DescSQLiteBackup Copiar o banco de dados para um arquivo .backup a cada hora.
+Settings_DescSQLiteFastWrites Desativar a sincronização de escrita SQLite para inserções mais rápidas. Risco mínimo de perda de dados em caso de falha.
 Settings_DescSSLChainPort Porta do servidor SSL POP3 upstream.
 Settings_DescSSLChainServer Nome do host do servidor SSL POP3 upstream para encadeamento SSL.
 Settings_DescSubjectTagLeft Prefixo inserido no cabeçalho Assunto, ex. [SPAM].
@@ -548,7 +549,8 @@ Settings_SectionUI Interface do usuário
 Settings_ServerSeparator Separador de servidor
 Settings_SessionDividers Divisores de sessão
 Settings_SQLiteJournalMode Modo de diário SQLite
-Settings_SQLiteTweaks Ajustes de SQLite
+Settings_SQLiteBackup SQLite: backup periódico
+Settings_SQLiteFastWrites SQLite: escrita rápida (menos seguro)
 Settings_SSLChainPort Porta SSL em cadeia
 Settings_SSLChainServer Servidor SSL em cadeia
 Settings_SubjectTagLeft Etiqueta assunto esquerda
