@@ -248,7 +248,7 @@ method reserve_slot ($inserted_time = undef) {
         # when we received it
 
         my $result = $insert_sth->execute(1, $r, $inserted_time);
-        next if (!defined($result));
+        next unless defined $result;
 
         if ($is_sqlite2) {
             $slot = $self->db()->func('last_insert_rowid');
@@ -533,11 +533,9 @@ method commit_history() {
         # using Date::Parse to interpret it and turn it into the
         # Unix epoch.
 
-        if (!defined($header{date}->[0])) {
-            $header{date}->[0] = 0;
-        } else {
-            $header{date}->[0] = str2time($header{date}->[0]) || 0;
-        }
+        $header{date}->[0] = defined $header{date}->[0]
+            ? str2time($header{date}->[0]) || 0
+            : 0;
 
         # Figure out the ID of the bucket this message has been
         # classified into (and the same for the magnet if it is
@@ -706,10 +704,10 @@ that is absent; it is treated as the empty string.
 =cut
 
 method get_message_hash ($messageid, $date, $subject, $received) {
-    $messageid = '' if (!defined($messageid));
-    $date = '' if (!defined($date));
-    $subject = '' if (!defined($subject));
-    $received = '' if (!defined($received));
+    $messageid //= '';
+    $date //= '';
+    $subject //= '';
+    $received //= '';
 
     return md5_hex("[$messageid][$date][$subject][$received]");
 }
@@ -766,7 +764,7 @@ method start_query() {
     while (1) {
         my $id = sprintf('%8.8x', int(rand(4294967295)));
 
-        if (!defined($queries{$id})) {
+        unless (defined $queries{$id}) {
             $queries{$id}{query} = 0;
             $queries{$id}{count} = 0;
             $queries{$id}{cache} = ();
@@ -1182,7 +1180,7 @@ method history_read_class ($filename) {
         return (undef, $bucket, undef, undef);
     }
 
-    $bucket = 'unknown class' if (!defined($bucket));
+    $bucket //= 'unknown class';
 
     return ($reclassified, $bucket, $usedtobe, $magnet);
 }
