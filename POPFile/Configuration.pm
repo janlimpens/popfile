@@ -407,22 +407,20 @@ C<..>.
 =cut
 
 method path_join ($left, $right, $sandbox = undef) {
-    $sandbox = 1 if (!defined($sandbox));
-    if (($right =~ /^\//) ||
-         ($right =~ /^[A-Za-z]:[\/\\]/) ||
-         ($right =~ /\\\\/ ) ) {
-        if ( $sandbox ) {
-            $self->log_msg(WARN => "Attempt to access path $right outside sandbox" );
+    $sandbox //= 1;
+    if ($right =~ /^\// || $right =~ /^[A-Za-z]:[\/\\]/ || $right =~ /\\\\/) {
+        if ($sandbox) {
+            $self->log_msg(WARN => "Attempt to access path $right outside sandbox");
             return;
         } else {
             return $right;
         }
     }
-    if ( $sandbox && ( $right =~ /\.\./)) {
+    if ($sandbox && $right =~ /\.\./) {
         $self->log_msg(WARN => "Attempt to access path $right outside sandbox");
         return;
     }
-    $left  =~ s/\/$//;
+    $left =~ s/\/$//;
     $right =~ s/^\///;
     return "$left/$right";
 }
