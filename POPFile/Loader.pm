@@ -263,7 +263,7 @@ method CORE_load ($noserver = 0) {
     $self->CORE_load_directory_modules(POPFile => 'core');
     $self->CORE_load_directory_modules(Classifier => 'classifier');
 
-    if (!$noserver) {
+    unless ($noserver) {
         $self->CORE_load_directory_modules(Proxy => 'proxy');
         $self->CORE_load_directory_modules(Services => 'services');
     }

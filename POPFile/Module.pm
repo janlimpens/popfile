@@ -268,10 +268,9 @@ method can_read ($handle, $timeout = undef) {
     if ($handle =~ /ssl/i) {
         $can_read = ($handle->pending() > 0);
     }
-    if (!$can_read) {
-        if (defined($slurp_data{"$handle"}{select})) {
-            $can_read = defined(
-                $slurp_data{"$handle"}{select}->can_read($timeout));
+    unless ($can_read) {
+        if (defined $slurp_data{"$handle"}{select}) {
+            $can_read = defined($slurp_data{"$handle"}{select}->can_read($timeout));
         } else {
             my $selector = IO::Select->new($handle);
             $can_read = defined($selector->can_read($timeout));
