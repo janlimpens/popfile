@@ -45,10 +45,8 @@ once the server is ready (config key: C<open_browser>).
 =cut
 
 method initialize() {
-    # todo: $self->set_default($key => $val) when a value isn't there
-    $self->config(port => 0); #8080);
+    $self->config(port => 0);
     $self->config(static_dir => 'public');
-    # $self->config(password => '');
     $self->config(local => 1);
     $self->config(page_size => 25);
     $self->config(date_format => '');
@@ -236,10 +234,6 @@ method build_app ($svc, $session = undef) {
     $r->post('/api/v1/magnets')->to('magnets#create_magnet');
     $r->delete('/api/v1/magnets')->to('magnets#delete_magnet');
 
-    #--------------------------------------------------------------------
-    # Config schema: key => [module, param]
-    # Keys match the frontend's SECTIONS schema.
-    #--------------------------------------------------------------------
     $r->get('/api/v1/i18n')->to('Locale#list_locales');
     $r->get('/api/v1/languages')->to('Locale#list_languages');
     $r->get('/api/v1/i18n/:locale')->to('Locale#get_locale');
