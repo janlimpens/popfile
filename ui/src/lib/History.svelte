@@ -99,6 +99,9 @@
     if (res.ok) {
       const data = await res.json();
       selected = { slot, body: data.body, word_colors: data.word_colors };
+    } else {
+      const err = await res.json().catch(() => ({}));
+      selected = { slot, error: err.error || `HTTP ${res.status}` };
     }
     detailLoading = false;
   }
@@ -258,6 +261,8 @@
             <td colspan="7">
               {#if detailLoading}
                 <p class="detail-msg">{t('History_Loading')}</p>
+              {:else if selected.error !== undefined}
+                <p class="detail-error">{selected.error}</p>
               {:else if selected.body !== undefined}
                 <div class="detail">
                   <label class="toggle">
@@ -312,6 +317,7 @@
   .detail-row > td { padding: 0; border-bottom: 2px solid var(--border); }
   .detail { padding: 0.75rem 1rem; }
   .detail-msg { padding: 0.5rem 0; color: var(--text-muted); margin: 0; font-size: 0.9rem; }
+  .detail-error { padding: 0.5rem 1rem; color: var(--danger); margin: 0; font-size: 0.9rem; font-family: monospace; }
   .toggle { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; margin-bottom: 0.6rem; cursor: pointer; user-select: none; color: var(--text-muted); }
   .body { font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; word-break: break-word; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem; max-height: 400px; overflow-y: auto; }
 </style>

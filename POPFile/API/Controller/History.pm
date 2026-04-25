@@ -17,6 +17,7 @@ use Mojo::Base 'Mojolicious::Controller', -signatures;
 use Email::MIME;
 use Encode qw();
 use HTML::Entities qw(decode_entities);
+use feature 'current_sub';
 
 my sub decode_header($value) {
     return '' unless defined $value && length $value;
@@ -57,7 +58,7 @@ my sub _extract_body($email) {
     my ($plain) = grep { ($_->content_type // '') =~ m{^text/plain}i } @parts;
     return _part_text($plain) if $plain;
     for my $part (@parts) {
-        my $text = _extract_body($part);
+        my $text = __SUB__->($part);
         return $text if $text ne '';
     }
     return ''
