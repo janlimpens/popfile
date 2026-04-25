@@ -215,7 +215,7 @@ method load_module ($module) {
     my $mod = do {
         try { $class->new() }
         catch ($e) {
-        Log::Any->get_logger(category => $class)->warning($e);
+            Log::Any->get_logger(category => $class)->warning($e);
             return
         }
     };
