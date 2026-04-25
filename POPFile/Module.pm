@@ -180,9 +180,9 @@ Returns C<undef> on timeout or closed connection.
 =cut
 
 method slurp ($handle, $timeout = undef) {
-    $timeout = $self->global_config('timeout') if !defined $timeout;
+    $timeout //= $self->global_config('timeout');
 
-    if (!defined($slurp_data{"$handle"}{data})) {
+    unless (defined $slurp_data{"$handle"}{data}) {
         $slurp_data{"$handle"}{select} = IO::Select->new($handle);
         $slurp_data{"$handle"}{data} = '';
     }
@@ -262,7 +262,7 @@ sockets and SSL handles (via C<< $handle->pending() >>).
 =cut
 
 method can_read ($handle, $timeout = undef) {
-    $timeout = $self->global_config('timeout') if !defined $timeout;
+    $timeout //= $self->global_config('timeout');
 
     my $can_read = 0;
     if ($handle =~ /ssl/i) {

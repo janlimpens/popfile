@@ -213,7 +213,7 @@ word contains no colon, applies the Snowball stemmer.
 
         return '' if $lcword =~ /^[A-F0-9]{8,}$/i;
 
-        $lcword =~ s/://g if !defined($allow_colon);
+        $lcword =~ s/://g unless defined $allow_colon;
 
         my $result = ($lcword =~ /:/) ? $word : $lcword;
 
