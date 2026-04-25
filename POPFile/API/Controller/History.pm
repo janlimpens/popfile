@@ -30,9 +30,15 @@ my sub _strip_html($html) {
     $html =~ s/<(?:style|script)[^>]*>.*?<\/(?:style|script)>//gsi;
     $html =~ s/<br\s*\/?>|<\/(?:p|div|tr|li|blockquote|h\d)>/\n/gi;
     $html =~ s/<[^>]+>//g;
-    $html = decode_entities($html);
-    $html =~ s/([\s\n])+/$1/g;
-    return $html
+    return decode_entities($html)
+}
+
+my sub _normalise($text) {
+    $text =~ s/\r//g;
+    $text =~ s/^[^\S\n]+$//mg;
+    $text =~ s/([\s\n])+/$1/g;
+    $text =~ s/\A\n+//;
+    return $text
 }
 
 my sub _part_text($part) {
@@ -40,8 +46,7 @@ my sub _part_text($part) {
     return '' unless $ct =~ m{^text/}i;
     my $body = eval { $part->body_str } // $part->body // '';
     $body = _strip_html($body) if $ct =~ m{text/html}i;
-    $body =~ s/([\s\n])+/$1/g;
-    return $body
+    return _normalise($body)
 }
 
 my sub _extract_body($email) {
