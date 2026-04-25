@@ -280,17 +280,8 @@ method upgrade_parameter ($parameter) {
         separator => 'pop3_separator',
         toptoo => 'pop3_toptoo',
 
-        language => 'html_language',
-        last_reset => 'html_last_reset',
-        last_update_check => 'html_last_update_check',
-        localui => 'html_local',
-        page_size => 'html_page_size',
-        password => 'html_password',
-        send_stats => 'html_send_stats',
-        skin => 'html_skin',
-        test_language => 'html_test_language',
-        update_check => 'html_update_check',
-        ui_port => 'html_port',
+        language => 'api_locale',
+        html_language => 'api_locale',
 
         archive => 'history_archive',
         archive_classes => 'history_archive_classes',
@@ -300,9 +291,6 @@ method upgrade_parameter ($parameter) {
         html_archive_classes => 'history_archive_classes',
         html_archive_dir => 'history_archive_dir',
         html_history_days => 'history_history_days',
-
-        html_update_check => 'GLOBAL_update_check',
-        html_last_update_check => 'GLOBAL_last_update_check',
     );
     if (defined($upgrades{$parameter})) {
         return $upgrades{$parameter};
@@ -334,8 +322,7 @@ method load_configuration() {
                 my $value = $2;
                 $value = '' if !defined($value);
                 $parameter = $self->upgrade_parameter($parameter);
-                if (defined($configuration_parameters{$parameter}) ||
-                    ($parameter eq 'html_language')) {
+                if (defined($configuration_parameters{$parameter})) {
                     $configuration_parameters{$parameter}{value} = $value;
                 } else {
                     $deprecated_parameters{$parameter} = $value;

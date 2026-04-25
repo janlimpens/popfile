@@ -282,7 +282,7 @@ method start() {
     # UTF-8 but POPFile uses EUC-JP encoding for Japanese. In this situation
     # lc() does not work correctly.
 
-    my $language = $self->module_config(html => 'language') || '';
+    my $language = $self->module_config(api => 'locale') || '';
 
     if ($language =~ /^(Nihongo$|Korean$|Chinese)/) {
         use POSIX qw(locale_h);
@@ -3373,14 +3373,14 @@ method get_bucket_word_prefixes($session, $bucket) {
         SELECT words.word FROM matrix, words
         WHERE matrix.wordid = words.id
             AND matrix.bucketid = ?", undef, $bucketid);
-    if (($self->module_config('html', 'language')//'') eq 'Nihongo') {
+    if (($self->module_config('api', 'locale')//'') eq 'Nihongo') {
         return
             grep {$_ ne $prev && ($prev = $_, 1)}
             sort
             map {substr_euc($_,0,1)}
             $result->@*;
     } else {
-        if  (($self->module_config('html', 'language') // '') eq 'Korean') {
+        if  (($self->module_config('api', 'locale') // '') eq 'Korean') {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {$_ =~ /([\x20-\x80]|$eksc)/} $result->@*;
         } else {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr($_,0,1)} $result->@*;
@@ -4200,7 +4200,7 @@ method add_stopword ($session, $stopword) {
     # Pass language parameter to add_stopword()
 
     return $parser->mangle()->add_stopword(
-        $stopword, $self->module_config('html', 'language'));
+        $stopword, $self->module_config('api', 'locale'));
 }
 
 method remove_stopword ($session, $stopword) {
@@ -4211,7 +4211,7 @@ method remove_stopword ($session, $stopword) {
     # Pass language parameter to remove_stopword()
 
     return $parser->mangle()->remove_stopword(
-        $stopword, $self->module_config('html', 'language'));
+        $stopword, $self->module_config('api', 'locale'));
 }
 
 =head2 db_quote
