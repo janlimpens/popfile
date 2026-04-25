@@ -370,7 +370,7 @@ mappings.  Resets C<$folder_change_flag>.
 =cut
 
 method build_folder_list() {
-    $self->log_msg(1, "Building list of serviced folders.");
+    $self->log_msg(2, "Building list of serviced folders.");
     %folders = ();
     for my $folder ($self->watched_folders()) {
         $folders{$folder}{watched} = 1;
@@ -498,7 +498,7 @@ moved and C<expunge> is configured.
 method scan_folder ($folder) {
     my $is_watched = exists $folders{$folder}{watched} ? 1 : 0;
     my $is_output = exists $folders{$folder}{output}  ? $folders{$folder}{output} : '';
-    $self->log_msg(1, "Looking for new messages in folder $folder.");
+    $self->log_msg(2, "Looking for new messages in folder $folder.");
     my $imap = $folders{$folder}{imap};
     $imap->noop();
     my $moved_message = 0;
@@ -552,7 +552,7 @@ method scan_folder ($folder) {
             }
             next;
         }
-        $self->log_msg(1, "Ignoring message $msg");
+        $self->log_msg(2, "Ignoring message $msg");
     }
     $imap->expunge() if $moved_message && $self->config('expunge');
 }
@@ -723,8 +723,8 @@ method get_hash ($folder, $msg) {
     my $subject = $header{'subject'}[0];
     my $received = $header{'received'}[0];
     my $hash = $history->get_message_hash($mid, $date, $subject, $received);
-    $self->log_msg(1, sprintf('Hashed message: %s.', $subject // 'undef'));
-    $self->log_msg(1, "Message $msg has hash value $hash");
+    $self->log_msg(2, sprintf('Hashed message: %s.', $subject // 'undef'));
+    $self->log_msg(2, "Message $msg has hash value $hash");
     return $hash
 }
 
@@ -738,10 +738,10 @@ history (i.e. it is safe to classify it fresh), C<undef> otherwise.
 method can_classify ($hash) {
     my $slot = $history->get_slot_from_hash($hash);
     if ($slot ne '') {
-        $self->log_msg(1, "Message was already classified (slot $slot).");
+        $self->log_msg(2, "Message was already classified (slot $slot).");
         return
     }
-    $self->log_msg(1, "The message is not yet in history.");
+    $self->log_msg(2, "The message is not yet in history.");
     return 1
 }
 
@@ -765,19 +765,19 @@ method can_reclassify ($hash, $new_bucket) {
         $bucket, $reclassified, undef, $magnetized) = $history->get_slot_fields($slot);
     $self->log_msg(2, "get_slot_fields: slot=$slot bucket=$bucket reclassified=$reclassified magnetized=$magnetized");
     if ($magnetized) {
-        $self->log_msg(1, "The message was classified using a magnet and cannot be reclassified.");
+        $self->log_msg(2, "The message was classified using a magnet and cannot be reclassified.");
         return
     }
     if ($reclassified) {
-        $self->log_msg(1, "The message was already reclassified.");
+        $self->log_msg(2, "The message was already reclassified.");
         return
     }
     if ($new_bucket eq $bucket) {
-        $self->log_msg(1, "Will not reclassify to same bucket ($new_bucket).");
+        $self->log_msg(2, "Will not reclassify to same bucket ($new_bucket).");
         return
     }
     if ($classifier->is_pseudo_bucket($self->api_session(), $new_bucket)) {
-        $self->log_msg(1, "Will not reclassify to pseudo-bucket ($new_bucket)");
+        $self->log_msg(2, "Will not reclassify to pseudo-bucket ($new_bucket)");
         return
     }
     return $bucket
@@ -798,7 +798,7 @@ method folder_for_bucket ($bucket, $folder = undef) {
         $mapping{$bucket} = $folder;
         my $new = '';
         $new .= "$_$cfg_separator$mapping{$_}$cfg_separator" for keys %mapping;
-        $self->log_msg(1, $new);
+        $self->log_msg(2, $new);
         $self->config('bucket_folder_mappings', $new);
         return
     }

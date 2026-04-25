@@ -229,7 +229,7 @@ method say ($command) {
         $self->bail_out("Lost connection while I tried to say '$cmdstr'.");
     }
     (my $logged = $cmdstr) =~ s/^(A\d+) LOGIN ".+?" ".+"(.+)/$1 LOGIN "xxxxx" "xxxxx"$2/;
-    $self->log_msg(1, "<< $logged");
+    $self->log_msg(2, "<< $logged");
     return 1
 }
 
@@ -267,12 +267,12 @@ method get_response() {
         }
         if ($count_octets == 0) {
             if ($buf =~ /^$actual_tag (OK|BAD|NO)/) {
-                $self->log_msg($1 ne 'OK' ? 0 : 1, ">> $buf");
+                $self->log_msg($1 ne 'OK' ? 0 : 2, ">> $buf");
                 last;
             }
             if ($buf =~ /^\* (.+)/) {
                 my $untagged = $1;
-                $self->log_msg(1, ">> $buf");
+                $self->log_msg(2, ">> $buf");
                 if ($untagged =~ /UIDVALIDITY/
                      && $last_command !~ /^SELECT/
                      && $last_command !~ /^STATUS/) {
@@ -326,7 +326,7 @@ Returns an empty list on failure.
 =cut
 
 method get_mailbox_list() {
-    $self->log_msg(1, "Getting mailbox list");
+    $self->log_msg(2, "Getting mailbox list");
     $self->say('LIST "" "*"');
     my $result = $self->get_response();
     unless ($result == 1) {
@@ -354,7 +354,7 @@ Requires that C<select()> has been called first.
 
 method get_new_message_list() {
     my $uid = $self->uid_next($folder);
-    $self->log_msg(1, "Getting uids ge $uid in folder $folder");
+    $self->log_msg(2, "Getting uids ge $uid in folder $folder");
     $self->say("UID SEARCH UID $uid:* UNDELETED");
     my $result = $self->get_response();
     unless ($result == 1) {
@@ -405,10 +405,10 @@ C<(0)> on failure.
 
 method fetch_message_part ($msg, $part) {
     if ($part ne '') {
-        $self->log_msg(1, "Fetching $part of message $msg");
+        $self->log_msg(2, "Fetching $part of message $msg");
     }
     else {
-        $self->log_msg(1, "Fetching message $msg");
+        $self->log_msg(2, "Fetching message $msg");
     }
     if ($part eq 'TEXT' || $part eq '') {
         my $limit = $self->global_config('message_cutoff') || 0;
@@ -418,7 +418,7 @@ method fetch_message_part ($msg, $part) {
         $self->say("UID FETCH $msg (FLAGS BODY.PEEK[$part])");
     }
     my $result = $self->get_response();
-    $self->log_msg(1, "Got " . ($part ne '' ? $part : 'message') . " # $msg, result: $result.");
+    $self->log_msg(2, "Got " . ($part ne '' ? $part : 'message') . " # $msg, result: $result.");
     unless ($result == 1) {
         return 0
     }
@@ -485,7 +485,7 @@ method uid_validity ($folder_name, $uidval = undef) {
     Carp::confess("gimme a folder!") unless $folder_name;
     if (defined $uidval) {
         $_uid_validity{$folder_name} = $uidval;
-        $self->log_msg(1, "Updated UIDVALIDITY value for folder $folder_name to $uidval.");
+        $self->log_msg(2, "Updated UIDVALIDITY value for folder $folder_name to $uidval.");
         return
     }
     return undef
@@ -507,7 +507,7 @@ method uid_next ($folder_name, $uidnext = undef) {
     Carp::confess("I need a folder") unless $folder_name;
     if (defined $uidnext) {
         $_uid_next{$folder_name} = $uidnext;
-        $self->log_msg(1, "Updated UIDNEXT value for folder $folder_name to $uidnext.");
+        $self->log_msg(2, "Updated UIDNEXT value for folder $folder_name to $uidnext.");
         return
     }
     return exists $_uid_next{$folder_name} && $_uid_next{$folder_name} =~ /^\d+$/
