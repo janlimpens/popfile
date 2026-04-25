@@ -11,7 +11,7 @@ use Query::Builder;
 field $_qb = undef;
 
 my %driver_map = (
-    SQLite  => 'sqlite',
+    SQLite => 'sqlite',
     SQLite2 => 'sqlite',
     mysql => 'mysql',
     Pg => 'pg' );

@@ -440,9 +440,9 @@ method CORE_register_timers() {
     my $mq     = $components{core}{mq};
     Mojo::IOLoop->recurring(3600 => sub { $logger->service() })
         if defined $logger;
-    Mojo::IOLoop->recurring(60   => sub { $config->service() })
+    Mojo::IOLoop->recurring(60 => sub { $config->service() })
         if defined $config;
-    Mojo::IOLoop->recurring(0.1  => sub { $mq->service() })
+    Mojo::IOLoop->recurring(0.1 => sub { $mq->service() })
         if defined $mq;
     Mojo::IOLoop->recurring(0.05 => sub {
         for my $name (sort keys $components{proxy}->%*) {
