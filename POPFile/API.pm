@@ -254,6 +254,7 @@ method build_app ($svc, $session = undef) {
     $r->post('/api/v1/imap/test-connection')->to('IMAP#test_connection');
     $r->post('/api/v1/imap/train')->to('IMAP#trigger_training');
     $r->get('/api/v1/imap/train')->to('IMAP#training_status');
+    $r->post('/api/v1/imap/rescan')->to('IMAP#rescan_folder');
 
     return $app
 }

@@ -99,4 +99,16 @@ subtest 'output folder is scanned for pending_folder_moves' => sub {
     ok($work_scanned,  'output folder Work was scanned');
 };
 
+subtest 'request_folder_rescan sets uid_next override for named folder' => sub {
+    my ($imap) = make_imap();
+    $log->clear();
+
+    $imap->request_folder_rescan('INBOX');
+
+    my @reset_msgs = grep { /Scheduling uid_next reset/ } map { $_->{message} } @{ $log->msgs() };
+    ok(scalar @reset_msgs >= 1, 'uid_next reset scheduled for rescan folder');
+    my $inbox_reset = grep { /INBOX/ } @reset_msgs;
+    ok($inbox_reset >= 1, 'uid_next reset is for INBOX');
+};
+
 done_testing;

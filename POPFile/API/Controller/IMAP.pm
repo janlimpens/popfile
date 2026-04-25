@@ -166,6 +166,18 @@ sub training_status ($self) {
     $self->render(json => { pending => \@pending });
 }
 
+sub rescan_folder ($self) {
+    my $imap = $self->popfile_imap;
+    return $self->render(status => 503, json => { error => 'IMAP not available' })
+        unless defined $imap;
+    my $body = $self->req->json // {};
+    my $folder = $body->{folder} // '';
+    return $self->render(status => 400, json => { error => 'folder required' })
+        unless $folder;
+    $imap->request_folder_rescan($folder);
+    $self->render(json => { queued => \1, folder => $folder });
+}
+
 sub _imap_sep ($self) {
     return '-->'
 }

@@ -489,6 +489,21 @@ method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
         if defined $source_folder;
 }
 
+=head2 request_folder_rescan($folder)
+
+Schedules a full rescan of C<$folder> on the next poll cycle by resetting
+its C<uid_next> watermark to 1.  All messages in the folder will be
+classified (or reclassified) on the next poll.  Returns the folder name, or
+C<undef> if C<$folder> is empty.
+
+=cut
+
+method request_folder_rescan ($folder) {
+    return unless $folder;
+    $self->_reset_uid_next($folder);
+    return $folder
+}
+
 =head2 scan_folder($folder)
 
 Scans one IMAP folder for new messages (UIDs ≥ stored C<UIDNEXT>).  For each
