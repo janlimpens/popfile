@@ -279,7 +279,7 @@ every module that accepts them.
 =cut
 
 method CORE_link_components() {
-    print "\n\nPOPFile Engine $version_string starting" if $debug;
+    print "\n" if $debug;
 
     for my $type (sort keys %components) {
         for my $name (sort keys $components{$type}->%*) {
@@ -350,31 +350,19 @@ first, then all others).  Dies if any module returns 0.
 =cut
 
 method CORE_initialize() {
-    print "\n\n    Initializing... " if $debug;
-
     my @c = ('core', grep { !/^core$/ } sort keys %components);
-
     for my $type (@c) {
-        print "\n         {$type:" if $debug;
         for my $name (sort keys $components{$type}->%*) {
-            print " $name" if $debug;
-            STDOUT->flush();
-
             my $mod  = $components{$type}{$name};
             my $code = $mod->initialize();
-
-            if ($code == 0) {
-                die "Failed to start while initializing the $name module";
-            }
-
+            die "Failed to start while initializing the $name module"
+                if $code == 0;
             if ($code == 1) {
                 $mod->set_alive(1);
                 $mod->set_pipeready($pipeready);
             }
         }
-        print '} ' if $debug;
     }
-    print "\n" if $debug;
 }
 
 =head2 CORE_config
@@ -398,32 +386,22 @@ silently removed.  Dies if any module returns 0.
 =cut
 
 method CORE_start() {
-    print "\n    Starting...     " if $debug;
-
     my @c = ('core', 'classifier', 'services',
               grep { !/^(core|classifier|services)$/ } sort keys %components);
-
     for my $type (@c) {
-        print "\n         {$type:" if $debug;
         for my $name (sort keys $components{$type}->%*) {
             my $code = $components{$type}{$name}->start();
-
-            if ($code == 0) {
-                die "Failed to start while starting the $name module";
-            }
-
-            if ($code == 2) {
-                delete $components{$type}{$name};
-            } else {
-                print " $name" if $debug;
-                STDOUT->flush();
-            }
+            die "Failed to start while starting the $name module"
+                if $code == 0;
+            delete $components{$type}{$name}
+                if $code == 2;
         }
-        print '} ' if $debug;
     }
-
-    print "\n\nrunning\n"
-        if $debug;
+    if ($debug && defined $components{core}{api}) {
+        my $url = $components{core}{api}->url();
+        print "\n    \e[38;5;80m$url\e[0m\n"
+            if $url;
+    }
     STDOUT->flush();
 }
 
@@ -495,11 +473,7 @@ they can flush pending state; all others follow in sorted order.
 =cut
 
 method CORE_stop() {
-    if ($debug) {
-        print "\n\nstopping\n";
-        STDOUT->flush();
-        print "\n    Stopping... ";
-    }
+    print "\nstopping\n" if $debug;
 
     $components{core}{mq}->set_alive(0);
     $components{core}{mq}->stop();
@@ -507,21 +481,14 @@ method CORE_stop() {
     $components{core}{history}->stop();
 
     for my $type (sort keys %components) {
-        print "\n         {$type:" if $debug;
         for my $name (sort keys $components{$type}->%*) {
-            print " $name" if $debug;
-            STDOUT->flush();
-
             next if $name eq 'mq';
             next if $name eq 'history';
             $components{$type}{$name}->set_alive(0);
             $components{$type}{$name}->stop();
         }
-        print '} ' if $debug;
     }
-
-    print "\n\nterminated\n"
-        if $debug;
+    print "terminated\n" if $debug;
 }
 
 =head2 CORE_version
