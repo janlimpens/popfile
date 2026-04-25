@@ -424,7 +424,7 @@ method is_valid_slot ($slot) {
 #
 #----------------------------------------------------------------------------
 method commit_history() {
-    unless (@{$commit_list}) {
+    unless ($commit_list->@*) {
         return;
     }
 
