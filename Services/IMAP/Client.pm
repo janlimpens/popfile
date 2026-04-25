@@ -393,6 +393,28 @@ method get_new_message_list_unselected ($folder_name) {
     return
 }
 
+=head2 search_header_in_folder($folder_name, $field, $value)
+
+Selects C<$folder_name> and searches for messages whose header field C<$field>
+matches C<$value> using C<UID SEARCH HEADER>.  Returns a list of matching UIDs
+(possibly empty) or an empty list on IMAP failure.
+
+=cut
+
+method search_header_in_folder ($folder_name, $field, $value) {
+    $self->select($folder_name);
+    (my $quoted = $value) =~ s/([\\"])/\\$1/g;
+    $self->say("UID SEARCH HEADER $field \"$quoted\"");
+    my $result = $self->get_response();
+    unless ($result == 1) {
+        $self->log_msg(WARN => "SEARCH HEADER $field failed in $folder_name (result: $result)");
+        return
+    }
+    my @matching;
+    @matching = split / /, $1 if $last_response =~ /\* SEARCH (.+)$eol/;
+    return map { $_ + 0 } @matching
+}
+
 =head2 fetch_message_part($msg, $part)
 
 Fetches C<$part> (e.g. C<'HEADER'>, C<'TEXT'>,

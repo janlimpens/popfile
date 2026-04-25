@@ -30,7 +30,7 @@ require Services::IMAP;
 
 {
     package StubIMAPClient;
-    sub new { bless { uv => {}, un => {} }, shift }
+    sub new { bless { uv => {}, un => {}, uids => [], search_results => [], moves => [] }, shift }
     sub connected                       { 1 }
     sub get_mailbox_list                { () }
     sub status                          { { UIDNEXT => 10, UIDVALIDITY => 1 } }
@@ -44,7 +44,9 @@ require Services::IMAP;
     sub noop                            {}
     sub logout                          {}
     sub expunge                         {}
-    sub get_new_message_list_unselected { () }
+    sub move_message                    { my ($s,$uid,$dest) = @_; push @{$s->{moves}}, [$uid, $dest] }
+    sub get_new_message_list_unselected { @{$_[0]->{uids}} }
+    sub search_header_in_folder         { @{$_[0]->{search_results}} }
 }
 
 sub make_imap {
@@ -109,6 +111,51 @@ subtest 'request_folder_rescan sets uid_next override for named folder' => sub {
     ok(scalar @reset_msgs >= 1, 'uid_next reset scheduled for rescan folder');
     my $inbox_reset = grep { /INBOX/ } @reset_msgs;
     ok($inbox_reset >= 1, 'uid_next reset is for INBOX');
+};
+
+subtest 'request_folder_move uses direct-move queue when mid is cached' => sub {
+    my ($imap) = make_imap();
+    my $stub = StubIMAPClient->new();
+    $stub->{uids} = [42];
+    $log->clear();
+    no warnings 'redefine';
+    local *Services::IMAP::new_imap_client = sub { $stub };
+    local *Services::IMAP::get_hash = sub { ('deadbeef', '<msg@example.com>') };
+    local *Services::IMAP::can_classify = sub { 0 };
+
+    $imap->build_folder_list();
+    $imap->connect_server();
+    $imap->scan_folder('INBOX');
+
+    $log->clear();
+    $imap->request_folder_move('deadbeef', 'work', 'personal');
+
+    my @reset_msgs = grep { /Scheduling uid_next reset/ } map { $_->{message} } @{ $log->msgs() };
+    ok(!@reset_msgs, 'no uid_next reset when mid is cached');
+    my @direct_msgs = grep { /Direct move queued/ } map { $_->{message} } @{ $log->msgs() };
+    ok(scalar @direct_msgs >= 1, 'direct move queued when mid is cached');
+};
+
+subtest '_drain_direct_moves moves message using SEARCH HEADER' => sub {
+    my ($imap) = make_imap();
+    my $stub = StubIMAPClient->new();
+    $stub->{uids} = [42];
+    $stub->{search_results} = [42];
+    no warnings 'redefine';
+    local *Services::IMAP::new_imap_client = sub { $stub };
+    local *Services::IMAP::get_hash = sub { ('deadbeef', '<msg@example.com>') };
+    local *Services::IMAP::can_classify = sub { 0 };
+
+    $imap->build_folder_list();
+    $imap->connect_server();
+    $imap->scan_folder('INBOX');
+    $imap->request_folder_move('deadbeef', 'work');
+
+    my $result = { direct_moved_hashes => [] };
+    $imap->_drain_direct_moves($result);
+
+    ok(scalar @{ $result->{direct_moved_hashes} } == 1, 'drain adds hash to direct_moved_hashes');
+    ok(scalar @{ $stub->{moves} } <= 1, 'move_message called at most once');
 };
 
 done_testing;

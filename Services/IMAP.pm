@@ -49,6 +49,8 @@ field $poll_started_at = 0;
 field @pending_train_flags;
 field @pending_train_buckets;
 field %_uid_next_override;
+field %hash_to_mid;
+field %pending_direct_moves;
 
 my $cfg_separator = "-->";
 
@@ -192,6 +194,9 @@ method poll() {
                 @pending_train_buckets = ();
                 $self->config('training_mode', 0);
             }
+            $hash_to_mid{$_} = $result->{hash_to_mid}{$_}
+                for keys $result->{hash_to_mid}->%*;
+            delete $pending_direct_moves{$_} for $result->{direct_moved_hashes}->@*;
             delete $pending_folder_moves{$_} for $result->{moved_hashes}->@*;
             $self->mq()->post('IMAP_DONE', $result->{trained} // 0);
         }
@@ -200,7 +205,7 @@ method poll() {
 }
 
 method _run_poll_work() {
-    my $result = { trained => 0, training_done => 0, error => undef, moved_hashes => [] };
+    my $result = { trained => 0, training_done => 0, error => undef, moved_hashes => [], direct_moved_hashes => [], hash_to_mid => {} };
     my $dbh;
     try {
         $dbh = $self->_open_uid_db();
@@ -224,12 +229,14 @@ method _run_poll_work() {
             }
             $self->connect_server(nexts => $nexts, validities => $validities);
             %hash_values = ();
+            $self->_drain_direct_moves($result);
             my %pending_before = %pending_folder_moves;
             for my $folder (keys %folders) {
                 next unless exists $folders{$folder}{imap};
                 $self->scan_folder($folder);
             }
             $result->{moved_hashes} = [grep { !exists $pending_folder_moves{$_} } keys %pending_before];
+            $result->{hash_to_mid} = \%hash_to_mid;
             my ($any_imap) = map { $_->{imap} }
                 grep { defined $_->{imap} } values %folders;
             $self->_save_uid_state($dbh, $any_imap)
@@ -327,6 +334,39 @@ method _save_uid_state($dbh, $imap) {
             undef, $folder, $nexts->{$folder}, $validities->{$folder});
     }
     %_uid_next_override = ();
+}
+
+=head2 _drain_direct_moves($result)
+
+For each entry in C<%pending_direct_moves> (queued by C<request_folder_move>
+when the C<Message-Id> is cached), searches all connected IMAP folders via
+C<UID SEARCH HEADER Message-ID> and moves the message to its destination
+folder.  Successfully moved hashes are appended to
+C<$result-E<gt>{direct_moved_hashes}>.  Messages that cannot be found in any
+connected folder are left in C<%pending_direct_moves> for the next poll.
+
+=cut
+
+method _drain_direct_moves ($result) {
+    return unless %pending_direct_moves;
+    for my $hash (keys %pending_direct_moves) {
+        my $entry = $pending_direct_moves{$hash};
+        my $destination = $self->folder_for_bucket($entry->{target_bucket});
+        next unless defined $destination;
+        for my $folder (keys %folders) {
+            next unless exists $folders{$folder}{imap};
+            my $imap = $folders{$folder}{imap};
+            my @uids = $imap->search_header_in_folder($folder, 'Message-ID', $entry->{mid});
+            next unless @uids;
+            if ($destination ne $folder) {
+                $self->log_msg(WARN => "Direct move: UID $uids[0] from $folder to $destination.");
+                $imap->move_message($uids[0], $destination);
+                $imap->expunge() if $self->config('expunge');
+            }
+            push $result->{direct_moved_hashes}->@*, $hash;
+            last;
+        }
+    }
 }
 
 =head2 _reset_uid_next($folder)
@@ -473,14 +513,19 @@ method disconnect_folders() {
 
 =head2 request_folder_move($hash, $target_bucket, $source_bucket)
 
-Queues a folder move for the message identified by C<$hash>.  C<$source_bucket>
-is the bucket the message is currently classified as (read before the DB is
-updated); its mapped IMAP folder has its C<uid_next> reset so the next poll
-finds the message regardless of where the watermark stands.
+Queues a folder move for the message identified by C<$hash>.  If the
+C<Message-Id> for the hash is already cached in C<%hash_to_mid>, a direct
+move is queued via C<%pending_direct_moves> — no C<uid_next> reset required.
+Otherwise falls back to the uid_next-reset path via C<%pending_folder_moves>.
 
 =cut
 
 method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
+    if (exists $hash_to_mid{$hash}) {
+        $self->log_msg(INFO => "Direct move queued for hash $hash to $target_bucket.");
+        $pending_direct_moves{$hash} = { mid => $hash_to_mid{$hash}, target_bucket => $target_bucket };
+        return
+    }
     $pending_folder_moves{$hash} = $target_bucket;
     my $source_folder = defined $source_bucket
         ? $self->folder_for_bucket($source_bucket)
@@ -524,7 +569,8 @@ method scan_folder ($folder) {
     my @uids = $imap->get_new_message_list_unselected($folder);
     for my $msg (@uids) {
         $self->log_msg(INFO => "Found new message in folder $folder (UID: $msg)");
-        my $hash = $self->get_hash($folder, $msg);
+        my ($hash, $mid) = $self->get_hash($folder, $msg);
+        $hash_to_mid{$hash} = $mid if defined $hash && defined $mid;
         $imap->uid_next($folder, $msg + 1);
         unless (defined $hash) {
             $self->log_msg(WARN => "Skipping message $msg.");
@@ -712,8 +758,9 @@ method reclassify_message ($folder, $msg, $old_bucket, $hash) {
 =head2 get_hash($folder, $msg)
 
 Fetches selected header fields (C<Message-Id>, C<Date>, C<Subject>,
-C<Received>) for C<$msg> and returns the history hash computed by
-C<< POPFile::History->get_message_hash() >>.  Returns C<undef> on failure.
+C<Received>) for C<$msg> and returns C<($hash, $mid)> — the history hash
+computed by C<< POPFile::History->get_message_hash() >> and the raw
+C<Message-Id> header value.  Returns an empty list on failure.
 
 =cut
 
@@ -744,7 +791,7 @@ method get_hash ($folder, $msg) {
     my $hash = $history->get_message_hash($mid, $date, $subject, $received);
     $self->log_msg(DEBUG => sprintf('Hashed message: %s.', $subject // 'undef'));
     $self->log_msg(DEBUG => "Message $msg has hash value $hash");
-    return $hash
+    return ($hash, $mid)
 }
 
 =head2 can_classify($hash)
