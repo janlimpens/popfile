@@ -1167,7 +1167,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
     my $query;
     my $hash;
 
-    return undef if (!defined($url));
+    return unless defined $url;
 
     # Strip the protocol part of a URL (e.g. http://)
 

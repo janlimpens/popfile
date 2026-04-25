@@ -4022,7 +4022,7 @@ Creates a new magnet in C<$bucket>.
 
 method create_magnet ($session, $bucket, $type, $text) {
     my $userid = $self->valid_session_key($session);
-    return undef
+    return
         unless defined $userid;
     return 0
         unless defined $db_bucketid->{$userid}{$bucket};

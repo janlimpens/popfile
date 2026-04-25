@@ -147,7 +147,7 @@ method live_check() {
             print STDERR "\nThe other POPFile ($oldpid) failed to signal back, starting new copy ($$)\n";
         }
     }
-    return undef;
+    return;
 }
 
 =head2 check_pid
@@ -174,7 +174,7 @@ method get_pid() {
         close $pid_fh;
         return $pid;
     }
-    return undef;
+    return;
 }
 
 =head2 write_pid
@@ -413,14 +413,14 @@ method path_join ($left, $right, $sandbox = undef) {
          ($right =~ /\\\\/ ) ) {
         if ( $sandbox ) {
             $self->log_msg(WARN => "Attempt to access path $right outside sandbox" );
-            return undef;
+            return;
         } else {
             return $right;
         }
     }
     if ( $sandbox && ( $right =~ /\.\./)) {
         $self->log_msg(WARN => "Attempt to access path $right outside sandbox");
-        return undef;
+        return;
     }
     $left  =~ s/\/$//;
     $right =~ s/^\///;
@@ -454,7 +454,7 @@ method parameter ($name, $value = undef) {
     if (defined($configuration_parameters{$name})) {
         return $configuration_parameters{$name}{value};
     } else {
-        return undef;
+        return;
     }
 }
 

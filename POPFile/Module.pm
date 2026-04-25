@@ -201,7 +201,7 @@ method slurp ($handle, $timeout = undef) {
     } else {
         $self->done_slurp($handle);
         close $handle;
-        return undef;
+        return;
     }
 
     my $remaining = $slurp_data{"$handle"}{data};

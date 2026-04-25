@@ -384,7 +384,7 @@ C<magnet(11)>, C<size(12)>.  Returns C<undef> if C<$slot> is invalid.
 =cut
 
 method get_slot_fields ($slot) {
-    return undef if (!defined($slot) || $slot !~ /^\d+$/);
+    return if !defined($slot) || $slot !~ /^\d+$/;
 
     my $h = $self->validate_sql_prepare_and_execute(
         "SELECT $fields_slot FROM history, buckets
@@ -403,7 +403,7 @@ Returns 1 if C<$slot> is a committed history entry, C<undef> otherwise.
 =cut
 
 method is_valid_slot ($slot) {
-    return undef if (!defined($slot) || $slot !~ /^\d+$/);
+    return if !defined($slot) || $slot !~ /^\d+$/;
 
     my $h = $self->validate_sql_prepare_and_execute(
         'SELECT id FROM history

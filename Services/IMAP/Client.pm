@@ -488,7 +488,7 @@ method uid_validity ($folder_name, $uidval = undef) {
         $self->log_msg(DEBUG => "Updated UIDVALIDITY value for folder $folder_name to $uidval.");
         return
     }
-    return undef
+    return
         unless exists $_uid_validity{$folder_name};
     return $_uid_validity{$folder_name} =~ /^\d+$/
         ? $_uid_validity{$folder_name}

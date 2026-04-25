@@ -279,7 +279,7 @@ the connected socket on success, C<undef> on failure.
                 eval { require IO::Socket::SSL; };
                 if ($@) {
                     $self->tee($client, "$ssl_not_supported_error$eol");
-                    return undef;
+                    return;
                 }
 
                 $self->log_msg(WARN => "Attempting to connect to SSL server at $hostname:$port");
@@ -356,7 +356,7 @@ the connected socket on success, C<undef> on failure.
 
         $self->log_msg(WARN => "IO::Socket::INET or IO::Socket::SSL gets an error: $@");
         $self->tee($client, "$connection_failed_error $hostname:$port$eol");
-        return undef;
+        return;
     }
 
 =head2 set_service($svc)
