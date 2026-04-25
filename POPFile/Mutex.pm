@@ -3,21 +3,6 @@
 # Copyright (C) 2026 Jan Limpens
 package POPFile::Mutex;
 
-#----------------------------------------------------------------------------
-#
-# Mutex object that uses mkdir() to provide exclusive access on a per-thread
-# or per-process basis.
-#
-# Copyright (c) 2001-2011 John Graham-Cumming
-#
-#   This file is part of POPFile
-#
-#   POPFile is free software; you can redistribute it and/or modify it
-#   under the terms of version 2 of the GNU General Public License as
-#   published by the Free Software Foundation.
-#
-#----------------------------------------------------------------------------
-
 use Object::Pad;
 
 class POPFile::Mutex;
