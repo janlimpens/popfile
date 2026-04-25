@@ -56,7 +56,13 @@ my sub _extract_body($email) {
     my @parts = $email->subparts;
     return _part_text($email) unless @parts;
     my ($plain) = grep { ($_->content_type // '') =~ m{^text/plain}i } @parts;
-    return _part_text($plain) if $plain;
+    my ($html)  = grep { ($_->content_type // '') =~ m{^text/html}i  } @parts;
+    if ($plain) {
+        my $text = _part_text($plain);
+        return $text if !$html || length($text) >= 200;
+        my $html_text = _part_text($html);
+        return length($html_text) > length($text) ? $html_text : $text;
+    }
     for my $part (@parts) {
         my $text = __SUB__->($part);
         return $text if $text ne '';
