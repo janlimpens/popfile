@@ -34,6 +34,8 @@ my sub _strip_html($html) {
 }
 
 my sub _normalise($text) {
+    $text =~ s/\p{Cf}//g;
+    $text =~ s/\p{Zs}/ /g;
     $text =~ s/\r//g;
     $text =~ s/^[^\S\n]+$//mg;
     $text =~ s/([\s\n])+/$1/g;
