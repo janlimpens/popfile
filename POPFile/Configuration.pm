@@ -438,22 +438,19 @@ registered.
 =cut
 
 method parameter ($name, $value = undef) {
-    if (defined($value)) {
+    if (defined $value) {
         if ($started && $name =~ /^imap_(hostname|login|password)$/ && $value eq '') {
             require Carp;
             Carp::cluck("CONFIG_DIAG: $name set to empty after load");
         }
         $save_needed = 1;
         $configuration_parameters{$name}{value} = $value;
-        if ($started == 0) {
-            $configuration_parameters{$name}{default} = $value;
-        }
+        $configuration_parameters{$name}{default} = $value
+            if $started == 0;
     }
-    if (defined($configuration_parameters{$name})) {
-        return $configuration_parameters{$name}{value};
-    } else {
-        return;
-    }
+    return defined $configuration_parameters{$name}
+        ? $configuration_parameters{$name}{value}
+        : undef
 }
 
 =head2 is_default
