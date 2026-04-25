@@ -94,7 +94,7 @@ Returns 0 if the server cannot be started; 1 on success.
             }
         );
 
-        if (!defined $server_id) {
+        unless (defined $server_id) {
             my $port = $self->config('port');
             $self->log_msg(WARN => "Couldn't start the $name proxy because POPFile could not bind to the listen port $port");
             print STDERR "\nCouldn't start the $name proxy because POPFile could not bind to the\nlisten port $port. This could be because there is another service\nusing that port or because you do not have the right privileges on\nyour system (On Unix systems this can happen if you are not root\nand the port you specified is less than 1024).\n\n";
@@ -153,7 +153,7 @@ are dropped silently.
 
     method echo_to_regexp ($mail, $client, $regexp, $log = 0, $suppress = undef) {
         while (my $line = $self->slurp($mail)) {
-            if (!defined($suppress) || !($line =~ $suppress)) {
+            if (!defined $suppress || $line !~ $suppress) {
                 if (!$log) {
                     print $client $line;
                 } else {
@@ -318,7 +318,7 @@ the connected socket on success, C<undef> on failure.
                 my $max_length = 8192;
                 my $n = sysread($mail, $buf, $max_length, length $buf);
 
-                if (!($buf =~ /[\r\n]/)) {
+                if ($buf !~ /[\r\n]/) {
                     my $hit_newline = 0;
                     my $temp_buf;
                     my $wait = 0;
