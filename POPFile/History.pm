@@ -148,14 +148,7 @@ method service() {
         $self->upgrade_history_files();
         $firsttime = 0;
     }
-
-    # Note when we go to multiuser POPFile we'll need to change this call
-    # so that we are sure that the session IDs that it is using are still
-    # valid.  The easiest way will be to call it in deliver() when we get
-    # a COMIT message.
-
     $self->commit_history();
-
     return 1;
 }
 
