@@ -185,12 +185,11 @@ on failure.
 
 method CORE_load_module ($module, $type) {
     my $mod = $self->load_module($module);
-
-    if (defined $mod) {
-        my $name = $mod->name();
-        print " $name" if $debug;
-        $components{$type}{$name} = $mod;
-    }
+    return unless defined $mod;
+    my $name = $mod->name();
+    return unless $name;
+    print " $name" if $debug;
+    $components{$type}{$name} = $mod;
     return $mod;
 }
 
