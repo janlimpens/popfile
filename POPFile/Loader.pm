@@ -545,7 +545,7 @@ C<Namespace::Name> argument the namespace is mapped to an internal type
 =cut
 
 method get_module ($name, $type = undef) {
-    if (!defined($type) && $name =~ /^(.*)::(.*)$/) {
+    if (!defined $type && $name =~ /^(.*)::(.*)$/) {
         $type = lc $1;
         $name = lc $2;
         $type =~ s/^popfile$/core/i;

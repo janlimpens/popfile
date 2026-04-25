@@ -2683,7 +2683,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
             next if ($line =~ /^[ \t]+(\r\n|\r|\n)$/i);
 
-            if (!($line =~ /^(\r\n|\r|\n)$/i))  {
+            if ($line !~ /^(\r\n|\r|\n)$/i) {
                 $message_size += length $line;
                 $self->write_line($nosave?undef:$msg, $fileline, $class);
 
@@ -2929,7 +2929,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     # sure to supress output if we are not echoing, and to save to
     # file if not echoing and saving
 
-    if (!($nosave || $echo)) {
+    unless ($nosave || $echo) {
         # if we're saving (not nosave) and not echoing, we can safely
         # unload this into the temp file
 

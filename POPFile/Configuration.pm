@@ -216,7 +216,7 @@ method parse_command_line() {
     my @options;
     for my $i (0..$#set_options) {
         $set_options[$i] =~ /-?(.+)=(.+)/;
-        if (!defined($1)) {
+        unless (defined $1) {
             print STDERR "\nBad option: $set_options[$i]\n";
             return 0;
         }
