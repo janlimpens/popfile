@@ -78,7 +78,7 @@ use POPFile::Loader;
 
 my $noserver = $verb ne 'start' ? 1 : 0;
 my $POPFile = POPFile::Loader->new();
-$POPFile->debug($noserver ? 0 : 1);
+$POPFile->set_verbose($noserver ? 0 : 1);
 $POPFile->CORE_loader_init();
 $POPFile->CORE_signals();
 unless ($noserver) {

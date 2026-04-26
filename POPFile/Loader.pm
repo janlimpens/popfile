@@ -35,7 +35,7 @@ class POPFile::Loader;
 
 field %components;
 field $alive = 1;
-field $debug = 1;
+field $verbose :reader :writer = 1;
 field $shutdown = 0;
 field $aborting = '';
 field $pipeready = '';
@@ -386,7 +386,7 @@ method CORE_start() {
                 if $code == 2;
         }
     }
-    if ($debug) {
+    if ($verbose) {
         print "\n    Loading...\n";
         for my $type (@c) {
             next unless %{$components{$type}};
@@ -469,7 +469,7 @@ they can flush pending state; all others follow in sorted order.
 =cut
 
 method CORE_stop() {
-    print "\nstopping\n" if $debug;
+    print "\nstopping\n" if $verbose;
 
     $components{core}{mq}->set_alive(0);
     $components{core}{mq}->stop();
@@ -484,7 +484,7 @@ method CORE_stop() {
             $components{$type}{$name}->stop();
         }
     }
-    print "terminated\n" if $debug;
+    print "terminated\n" if $verbose;
 }
 
 =head2 CORE_version
@@ -567,20 +567,6 @@ method root_path ($path) {
     return "$popfile_root/$path";
 }
 
-=head2 debug
-
-    my $val = $self->debug();
-    $self->debug($val);
-
-Gets or sets the debug flag.  When set to 1 (the default) the loader
-prints progress messages to C<STDOUT> during startup and shutdown.
-
-=cut
-
-method debug ($val = undef) {
-    $debug = $val if defined $val;
-    return $debug;
-}
 
 =head2 module_config
 
