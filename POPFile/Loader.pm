@@ -58,10 +58,10 @@ method CORE_loader_init() {
         $popfile_root = $ENV{POPFILE_ROOT};
     }
 
-    $aborting = sub { $self->CORE_aborting(@_) };
-    $pipeready = sub { $self->pipeready(@_) };
-    $warning = sub { $self->CORE_warning(@_) };
-    $die_cb = sub { $self->CORE_die(@_) };
+    $aborting = sub($sig) { $self->CORE_aborting($sig) };
+    $pipeready = sub($sig) { $self->pipeready($sig) };
+    $warning = sub(@msg) { $self->CORE_warning(@msg) };
+    $die_cb = sub(@msg) { $self->CORE_die(@msg) };
 
     my $version_file = $self->root_path('VERSION');
 
