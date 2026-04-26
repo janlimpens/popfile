@@ -117,7 +117,7 @@ sub _write($msg) {
             close $fh;
         }
     }
-    print $line if $cfg{to_stdout} || $is_sql;
+    print $line if $cfg{to_stdout} || ($is_sql && $cfg{log_sql});
     push $cfg{ring}->@*, $line;
     shift $cfg{ring}->@*
         if $cfg{ring}->@* > 10;

@@ -86,6 +86,11 @@ sub update_config($self) {
         $api->module_config($mod, $param, $body->{$key});
     }
     $api->configuration()->save_configuration();
+    if (grep { /^logger_/ } keys $body->%*) {
+        my $loader = $self->popfile_loader;
+        my $logger = $loader->get_module('POPFile::Logger') if defined $loader;
+        $logger->reconfigure() if defined $logger;
+    }
     $self->render(json => { ok => \1 })
 }
 

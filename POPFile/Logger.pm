@@ -148,6 +148,10 @@ method calculate_today() {
     $debug_filename = $log;
 }
 
+method reconfigure() {
+    $self->_reconfigure_adapter()
+}
+
 method _reconfigure_adapter() {
     my $debug = $self->global_config('debug') // 0;
     POPFile::Log::Adapter->configure(
