@@ -417,6 +417,7 @@ Bucket_InIgnoredWords <b>%s</b> está nas palavras ignoradas. POPFile ignora est
 History_AllBuckets Todas as categorias
 History_HighlightWords Destacar palavras por categoria
 History_Loading Carregando...
+History_PerPage Por página:
 History_MoveTo — mover para —
 History_Moving Movendo...
 History_NoMatchingMessages Nenhuma mensagem correspondente

@@ -408,6 +408,7 @@ Bucket_InIgnoredWords <b>%s</b> ist in der Ignorierliste. POPFile ignoriert dies
 History_AllBuckets Alle Kategorien
 History_HighlightWords Wörter nach Kategorie hervorheben
 History_Loading Lade...
+History_PerPage Pro Seite:
 History_MoveTo — verschieben nach —
 History_Moving Verschiebe...
 History_NoMatchingMessages Keine übereinstimmenden Nachrichten

@@ -23,15 +23,33 @@
   let bulkBucket = $state('');
   let bulkBusy = $state(false);
 
+  const PAGE_SIZES = [25, 50, 100, 200];
   let pageSize = $state(25);
   let ready = $state(false);
 
   async function loadPageSize() {
+    const stored = sessionStorage.getItem('history_page_size');
+    if (stored) {
+      pageSize = parseInt(stored) || 25;
+      return;
+    }
     const res = await fetch('/api/v1/config');
     if (res.ok) {
       const cfg = await res.json();
-      pageSize = parseInt(cfg.api_page_size) || 25;
+      const saved = parseInt(cfg.api_page_size) || 25;
+      pageSize = PAGE_SIZES.includes(saved) ? saved : 25;
     }
+  }
+
+  async function changePageSize(val) {
+    pageSize = val;
+    page = 1;
+    sessionStorage.setItem('history_page_size', String(val));
+    fetch('/api/v1/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_page_size: String(val) }),
+    });
   }
 
   function allChecked() {
@@ -198,6 +216,17 @@
       <option value={b.name}>{b.name}</option>
     {/each}
   </select>
+  <label class="page-size-label">
+    {t('History_PerPage')}
+    <select
+      value={pageSize}
+      onchange={e => changePageSize(parseInt(e.target.value))}
+    >
+      {#each PAGE_SIZES as n}
+        <option value={n}>{n}</option>
+      {/each}
+    </select>
+  </label>
   <span>{total} {t('Total')}</span>
   <button onclick={reclassifyAll} disabled={reclassifying}>
     {reclassifying ? t('History_Reclassifying') : t('History_ReclassifyUnclassified')}
@@ -306,6 +335,8 @@
   .date { white-space: nowrap; font-size: 0.85rem; color: var(--text-muted); }
   .bucket-badge { font-weight: 500; display: inline-flex; align-items: center; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; flex-shrink: 0; }
+  .page-size-label { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; color: var(--text-muted); white-space: nowrap; }
+  .page-size-label select { padding: 0.3rem 0.4rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); font-size: 0.875rem; }
   .pagination { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
   button { padding: 0.3rem 0.8rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
   button:disabled { opacity: 0.4; cursor: default; }
