@@ -5,6 +5,7 @@ use constant CFG => {
     api_port => [api => 'port'],
     api_password => [api => 'password'],
     api_local => [api => 'local'],
+    api_open_browser => [api => 'open_browser'],
     api_page_size => [api => 'page_size'],
     api_session_dividers => [api => 'session_dividers'],
     api_wordtable_format => [api => 'wordtable_format'],
