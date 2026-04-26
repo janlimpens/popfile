@@ -74,8 +74,6 @@ method CORE_loader_init() {
     }
 
     GetOptions('shutdown' => \$shutdown);
-
-    print "\nPOPFile Engine loading\n" if $debug;
 }
 
 =head2 CORE_aborting
@@ -399,7 +397,7 @@ method CORE_start() {
     }
     if ($debug && defined $components{core}{api}) {
         my $url = $components{core}{api}->url();
-        print "\n    \e[38;5;80m$url\e[0m\n"
+        print "\n    UI accessible at \e[38;5;80m$url\e[0m\n"
             if $url;
     }
     STDOUT->flush();
