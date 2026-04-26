@@ -891,7 +891,7 @@ method db_connect() {
          ORDER BY buckets.name'));
     $db_delete_zero_words = $db->prepare($self->normalize_sql(
         'DELETE FROM matrix
-         WHERE (matrix.times = 0 OR matrix.times IS NULL)
+         WHERE (matrix.times <= 0 OR matrix.times IS NULL)
             AND matrix.bucketid = ?'));
     # Get the mapping from parameter names to ids into a local hash
 
@@ -1724,8 +1724,8 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
                 $db_put_word_count,
                 $db_bucketid->{$userid}{$bucket}{id},
                 $wordmap{$word},
-                $counts{$wordmap{$word}} +
-                    $subtract * $parser->words()->{$word});
+                max(0, $counts{$wordmap{$word}} +
+                    $subtract * $parser->words()->{$word}));
         } else {
             # If the word is not in the database and we are trying to
             # subtract then we do nothing because negative values are
