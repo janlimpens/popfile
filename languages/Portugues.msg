@@ -356,7 +356,6 @@ Settings_AutoDetect Deteção automática
 Settings_AutoDetectLanguage Detetar idioma automaticamente
 Settings_ChainPort Porto de cadeia
 Settings_ChainServer Servidor de cadeia
-Settings_DateFormat Formato de data
 Settings_DescAdminPassword Deixar vazio para desativar a proteção por palavra-passe.
 Settings_DescArchiveDir Diretório para mensagens arquivadas (relativo ao diretório do utilizador).
 Settings_DescArchiveMessages Guardar uma cópia de cada mensagem classificada no disco.
@@ -364,7 +363,6 @@ Settings_DescArchiveSubdirs Dividir o arquivo em N sub-diretórios (0 = desativa
 Settings_DescAutoDetectLang Deteta o idioma de cada mensagem e aplica as palavras de paragem e o stemmer correspondentes. Adiciona ~130% de latência de classificação; útil para caixas de correio com múltiplos idiomas.
 Settings_DescChainPort Porto do servidor SMTP a montante.
 Settings_DescChainServer Nome do host do servidor SMTP a montante.
-Settings_DescDateFormat String de formato strftime. Deixar vazio para o predefinido do locale.
 Settings_DescForceFork Criar um novo processo para cada ligação.
 Settings_DescHEADFetchesBody Obter artigo completo com o comando HEAD.
 Settings_DescHTTPPort Porto em que a interface web escuta. Requer reinício.

@@ -6,7 +6,6 @@ use constant CFG => {
     api_password => [api => 'password'],
     api_local => [api => 'local'],
     api_page_size => [api => 'page_size'],
-    api_date_format => [api => 'date_format'],
     api_session_dividers => [api => 'session_dividers'],
     api_wordtable_format => [api => 'wordtable_format'],
     api_locale => [api => 'locale'],

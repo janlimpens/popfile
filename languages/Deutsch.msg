@@ -469,7 +469,6 @@ Settings_AutoDetect Automatisch erkennen
 Settings_AutoDetectLanguage Sprache automatisch erkennen
 Settings_ChainPort Chain-Port
 Settings_ChainServer Chain-Server
-Settings_DateFormat Datumsformat
 Settings_DescAdminPassword Leer lassen, um den Passwortschutz zu deaktivieren.
 Settings_DescArchiveDir Verzeichnis für archivierte Nachrichten (relativ zum Benutzerverzeichnis).
 Settings_DescArchiveMessages Eine Kopie jeder klassifizierten Nachricht auf dem Datenträger speichern.
@@ -477,7 +476,6 @@ Settings_DescArchiveSubdirs Archiv in N Unterverzeichnisse aufteilen (0 = deakti
 Settings_DescAutoDetectLang Erkennt die Sprache jeder Nachricht und wendet passende Stoppwörter und Stemmer an. Erhöht die Klassifizierungslatenz um ~130%; nützlich für Postfächer mit gemischten Sprachen.
 Settings_DescChainPort Port des vorgelagerten SMTP-Servers.
 Settings_DescChainServer Hostname des vorgelagerten SMTP-Servers.
-Settings_DescDateFormat strftime-Formatstring. Leer lassen für Locale-Standard.
 Settings_DescForceFork Für jede Verbindung einen neuen Prozess forken.
 Settings_DescHEADFetchesBody Vollständigen Artikel mit dem HEAD-Befehl abrufen.
 Settings_DescHTTPPort Port, auf dem die Web-Oberfläche lauscht. Neustart erforderlich.

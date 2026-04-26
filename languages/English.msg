@@ -493,7 +493,6 @@ Settings_SectionLogging                 Logging
 Settings_HTTPPort                       HTTP Port
 Settings_LocalOnly                      Local Only
 Settings_ItemsPerPage                   Items Per Page
-Settings_DateFormat                     Date Format
 Settings_SessionDividers                Session Dividers
 Settings_WordTable                      Word Table
 Settings_AdminPassword                  Admin Password
@@ -531,7 +530,6 @@ Settings_OpenBrowser                    Open browser on start
 Settings_DescHTTPPort                   Port the web UI listens on. Requires restart.
 Settings_DescLocalOnly_UI               Restrict the web UI to localhost connections.
 Settings_DescItemsPerPage               Rows shown per page in History and Magnets.
-Settings_DescDateFormat                 strftime format string. Leave empty for locale default.
 Settings_DescSessionDividers            Show dividers between browsing sessions in History.
 Settings_DescWordTable                  What to display in the word probability table.
 Settings_DescLanguage                   UI display language. Leave empty to auto-detect from browser.
