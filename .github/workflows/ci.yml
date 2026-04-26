@@ -7,6 +7,20 @@ on:
     branches: [ main ]
 
 jobs:
+  build-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install UI dependencies
+        run: npm ci
+        working-directory: ui
+      - name: Build UI
+        run: npm run build
+        working-directory: ui
+
   test:
     runs-on: ubuntu-latest
 

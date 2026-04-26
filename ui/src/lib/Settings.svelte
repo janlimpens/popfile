@@ -13,7 +13,7 @@
   // ─── Section / field schema ─────────────────────────────────────────────
   const SECTIONS = $derived([
     {
-      id: 'ui', label: t('Settings_SectionUI'), icon: '⚙',
+      id: 'ui', label: t('Settings_SectionUI'), icon: 'settings',
       settings: [
         { key: 'api_port', label: t('Settings_HTTPPort'), type: 'number',
           desc: t('Settings_DescHTTPPort') },
@@ -33,14 +33,14 @@
       ],
     },
     {
-      id: 'security', label: t('Settings_SectionSecurity'), icon: '🔒',
+      id: 'security', label: t('Settings_SectionSecurity'), icon: 'lock',
       settings: [
         { key: 'api_password', label: t('Settings_AdminPassword'), type: 'password',
           desc: t('Settings_DescAdminPassword') },
       ],
     },
     {
-      id: 'pop3', label: t('Settings_SectionPOP3'), icon: '📬',
+      id: 'pop3', label: t('Settings_SectionPOP3'), icon: 'mail',
       settings: [
         { key: 'pop3_enabled', label: t('Settings_EnableService'), type: 'bool',
           desc: t('Settings_DescEnableProxy') },
@@ -61,7 +61,7 @@
       ],
     },
     {
-      id: 'smtp', label: t('Settings_SectionSMTP'), icon: '📤',
+      id: 'smtp', label: t('Settings_SectionSMTP'), icon: 'outbox',
       settings: [
         { key: 'smtp_enabled', label: t('Settings_EnableService'), type: 'bool',
           desc: t('Settings_DescEnableProxy') },
@@ -78,7 +78,7 @@
       ],
     },
     {
-      id: 'nntp', label: t('Settings_SectionNNTP'), icon: '📰',
+      id: 'nntp', label: t('Settings_SectionNNTP'), icon: 'article',
       settings: [
         { key: 'nntp_enabled', label: t('Settings_EnableService'), type: 'bool',
           desc: t('Settings_DescEnableProxy') },
@@ -95,7 +95,7 @@
       ],
     },
     {
-      id: 'classifier', label: t('Settings_SectionClassifier'), icon: '🧠',
+      id: 'classifier', label: t('Settings_SectionClassifier'), icon: 'psychology',
       settings: [
         { key: 'bayes_hostname', label: t('Settings_ListenAddress'), type: 'text',
           desc: t('Settings_DescListenAddress') },
@@ -124,7 +124,7 @@
       ],
     },
     {
-      id: 'history', label: t('Settings_SectionHistory'), icon: '🗂',
+      id: 'history', label: t('Settings_SectionHistory'), icon: 'folder_open',
       settings: [
         { key: 'history_history_days', label: t('Settings_RetentionDays'), type: 'number',
           desc: t('Settings_DescRetentionDays') },
@@ -137,7 +137,7 @@
       ],
     },
     {
-      id: 'logging', label: t('Settings_SectionLogging'), icon: '📋',
+      id: 'logging', label: t('Settings_SectionLogging'), icon: 'assignment',
       settings: [
         { key: 'logger_level', label: t('Settings_LogLevel'), type: 'select',
           options: [['0', t('Settings_OptErrorsOnly')], ['1', t('Settings_OptWarnings')], ['2', t('Settings_OptInfo')], ['3', t('Settings_OptDebug')]],
@@ -219,7 +219,7 @@
           class:active={active === s.id}
           onclick={() => { active = s.id; settingsSearch = ''; }}
         >
-          <span class="nav-icon">{s.icon}</span>
+          <span class="icon nav-icon">{s.icon}</span>
           <span class="nav-label">{s.label}</span>
         </button>
       {/if}
@@ -237,7 +237,7 @@
         oninput={() => { if (settingsSearch) active = ''; }}
       />
       {#if settingsSearch}
-        <button class="clear-btn" onclick={() => { settingsSearch = ''; active = active || 'ui'; }} aria-label="Clear search">×</button>
+        <button class="clear-btn" onclick={() => { settingsSearch = ''; active = active || 'ui'; }} aria-label="Clear search"><span class="icon">close</span></button>
       {/if}
     </div>
     {#if settingsSearch}
@@ -365,9 +365,9 @@
 
     <footer class="section-footer">
       {#if status === 'ok'}
-        <span class="msg-ok">✓ {t('Settings_Saved')}</span>
+        <span class="msg-ok"><span class="icon">check</span> {t('Settings_Saved')}</span>
       {:else if status === 'error'}
-        <span class="msg-err">✗ {t('Settings_ErrorSaving')}</span>
+        <span class="msg-err"><span class="icon">close</span> {t('Settings_ErrorSaving')}</span>
       {/if}
       <button class="btn-save" onclick={save} disabled={!dirty || saving}>
         {saving ? t('Settings_Saving') : t('Settings_SaveChanges')}

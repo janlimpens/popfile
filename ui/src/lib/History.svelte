@@ -189,7 +189,7 @@
       oninput={() => { page = 1; }}
     />
     {#if search}
-      <button class="clear-btn" onclick={() => { search = ''; page = 1; }} aria-label="Clear search">×</button>
+      <button class="clear-btn" onclick={() => { search = ''; page = 1; }} aria-label="Clear search"><span class="icon">close</span></button>
     {/if}
   </div>
   <select bind:value={bucket} onchange={() => { page = 1; }}>

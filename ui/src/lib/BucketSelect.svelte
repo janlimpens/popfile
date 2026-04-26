@@ -78,7 +78,7 @@
       disabled={busy}
     />
     <button onclick={confirm} disabled={busy}>OK</button>
-    <button class="cancel" onclick={cancel} disabled={busy}>✕</button>
+    <button class="cancel" onclick={cancel} disabled={busy}><span class="icon">close</span></button>
     {#if err}<span class="err">{err}</span>{/if}
   </span>
 {:else}

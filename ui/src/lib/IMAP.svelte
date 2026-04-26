@@ -213,16 +213,16 @@
 
     <footer class="card-footer">
       {#if testStatus?.ok}
-        <span class="msg-ok">✓ {t('Imap_Connected')}</span>
+        <span class="msg-ok"><span class="icon">check</span> {t('Imap_Connected')}</span>
       {:else if testStatus && !testStatus.ok}
-        <span class="msg-err">✗ {testStatus.error ?? t('Imap_ConnectionFailed')}</span>
+        <span class="msg-err"><span class="icon">close</span> {testStatus.error ?? t('Imap_ConnectionFailed')}</span>
         <label class="save-anyway">
           <input type="checkbox" bind:checked={saveAnyway} />
           {t('Imap_SaveAnyway')}
         </label>
       {/if}
-      {#if cfgStatus === 'ok'}  <span class="msg-ok">✓ {t('Update')}</span>
-      {:else if cfgStatus === 'error'}<span class="msg-err">✗ Error</span>
+      {#if cfgStatus === 'ok'}  <span class="msg-ok"><span class="icon">check</span> {t('Update')}</span>
+      {:else if cfgStatus === 'error'}<span class="msg-err"><span class="icon">close</span> Error</span>
       {/if}
       <button class="btn btn-secondary" onclick={testConnection} disabled={testing}>
         {testing ? t('Imap_Testing') : t('Imap_TestConnection')}
@@ -273,7 +273,7 @@
       {#each watched as f (f)}
         <li>
           <span class="tag">{f}</span>
-          <button class="btn-remove" onclick={() => removeWatched(f)} title={t('Remove')}>×</button>
+          <button class="btn-remove" onclick={() => removeWatched(f)} title={t('Remove')}><span class="icon">close</span></button>
         </li>
       {/each}
       {#if watched.length === 0}
@@ -319,12 +319,12 @@
               <td class="folder-cell">
                 {m.folder}
                 {#if serverFolders.length > 0 && !serverFolders.includes(m.folder)}
-                  <span class="warn" title="Folder not found on server">⚠</span>
+                  <span class="warn icon" title="Folder not found on server">warning</span>
                 {/if}
               </td>
               <td class="row-actions">
                 <button class="btn-train" onclick={() => triggerTrain([m.bucket])}>{t('Imap_Train')}</button>
-                <button class="btn-remove" onclick={() => removeMapping(m.bucket)} title={t('Remove')}>×</button>
+                <button class="btn-remove" onclick={() => removeMapping(m.bucket)} title={t('Remove')}><span class="icon">close</span></button>
               </td>
             </tr>
           {/each}
@@ -370,8 +370,8 @@
     </div>
 
     <footer class="card-footer">
-      {#if foldersStatus === 'ok'}  <span class="msg-ok">✓ {t('Update')}</span>
-      {:else if foldersStatus === 'error'}<span class="msg-err">✗ Error</span>
+      {#if foldersStatus === 'ok'}  <span class="msg-ok"><span class="icon">check</span> {t('Update')}</span>
+      {:else if foldersStatus === 'error'}<span class="msg-err"><span class="icon">close</span> Error</span>
       {/if}
       <button class="btn" onclick={saveFolders} disabled={!foldersDirty || saving}>
         {saving ? t('Imap_Saving') : t('Imap_SaveFolders')}

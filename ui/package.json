@@ -12,5 +12,8 @@
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "svelte": "^5.53.12",
     "vite": "^8.0.1"
+  },
+  "dependencies": {
+    "@fontsource-variable/material-symbols-outlined": "^5.2.43"
   }
 }

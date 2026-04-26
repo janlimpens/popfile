@@ -86,7 +86,7 @@
           {#each values as val}
             <span class="magnet">
               {val}
-              <button class="remove" onclick={() => remove(bucket, type, val)}>×</button>
+              <button class="remove" onclick={() => remove(bucket, type, val)}><span class="icon">close</span></button>
             </span>
           {/each}
         </div>
