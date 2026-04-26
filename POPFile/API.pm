@@ -50,6 +50,7 @@ method initialize() {
     $self->config(static_dir => 'public');
     $self->config(local => 1);
     $self->config(page_size => 25);
+    $self->config(word_page_size => 50);
     $self->config(session_dividers => 1);
     $self->config(wordtable_format => '');
     $self->config(locale => '');

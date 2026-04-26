@@ -8,11 +8,38 @@
   let words = $state([]);
   let total = $state(0);
   let page = $state(1);
+  const PAGE_SIZES = [25, 50, 100, 200];
   let perPage = $state(50);
   let sortBy = $state('relevance');
   let sortDir = $state('desc');
   let loading = $state(false);
   let status = $state('');
+
+  async function loadPerPage() {
+    const stored = sessionStorage.getItem('corpus_page_size');
+    if (stored) {
+      perPage = parseInt(stored) || 50;
+      return;
+    }
+    const res = await fetch('/api/v1/config');
+    if (res.ok) {
+      const cfg = await res.json();
+      const saved = parseInt(cfg.api_word_page_size) || 50;
+      perPage = PAGE_SIZES.includes(saved) ? saved : 50;
+    }
+  }
+
+  async function changePerPage(val) {
+    perPage = val;
+    page = 1;
+    sessionStorage.setItem('corpus_page_size', String(val));
+    fetch('/api/v1/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_word_page_size: String(val) }),
+    });
+    loadWords();
+  }
 
   async function loadWords() {
     if (!selectedBucket) return;
@@ -31,7 +58,8 @@
 
   $effect(() => {
     const bucket = initialBucket;
-    untrack(() => {
+    untrack(async () => {
+      await loadPerPage();
       selectedBucket = bucket;
       page = 1;
       words = [];
@@ -109,6 +137,14 @@
       <option value={b.name}>{b.name}</option>
     {/each}
   </select>
+  <label class="page-size-label">
+    {t('History_PerPage')}
+    <select value={perPage} onchange={e => changePerPage(parseInt(e.target.value))}>
+      {#each PAGE_SIZES as n}
+        <option value={n}>{n}</option>
+      {/each}
+    </select>
+  </label>
   <span class="total-label">{#if selectedBucket && !loading}{total} {t('WordView_Words')}{/if}</span>
 </div>
 
@@ -211,6 +247,8 @@
   .btn-small { padding: 0.15rem 0.5rem; font-size: 0.78rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
   .btn-small:disabled { opacity: 0.4; cursor: default; }
   .btn-danger { color: var(--danger); border-color: var(--danger); }
+  .page-size-label { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; color: var(--text-muted); white-space: nowrap; }
+  .page-size-label select { padding: 0.3rem 0.4rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); font-size: 0.875rem; }
   .pagination { display: flex; gap: 0.4rem; align-items: center; margin-top: 1rem; }
   .pagination button { padding: 0.25rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
   .pagination button:disabled { opacity: 0.4; cursor: default; }
