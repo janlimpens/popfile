@@ -39,9 +39,9 @@ BUILD {
 =head2 initialize
 
 Registers configuration defaults: C<port> (8080), C<static_dir> (public),
-and C<open_browser> (0).  Set C<port> to 0 to let the OS pick a free port
-at startup.  Set C<open_browser> to 1 to open the UI in the default browser
-once the server is ready (config key: C<open_browser>).
+and C<open_browser> (1).  Set C<port> to 0 to let the OS pick a free port
+at startup.  Set C<open_browser> to 0 to suppress opening a browser when
+the server is ready (config key: C<open_browser>).
 
 =cut
 
@@ -54,7 +54,7 @@ method initialize() {
     $self->config(session_dividers => 1);
     $self->config(wordtable_format => '');
     $self->config(locale => '');
-    $self->config(open_browser => 0);
+    $self->config(open_browser => 1);
     return 1
 }
 

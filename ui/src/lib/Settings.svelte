@@ -23,6 +23,8 @@
           desc: t('Settings_DescItemsPerPage') },
         { key: 'api_date_format', label: t('Settings_DateFormat'), type: 'text',
           desc: t('Settings_DescDateFormat') },
+        { key: 'api_open_browser', label: t('Settings_OpenBrowser'), type: 'bool',
+          desc: t('Settings_DescOpenBrowser') },
         { key: 'api_session_dividers', label: t('Settings_SessionDividers'), type: 'bool',
           desc: t('Settings_DescSessionDividers') },
         { key: 'api_wordtable_format', label: t('Settings_WordTable'), type: 'select',
@@ -148,6 +150,9 @@
           desc: t('Settings_DescLogToStdout') },
         { key: 'logger_log_sql', label: t('Settings_LogSQLToStdout'), type: 'bool',
           desc: t('Settings_DescLogSQLToStdout') },
+        { key: 'logger_format', label: t('Settings_LogFormat'), type: 'select',
+          options: [['default', 'Default'], ['tabbed', 'Tabbed'], ['csv', 'CSV'], ['plain', 'Plain']],
+          desc: t('Settings_DescLogFormat') },
       ],
     },
   ]);

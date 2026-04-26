@@ -32,8 +32,8 @@ $ui->set_configuration($config);
 $ui->set_mq($mq);
 $ui->initialize();
 
-subtest 'open_browser config param defaults to 0' => sub {
-    is($ui->config('open_browser'), 0, 'open_browser default is 0');
+subtest 'open_browser config param defaults to 1' => sub {
+    is($ui->config('open_browser'), 1, 'open_browser default is 1');
 };
 
 subtest '_find_free_port returns a usable port' => sub {

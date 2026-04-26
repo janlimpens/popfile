@@ -525,6 +525,8 @@ Settings_LogLevel                       Log Level
 Settings_LogDirectory                   Log Directory
 Settings_LogToStdout                    Log to stdout
 Settings_LogSQLToStdout                 Log SQL to stdout
+Settings_LogFormat                      Log Format
+Settings_OpenBrowser                    Open browser on start
 
 Settings_DescHTTPPort                   Port the web UI listens on. Requires restart.
 Settings_DescLocalOnly_UI               Restrict the web UI to localhost connections.
@@ -569,6 +571,8 @@ Settings_DescLogLevel                   Verbosity of log output.
 Settings_DescLogDirectory               Directory for log files. Empty = popfile root.
 Settings_DescLogToStdout                Mirror log output to stdout in addition to the log file.
 Settings_DescLogSQLToStdout             Print every SQL statement with bound values to stdout. Only active when "Log to stdout" is also enabled.
+Settings_DescLogFormat                  Log line format. Use 'plain' for journald or any environment that adds its own timestamps.
+Settings_DescOpenBrowser                Open the default browser when the web UI is ready.
 
 Settings_OptHidden                      Hidden
 Settings_OptFrequencies                 Frequencies
