@@ -9,6 +9,8 @@
   let total = $state(0);
   let page = $state(1);
   let perPage = $state(50);
+  let sortBy = $state('relevance');
+  let sortDir = $state('desc');
   let loading = $state(false);
   let status = $state('');
 
@@ -17,7 +19,7 @@
     loading = true;
     status = '';
     const res = await fetch(
-      `/api/v1/corpus/${encodeURIComponent(selectedBucket)}/words?page=${page}&per_page=${perPage}`
+      `/api/v1/corpus/${encodeURIComponent(selectedBucket)}/words?page=${page}&per_page=${perPage}&sort=${sortBy}&dir=${sortDir}`
     );
     if (res.ok) {
       const data = await res.json();
@@ -42,6 +44,17 @@
     page = 1;
     words = [];
     total = 0;
+    loadWords();
+  }
+
+  function toggleSort(col, defaultDir = 'desc') {
+    if (sortBy === col) {
+      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortBy = col;
+      sortDir = defaultDir;
+    }
+    page = 1;
     loadWords();
   }
 
@@ -107,10 +120,18 @@
   <table>
     <thead>
       <tr>
-        <th>{t('WordView_ColWord')}</th>
-        <th>{t('WordView_ColCount')}</th>
-        <th>{t('WordView_ColTotal')}</th>
-        <th>{t('WordView_ColAccuracy')}</th>
+        <th class="sortable" class:sort-active={sortBy === 'word'} title={t('WordView_ColWord')} onclick={() => toggleSort('word', 'asc')}>
+          {t('WordView_ColWord')}{sortBy === 'word' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+        </th>
+        <th class="sortable" class:sort-active={sortBy === 'count'} title={t('WordView_TipCount')} onclick={() => toggleSort('count')}>
+          {t('WordView_ColCount')}{sortBy === 'count' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+        </th>
+        <th class="sortable" class:sort-active={sortBy === 'total'} title={t('WordView_TipTotal')} onclick={() => toggleSort('total')}>
+          {t('WordView_ColTotal')}{sortBy === 'total' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+        </th>
+        <th class="sortable" class:sort-active={sortBy === 'relevance'} title={t('WordView_TipAccuracy')} onclick={() => toggleSort('relevance')}>
+          {t('WordView_ColAccuracy')}{sortBy === 'relevance' ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+        </th>
         <th>{t('WordView_ColActions')}</th>
       </tr>
     </thead>
@@ -169,6 +190,9 @@
   .desc { font-size: 0.85rem; color: var(--text-muted); }
   .status { font-weight: 500; color: var(--success); }
   .word-cell { font-family: monospace; font-size: 0.875rem; }
+  th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+  th.sortable:hover { color: var(--accent); }
+  th.sort-active { color: var(--accent); }
   .accuracy {
     display: inline-flex;
     align-items: center;

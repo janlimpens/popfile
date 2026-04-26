@@ -454,9 +454,12 @@ WordView_Words                          words
 WordView_Loading                        Loading...
 WordView_Empty                          No words in this bucket.
 WordView_ColWord                        Word
-WordView_ColCount                       Count
-WordView_ColTotal                       Total
-WordView_ColAccuracy                    Accuracy
+WordView_ColCount                       In bucket
+WordView_ColTotal                       In all buckets
+WordView_ColAccuracy                    Share
+WordView_TipCount                       How many times this word appears in this bucket.
+WordView_TipTotal                       How many times this word appears across all buckets combined.
+WordView_TipAccuracy                    Fraction of occurrences in this bucket. Sorted by Laplace-smoothed relevance.
 WordView_ColActions                     Actions
 WordView_Remove                         Remove
 WordView_MoveTo                         move to

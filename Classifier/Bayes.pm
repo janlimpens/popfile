@@ -3234,32 +3234,39 @@ method get_words_for_bucket ($session, $bucket, %opts) {
     $page = 1 if $page < 1;
     $per_page = 50 if $per_page < 1 || $per_page > 500;
     my $offset = ($page - 1) * $per_page;
+    my %sort_expr = (
+        relevance => 'CAST(bucket_count AS FLOAT) / (total_count + 10)',
+        count     => 'bucket_count',
+        total     => 'total_count',
+        word      => 'word',
+    );
+    my $sort = $sort_expr{ $opts{sort} // 'relevance' } // $sort_expr{relevance};
+    my $dir  = ($opts{dir} // '') eq 'asc' ? 'ASC' : 'DESC';
     my $count_row = $self->validate_sql_prepare_and_execute(
         'SELECT COUNT(*) FROM matrix WHERE bucketid = ?',
         $bucketid)->fetchrow_arrayref;
     my $total = $count_row ? $count_row->[0] + 0 : 0;
     my $sth = $self->validate_sql_prepare_and_execute(
-        'SELECT w.word,
-                m.times AS bucket_count,
-                (SELECT COALESCE(SUM(m2.times), 0)
-                 FROM matrix m2
-                 WHERE m2.wordid = m.wordid) AS total_count
-         FROM matrix m
-         JOIN words w ON w.id = m.wordid
-         WHERE m.bucketid = ?
-         ORDER BY CAST(m.times AS FLOAT) /
-             ((SELECT COALESCE(SUM(m2.times), 0)
-               FROM matrix m2
-               WHERE m2.wordid = m.wordid) + 10) DESC
-         LIMIT ? OFFSET ?',
+        "WITH wc AS (
+             SELECT w.word,
+                    m.times AS bucket_count,
+                    (SELECT COALESCE(SUM(m2.times), 0)
+                     FROM matrix m2
+                     WHERE m2.wordid = m.wordid) AS total_count
+             FROM matrix m
+             JOIN words w ON w.id = m.wordid
+             WHERE m.bucketid = ?
+         )
+         SELECT word, bucket_count, total_count
+         FROM wc
+         ORDER BY $sort $dir
+         LIMIT ? OFFSET ?",
         $bucketid, $per_page, $offset);
     my @words;
     while (my $row = $sth->fetchrow_hashref()) {
         my $count = $row->{bucket_count} + 0;
         my $total_count = $row->{total_count} + 0;
-        my $accuracy = $total_count > 0
-            ? $count / $total_count
-            : 0;
+        my $accuracy = $total_count > 0 ? $count / $total_count : 0;
         push @words, {
             word => $row->{word},
             count => $count,

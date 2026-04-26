@@ -101,10 +101,13 @@ sub list_bucket_words_with_accuracy ($self) {
     my $bucket = $self->param('bucket');
     my $page = ($self->param('page') // 1) + 0;
     my $per_page = ($self->param('per_page') // 50) + 0;
+    my $sort = $self->param('sort') // 'relevance';
+    my $dir  = $self->param('dir')  // 'desc';
     my $result = $svc->get_words_for_bucket($bucket,
         page => $page,
         per_page => $per_page,
-        sort => 'accuracy');
+        sort => $sort,
+        dir  => $dir);
     $self->render(json => {
         words => $result->{words},
         total => $result->{total} + 0,

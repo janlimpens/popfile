@@ -446,9 +446,12 @@ WordView_Words Wörter
 WordView_Loading Lade...
 WordView_Empty Keine Wörter in dieser Kategorie.
 WordView_ColWord Wort
-WordView_ColCount Anzahl
-WordView_ColTotal Gesamt
-WordView_ColAccuracy Genauigkeit
+WordView_ColCount Im Bucket
+WordView_ColTotal In allen Buckets
+WordView_ColAccuracy Anteil
+WordView_TipCount Wie oft dieses Wort in diesem Bucket vorkommt.
+WordView_TipTotal Wie oft dieses Wort bucket-übergreifend vorkommt.
+WordView_TipAccuracy Anteil der Treffer in diesem Bucket. Sortierung nach Laplace-geglätteter Relevanz.
 WordView_ColActions Aktionen
 WordView_Remove Entfernen
 WordView_MoveTo verschieben nach
