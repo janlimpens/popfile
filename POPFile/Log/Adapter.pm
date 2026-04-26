@@ -81,15 +81,14 @@ my %_required_popfile_level = (
     emergency => 0,
 );
 
-sub configure { my (undef, %args) = @_; $cfg{$_} = $args{$_} for keys %args }
+sub configure($, %args) { $cfg{$_} = $args{$_} for keys %args }
 
 sub ring() { $cfg{ring} }
 
 for my $method (logging_methods()) {
     my $min_level = $_required_popfile_level{$method} // 0;
     no strict 'refs';
-    *{$method} = sub {
-        my ($self, $msg) = @_;
+    *{$method} = sub($self, $msg) {
         return unless $cfg{to_file} || $cfg{to_stdout};
         return if $min_level > $cfg{popfile_level};
         _write($msg);

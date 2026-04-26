@@ -126,8 +126,7 @@ sub test_connection ($self) {
     $self->render(json => { ok => \1 });
 }
 
-sub _touch {
-    my ($path) = @_;
+sub _touch($path) {
     open my $fh, '>', $path or return 0;
     close $fh;
     return 1
