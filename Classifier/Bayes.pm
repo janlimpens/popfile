@@ -980,7 +980,7 @@ method db_upgrade ($db_from = undef) {
 
     for my $table (@tables) {
         next if ($table =~ /\.?popfile$/);
-        if ($from_sqlite && ($table =~ /^sqlite_/)) {
+        if ($from_sqlite && ($table =~ /(?:^|\.)sqlite_/)) {
             next;
         }
         if ($i > 99) {
@@ -1043,7 +1043,7 @@ method db_upgrade ($db_from = undef) {
 
     if ($drop_table) {
         for my $table (@tables) {
-            if ($from_sqlite && ($table =~ /^sqlite_/)) {
+            if ($from_sqlite && ($table =~ /(?:^|\.)sqlite_/)) {
                 next;
             }
             print "    Dropping old table $table\n";
