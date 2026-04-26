@@ -47,15 +47,16 @@ BUILD {
 =head2 initialize()
 
 Registers logger configuration: C<logdir> (platform-specific default),
-C<level> (0), C<log_to_stdout> (0), C<log_sql> (0), and the C<debug>
-global config flag (1).  Registers for the C<TICKD> message-queue event.
-Returns 1.
+C<format> (C<'default'>), C<level> (0), C<log_to_stdout> (0), C<log_sql>
+(0), and the C<debug> global config flag (1).  Registers for the C<TICKD>
+message-queue event.  Returns 1.
 
 =cut
 
 method initialize() {
     $self->global_config('debug', 1);
     $self->config('logdir', $self->_default_log_dir());
+    $self->config('format', 'default');
     $self->config('level', 0);
     $self->config('log_to_stdout', 0);
     $self->config('log_sql', 0);
@@ -155,6 +156,7 @@ method _reconfigure_adapter() {
         filename => $debug_filename,
         popfile_level => $self->config('level') // 0,
         log_sql => $self->config('log_sql') ? 1 : 0,
+        format => $self->config('format') // 'default',
     );
     Log::Any::Adapter->set('+POPFile::Log::Adapter');
 }

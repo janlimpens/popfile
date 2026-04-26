@@ -5,6 +5,7 @@ package POPFile::Log::Adapter;
 use POPFile::Features;
 use Log::Any::Adapter::Base;
 use Log::Any::Adapter::Util qw(logging_methods);
+use POSIX qw(strftime);
 
 our @ISA = ('Log::Any::Adapter::Base');
 
@@ -18,8 +19,9 @@ C<POPFile::Log::Adapter> is a L<Log::Any> adapter that routes log lines for
 POPFile.  It is installed by L<POPFile::Logger> via
 C<< Log::Any::Adapter->set('+POPFile::Log::Adapter') >>.
 
-Each log line is prefixed with the process ID.  Timestamps are left to the
-deployment environment (journald, a wrapping adapter, etc.).
+Each log line is prefixed with a timestamp and process ID, unless
+C<format> is set to C<'plain'>, in which case only the PID is prepended
+(suitable for journald or any environment that supplies its own timestamps).
 
 Sensitive information is masked: C<USER>/C<PASS> command arguments are
 replaced with C<XXXXXX>, and non-printable bytes are escaped as C<[XX]>.
@@ -47,6 +49,8 @@ Class method.  Updates the adapter's runtime configuration.  Accepted keys:
 
 =item C<popfile_level> — minimum POPFile severity level to emit (0–2)
 
+=item C<format> — C<'default'> (space-delimited timestamps), C<'tabbed'>, C<'csv'>, or C<'plain'> (no timestamp, for journald)
+
 =back
 
 =head2 ring()
@@ -61,6 +65,7 @@ my %cfg = (
     filename => '',
     popfile_level => 0,
     log_sql => 0,
+    format => 'default',
     ring => [],
 );
 
@@ -95,7 +100,15 @@ sub _write($msg) {
     return if $msg =~ /\[SQL\]/ && !$cfg{log_sql};
     $msg =~ s/((--)?)(USER|PASS)\s+\S*(\1)/"$`$1$3 XXXXXX$4"/ei;
     $msg =~ s/([\x00-\x1f])/sprintf("[%2.2x]", ord($1))/eg;
-    my $line = "$$: $msg\n";
+    my $line = do {
+        if ($cfg{format} eq 'plain') {
+            "$$: $msg\n"
+        } else {
+            my $delim = $cfg{format} eq 'tabbed' ? "\t"
+                      : $cfg{format} eq 'csv'    ? ','
+                      :                            ' ';
+            strftime("%Y/%m/%d${delim}%H:%M:%S", localtime) . "${delim}$$:${delim}$msg\n"
+        } };
     if ($cfg{to_file} && $cfg{filename}) {
         if (open my $fh, '>>', $cfg{filename}) {
             print $fh $line;
