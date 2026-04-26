@@ -832,6 +832,10 @@ method db_connect() {
         print "\nDatabase upgrade complete\n\n";
     }
 
+    my $has_mid = grep { $_->[1] eq 'mid' }
+        @{$db->selectall_arrayref("PRAGMA table_info(history)")};
+    $db->do("ALTER TABLE history ADD COLUMN mid TEXT") unless $has_mid;
+
     # Now prepare common SQL statements for use, as a matter of convention the
     # parameters to each statement always appear in the following order:
     #

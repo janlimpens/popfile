@@ -347,6 +347,20 @@ method change_slot_classification ($slot, $class, $session, $undo) {
     $self->force_requery();
 }
 
+=head2 set_message_id($slot, $mid)
+
+Stores the IMAP C<Message-ID> header value for history entry C<$slot>.
+Used by the IMAP service so that direct moves can be performed after restart
+without rescanning the entire folder.
+
+=cut
+
+method set_message_id ($slot, $mid) {
+    $self->validate_sql_prepare_and_execute(
+        'UPDATE history SET mid = ? WHERE id = ?',
+        $mid, $slot)
+}
+
 =head2 revert_slot_classification($slot)
 
 Undoes a previous reclassification for C<$slot> by restoring the bucket stored

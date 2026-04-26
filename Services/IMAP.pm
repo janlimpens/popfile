@@ -198,6 +198,7 @@ method poll() {
                 for keys $result->{hash_to_mid}->%*;
             delete $pending_direct_moves{$_} for $result->{direct_moved_hashes}->@*;
             delete $pending_folder_moves{$_} for $result->{moved_hashes}->@*;
+            delete $_uid_next_override{$_} for $result->{consumed_uid_overrides}->@*;
             $self->mq()->post('IMAP_DONE', $result->{trained} // 0);
         }
     );
@@ -205,7 +206,7 @@ method poll() {
 }
 
 method _run_poll_work() {
-    my $result = { trained => 0, training_done => 0, error => undef, moved_hashes => [], direct_moved_hashes => [], hash_to_mid => {} };
+    my $result = { trained => 0, training_done => 0, error => undef, moved_hashes => [], direct_moved_hashes => [], hash_to_mid => {}, consumed_uid_overrides => [] };
     my $dbh;
     try {
         $dbh = $self->_open_uid_db();
@@ -224,6 +225,13 @@ method _run_poll_work() {
             my ($nexts, $validities) = defined $dbh
                 ? $self->_load_uid_state($dbh)
                 : ({}, {});
+            $result->{consumed_uid_overrides} = [keys %_uid_next_override];
+            if (defined $dbh) {
+                my $rows = $dbh->selectall_arrayref(
+                    'SELECT hash, mid FROM history WHERE mid IS NOT NULL',
+                    { Slice => {} });
+                $hash_to_mid{$_->{hash}} = $_->{mid} for $rows->@*;
+            }
             if (!%folders || $folder_change_flag == 1) {
                 $self->build_folder_list();
             }
@@ -514,9 +522,12 @@ method disconnect_folders() {
 =head2 request_folder_move($hash, $target_bucket, $source_bucket)
 
 Queues a folder move for the message identified by C<$hash>.  If the
-C<Message-Id> for the hash is already cached in C<%hash_to_mid>, a direct
-move is queued via C<%pending_direct_moves> — no C<uid_next> reset required.
-Otherwise falls back to the uid_next-reset path via C<%pending_folder_moves>.
+C<Message-ID> for the hash is already cached in C<%hash_to_mid> (either from
+the current session or loaded from C<history.mid> at poll startup), a direct
+IMAP move is queued via C<%pending_direct_moves>.  Otherwise the hash is added
+to C<%pending_folder_moves> as a passive fallback (no C<uid_next> reset —
+messages with no cached C<Message-ID> are pre-v5 data with no automatic
+IMAP move guarantee).
 
 =cut
 
@@ -526,12 +537,8 @@ method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
         $pending_direct_moves{$hash} = { mid => $hash_to_mid{$hash}, target_bucket => $target_bucket };
         return
     }
+    $self->log_msg(INFO => "No Message-ID cached for hash $hash; queuing folder move without uid_next reset.");
     $pending_folder_moves{$hash} = $target_bucket;
-    my $source_folder = defined $source_bucket
-        ? $self->folder_for_bucket($source_bucket)
-        : undef;
-    $self->_reset_uid_next($source_folder)
-        if defined $source_folder;
 }
 
 =head2 request_folder_rescan($folder)
@@ -599,7 +606,7 @@ method scan_folder ($folder) {
             next;
         }
         if ($is_watched && $self->can_classify($hash)) {
-            my $result = $self->classify_message($msg, $hash, $folder);
+            my $result = $self->classify_message($msg, $hash, $folder, $mid);
             unless (defined $result) {
                 $self->log_msg(WARN => "classify_message failed for UID $msg in $folder — message left in place.");
                 next;
@@ -622,16 +629,18 @@ method scan_folder ($folder) {
     $imap->expunge() if $moved_message && $self->config('expunge');
 }
 
-=head2 classify_message($msg, $hash, $folder)
+=head2 classify_message($msg, $hash, $folder, $mid)
 
 Fetches the header and (if needed) body of IMAP message C<$msg>, runs the
-classifier, and moves the message to the appropriate output folder.  Returns
-the destination folder name on success (empty string if not moved), or
-C<undef> on error.
+classifier, and moves the message to the appropriate output folder.  If
+C<$mid> (the C<Message-ID> header value) is provided, it is stored in the
+history record so that future reclassification requests can use direct IMAP
+moves instead of folder rescans.  Returns the destination folder name on
+success (empty string if not moved), or C<undef> on error.
 
 =cut
 
-method classify_message ($msg, $hash, $folder) {
+method classify_message ($msg, $hash, $folder, $mid = undef) {
     my $file = $self->get_user_path('imap.tmp');
     my $pseudo_mailer;
     unless (sysopen($pseudo_mailer, $file, Fcntl::O_RDWR() | Fcntl::O_CREAT() | Fcntl::O_TRUNC())) {
@@ -665,6 +674,7 @@ method classify_message ($msg, $hash, $folder) {
         ($class, $slot, $magnet_used) = $classifier->classify_and_modify(
             $self->api_session(), $pseudo_mailer, undef, 0, '', undef, 0, undef);
         $self->_flush_history();
+        $history->set_message_id($slot, $mid) if defined $mid && defined $slot;
         close $pseudo_mailer;
         unlink $file;
         if ($magnet_used || $part eq 'TEXT') {

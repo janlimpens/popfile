@@ -64,25 +64,27 @@ sub make_imap {
     return ($imap, $config)
 }
 
-subtest 'request_folder_move schedules uid_next reset for watched folder' => sub {
+subtest 'request_folder_move without cached mid: no uid_next reset' => sub {
     my ($imap) = make_imap();
     $log->clear();
 
     $imap->request_folder_move('deadbeef', 'personal', 'work');
 
     my @reset_msgs = grep { /Scheduling uid_next reset/ } map { $_->{message} } @{ $log->msgs() };
-    ok(scalar @reset_msgs >= 1, 'uid_next reset scheduled for at least one folder');
+    ok(!@reset_msgs, 'no uid_next reset scheduled when MID is not cached');
+    my @warn_msgs = grep { /No Message-ID cached/ } map { $_->{message} } @{ $log->msgs() };
+    ok(scalar @warn_msgs >= 1, 'logs info that passive fallback is used');
 };
 
-subtest 'request_folder_move resets source folder, not destination' => sub {
+subtest 'request_folder_move without cached mid: source_bucket does not trigger uid_next reset' => sub {
     my ($imap) = make_imap();
     $log->clear();
 
     $imap->request_folder_move('deadbeef', 'personal', 'work');
+    $imap->request_folder_move('deadbeef', 'personal');
 
     my @reset_msgs = grep { /Scheduling uid_next reset/ } map { $_->{message} } @{ $log->msgs() };
-    my $reset_for_work = grep { /Work/ } @reset_msgs;
-    ok($reset_for_work >= 1, 'uid_next reset scheduled for source folder Work, not destination');
+    ok(!@reset_msgs, 'no uid_next reset regardless of whether source_bucket is given');
 };
 
 subtest 'output folder is scanned for pending_folder_moves' => sub {
