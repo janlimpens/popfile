@@ -196,7 +196,17 @@
   main { min-height: calc(100vh - 48px); }
 
   /* ── Global helpers consumed by all components ── */
-  :global(table)  { border-collapse: collapse; width: 100%; }
+  :global(.icon) {
+    font-family: 'Material Symbols Outlined Variable', sans-serif;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
+    font-size: 1.25em;
+    line-height: 1;
+    vertical-align: middle;
+    user-select: none;
+    font-feature-settings: 'liga' 1;
+  }
+
+  :global(table) { border-collapse: collapse; width: 100%; }
   :global(th, td) {
     padding: 0.45rem 0.8rem;
     text-align: left;
