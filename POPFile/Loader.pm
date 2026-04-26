@@ -157,8 +157,6 @@ in the component table.
 =cut
 
 method CORE_load_directory_modules ($directory, $type) {
-    print "\n         {$type:" if $debug;
-
     opendir my $dh, $self->root_path($directory);
 
     while (my $entry = readdir $dh) {
@@ -168,8 +166,6 @@ method CORE_load_directory_modules ($directory, $type) {
     }
 
     closedir $dh;
-
-    print '} ' if $debug;
 }
 
 =head2 CORE_load_module
@@ -187,7 +183,6 @@ method CORE_load_module ($module, $type) {
     return unless defined $mod;
     my $name = $mod->name();
     return unless $name;
-    print " $name" if $debug;
     $components{$type}{$name} = $mod;
     return $mod;
 }
@@ -257,8 +252,6 @@ and C<Services> directories are skipped (useful for CLI utilities).
 =cut
 
 method CORE_load ($noserver = 0) {
-    print "\n    Loading... " if $debug;
-
     $self->CORE_load_directory_modules(POPFile => 'core');
     $self->CORE_load_directory_modules(Classifier => 'classifier');
 
@@ -277,8 +270,6 @@ every module that accepts them.
 =cut
 
 method CORE_link_components() {
-    print "\n" if $debug;
-
     for my $type (sort keys %components) {
         for my $name (sort keys $components{$type}->%*) {
             $components{$type}{$name}->set_version(
@@ -395,10 +386,17 @@ method CORE_start() {
                 if $code == 2;
         }
     }
-    if ($debug && defined $components{core}{api}) {
-        my $url = $components{core}{api}->url();
-        print "\n    UI accessible at \e[38;5;80m$url\e[0m\n"
-            if $url;
+    if ($debug) {
+        print "\n    Loading...\n";
+        for my $type (@c) {
+            next unless %{$components{$type}};
+            print "         {$type: " . join(' ', sort keys $components{$type}->%*) . "}\n";
+        }
+        if (defined $components{core}{api}) {
+            my $url = $components{core}{api}->url();
+            print "\n    UI accessible at \e[38;5;80m$url\e[0m\n"
+                if $url;
+        }
     }
     STDOUT->flush();
 }
