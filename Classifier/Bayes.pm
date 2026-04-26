@@ -3209,12 +3209,14 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
 
 =head2 get_words_for_bucket
 
-Returns a paginated list of words for a bucket sorted by accuracy descending.
-Accuracy = count in this bucket / total count across all buckets.
+Returns a paginated list of words for a bucket sorted by Laplace-smoothed
+relevance descending: C<bucket_count / (total_count + 10)>.  This surfaces
+words that are both frequent and strongly associated with the bucket, while
+burying single-occurrence noise and near-neutral stopwords.
 
 C<$session> A valid session key
 C<$bucket> Bucket name
-C<%opts> page (1-based), per_page, sort (currently only 'accuracy')
+C<%opts> page (1-based), per_page
 
 Returns a hashref with keys: words (arrayref of hashrefs), total (int).
 
@@ -3246,9 +3248,9 @@ method get_words_for_bucket ($session, $bucket, %opts) {
          JOIN words w ON w.id = m.wordid
          WHERE m.bucketid = ?
          ORDER BY CAST(m.times AS FLOAT) /
-             (SELECT COALESCE(SUM(m2.times), 1)
-              FROM matrix m2
-              WHERE m2.wordid = m.wordid) DESC
+             ((SELECT COALESCE(SUM(m2.times), 0)
+               FROM matrix m2
+               WHERE m2.wordid = m.wordid) + 10) DESC
          LIMIT ? OFFSET ?',
         $bucketid, $per_page, $offset);
     my @words;
