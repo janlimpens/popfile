@@ -89,7 +89,8 @@ for my $method (logging_methods()) {
     my $min_level = $_required_popfile_level{$method} // 0;
     no strict 'refs';
     *{$method} = sub($self, $msg) {
-        return unless $cfg{to_file} || $cfg{to_stdout};
+        my $is_sql = $msg =~ /\[SQL\]/;
+        return unless $cfg{to_file} || $cfg{to_stdout} || ($is_sql && $cfg{log_sql});
         return if $min_level > $cfg{popfile_level};
         _write($msg);
     };
@@ -97,7 +98,8 @@ for my $method (logging_methods()) {
 }
 
 sub _write($msg) {
-    return if $msg =~ /\[SQL\]/ && !$cfg{log_sql};
+    my $is_sql = $msg =~ /\[SQL\]/;
+    return if $is_sql && !$cfg{log_sql};
     $msg =~ s/((--)?)(USER|PASS)\s+\S*(\1)/"$`$1$3 XXXXXX$4"/ei;
     $msg =~ s/([\x00-\x1f])/sprintf("[%2.2x]", ord($1))/eg;
     my $line = do {
@@ -115,7 +117,7 @@ sub _write($msg) {
             close $fh;
         }
     }
-    print $line if $cfg{to_stdout};
+    print $line if $cfg{to_stdout} || $is_sql;
     push $cfg{ring}->@*, $line;
     shift $cfg{ring}->@*
         if $cfg{ring}->@* > 10;

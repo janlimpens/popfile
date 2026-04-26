@@ -374,7 +374,7 @@ Settings_DescLocalOnly_UI Restringir a interface web a ligações locais.
 Settings_DescLogDirectory Diretório para ficheiros de registo. Vazio = raiz do POPFile.
 Settings_DescLogLevel Verbosidade da saída de registo.
 Settings_DescLogFormat Formato das linhas de registo. Use 'plain' para journald ou ambientes que adicionam os seus próprios carimbos de data/hora.
-Settings_DescLogSQLToStdout Imprimir cada instrução SQL com valores vinculados no stdout. Apenas ativo quando "Registar no stdout" também está ativado.
+Settings_DescLogSQLToStdout Imprimir cada instrução SQL com valores vinculados no stdout. Ativo independentemente de "Registar no stdout".
 Settings_DescLogToStdout Espelhar a saída de registo no stdout além do ficheiro de registo.
 Settings_DescOpenBrowser Abrir o navegador predefinido quando a interface web estiver pronta.
 Settings_DescMessageCutoff Número máximo de palavras analisadas por mensagem (0 = ilimitado).
@@ -412,7 +412,7 @@ Settings_LocalOnly Apenas local
 Settings_LogDirectory Diretório de registo
 Settings_LogLevel Nível de registo
 Settings_LogFormat Formato de registo
-Settings_LogSQLToStdout Registar SQL no stdout
+Settings_LogSQLToStdout Registar consultas SQL
 Settings_LogToStdout Registar no stdout
 Settings_OpenBrowser Abrir navegador ao iniciar
 Settings_MessageCutoff Limite de mensagem

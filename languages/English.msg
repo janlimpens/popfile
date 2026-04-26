@@ -527,7 +527,7 @@ Settings_ArchiveSubdirs                 Archive Sub-dirs
 Settings_LogLevel                       Log Level
 Settings_LogDirectory                   Log Directory
 Settings_LogToStdout                    Log to stdout
-Settings_LogSQLToStdout                 Log SQL to stdout
+Settings_LogSQLToStdout                 Log SQL queries
 Settings_LogFormat                      Log Format
 Settings_OpenBrowser                    Open browser on start
 
@@ -572,7 +572,7 @@ Settings_DescArchiveSubdirs             Split archive into N sub-directories (0 
 Settings_DescLogLevel                   Verbosity of log output.
 Settings_DescLogDirectory               Directory for log files. Empty = popfile root.
 Settings_DescLogToStdout                Mirror log output to stdout in addition to the log file.
-Settings_DescLogSQLToStdout             Print every SQL statement with bound values to stdout. Only active when "Log to stdout" is also enabled.
+Settings_DescLogSQLToStdout             Print every SQL statement with bound values to stdout. Active independently of "Log to stdout".
 Settings_DescLogFormat                  Log line format. Use 'plain' for journald or any environment that adds its own timestamps.
 Settings_DescOpenBrowser                Open the default browser when the web UI is ready.
 

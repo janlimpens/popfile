@@ -483,7 +483,7 @@ Settings_DescLocalOnly_UI Restringir a interface web a conexões locais.
 Settings_DescLogDirectory Diretório para arquivos de log. Vazio = raiz do POPFile.
 Settings_DescLogLevel Verbosidade da saída de log.
 Settings_DescLogFormat Formato das linhas de log. Use 'plain' para journald ou ambientes que adicionam seus próprios carimbos de data/hora.
-Settings_DescLogSQLToStdout Imprimir cada instrução SQL com valores vinculados no stdout. Ativo apenas quando "Log para stdout" também está habilitado.
+Settings_DescLogSQLToStdout Imprimir cada instrução SQL com valores vinculados no stdout. Ativo independentemente de "Log para stdout".
 Settings_DescLogToStdout Espelhar a saída de log no stdout além do arquivo de log.
 Settings_DescOpenBrowser Abrir o navegador padrão quando a interface web estiver pronta.
 Settings_DescMessageCutoff Número máximo de palavras analisadas por mensagem (0 = ilimitado).
@@ -521,7 +521,7 @@ Settings_LocalOnly Apenas local
 Settings_LogDirectory Diretório de log
 Settings_LogLevel Nível de log
 Settings_LogFormat Formato de log
-Settings_LogSQLToStdout Log SQL no stdout
+Settings_LogSQLToStdout Registar consultas SQL
 Settings_LogToStdout Log no stdout
 Settings_OpenBrowser Abrir navegador ao iniciar
 Settings_MessageCutoff Limite de mensagem
