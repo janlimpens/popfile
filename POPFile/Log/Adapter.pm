@@ -49,6 +49,8 @@ Class method.  Updates the adapter's runtime configuration.  Accepted keys:
 
 =item C<popfile_level> — minimum POPFile severity level to emit (0–2)
 
+=item C<log_sql> — include C<[SQL]> messages in the log stream (boolean); without this they are silently dropped regardless of C<to_file>/C<to_stdout>
+
 =item C<format> — C<'default'> (space-delimited timestamps), C<'tabbed'>, C<'csv'>, or C<'plain'> (no timestamp, for journald)
 
 =back
@@ -89,8 +91,7 @@ for my $method (logging_methods()) {
     my $min_level = $_required_popfile_level{$method} // 0;
     no strict 'refs';
     *{$method} = sub($self, $msg) {
-        my $is_sql = $msg =~ /\[SQL\]/;
-        return unless $cfg{to_file} || $cfg{to_stdout} || ($is_sql && $cfg{log_sql});
+        return unless $cfg{to_file} || $cfg{to_stdout};
         return if $min_level > $cfg{popfile_level};
         _write($msg);
     };
@@ -117,7 +118,7 @@ sub _write($msg) {
             close $fh;
         }
     }
-    print $line if $cfg{to_stdout} || ($is_sql && $cfg{log_sql});
+    print $line if $cfg{to_stdout};
     push $cfg{ring}->@*, $line;
     shift $cfg{ring}->@*
         if $cfg{ring}->@* > 10;

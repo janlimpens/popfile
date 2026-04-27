@@ -572,7 +572,7 @@ Settings_DescArchiveSubdirs             Split archive into N sub-directories (0 
 Settings_DescLogLevel                   Verbosity of log output.
 Settings_DescLogDirectory               Directory for log files. Empty = popfile root.
 Settings_DescLogToStdout                Mirror log output to stdout in addition to the log file.
-Settings_DescLogSQLToStdout             Print every SQL statement with bound values to stdout. Active independently of "Log to stdout".
+Settings_DescLogSQLToStdout             Include SQL statements with bound values in log output. Follows the same destination as other log messages (file and/or stdout).
 Settings_DescLogFormat                  Log line format. Use 'plain' for journald or any environment that adds its own timestamps.
 Settings_DescOpenBrowser                Open the default browser when the web UI is ready.
 

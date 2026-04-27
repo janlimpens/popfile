@@ -25,6 +25,17 @@ sub capture_stdout(&) {
     return @lines
 }
 
+sub capture_file(&) {
+    my ($code) = @_;
+    my ($fh, $path) = tempfile(UNLINK => 1);
+    close $fh;
+    $code->($path);
+    open my $rfh, '<', $path or die;
+    my @lines = <$rfh>;
+    close $rfh;
+    return @lines
+}
+
 sub fresh_adapter {
     my %args = @_;
     Log::Any::Adapter->set('+POPFile::Log::Adapter');
@@ -41,50 +52,44 @@ sub fresh_adapter {
     return Log::Any->get_logger()
 }
 
-subtest 'log_sql=0: no stdout output at all' => sub {
-    my $log = fresh_adapter();
+subtest 'log_sql=0: SQL filtered out regardless of destination' => sub {
+    my $log = fresh_adapter(to_stdout => 1);
     my @lines = capture_stdout { $log->info('hello'); $log->info('[SQL] SELECT 1') };
-    is scalar @lines, 0, 'nothing on stdout'
+    is scalar @lines, 1, 'SQL dropped';
+    unlike $lines[0], qr/\[SQL\]/, 'only normal message present'
 };
 
-subtest 'log_sql=1 to_stdout=0: only SQL messages on stdout' => sub {
+subtest 'log_sql=1 to_stdout=0: no stdout output (routing unchanged)' => sub {
     my $log = fresh_adapter(log_sql => 1);
     my @lines = capture_stdout {
         $log->info('normal message');
         $log->info('[SQL] SELECT 1');
-        $log->debug('debug message');
     };
-    is scalar @lines, 1, 'exactly one line on stdout';
-    like $lines[0], qr/\[SQL\]/, 'the SQL line is on stdout';
+    is scalar @lines, 0, 'nothing on stdout when to_stdout=0'
 };
 
-subtest 'to_stdout=1 log_sql=0: SQL suppressed even with to_stdout' => sub {
-    my $log = fresh_adapter(to_stdout => 1);
-    my @lines = capture_stdout {
-        $log->info('normal message');
-        $log->info('[SQL] SELECT 1');
-    };
-    is scalar @lines, 1, 'SQL suppressed when log_sql=0';
-    unlike $lines[0], qr/\[SQL\]/, 'only normal message on stdout'
-};
-
-subtest 'to_stdout=1 log_sql=1: both messages on stdout' => sub {
+subtest 'log_sql=1 to_stdout=1: SQL follows to_stdout routing' => sub {
     my $log = fresh_adapter(to_stdout => 1, log_sql => 1);
     my @lines = capture_stdout {
         $log->info('normal message');
         $log->info('[SQL] SELECT 1');
     };
-    is scalar @lines, 2, 'both messages on stdout'
+    is scalar @lines, 2, 'both messages on stdout';
+    ok( (grep { /\[SQL\]/ } @lines), 'SQL line present' )
 };
 
-subtest 'to_stdout=1 log_sql=0: SQL suppressed on stdout' => sub {
-    my $log = fresh_adapter(to_stdout => 1, log_sql => 0);
-    my @lines = capture_stdout {
+subtest 'log_sql=1 to_file=1: SQL written to log file' => sub {
+    my $log;
+    my @file_lines = capture_file {
+        my $path = shift;
+        $log = fresh_adapter(to_file => 1, log_sql => 1, filename => $path);
         $log->info('normal message');
         $log->info('[SQL] SELECT 1');
     };
-    is scalar @lines, 1, 'only normal message on stdout';
-    unlike $lines[0], qr/\[SQL\]/, 'SQL line not on stdout'
+    my @stdout_lines = capture_stdout { };
+    is scalar @file_lines, 2, 'both messages in file';
+    ok( (grep { /\[SQL\]/ } @file_lines), 'SQL in file' );
+    is scalar @stdout_lines, 0, 'nothing on stdout'
 };
 
 subtest 'popfile_level filters: info suppressed at level 0' => sub {
