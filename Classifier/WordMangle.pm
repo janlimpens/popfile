@@ -191,6 +191,18 @@ Discards the word when it:
 
 =item * looks like a hex string (8 or more hex digits)
 
+=item * is an HTML pseudo-token that carries an embedded value with no
+classification signal: C<html:css*>, C<html:comment>, C<html:fontcolor*>,
+C<html:backcolor*>, C<html:fontsize*>, C<html:imgwidth*>, C<html:imgheight*>
+
+=item * is C<zwnj> or C<zwj> — zero-width character HTML entity name
+artifacts that survive undecoded in the email text
+
+=item * is a plain word (no colon) starting with C<hg>, C<bk>, or C<dk>,
+or containing the bigram C<jk> — consonant pairs that do not appear in any
+supported language, indicating a random opaque token (tracking ID, CSS class
+name hash, etc.)
+
 =back
 
 Strips colons unless C<$allow_colon> is true (colons separate header-field
@@ -212,6 +224,14 @@ word contains no colon, applies the Snowball stemmer.
         return '' if length($lcword) > 45;
 
         return '' if $lcword =~ /^[A-F0-9]{8,}$/i;
+
+        return '' if $lcword =~ /^html:(?:css|fontcolor|backcolor|fontsize|imgwidth|imgheight)/;
+        return '' if $lcword eq 'html:comment';
+
+        return '' if $lcword eq 'zwnj' || $lcword eq 'zwj';
+
+        return '' if !defined($allow_colon)
+            && ( $lcword =~ /^(?:hg|bk|dk)/ || $lcword =~ /jk/ );
 
         $lcword =~ s/://g unless defined $allow_colon;
 

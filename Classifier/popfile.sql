@@ -413,6 +413,28 @@ create table imap_folder_state (
     uid_validity integer
 );
 
+-- INDICES
+--
+-- matrix: the UNIQUE(wordid, bucketid) constraint covers wordid-leading
+-- lookups; a separate index on bucketid is needed for per-bucket queries
+-- and bulk deletes.
+
+create index matrix_bucketid on matrix (bucketid);
+
+-- history: composite on (userid, committed) covers the dominant query
+-- pattern (all history pages filter on both).  Separate indices on
+-- bucketid, hash, and inserted support bucket-filtered views, message
+-- dedup lookups, and ORDER BY / purge scans respectively.
+
+create index history_userid_committed on history (userid, committed);
+create index history_bucketid on history (bucketid);
+create index history_hash on history (hash);
+create index history_inserted on history (inserted);
+
+-- magnets: bucketid lookups for per-bucket magnet lists.
+
+create index magnets_bucketid on magnets (bucketid);
+
 -- Default data
 
 -- This is schema version 4

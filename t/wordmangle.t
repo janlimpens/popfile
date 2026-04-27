@@ -132,4 +132,42 @@ subtest 'set_language survives repeat calls' => sub {
     is( $wm->get_language(), $lang_before, 'language unchanged after re-set' );
 };
 
+subtest 'HTML/CSS noise token filter' => sub {
+    is( $wm->mangle('html:comment',         1), '', 'html:comment filtered' );
+    is( $wm->mangle('html:cssfontsize0px',  1), '', 'html:cssfontsize* filtered' );
+    is( $wm->mangle('html:cssbackcolorfff', 1), '', 'html:cssbackcolor* filtered' );
+    is( $wm->mangle('html:cssdisplaynone',  1), '', 'html:cssdisplay* filtered' );
+    is( $wm->mangle('html:fontcolorff0000', 1), '', 'html:fontcolor* filtered' );
+    is( $wm->mangle('html:backcolorffffff', 1), '', 'html:backcolor* filtered' );
+    is( $wm->mangle('html:fontsize12pt',    1), '', 'html:fontsize* filtered' );
+    is( $wm->mangle('html:imgwidth350',     1), '', 'html:imgwidth* filtered' );
+    is( $wm->mangle('html:imgheight120',    1), '', 'html:imgheight* filtered' );
+
+    is( $wm->mangle('html:td',             1), 'html:td',          'html:td kept' );
+    is( $wm->mangle('html:imgremotesrc',   1), 'html:imgremotesrc','html:imgremotesrc kept' );
+    is( $wm->mangle('html:colordistance5', 1), 'html:colordistance5', 'html:colordistance kept' );
+    is( $wm->mangle('html:encodedurl',     1), 'html:encodedurl',  'html:encodedurl kept' );
+};
+
+subtest 'zero-width character entity artifact filter' => sub {
+    is( $wm->mangle('zwnj'), '', 'zwnj filtered' );
+    is( $wm->mangle('zwj'),  '', 'zwj filtered' );
+
+    is( $wm->mangle('zinc'),  'zinc',  'zinc not filtered' );
+    is( $wm->mangle('zweck'), 'zweck', 'zweck not filtered' );
+};
+
+subtest 'impossible consonant bigram filter' => sub {
+    is( $wm->mangle('hjkjso'),  '',       'jk bigram filtered' );
+    is( $wm->mangle('dkenycl'), '',       'dk-start filtered' );
+    is( $wm->mangle('hgoyuyb'), '',       'hg-start filtered' );
+
+    is( $wm->mangle('background'), 'background', 'background not filtered' );
+    is( $wm->mangle('jackknife'),  'jackknife',  'jackknife (no jk) not filtered' );
+    is( $wm->mangle('bedknob'),    'bedknob',    'bedknob (dk not at start) not filtered' );
+    is( $wm->mangle('highgrade'),  'highgrade',  'highgrade (hg not at start) not filtered' );
+
+    is( $wm->mangle('html:jktest', 1), 'html:jktest', 'bigram filter skipped for pseudo-tokens' );
+};
+
 done_testing;
