@@ -504,11 +504,11 @@ Returns the probability of a word that doesn't appear
 
 =cut
 
-method get_not_likely ($session) {
+method get_not_likely ($session, $bucket) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-    return $not_likely->{$userid};
+    return $not_likely->{$userid}{$bucket} // 0;
 }
 
 =head2 get_value_
@@ -583,7 +583,7 @@ method get_sort_value ($session, $bucket, $word) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-        return $not_likely->{$userid}
+        return $not_likely->{$userid}{$bucket} // 0
     } else {
         return $v
     }
@@ -601,20 +601,19 @@ method update_constants ($session) {
         unless defined $userid;
 
     my $wc = $self->get_word_count($session);
+    $not_likely->{$userid} = {};
 
-    if ($wc > 0)  {
-        $not_likely->{$userid} = -log(10 * $wc);
+    return unless $wc > 0;
 
-        for my $bucket ($self->get_buckets($session)) {
-            my $total = $self->get_bucket_word_count($session, $bucket);
-            if ($total != 0) {
-                $bucket_start->{$userid}{$bucket} = log($total / $wc);
-            } else {
-                $bucket_start->{$userid}{$bucket} = 0;
-            }
+    for my $bucket ($self->get_buckets($session)) {
+        my $total = $self->get_bucket_word_count($session, $bucket);
+        if ($total != 0) {
+            $bucket_start->{$userid}{$bucket} = log($total / $wc);
+            $not_likely->{$userid}{$bucket} = -log(10 * $total);
+        } else {
+            $bucket_start->{$userid}{$bucket} = 0;
+            $not_likely->{$userid}{$bucket} = 0;
         }
-    } else {
-        $not_likely->{$userid} = 0;
     }
 }
 
@@ -2067,13 +2066,8 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     return "unclassified"
         unless @buckets;
 
-    # If all of the user's buckets have no words then we escape here
-    # return unclassified
-    # $not_likely->{$userid} is 0 if word count is 0.
-    # See: update_constants)
-
     return "unclassified"
-        if ($not_likely->{$userid} == 0);
+        unless %{$not_likely->{$userid} // {}};
 
     # Check to see if this email should be classified based on a magnet
 
@@ -2210,7 +2204,8 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     $db_classify->finish;
     undef $db_classify;
 
-    my $not_likely = $not_likely->{$userid};
+    my $not_likely_for_bucket = $not_likely->{$userid};
+    my $display_not_likely = (sort { $a <=> $b } values $not_likely_for_bucket->%*)[0] // 0;
     my $stopword_ratio = $self->config('stopword_ratio') + 0;
 
     for my $id (@id_list) {
@@ -2231,7 +2226,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
         my $count = $parser->words()->{$$idmap{$id}};
 
         for my $bucket (@buckets) {
-            my $probability = $not_likely;
+            my $probability = $not_likely_for_bucket->{$bucket};
 
             if (defined($$matrix{$id}{$bucket}) && ($$matrix{$id}{$bucket} > 0)) {
                 $probability = log($$matrix{$id}{$bucket} / $db_bucketcount->{$userid}{$bucket});
@@ -2242,8 +2237,8 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
             $score{$bucket} += ($probability * $count);
         }
 
-        if ($wmax > $not_likely) {
-            $correction += $not_likely * $count;
+        if ($wmax > $display_not_likely) {
+            $correction += $display_not_likely * $count;
         } else {
             $correction += $wmax * $count;
         }
@@ -2460,7 +2455,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
                         if ($probability != 0) {
                             my $wordprobstr;
                             if ($wmformat eq 'score') {
-                                $wordprobstr = sprintf("%12.4f", ($probability - $not_likely->{$userid})/$log10);
+                                $wordprobstr = sprintf("%12.4f", ($probability - $not_likely_for_bucket->{$bucket})/$log10);
                                 push (@score, $wordprobstr);
                             } else {
                                 if ($wmformat eq 'prob') {
