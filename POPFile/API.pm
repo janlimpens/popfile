@@ -111,7 +111,7 @@ method start() {
     $daemon->start();
     $daemon_ref = $daemon;
     $self->log_msg(WARN => "POPFile::API: listening on port $port");
-    if ($self->config('open_browser')) {
+    if ($self->config('open_browser') && !$ENV{HARNESS_ACTIVE}) {
         require Browser::Open;
         Browser::Open::open_browser("http://localhost:$port/");
     }
