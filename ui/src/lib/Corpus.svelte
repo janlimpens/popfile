@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { t } from './locale.svelte.js';
-  import WordView from './WordView.svelte';
+  import WordSearch from './WordSearch.svelte';
 
   let { buckets = $bindable([]), initialBucket = '' } = $props();
 
@@ -10,13 +10,6 @@
   let renameFrom = $state('');
   let renameTo = $state('');
   let status = $state('');
-  let wordSearch = $state('');
-  let wordBucket = $state('');
-  let words = $state([]);
-  let stopwords = $state([]);
-  let candidates = $state([]);
-  let candidateRatio = $state(5.0);
-  let candidatesLoaded = $state(false);
 
   async function refresh() {
     const res = await fetch('/api/v1/buckets');
@@ -76,43 +69,13 @@
     refresh();
   }
 
-  async function searchWords() {
-    if (!wordBucket || !wordSearch.trim()) return;
-    const res = await fetch(`/api/v1/buckets/${wordBucket}/words?prefix=${encodeURIComponent(wordSearch.trim())}`);
-    if (res.ok) words = await res.json();
-  }
-
-  async function loadStopwords() {
-    const res = await fetch('/api/v1/stopwords');
-    if (res.ok) stopwords = await res.json();
-  }
-
-  async function removeStopword(word) {
-    await fetch(`/api/v1/stopwords/${encodeURIComponent(word)}`, { method: 'DELETE' });
-    loadStopwords();
-  }
-
-  async function loadCandidates() {
-    const res = await fetch(`/api/v1/stopword-candidates?ratio=${candidateRatio}`);
-    if (res.ok) { candidates = await res.json(); candidatesLoaded = true; }
-  }
-
-  async function addCandidateAsStopword(word) {
-    const res = await fetch('/api/v1/stopwords', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ word }),
-    });
-    if (res.ok) { loadStopwords(); loadCandidates(); }
-  }
-
-  onMount(() => { refresh(); loadStopwords(); });
+  onMount(refresh);
 </script>
 
 <div class="page">
 
-{#if initialBucket}
-  <WordView {buckets} {initialBucket} />
+{#if initialBucket === 'words'}
+  <WordSearch />
 {:else}
 
 <h2>{t('NavCorpus')}</h2>
@@ -138,7 +101,7 @@
             />
           </td>
           <td>
-            <a class="btn-link" href="#corpus/{b.name}">{t('Corpus_WordsLink')}</a>
+            <a class="btn-link" href="#corpus/words">{t('NavWordSearch')}</a>
             {#if !b.pseudo}
               <button class="btn-danger" onclick={() => deleteBucket(b.name)}>{t('Delete')}</button>
               <button onclick={() => clearBucket(b.name)}>{t('Corpus_Clear')}</button>
@@ -174,56 +137,7 @@
 </section>
 
 <section>
-  <h3>{t('Bucket_Lookup')}</h3>
-  <div class="row">
-    <select bind:value={wordBucket}>
-      <option value="">— bucket —</option>
-      {#each buckets as b}
-        <option value={b.name}>{b.name}</option>
-      {/each}
-    </select>
-    <input type="text" placeholder="prefix…" bind:value={wordSearch} />
-    <button onclick={searchWords}>{t('Corpus_Search')}</button>
-  </div>
-  {#if words.length}
-    <ul class="word-list">
-      {#each words as w}<li>{w.word}: {w.count}</li>{/each}
-    </ul>
-  {/if}
-</section>
-
-<section>
-  <h3>{t('Corpus_StopwordsTitle')}</h3>
-  <p class="desc">{t('Corpus_StopwordsDesc')}</p>
-  {#if stopwords.length}
-    <ul class="word-list">
-      {#each stopwords as w}
-        <li>{w} <button class="btn-small btn-danger" onclick={() => removeStopword(w)}>{t('Corpus_RemoveStopword')}</button></li>
-      {/each}
-    </ul>
-  {/if}
-</section>
-
-<section>
-  <h3>{t('Corpus_StopwordCandidates')}</h3>
-  <p class="desc">{t('Corpus_StopwordCandidatesDesc')}</p>
-  <div class="row">
-    <label>{t('Corpus_StopwordRatio')}
-      <input type="number" min="1.01" max="100" step="0.1" bind:value={candidateRatio} />
-    </label>
-    <button onclick={loadCandidates}>{t('Corpus_LoadCandidates')}</button>
-  </div>
-  {#if candidatesLoaded}
-    {#if candidates.length}
-      <ul class="word-list">
-        {#each candidates as c}
-          <li>{c.word} ({c.ratio.toFixed(2)}) <button class="btn-small" onclick={() => addCandidateAsStopword(c.word)}>{t('Corpus_AddStopword')}</button></li>
-        {/each}
-      </ul>
-    {:else}
-      <p class="desc">{t('Corpus_NoCandidates')}</p>
-    {/if}
-  {/if}
+  <a class="btn-link words-link" href="#corpus/words">{t('NavWordSearch')} →</a>
 </section>
 
 {/if}
@@ -238,12 +152,8 @@
   .btn-danger { color: var(--danger); border-color: var(--danger); }
   .status { color: var(--success); font-weight: 500; }
   .status.error { color: var(--danger); }
-  .word-list { column-count: 3; margin-top: 0.5rem; font-size: 0.85rem; }
-  .word-list li { margin-bottom: 0.2rem; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; vertical-align: middle; }
-  .desc { font-size: 0.85rem; color: var(--text-muted, #888); margin: 0.25rem 0 0.5rem; }
-  .btn-small { padding: 0.1rem 0.4rem; font-size: 0.75rem; }
+  .words-link { font-size: 0.9rem; }
   .btn-link { font-size: 0.8rem; color: var(--accent); text-decoration: none; padding: 0.2rem 0.4rem; border-radius: 4px; }
   .btn-link:hover { text-decoration: underline; }
-  input[type=number] { width: 5rem; padding: 0.25rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); }
 </style>
