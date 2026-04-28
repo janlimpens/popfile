@@ -241,6 +241,7 @@ method build_app ($svc, $session = undef) {
     $r->post('/api/v1/stopwords')->to('corpus#create_stopword');
     $r->delete('/api/v1/stopwords/:word')->to('corpus#delete_stopword');
     $r->get('/api/v1/stopword-candidates')->to('corpus#list_stopword_candidates');
+    $r->get('/api/v1/words/search')->to('corpus#search_words');
 
     $r->get('/api/v1/history')->to('history#list_history');
     $r->post('/api/v1/history/reclassify-unclassified')->to('history#reclassify_unclassified');
