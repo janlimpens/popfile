@@ -383,23 +383,27 @@ NavIMAP IMAP
 NavMagnets Magnete
 NavSettings Einstellungen
 NavStatus Status
-NavWordView Wortansicht
+NavWordSearch Words & Stopwords
 Corpus_BucketList Kategorien
 Corpus_Color Farbe
 Corpus_Actions Aktionen
 Corpus_Clear Leeren
 Corpus_Search Suchen
 Corpus_WordsLink Wörter →
-Corpus_StopwordsTitle Stoppwörter
-Corpus_StopwordsDesc Wörter in dieser Liste werden nie zur Klassifizierung verwendet.
-Corpus_RemoveStopword Entfernen
-Corpus_StopwordCandidates Stoppwort-Kandidaten
-Corpus_StopwordCandidatesDesc Wörter, die gleichmäßig über alle Kategorien verteilt sind — geringer Diskriminierungswert.
-Corpus_StopwordRatio Max/min-Verhältnisschwelle
-Corpus_LoadCandidates Kandidaten suchen
-Corpus_NoCandidates Keine Kandidaten bei diesem Schwellenwert gefunden.
-Corpus_NoStopwords No stop-words defined yet.
-Corpus_AddStopword Zu Stoppwörtern hinzufügen
+WordSearch_Title Word Search
+WordSearch_Placeholder prefix...
+WordSearch_Search Search
+WordSearch_ColumnWord Word
+WordSearch_ColumnBuckets Buckets
+WordSearch_Coverage coverage
+WordSearch_AddStopword + Stopword
+WordSearch_RemoveStopword Stopword
+WordSearch_IsStopword stopword
+WordSearch_StopwordList Stopwords
+WordSearch_NoResults No words found.
+WordSearch_NoStopwords No stopwords defined.
+WordSearch_Loading Loading...
+WordSearch_Total words
 BucketSelect_AddNew Neu hinzufügen...
 BucketSelect_AlreadyExists Existiert bereits
 BucketSelect_CreateError Fehler beim Erstellen der Kategorie
@@ -442,22 +446,6 @@ Imap_TrainQueued                        Training queued
 Imap_TrainingLimit Nachrichten pro Ordner (0 = unbegrenzt)
 Imap_TrainingMode Trainingsmodus
 Imap_WatchedFolders Überwachte Ordner
-WordView_Title Wortgenauigkeit
-WordView_SelectBucket Kategorie wählen
-WordView_Words Wörter
-WordView_Loading Lade...
-WordView_Empty Keine Wörter in dieser Kategorie.
-WordView_ColWord Wort
-WordView_ColCount Im Bucket
-WordView_ColTotal In allen Buckets
-WordView_ColAccuracy Anteil
-WordView_TipCount Wie oft dieses Wort in diesem Bucket vorkommt.
-WordView_TipTotal Wie oft dieses Wort bucket-übergreifend vorkommt.
-WordView_TipAccuracy Anteil der Treffer in diesem Bucket. Sortierung nach Laplace-geglätteter Relevanz.
-WordView_ColActions Aktionen
-WordView_Remove Entfernen
-WordView_MoveTo verschieben nach
-WordView_Move Verschieben
 Imap_WatchedHint POPFile überwacht diese IMAP-Ordner auf neue Nachrichten zur Klassifizierung.
 Magnet_Created Magnet erstellt
 Magnet_Deleted Magnet gelöscht

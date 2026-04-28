@@ -376,7 +376,7 @@ Help_No_More                            Don't show this again
 
 NavHistory                              History
 NavCorpus                               Corpus
-NavWordView                             Words
+NavWordSearch                           Words & Stopwords
 NavMagnets                              Magnets
 NavIMAP                                 IMAP
 NavStatus                               Status
@@ -438,32 +438,20 @@ Corpus_Clear                            Clear
 Corpus_WordsLink                        Words →
 Corpus_BucketList                       Buckets
 Corpus_Search                           Search
-Corpus_StopwordCandidates               Stop-word candidates
-Corpus_StopwordCandidatesDesc           Words appearing in every bucket with similar frequency — little discriminative power. Requires at least two non-pseudo buckets. Higher threshold = more candidates.
-Corpus_StopwordRatio                    Max/min count ratio (e.g. 5 = one bucket has at most 5× the count of another)
-Corpus_LoadCandidates                   Find candidates
-Corpus_AddStopword                      Add to stop-words
-Corpus_StopwordsTitle                   Stop-words
-Corpus_StopwordsDesc                    Words in this list are never used for classification.
-Corpus_RemoveStopword                   Remove
-Corpus_NoCandidates                     No candidates found. Try a higher ratio or train more messages first.
-
-WordView_Title                          Word Accuracy
-WordView_SelectBucket                   select bucket
-WordView_Words                          words
-WordView_Loading                        Loading...
-WordView_Empty                          No words in this bucket.
-WordView_ColWord                        Word
-WordView_ColCount                       In bucket
-WordView_ColTotal                       In all buckets
-WordView_ColAccuracy                    Share
-WordView_TipCount                       How many times this word appears in this bucket.
-WordView_TipTotal                       How many times this word appears across all buckets combined.
-WordView_TipAccuracy                    Fraction of occurrences in this bucket. Sorted by Laplace-smoothed relevance.
-WordView_ColActions                     Actions
-WordView_Remove                         Remove
-WordView_MoveTo                         move to
-WordView_Move                           Move
+WordSearch_Title                        Word Search
+WordSearch_Placeholder                  prefix...
+WordSearch_Search                       Search
+WordSearch_ColumnWord                   Word
+WordSearch_ColumnBuckets                Buckets
+WordSearch_Coverage                     coverage
+WordSearch_AddStopword                  + Stopword
+WordSearch_RemoveStopword               Stopword
+WordSearch_IsStopword                   stopword
+WordSearch_StopwordList                 Stopwords
+WordSearch_NoResults                    No words found.
+WordSearch_NoStopwords                  No stopwords defined.
+WordSearch_Loading                      Loading...
+WordSearch_Total                        words
 
 History_AllBuckets                      All buckets
 History_Reclassifying                   Reclassifying...

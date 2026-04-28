@@ -283,23 +283,27 @@ NavIMAP IMAP
 NavMagnets Ímanes
 NavSettings Definições
 NavStatus Estado
-NavWordView Palavras
+NavWordSearch Words & Stopwords
 Corpus_BucketList Categorias
 Corpus_Color Cor
 Corpus_Actions Ações
 Corpus_Clear Limpar
 Corpus_Search Pesquisar
-Corpus_StopwordsTitle Palavras de paragem
-Corpus_StopwordsDesc As palavras nesta lista nunca são usadas para classificação.
-Corpus_RemoveStopword Remover
-Corpus_StopwordCandidates Candidatas a palavras de paragem
-Corpus_StopwordCandidatesDesc Palavras que aparecem uniformemente em todas as categorias — pouco poder discriminativo.
-Corpus_StopwordRatio Limiar máx/mín do rácio
-Corpus_LoadCandidates Encontrar candidatas
-Corpus_NoCandidates Nenhuma candidata encontrada neste limiar.
-Corpus_NoStopwords No stop-words defined yet.
-Corpus_AddStopword Adicionar às palavras de paragem
 Corpus_WordsLink Palavras →
+WordSearch_Title Word Search
+WordSearch_Placeholder prefix...
+WordSearch_Search Search
+WordSearch_ColumnWord Word
+WordSearch_ColumnBuckets Buckets
+WordSearch_Coverage coverage
+WordSearch_AddStopword + Stopword
+WordSearch_RemoveStopword Stopword
+WordSearch_IsStopword stopword
+WordSearch_StopwordList Stopwords
+WordSearch_NoResults No words found.
+WordSearch_NoStopwords No stopwords defined.
+WordSearch_Loading Loading...
+WordSearch_Total words
 BucketSelect_AddNew Adicionar nova...
 BucketSelect_AlreadyExists Já existe
 BucketSelect_CreateError Erro ao criar categoria
@@ -523,22 +527,6 @@ Imap_Use_SSL Usar SSL
 Imap_WatchedFolder Pasta monitorizada nº
 Imap_WatchMore uma pasta à lista de pastas monitorizadas
 
-WordView_Title Precisão de palavras
-WordView_SelectBucket selecionar categoria
-WordView_Words palavras
-WordView_Loading A carregar...
-WordView_Empty Nenhuma palavra nesta categoria.
-WordView_ColWord Palavra
-WordView_ColCount No bucket
-WordView_ColTotal Em todos os buckets
-WordView_ColAccuracy Proporção
-WordView_TipCount Quantas vezes esta palavra aparece neste bucket.
-WordView_TipTotal Quantas vezes esta palavra aparece em todos os buckets combinados.
-WordView_TipAccuracy Fração de ocorrências neste bucket. Ordenado por relevância suavizada por Laplace.
-WordView_ColActions Ações
-WordView_Remove Remover
-WordView_MoveTo mover para
-WordView_Move Mover
 Locale_Date %a %R | %D %R
 Locale_Decimal ,
 Locale_Thousands .
