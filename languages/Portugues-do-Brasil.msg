@@ -406,6 +406,7 @@ Corpus_StopwordCandidatesDesc Palavras que aparecem uniformemente em todas as ca
 Corpus_StopwordRatio Limiar máx/mín do índice
 Corpus_LoadCandidates Encontrar candidatas
 Corpus_NoCandidates Nenhuma candidata encontrada neste limiar.
+Corpus_NoStopwords No stop-words defined yet.
 Corpus_AddStopword Adicionar às palavras de parada
 Corpus_WordsLink Palavras →
 BucketSelect_AddNew Adicionar nova...

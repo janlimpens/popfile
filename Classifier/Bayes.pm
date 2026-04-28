@@ -3275,6 +3275,114 @@ method get_words_for_bucket ($session, $bucket, %opts) {
     return { words => \@words, total => $total }
 }
 
+=head2 search_words_cross_bucket
+
+Search words across all non-pseudo buckets, returning per-bucket counts.
+
+C<$session> A valid session key
+C<$prefix> Word prefix to search (empty matches all)
+C<%opts> sort (word|coverage|total|<bucket-name>), dir (asc|desc), page, per_page
+
+Returns hashref: { words => [...], total => N, buckets => [...] }.
+
+=cut
+
+method search_words_cross_bucket ($session, $prefix, %opts) {
+    my $userid = $self->valid_session_key($session);
+    return { words => [], total => 0, buckets => [] }
+        unless defined $userid;
+    my $page = ($opts{page} // 1) + 0;
+    my $per_page = ($opts{per_page} // 50) + 0;
+    $page = 1 if $page < 1;
+    $per_page = 50 if $per_page < 1 || $per_page > 500;
+    my $offset = ($page - 1) * $per_page;
+    my $sort = $opts{sort} // 'word';
+    my $dir = ($opts{dir} // '') eq 'desc' ? 'DESC' : 'ASC';
+    my @bucket_names = map { $_->[0] }
+        $self->validate_sql_prepare_and_execute(
+            'SELECT name FROM buckets WHERE userid = ? AND pseudo = 0 ORDER BY name',
+            $userid)->fetchall_arrayref->@*;
+    return { words => [], total => 0, buckets => \@bucket_names }
+        unless @bucket_names;
+    my %stopwords = map { $_ => 1 } $self->get_stopword_list($session);
+    my $qb = $self->qb();
+    my $pattern = ($prefix // '') . '%';
+    my @joins = (
+        $qb->join('matrix m', on => $qb->compare('m.wordid', \'w.id')),
+        $qb->join('buckets b', on => $qb->compare('b.id', \'m.bucketid')));
+    my $where = $qb->combine_and(
+        $qb->like('w.word', $pattern),
+        $qb->compare('b.userid', $userid),
+        $qb->is_false('b.pseudo'));
+    my %sql_sort = (word => 'w.word', coverage => 'coverage', total => 'total');
+    my $sort_in_sql = exists $sql_sort{$sort};
+    my (@paged_words, $total);
+    if ($sort_in_sql) {
+        my $count_q = $qb->select('COUNT(DISTINCT w.id)')
+            ->from('words w')
+            ->joins(@joins)
+            ->where($where);
+        my $count_row = $self->validate_sql_prepare_and_execute(
+            $count_q->as_sql(), $count_q->params())->fetchrow_arrayref;
+        $total = $count_row ? $count_row->[0] + 0 : 0;
+        my $paged_q = $qb->select('w.word', 'COUNT(DISTINCT m.bucketid) AS coverage', 'SUM(m.times) AS total')
+            ->from('words w')
+            ->joins(@joins)
+            ->where($where)
+            ->group_by('w.id', 'w.word')
+            ->order_by($qb->order_by($sql_sort{$sort}, $dir))
+            ->limit($per_page)
+            ->offset($offset);
+        @paged_words = map { $_->[0] }
+            $self->validate_sql_prepare_and_execute(
+                $paged_q->as_sql(), $paged_q->params())->fetchall_arrayref->@*;
+    } else {
+        my $all_q = $qb->select('w.word')
+            ->from('words w')
+            ->joins(@joins)
+            ->where($where)
+            ->group_by('w.id', 'w.word');
+        my $all_rows = $self->validate_sql_prepare_and_execute(
+            $all_q->as_sql(), $all_q->params())->fetchall_arrayref;
+        $total = scalar $all_rows->@*;
+        @paged_words = map { $_->[0] } $all_rows->@*;
+    }
+    return { words => [], total => $total, buckets => \@bucket_names }
+        unless @paged_words;
+    my $where2 = $qb->combine_and(
+        $qb->compare('w.word', \@paged_words),
+        $qb->compare('b.userid', $userid),
+        $qb->is_false('b.pseudo'));
+    my $q2 = $qb->select('w.word', 'b.name', 'm.times')
+        ->from('words w')
+        ->joins(@joins)
+        ->where($where2);
+    my %bucket_data;
+    my $sth = $self->validate_sql_prepare_and_execute($q2->as_sql(), $q2->params());
+    while (my $row = $sth->fetchrow_hashref()) {
+        $bucket_data{$row->{word}}{$row->{name}} = $row->{times} + 0;
+    }
+    if (!$sort_in_sql) {
+        @paged_words = map { $_->[0] }
+            sort { ($bucket_data{$b->[0]}{$sort} // 0) <=> ($bucket_data{$a->[0]}{$sort} // 0) }
+            map { [$_] } @paged_words;
+        @paged_words = reverse @paged_words
+            if $dir eq 'ASC';
+        @paged_words = grep { defined }
+            @paged_words[$offset .. $offset + $per_page - 1];
+    }
+    my @result = map {
+        my $word = $_;
+        my %b = map { $_ => ($bucket_data{$word}{$_} // 0) } @bucket_names;
+        my $cov = scalar grep { $b{$_} > 0 } @bucket_names;
+        { word => $word,
+          buckets => \%b,
+          coverage => $cov,
+          is_stopword => exists $stopwords{$word} ? \1 : \0 }
+    } @paged_words;
+    return { words => \@result, total => $total, buckets => \@bucket_names }
+}
+
 =head2 remove_word_from_bucket
 
 Removes a word from a bucket's corpus (deletes the matrix row).

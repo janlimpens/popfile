@@ -398,6 +398,7 @@ Corpus_StopwordCandidatesDesc Wörter, die gleichmäßig über alle Kategorien v
 Corpus_StopwordRatio Max/min-Verhältnisschwelle
 Corpus_LoadCandidates Kandidaten suchen
 Corpus_NoCandidates Keine Kandidaten bei diesem Schwellenwert gefunden.
+Corpus_NoStopwords No stop-words defined yet.
 Corpus_AddStopword Zu Stoppwörtern hinzufügen
 BucketSelect_AddNew Neu hinzufügen...
 BucketSelect_AlreadyExists Existiert bereits
