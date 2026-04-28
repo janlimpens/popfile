@@ -42,4 +42,13 @@ subtest clone => sub {
     is [$count->params()], ['theater'], 'params cloned successfully';
 };
 
+subtest 'GROUP BY comes before ORDER BY' => sub {
+    my $qb = Query::Builder->new(dialect => 'sqlite');
+    my $sql = $qb->select('word', 'COUNT(*) AS c')
+        ->from('matrix')
+        ->group_by('word')
+        ->order_by($qb->order_by('c', 'DESC'));
+    like "$sql", qr/GROUP BY word ORDER BY c DESC/, 'GROUP BY precedes ORDER BY';
+};
+
 done_testing();
