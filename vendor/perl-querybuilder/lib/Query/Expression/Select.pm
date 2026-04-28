@@ -42,10 +42,10 @@ method _build :override ()  {
     $self->add_part($joins->@*);
     $self->add_part(Query::Expression->new(parts => [WHERE => $where]))
         if $where;
-    $self->add_part(Query::Expression->new(parts => ['ORDER BY' => $self->_comma($order_by->@*)]))
-        if $order_by->@*;
     $self->add_part(Query::Expression->new(parts => ['GROUP BY' => $self->_comma($group_by->@*)]))
         if $group_by->@*;
+    $self->add_part(Query::Expression->new(parts => ['ORDER BY' => $self->_comma($order_by->@*)]))
+        if $order_by->@*;
     $self->add_part(Query::Expression->new(parts => [LIMIT => '?'], params => [$limit]))
         if defined $limit;
     $self->add_part(Query::Expression->new(parts => [OFFSET => '?'], params => [$offset]))
