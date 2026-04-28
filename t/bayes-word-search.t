@@ -52,6 +52,20 @@ subtest 'sort by word asc' => sub {
     is \@words, \@sorted, 'words sorted alphabetically';
 };
 
+subtest 'sort by coverage' => sub {
+    my $result = $bayes->search_words_cross_bucket($session, '', sort => 'coverage', dir => 'desc', per_page => 50);
+    my @covs = map { $_->{coverage} } $result->{words}->@*;
+    my @sorted = sort { $b <=> $a } @covs;
+    is \@covs, \@sorted, 'words sorted by coverage descending';
+};
+
+subtest 'sort by bucket name' => sub {
+    my $result = $bayes->search_words_cross_bucket($session, '', sort => 'spam', dir => 'desc', per_page => 50);
+    my @counts = map { $_->{buckets}{spam} } $result->{words}->@*;
+    my @sorted = sort { $b <=> $a } @counts;
+    is \@counts, \@sorted, 'words sorted by spam count descending';
+};
+
 subtest 'sort by unknown bucket falls back gracefully' => sub {
     my $result = $bayes->search_words_cross_bucket($session, '', sort => 'no_such_bucket', dir => 'desc');
     ok ref $result->{words} eq 'ARRAY', 'returns array even with unknown sort';
