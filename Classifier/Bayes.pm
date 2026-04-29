@@ -1682,40 +1682,50 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
         return;
     }
     $self->log_msg(5, "add_words_to_bucket: user=$userid bucket=$bucket bucketid=$bucketid words=" . scalar(keys $parser->words()->%*));
+    my @sorted_words = sort keys $parser->words()->%*;
     my $qb = $self->qb();
-    my $word_expr = $qb->compare('word', [sort keys $parser->words()->%*]);
-    my $select = $qb->select('id', 'word')->from('words')->where($word_expr);
-    $get_wordids = $self->validate_sql_prepare_and_execute(
-        $select->as_sql(), $select->params());
     my @id_list;
     my %wordmap;
-    my ($wordid, $word);
-
-    $get_wordids->bind_columns(\$wordid, \$word);
-    while ($get_wordids->fetchrow_arrayref()) {
-        push @id_list, $wordid;
-        $wordmap{$word} = $wordid;
+    my $word_chunk_size = 500;
+    my @word_chunks = @sorted_words;
+    while (@word_chunks) {
+        my @chunk = splice @word_chunks, 0, $word_chunk_size;
+        my $word_expr = $qb->compare('word', \@chunk);
+        my $select = $qb->select('id', 'word')->from('words')->where($word_expr);
+        $get_wordids = $self->validate_sql_prepare_and_execute(
+            $select->as_sql(), $select->params());
+        next unless $get_wordids;
+        my ($wordid, $word);
+        $get_wordids->bind_columns(\$wordid, \$word);
+        while ($get_wordids->fetchrow_arrayref()) {
+            push @id_list, $wordid;
+            $wordmap{$word} = $wordid;
+        }
+        $get_wordids->finish();
+        undef $get_wordids;
     }
-
-    $get_wordids->finish();
-    undef $get_wordids;
     my %counts;
     if (@id_list) {
-        my $qb = $self->qb();
-        my $expr = $qb->combine_and(
-            $qb->compare('matrix.wordid', \@id_list),
-            $qb->compare('matrix.bucketid', $db_bucketid->{$userid}{$bucket}{id}));
-        my $select = $qb->select('matrix.times', 'matrix.wordid')->from('matrix')->where($expr);
-        $db_getwords = $self->validate_sql_prepare_and_execute(
-            $select->as_sql(), $select->params());
-        my $count;
-        my $wid;
-        $db_getwords->bind_columns(\$count, \$wid);
-        while ($db_getwords->fetchrow_arrayref) {
-            $counts{$wid} = $count;
+        my @id_chunks = @id_list;
+        while (@id_chunks) {
+            my @chunk = splice @id_chunks, 0, $word_chunk_size;
+            my $qb = $self->qb();
+            my $expr = $qb->combine_and(
+                $qb->compare('matrix.wordid', \@chunk),
+                $qb->compare('matrix.bucketid', $db_bucketid->{$userid}{$bucket}{id}));
+            my $select = $qb->select('matrix.times', 'matrix.wordid')->from('matrix')->where($expr);
+            $db_getwords = $self->validate_sql_prepare_and_execute(
+                $select->as_sql(), $select->params());
+            next unless $db_getwords;
+            my $count;
+            my $wid;
+            $db_getwords->bind_columns(\$count, \$wid);
+            while ($db_getwords->fetchrow_arrayref) {
+                $counts{$wid} = $count;
+            }
+            $db_getwords->finish();
+            undef $db_getwords;
         }
-        $db_getwords->finish();
-        undef $db_getwords;
     }
 
     $self->db()->begin_work;
@@ -2157,57 +2167,62 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
 
     my @words = sort keys $parser->words()->%*;
     my $qb = $self->qb();
-    my $words_expr = $qb->compare('word', \@words);
-    my $select = $qb->select('id', 'word')
-        ->from('words')
-        ->where($words_expr)
-        ->order_by($qb->order_by('id'));
-    $get_wordids = $self->validate_sql_prepare_and_execute(
-        $select->as_sql(), $select->params());
     my @id_list;
     my %temp_idmap;
-    my ($wordid, $word);
 
     unless (defined($idmap)) {
         $idmap = \%temp_idmap;
     }
 
-    $get_wordids->bind_columns(\$wordid, \$word);
-    while ($get_wordids->fetchrow_arrayref()) {
-        push @id_list, $wordid;
-        $idmap->{$wordid} = $word;
+    my $word_chunk_size = 500;
+    my @word_chunks = @words;
+    while (@word_chunks) {
+        my @chunk = splice @word_chunks, 0, $word_chunk_size;
+        my $words_expr = $qb->compare('word', \@chunk);
+        my $select = $qb->select('id', 'word')
+            ->from('words')
+            ->where($words_expr)
+            ->order_by($qb->order_by('id'));
+        $get_wordids = $self->validate_sql_prepare_and_execute(
+            $select->as_sql(), $select->params());
+        next unless $get_wordids;
+        my ($wordid, $word);
+        $get_wordids->bind_columns(\$wordid, \$word);
+        while ($get_wordids->fetchrow_arrayref()) {
+            push @id_list, $wordid;
+            $idmap->{$wordid} = $word;
+        }
+        $get_wordids->finish();
+        undef $get_wordids;
     }
 
-    $get_wordids->finish();
-    undef $get_wordids;
-
-    my $ids_expr = $self->qb()->compare('matrix.wordid', \@id_list);
-    $db_classify = $self->validate_sql_prepare_and_execute(
-        "SELECT matrix.times, matrix.wordid, buckets.name
-         FROM matrix, buckets
-         WHERE " . $ids_expr->as_sql() . "
-           AND matrix.bucketid = buckets.id
-           AND buckets.userid = ?",
-        $ids_expr->params(),
-        $userid);
-    # %matrix maps wordids and bucket names to counts
-    # $matrix{$wordid}{$bucket} == $count
-
     my %temp_matrix;
-    my ($count, $bucketname);
+    my ($count, $wordid, $bucketname);
 
     unless (defined($matrix)) {
         $matrix = \%temp_matrix;
     }
 
-    $db_classify->bind_columns(\$count, \$wordid, \$bucketname);
-    while ($db_classify->fetchrow_arrayref) {
-        $$matrix{$wordid}{$bucketname} = $count;
+    my @id_chunks = @id_list;
+    while (@id_chunks) {
+        my @chunk = splice @id_chunks, 0, $word_chunk_size;
+        my $ids_expr = $self->qb()->compare('matrix.wordid', \@chunk);
+        $db_classify = $self->validate_sql_prepare_and_execute(
+            "SELECT matrix.times, matrix.wordid, buckets.name
+             FROM matrix, buckets
+             WHERE " . $ids_expr->as_sql() . "
+               AND matrix.bucketid = buckets.id
+               AND buckets.userid = ?",
+            $ids_expr->params(),
+            $userid);
+        next unless $db_classify;
+        $db_classify->bind_columns(\$count, \$wordid, \$bucketname);
+        while ($db_classify->fetchrow_arrayref) {
+            $$matrix{$wordid}{$bucketname} = $count;
+        }
+        $db_classify->finish;
+        undef $db_classify;
     }
-
-    $db_classify->finish;
-    undef $db_classify;
-
     my $not_likely_for_bucket = $not_likely->{$userid};
     my $display_not_likely = (sort { $a <=> $b } values $not_likely_for_bucket->%*)[0] // 0;
     my $stopword_ratio = $self->config('stopword_ratio') + 0;
@@ -3358,16 +3373,22 @@ method _search_words_fetch ($userid, $prefix, $sort, $dir, $per_page, $offset) {
     }
     return (\@words, $total, {})
         unless @words;
-    my $where2 = $qb->combine_and(
-        $qb->compare('w.word', \@words),
-        $qb->compare('b.userid', $userid),
-        $qb->is_false('b.pseudo'));
-    my $q2 = $qb->select('w.word', 'b.name', 'm.times')
-        ->from('words w')->joins(@joins)->where($where2);
     my %data;
-    my $sth = $self->validate_sql_prepare_and_execute($q2->as_sql(), $q2->params());
-    while (my $r = $sth->fetchrow_hashref()) {
-        $data{$r->{word}}{$r->{name}} = $r->{times} + 0;
+    my $chunk_size = 500;
+    my @remaining = @words;
+    while (@remaining) {
+        my @chunk = splice @remaining, 0, $chunk_size;
+        my $where2 = $qb->combine_and(
+            $qb->compare('w.word', \@chunk),
+            $qb->compare('b.userid', $userid),
+            $qb->is_false('b.pseudo'));
+        my $q2 = $qb->select('w.word', 'b.name', 'm.times')
+            ->from('words w')->joins(@joins)->where($where2);
+        my $sth = $self->validate_sql_prepare_and_execute($q2->as_sql(), $q2->params());
+        next unless $sth;
+        while (my $r = $sth->fetchrow_hashref()) {
+            $data{$r->{word}}{$r->{name}} = $r->{times} + 0;
+        }
     }
     if (!exists $sql_sort{$sort}) {
         @words = map { $_->[0] }
