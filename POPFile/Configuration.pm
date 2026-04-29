@@ -408,6 +408,7 @@ C<..>.
 
 method path_join ($left, $right, $sandbox = undef) {
     $sandbox //= 1;
+    $right //= '';
     if ($right =~ /^\// || $right =~ /^[A-Za-z]:[\/\\]/ || $right =~ /\\\\/) {
         if ($sandbox) {
             $self->log_msg(WARN => "Attempt to access path $right outside sandbox");
