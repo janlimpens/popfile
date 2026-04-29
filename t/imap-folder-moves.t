@@ -92,7 +92,7 @@ subtest 'output folder is scanned for pending_folder_moves' => sub {
     my ($imap, $config) = make_imap();
     my $stub = StubIMAPClient->new();
     my @scanned;
-    no warnings 'redefine';
+    no warnings 'redefine', 'once';
     local *Services::IMAP::new_imap_client  = sub { $stub };
     local *Services::IMAP::scan_folder      = sub { push @scanned, $_[1] };
 
@@ -121,7 +121,7 @@ subtest 'request_folder_move uses direct-move queue when mid is cached' => sub {
     my $stub = StubIMAPClient->new();
     $stub->{uids} = [42];
     $log->clear();
-    no warnings 'redefine';
+    no warnings 'redefine', 'once';
     local *Services::IMAP::new_imap_client = sub { $stub };
     local *Services::IMAP::get_hash = sub { ('deadbeef', '<msg@example.com>') };
     local *Services::IMAP::can_classify = sub { 0 };
@@ -144,7 +144,7 @@ subtest '_drain_direct_moves moves message using SEARCH HEADER' => sub {
     my $stub = StubIMAPClient->new();
     $stub->{uids} = [42];
     $stub->{search_results} = [42];
-    no warnings 'redefine';
+    no warnings 'redefine', 'once';
     local *Services::IMAP::new_imap_client = sub { $stub };
     local *Services::IMAP::get_hash = sub { ('deadbeef', '<msg@example.com>') };
     local *Services::IMAP::can_classify = sub { 0 };

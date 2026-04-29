@@ -51,7 +51,7 @@ subtest 'second poll within limit is skipped and logged' => sub {
     my ($imap) = make_imap();
     my $subprocess_calls = 0;
     $log->clear();
-    no warnings 'redefine';
+    no warnings 'redefine', 'once';
     local *Mojo::IOLoop::subprocess = sub { $subprocess_calls++ };
 
     $imap->poll();
@@ -69,7 +69,7 @@ subtest 'watchdog resets guard when age exceeds 3x interval' => sub {
     $config->parameter('imap_update_interval', 1);
     my $subprocess_calls = 0;
     $log->clear();
-    no warnings 'redefine';
+    no warnings 'redefine', 'once';
     local *Mojo::IOLoop::subprocess = sub { $subprocess_calls++ };
     local *Services::IMAP::_poll_age = sub { 999 };
 
@@ -88,7 +88,7 @@ subtest 'classify_message failure is logged in scan_folder' => sub {
 
     my $stub = StubIMAPClient->new();
     $log->clear();
-    no warnings 'redefine';
+    no warnings 'redefine', 'once';
     local *Services::IMAP::new_imap_client  = sub { $stub };
     local *Services::IMAP::get_hash         = sub { 'fakehash' };
     local *Services::IMAP::can_classify     = sub { 1 };
