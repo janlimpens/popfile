@@ -537,8 +537,13 @@ method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
         $pending_direct_moves{$hash} = { mid => $hash_to_mid{$hash}, target_bucket => $target_bucket };
         return
     }
-    $self->log_msg(INFO => "No Message-ID cached for hash $hash; queuing folder move without uid_next reset.");
+    $self->log_msg(INFO => "No Message-ID cached for hash $hash; queuing folder move with uid_next reset.");
     $pending_folder_moves{$hash} = $target_bucket;
+    my $source_folder = defined $source_bucket
+        ? $self->folder_for_bucket($source_bucket)
+        : undef;
+    $self->_reset_uid_next($source_folder)
+        if defined $source_folder;
 }
 
 =head2 request_folder_rescan($folder)
