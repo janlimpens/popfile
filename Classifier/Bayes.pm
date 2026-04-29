@@ -467,27 +467,31 @@ method get_word_colors ($session, @words) {
     my %id_to_name = map { $db_bucketid->{$userid}{$_}{id} => $_ }
                      keys $uid_buckets->%*;
 
-    my $word_expr = $self->qb()->compare('w.word', \@words);
-    my $sth = $self->db()->prepare($self->normalize_sql(
-        "SELECT w.word, m.bucketid, m.times
-         FROM words w
-         JOIN matrix m ON m.wordid = w.id
-         JOIN buckets b ON b.id = m.bucketid
-                        AND b.userid = ?
-                        AND b.pseudo = 0
-         WHERE " . $word_expr->as_sql()));
-    $sth->execute($userid, $word_expr->params());
-
     my %best_prob;
     my %best_name;
-    while (my ($word, $bucketid, $times) = $sth->fetchrow_array()) {
-        my $name = $id_to_name{$bucketid} // next;
-        my $total = $self->get_bucket_word_count($session, $name);
-        next unless $total;
-        my $prob = $times / $total;
-        if (!exists $best_prob{$word} || $prob > $best_prob{$word}) {
-            $best_prob{$word} = $prob;
-            $best_name{$word} = $name;
+    my $chunk_size = 500;
+    while (@words) {
+        my @chunk = splice @words, 0, $chunk_size;
+        my $word_expr = $self->qb()->compare('w.word', \@chunk);
+        my $sth = $self->validate_sql_prepare_and_execute(
+            "SELECT w.word, m.bucketid, m.times
+             FROM words w
+             JOIN matrix m ON m.wordid = w.id
+             JOIN buckets b ON b.id = m.bucketid
+                            AND b.userid = ?
+                            AND b.pseudo = 0
+             WHERE " . $word_expr->as_sql(),
+            $userid, $word_expr->params());
+        next unless defined $sth;
+        while (my ($word, $bucketid, $times) = $sth->fetchrow_array()) {
+            my $name = $id_to_name{$bucketid} // next;
+            my $total = $self->get_bucket_word_count($session, $name);
+            next unless $total;
+            my $prob = $times / $total;
+            if (!exists $best_prob{$word} || $prob > $best_prob{$word}) {
+                $best_prob{$word} = $prob;
+                $best_name{$word} = $name;
+            }
         }
     }
 

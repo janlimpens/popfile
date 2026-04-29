@@ -86,6 +86,11 @@ method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
         my $sql = $self->normalize_sql($sql_or_sth);
         $sql = $self->check_for_nullbytes($sql);
         $sth = $dbh->prepare($sql);
+        unless (defined $sth) {
+            my ($package, $file, $line) = caller;
+            $self->log_msg(WARN => "DBI::prepare failed for SQL: $sql.  Called from package '$package' ($file), line $line.");
+            return
+        }
     }
     for my $arg (@args) {
         $arg = $self->check_for_nullbytes($arg);
