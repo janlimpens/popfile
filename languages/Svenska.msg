@@ -558,3 +558,41 @@ Advanced_Value Värde
 Advanced_Warning Det här är den fullständiga listan över POPFile-parametrar. Endast för avancerade användare: du kan ändra valfri parameter och klicka Uppdatera; det finns ingen giltighetsvalidering. Objekt visade i fetstil har ändrats från standardinställningen.
 
 Language_Name                           Svenska
+History_PerPage                          Per page:
+Imap_Advanced                            Advanced
+Imap_Cancel                              Cancel
+Imap_Wizard                              Setup Wizard
+Imap_WizardApply                         Create & map
+Imap_WizardClose                         Close
+Imap_WizardDesc                          Select folders to create buckets and mappings for.
+Imap_WizardDeselectAll                   Deselect all
+Imap_WizardDone                          {count} bucket(s) created and mapped.
+Imap_WizardEmpty                         No additional folders found on the server.
+Imap_WizardSelectAll                     Select all
+Imap_WizardTrain                         Train now
+NavWordSearch                            Words & Stopwords
+Settings_DescEnableProxy                 Start this proxy listener when POPFile starts.
+Settings_DescLogFormat                   Log line format. Use 'plain' for journald or any environment that adds its own timestamps.
+Settings_DescOpenBrowser                 Open the default browser when the web UI is ready.
+Settings_DescSQLiteBackup                Copy the database to a .backup file every hour.
+Settings_DescSQLiteFastWrites            Disable SQLite write-ahead sync for faster inserts. Risks minor data loss on crash.
+Settings_EnableService                   Enable service
+Settings_LogFormat                       Log Format
+Settings_OpenBrowser                     Open browser on start
+Settings_SQLiteBackup                    SQLite: periodic backup
+Settings_SQLiteFastWrites                SQLite: fast writes (less safe)
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   + Stopword
+WordSearch_ColumnBuckets                 Buckets
+WordSearch_ColumnWord                    Word
+WordSearch_Coverage                      coverage
+WordSearch_IsStopword                    stopword
+WordSearch_Loading                       Loading...
+WordSearch_NoResults                     No words found.
+WordSearch_NoStopwords                   No stopwords defined.
+WordSearch_Placeholder                   prefix...
+WordSearch_RemoveStopword                Stopword
+WordSearch_Search                        Search
+WordSearch_StopwordList                  Stopwords
+WordSearch_Title                         Word Search
+WordSearch_Total                         words
