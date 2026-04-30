@@ -92,6 +92,12 @@ subtest 'commit_slot + service persists entry as valid slot' => sub {
     $history->stop();
 };
 
+subtest 'delete_slot rejects non-numeric slot' => sub {
+    ok(lives { $history->delete_slot('garbage', 0) }, 'delete_slot with garbage does not die');
+    ok(lives { $history->delete_slot("1; DROP TABLE history;--", 0) }, 'delete_slot with SQL injection does not die');
+    ok(lives { $history->delete_slot(undef, 0) }, 'delete_slot with undef does not die');
+};
+
 # -----------------------------------------------------------------------
 $bayes->stop();
 

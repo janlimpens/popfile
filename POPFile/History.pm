@@ -596,18 +596,24 @@ Invalidates all open query caches.
 =cut
 
 method delete_slot ($slot, $archive) {
+    return
+        unless defined $slot && $slot =~ /^\d+$/;
     my $file = $self->get_slot_file($slot);
     $self->log_msg(DEBUG => "delete_slot called for slot $slot, file $file");
 
     if ($archive && $self->config('archive')) {
         my $path = $self->get_user_path($self->config('archive_dir'), 0);
-
         $self->make_directory($path);
 
+        my $qb = $self->qb();
+        my $select = $qb->select('buckets.name')
+            ->from(qw(history buckets))
+            ->where($qb->combine_and(
+                $qb->compare('history.bucketid' => \'buckets.id'),
+                $qb->compare('history.id' => $slot)))
+            ->limit(1);
         my $b = $self->db()->selectrow_arrayref(
-            "select buckets.name from history, buckets
-                 where history.bucketid = buckets.id and
-                       history.id = $slot;");
+            $select->as_sql(), undef, $select->params());
 
         my $bucket = $b->[0];
 
