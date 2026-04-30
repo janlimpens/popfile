@@ -1,72 +1,71 @@
 # POPFile
 
-Bayesian email classifier written in Perl. POPFile connects to your IMAP
-folders, classifies incoming messages with Naive Bayes, and inserts an
-`X-Text-Classification:` header with the predicted category ("bucket").
-You correct misclassifications through the web UI, which retrains the
-classifier over time.
+POPFile classifies email automatically. It watches your IMAP inbox, runs incoming
+messages through a Naive Bayes classifier, and moves them to the right folder —
+spam to Spam, newsletters to Subscriptions, work mail to Work. You correct
+misclassifications in the web UI and it learns from every correction.
 
-POP3, SMTP, and NNTP proxies are also included for legacy setups, but IMAP
-is the primary interface.
+It also speaks POP3, SMTP, and NNTP for setups that need a proxy, but IMAP is
+where most of the action is.
 
-## Prerequisites
+## What it does
 
-- [Docker](https://docs.docker.com/get-docker/) + [Compose](https://docs.docker.com/compose/)
+- **IMAP polling** — watches folders at a configurable interval, classifies
+  new messages, moves them to mapped folders.
+- **Training from folders** — point it at existing sorted mail and it trains
+  the classifier from what's already there.
+- **Web UI** — history view with search/filter, corpus word browser, magnet
+  rules, per-bucket statistics, and full configuration.
+- **Self-correcting** — every reclassification feeds back into the corpus.
+- **Magnets** — hard rules based on headers (from, to, subject, cc) for
+  messages you always want in a specific bucket.
+- **REST API** — everything the UI does is available programmatically under
+  `/api/v1/`.
 
-## Run
+## Quick start
 
 ```sh
 docker compose up
 ```
 
-### Local (with perlbrew + Carton)
+Opens the web UI on `http://localhost:8080`. Configure your IMAP server under
+Settings → IMAP, add watched folders and bucket mappings, and you're running.
+
+### From source (perlbrew + Carton)
 
 ```sh
 carton install
 carton exec perl popfile.pl
 ```
 
-The web UI is available at `http://localhost:<port>/` — the port is printed to
-the console on startup (default 8080, configurable via `api_port`).
+Set `POPFILE_ROOT` to point at a different directory for config, database, and
+message cache (default: `./`).
 
-`POPFILE_ROOT` overrides the root directory for config, database, and message
-cache (default: `./`).
-
-## CLI utilities
+## CLI
 
 ```sh
-# Classify a message and show word scores
-carton exec perl bayes.pl <message-file>
-
-# Train a message into a bucket
-carton exec perl insert.pl <bucket-name> <message-file>
+carton exec perl bayes.pl <message-file>      # classify and show word scores
+carton exec perl insert.pl <bucket> <file>    # train a message into a bucket
 ```
 
-## Svelte UI
+## About this revival
 
-The frontend lives in `ui/` and builds to `public/`.
+POPFile originally ran from 2001–2012. This 2026 reboot is a ground-up
+modernisation — Mojolicious REST backend, Svelte 5 frontend, Object::Pad
+throughout, IMAP replacing POP3 as the primary interface.
+
+Most of the code was written by LLM coding agents (Claude Code, pi, and
+others) as a real-world testbed for AI-assisted development across a
+non-trivial, multi-module Perl codebase. The commit history is the lab
+notebook. All contributions, human and synthetic, are welcome.
+
+## Development
 
 ```sh
-cd ui && npm install
-
-# Development (hot-reload, proxies /api to the POPFile port — default 8080)
-npm run dev
-
-# Production build → public/
-npm run build
+make test          # full suite with Dovecot
+make test-no-dovecot  # skip IMAP/POP3 integration tests
+make build            # rebuild Svelte frontend → public/
 ```
 
-## Tests
-
-```sh
-carton exec prove -l t/
-```
-
-## Runtime files (gitignored)
-
-| Path | Description |
-|------|-------------|
-| `popfile.cfg` | Generated configuration |
-| `popfile.db` | SQLite database (corpus + history) |
-| `messages/` | Cached message files |
-| `*.pid`, `*.log` | Runtime state |
+The frontend lives in `ui/` (Svelte 5, built with Vite). See `development.md`
+for the Dovecot test server setup and `ARCHITECTURE.md` for module layout.
