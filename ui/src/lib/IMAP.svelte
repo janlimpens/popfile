@@ -30,6 +30,25 @@
   let wizardOpen = $state(false);
   let wizardFolders = $state([]);
   let wizardLoading = $state(false);
+  let wizardSelected = $state(new Set());
+  let wizardStep = $state(1);
+  let wizardDone = $state([]);  // [{folder, bucket}]
+
+  function folderToBucket(f) {
+    // Decode IMAP modified UTF-7 patterns
+    let name = f.replace(/^INBOX\./, '')
+      .replace(/&APY-/g, 'ö').replace(/&APw-/g, 'ü')
+      .replace(/&AOQ-/g, 'ä').replace(/&AN8-/g, 'ß')
+      .replace(/&AME-/g, 'é').replace(/&APE-/g, 'è')
+      .replace(/&AMg-/g, 'ê').replace(/&AMQ-/g, 'ë')
+      .replace(/&AMk-/g, 'í').replace(/&AM0-/g, 'ó')
+      .replace(/&APU-/g, 'ú').replace(/&AM8-/g, 'ñ')
+      .replace(/&AMM-/g, 'ç')
+      .replace(/&[A-Za-z0-9+\/]+-/g, '')  // strip remaining UTF-7
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // strip combining accents
+      .replace(/[^a-z0-9\s_-]/gi, '').replace(/\s+/g, '').toLowerCase();
+    return name || f.replace(/[^a-z0-9]/gi, '').toLowerCase();
+  }
 
   let connectionReady = $derived(
     !!cfg.imap_hostname?.trim() &&
@@ -166,6 +185,9 @@
   }
 
   async function runWizard() {
+    wizardStep = 1;
+    wizardSelected = new Set();
+    wizardDone = [];
     wizardOpen = true;
     wizardLoading = true;
     const res = await fetch('/api/v1/imap/server-folders');
@@ -173,15 +195,27 @@
     if (!res.ok) { wizardOpen = false; return }
     const allFolders = await res.json();
     const defaults = new Set(['INBOX', 'Trash', 'Sent', 'Drafts', 'Junk', 'Archive', 'Templates',
-      'Papierkorb', 'Gesendet', 'Entwürfe', 'Spam', 'Vorlagen', 'Entw&APw-rfe',
-      'Spam PF', 'unclassified']);
+      'Papierkorb', 'Gesendet', 'Entwürfe', 'Spam', 'Vorlagen',
+      'Entw&APw-rfe', 'Spam PF', 'unclassified']);
     wizardFolders = allFolders.filter(f => !defaults.has(f) && !f.startsWith('INBOX/'));
   }
 
+  function toggleWizard(f) {
+    const s = new Set(wizardSelected);
+    s.has(f) ? s.delete(f) : s.add(f);
+    wizardSelected = s;
+  }
+
+  function toggleAllWizard() {
+    wizardSelected = wizardSelected.size === wizardFolders.length
+      ? new Set() : new Set(wizardFolders);
+  }
+
   async function confirmWizard() {
-    wizardOpen = false;
-    for (const folder of wizardFolders) {
-      const bucket = folder.replace(/^INBOX\./, '').replace(/[^a-z0-9_-]/gi, '').toLowerCase() || folder;
+    const selected = [...wizardSelected];
+    wizardDone = [];
+    for (const folder of selected) {
+      const bucket = folderToBucket(folder);
       if (!allBuckets.find(b => b.name === bucket)) {
         await fetch('/api/v1/buckets', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -191,20 +225,21 @@
       if (!mappings.find(m => m.folder === folder)) {
         mappings = [...mappings.filter(m => m.bucket !== bucket), { bucket, folder }];
       }
-    }
-    // Spam mapping
-    const spamFolder = allFolders.find(f => /spam|junk/i.test(f) && !/PF/i.test(f));
-    if (spamFolder && !mappings.find(m => m.folder === spamFolder)) {
-      if (!allBuckets.find(b => b.name === 'spam')) {
-        await fetch('/api/v1/buckets', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: 'spam' }),
-        });
-      }
-      mappings = [...mappings.filter(m => m.bucket !== 'spam'), { bucket: 'spam', folder: spamFolder }];
+      wizardDone = [...wizardDone, { folder, bucket }];
     }
     foldersDirty = true;
     await load();  // reload buckets + mappings
+    wizardStep = 2;
+  }
+
+  async function trainWizardFolders() {
+    const names = wizardDone.map(d => d.bucket);
+    await fetch('/api/v1/imap/train', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ buckets: names }),
+    });
+    wizardOpen = false;
   }
 
   onMount(load);
@@ -448,25 +483,51 @@
 
   <!-- ── Wizard modal ───────────────────────────────────────────────── -->
   {#if wizardOpen}
-    <div class="modal-overlay" role="dialog" aria-label="wizard" onclick={() => wizardOpen = false} onkeydown={(e) => e.key === 'Escape' && (wizardOpen = false)}></div>
+    <div class="modal-overlay" role="dialog" onclick={() => wizardOpen = false} onkeydown={(e) => e.key === 'Escape' && (wizardOpen = false)}></div>
     <div class="modal">
       <h3><span class="icon">auto_fix_high</span> {t('Imap_Wizard')}</h3>
-      <p>{t('Imap_WizardDesc')}</p>
-      {#if wizardLoading}
-        <p class="hint">{t('Imap_Fetching')}</p>
-      {:else if wizardFolders.length > 0}
+      {#if wizardStep === 1}
+        <p>{t('Imap_WizardDesc')}</p>
+        {#if wizardLoading}
+          <p class="hint">{t('Imap_Fetching')}</p>
+        {:else if wizardFolders.length > 0}
+          <label class="wizard-toggle-all">
+            <input type="checkbox" checked={wizardSelected.size === wizardFolders.length}
+              onchange={toggleAllWizard} />
+            {wizardSelected.size === wizardFolders.length ? t('Imap_WizardDeselectAll') : t('Imap_WizardSelectAll')}
+          </label>
+          <ul class="wizard-list">
+            {#each wizardFolders as f}
+              {@const bucket = folderToBucket(f)}
+              <li>
+                <label>
+                  <input type="checkbox" checked={wizardSelected.has(f)}
+                    onchange={() => toggleWizard(f)} />
+                  <span class="tag">{f}</span> → <span class="tag bucket-tag">{bucket}</span>
+                </label>
+              </li>
+            {/each}
+          </ul>
+        {:else}
+          <p class="hint">{t('Imap_WizardEmpty')}</p>
+        {/if}
+        <footer class="card-footer">
+          <button class="btn btn-secondary" onclick={() => wizardOpen = false}>{t('Imap_Cancel')}</button>
+          <button class="btn" onclick={confirmWizard}
+            disabled={wizardLoading || wizardSelected.size === 0}>{t('Imap_WizardApply')}</button>
+        </footer>
+      {:else}
+        <p>{t('Imap_WizardDone', { count: wizardDone.length })}</p>
         <ul class="wizard-list">
-          {#each wizardFolders as f}
-            <li><span class="tag">{f}</span> → <span class="tag bucket-tag">{f.replace(/^INBOX\./, '').replace(/[^a-z0-9_-]/gi, '').toLowerCase() || f}</span></li>
+          {#each wizardDone as d}
+            <li><span class="tag">{d.folder}</span> → <span class="tag bucket-tag">{d.bucket}</span></li>
           {/each}
         </ul>
-      {:else}
-        <p class="hint">{t('Imap_WizardEmpty')}</p>
+        <footer class="card-footer">
+          <button class="btn btn-secondary" onclick={() => wizardOpen = false}>{t('Imap_WizardClose')}</button>
+          <button class="btn" onclick={trainWizardFolders}>{t('Imap_WizardTrain')}</button>
+        </footer>
       {/if}
-      <footer class="card-footer">
-        <button class="btn btn-secondary" onclick={() => wizardOpen = false}>{t('Imap_Cancel')}</button>
-        <button class="btn" onclick={confirmWizard} disabled={wizardLoading || wizardFolders.length === 0}>{t('Imap_WizardApply')}</button>
-      </footer>
     </div>
   {/if}
 

@@ -338,9 +338,14 @@ Imap_SaveFolders Guardar pastas
 Imap_Saving A guardar...
 Imap_Advanced                           Avançado
 Imap_Wizard                             Einrichtungs-Assistent
-Imap_WizardDesc                         Erstellt automatisch Buckets und Zuordnungen für deine IMAP-Ordner.
+Imap_WizardDesc                         Ordner auswählen, für die Buckets und Zuordnungen erstellt werden sollen.
 Imap_WizardEmpty                        Keine weiteren Ordner auf dem Server gefunden.
-Imap_WizardApply                        Anwenden
+Imap_WizardApply                        Erstellen & zuordnen
+Imap_WizardSelectAll                    Alle auswählen
+Imap_WizardDeselectAll                  Alle abwählen
+Imap_WizardDone                         {count} Bucket(s) erstellt und zugeordnet.
+Imap_WizardTrain                        Jetzt trainieren
+Imap_WizardClose                        Schließen
 Imap_Cancel                             Abbrechen
 Imap_Service Serviço
 Imap_TestConnection Testar ligação
