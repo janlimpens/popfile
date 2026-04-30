@@ -96,9 +96,10 @@ method start() {
         $port = $self->_find_free_port()
             if $port == 0;
         $self->config('port', $port);
-        if (open my $fh, '>', $port_file) {
+        if (open my $fh, '>', "$port_file.tmp") {
             print $fh $port;
             close $fh;
+            rename "$port_file.tmp", $port_file;
         }
     }
     my $app = $self->build_app($service, undef);
@@ -198,6 +199,8 @@ method build_app ($svc, $session = undef) {
     require Mojo::Path;
 
     my $static = $self->get_root_path($self->config('static_dir'));
+    require Cwd;
+    $static = Cwd::realpath($static) // $static;
     my $app = Mojolicious->new();
     $app->max_request_size(10_000_000);  # 10 MB
     $app->log->level('warn');
