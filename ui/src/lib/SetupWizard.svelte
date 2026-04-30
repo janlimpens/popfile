@@ -45,7 +45,6 @@
   let fetchingFolders = $state(false);
 
   async function testConnection() {
-    if (protocol === 'POP3') { testResult = { ok: true }; return }
     testing = true;
     const res = await fetch('/api/v1/imap/test-connection', {
       method: 'POST',
@@ -68,7 +67,6 @@
       }),
     });
     if (protocol === 'POP3') {
-      // POP3: skip folder mapping, go to done screen
       await applySettings();
       step = 4;
       return
@@ -223,9 +221,9 @@
         <p class="wizard-desc">{t('Wizard_ManualDesc')}</p>
       {/if}
 
-      {#if protocol === 'IMAP' && testResult?.ok}
+      {#if testResult?.ok}
         <p class="msg-ok"><span class="icon">check</span> Connected</p>
-      {:else if protocol === 'IMAP' && testResult && !testResult.ok}
+      {:else if testResult && !testResult.ok}
         <p class="msg-err"><span class="icon">close</span> {testResult.error || 'Connection failed'}</p>
       {/if}
       <div class="wizard-fields">
@@ -256,11 +254,9 @@
       </div>
       <footer class="wizard-footer">
         <button class="btn btn-secondary" onclick={() => step = 1}>Back</button>
-        {#if protocol === 'IMAP'}
         <button class="btn btn-secondary" onclick={testConnection} disabled={testing || !server.trim() || !login.trim() || !password.trim()}>
           {testing ? 'Testing…' : t('Imap_TestConnection')}
         </button>
-        {/if}
         <button class="btn" onclick={fetchFolders} disabled={!testResult?.ok || fetchingFolders}>
           {fetchingFolders ? '…' : protocol === 'POP3' ? t('Imap_WizardClose') : t('Wizard_Next')}
         </button>
@@ -311,9 +307,9 @@
           POPFile will insert an X-Text-Classification header into every message.
         </p>
         <p class="wizard-desc">
-          <strong>POPFile hasn't learned yet.</strong> Messages will start out as unclassified.
-          Go to the History page and reclassify messages to train the classifier.
-          You can also create filter rules via the Magnets page.
+          <strong>Next steps:</strong> Go to the Corpus page and create your categories (buckets).
+          As new emails arrive, tag them in the History view — each correction trains
+          the classifier. You can also add magnet rules for automatic sorting.
         </p>
       {/if}
       <footer class="wizard-footer">
