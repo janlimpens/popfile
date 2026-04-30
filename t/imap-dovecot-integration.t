@@ -32,24 +32,9 @@ my @ham_files  = sort glob "$fixture_dir/ham/*.eml";
 my @spam_files = sort glob "$fixture_dir/spam/*.eml";
 
 sub _slurp($p) { open my $f, '<:raw', $p; local $/; my $d = <$f>; close $f; $d }
+sub _clear($f) { return unless $imap->exists($f); $imap->select($f); my @u = $imap->search('ALL'); $imap->delete_message(@u) if @u; $imap->expunge() }
 
-sub _clear($folder) {
-    return unless $imap->exists($folder);
-    $imap->select($folder);
-    my @u = $imap->search('ALL');
-    $imap->delete_message(@u) if @u;
-    $imap->expunge();
-}
-
-subtest 'train from IMAP output folders' => sub {
-    _clear($_) for qw(INBOX POPfile.ham POPfile.spam);
-    $imap->create('POPfile.ham')  unless $imap->exists('POPfile.ham');
-    $imap->create('POPfile.spam') unless $imap->exists('POPfile.spam');
-    $imap->select('POPfile.ham');
-    $imap->append('POPfile.ham', _slurp($ham_files[0]));
-    $imap->select('POPfile.spam');
-    $imap->append('POPfile.spam', _slurp($spam_files[0]));
-
+sub _setup(%extra) {
     my ($config, $mq) = TestHelper::setup();
     TestHelper::configure_db($config);
     $config->parameter('imap_enabled', 1);
@@ -65,9 +50,6 @@ subtest 'train from IMAP output folders' => sub {
     my ($wm, $bayes) = TestHelper::setup_bayes($config, $mq);
     $bayes->set_history($history);
     $history->set_classifier($bayes);
-    my $session = $bayes->get_session_key('admin', '');
-    $bayes->create_bucket($session, 'ham');
-    $bayes->create_bucket($session, 'spam');
 
     require Services::IMAP;
     my $srv = Services::IMAP->new();
@@ -82,16 +64,61 @@ subtest 'train from IMAP output folders' => sub {
     $srv->config('use_ssl', 0);
     $srv->config('watched_folders', 'INBOX');
     $srv->config('bucket_folder_mappings', 'ham-->POPfile.ham-->spam-->POPfile.spam-->');
-    $srv->config('training_mode', 1);
+    $srv->config('training_mode', $extra{training_mode} // 0);
     $srv->start();
+    return ($srv, $config, $mq, $bayes, $history)
+}
 
-    ok($srv->poll_sync(30), 'poll completed');
+subtest 'train classifier from IMAP output folders' => sub {
+    _clear($_) for qw(INBOX POPfile.ham POPfile.spam);
+    $imap->create('POPfile.ham')  unless $imap->exists('POPfile.ham');
+    $imap->create('POPfile.spam') unless $imap->exists('POPfile.spam');
+    $imap->select('POPfile.ham');
+    $imap->append('POPfile.ham', _slurp($ham_files[0]));
+    $imap->select('POPfile.spam');
+    $imap->append('POPfile.spam', _slurp($spam_files[0]));
+
+    my ($srv, $config, $mq, $bayes, $history) = _setup(training_mode => 1);
+    my $session = $bayes->get_session_key('admin', '');
+    $bayes->create_bucket($session, 'ham');
+    $bayes->create_bucket($session, 'spam');
+
+    ok($srv->poll_sync(30), 'training poll completed');
     $bayes->db_update_cache($session);
 
     my $ham = $bayes->get_bucket_word_count($session, 'ham');
     my $spam = $bayes->get_bucket_word_count($session, 'spam');
     ok($ham > 0, "ham words: $ham");
     ok($spam > 0, "spam words: $spam");
+
+    $srv->stop();
+    $history->stop();
+    $bayes->stop();
+};
+
+subtest 'IMAP folder move via request_folder_move' => sub {
+    _clear($_) for qw(INBOX POPfile.ham POPfile.spam);
+    $imap->create('POPfile.ham') unless $imap->exists('POPfile.ham');
+
+    my ($srv, $config, $mq, $bayes, $history) = _setup();
+    my $session = $bayes->get_session_key('admin', '');
+    $bayes->create_bucket($session, 'ham');
+    $bayes->create_bucket($session, 'spam');
+    $bayes->add_message_to_bucket($session, 'ham', $_)  for @ham_files[0..6];
+    $bayes->db_update_cache($session);
+
+    my $msg = _slurp($ham_files[7]);
+    $imap->select('INBOX');
+    $imap->append('INBOX', $msg);
+
+    $srv->request_folder_rescan('INBOX');
+    ok($srv->poll_sync(30), 'rescan poll completed');
+
+    my $after = 0;
+    $imap->select('INBOX');
+    my @u = $imap->search('ALL');
+    $after = scalar @u;
+    ok($after == 0 || $after == 1, "INBOX after rescan: $after");
 
     $srv->stop();
     $history->stop();
