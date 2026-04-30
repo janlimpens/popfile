@@ -38,26 +38,16 @@ where most of the action is.
 ## Quick start
 
 ```sh
-docker run -d --name popfile -p 8080:8080 \
-  -e POPFILE_USER=/data \
-  -v popfile-data:/data \
-  ghcr.io/janlimpens/popfile
+curl -fsSL https://raw.githubusercontent.com/janlimpens/popfile/main/install.sh | sh
 ```
 
-Opens the web UI on `http://localhost:8080`. The setup wizard walks you through
-IMAP (or POP3) configuration on first launch. All your data (config, database,
-messages) lives in the `popfile-data` Docker volume — it survives restarts
-and image updates.
+Opens `http://localhost:8080` when ready. The script detects whether you have
+Docker and uses it if available; otherwise falls back to Perl + Carton. The
+setup wizard guides you through IMAP or POP3 configuration on first launch.
 
-### From source (perlbrew + Carton)
-
-```sh
-carton install
-carton exec perl popfile.pl
-```
-
-Set `POPFILE_ROOT` to point at a different directory for config, database, and
-message cache (default: `./`).
+To stop: `docker stop popfile` (Docker) or `kill $(cat ~/.popfile/popfile.pid)`
+(source install). Your data lives in a Docker volume or `~/.popfile/` and
+survives restarts and updates.
 
 ## CLI
 
