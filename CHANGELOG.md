@@ -45,6 +45,7 @@ released version (v1.1.3, 2012).
   caused repeated reclassification of old messages fixed.
 - Message-ID-backed direct moves for reclassification from the web UI.
 - Training triggers via filesystem flag files (`popfile.train*`).
+- `poll_sync()` method for synchronous integration tests.
 
 ### Web UI
 
@@ -56,6 +57,66 @@ released version (v1.1.3, 2012).
 - IMAP configuration page: watched folders, bucket-folder mappings, live folder
   discovery, connection test.
 - Self-hosted Material Symbols icons; no external font CDN dependency.
+
+### Recent additions (April 2026)
+
+**Word Search**
+- New `GET /api/v1/words/search` endpoint with cross-bucket coverage,
+  sortable columns, and stopword management.
+- `WordSearch.svelte` replaces the old `WordView` and `Stopwords` views.
+- `search_words_cross_bucket` in `Classifier::Bayes` with coverage and
+  bucket-sort support.
+
+**Security Hardening**
+- API authentication via `X-POPFile-Token` header (#259, #261).
+- GET/HEAD exempt when `api_local=1` (localhost); all requests require
+  token when `api_local=0`.
+- CSRF protection: all mutating API requests (POST/PUT/DELETE) require
+  the auth token when a password is set.
+- Rate limiting: 60 requests per second per IP for API endpoints (#263).
+- Security headers: `X-Content-Type-Options`, `X-Frame-Options`,
+  `Referrer-Policy`, `Permissions-Policy` (#260).
+- Request body size limit: 10 MB via `max_request_size` (#265).
+- Atomic port file writes via tempfile+rename to prevent TOCTOU (#262).
+- Symlink resolution in static file serving (#266).
+- Config error messages no longer leak full filesystem paths (#268).
+- Browser auto-open URL validated before launching (#267).
+- Sensitive config values encrypted at rest (`imap_password`) via AES-256-CBC.
+- IMAP credentials removed from config-update diagnostic logging.
+
+**Test Infrastructure**
+- Centralised test helper (`TestHelper.pm`): `setup()`, `setup_bayes()`,
+  `setup_mojo_services()`, `configure_db()`, `load_fixture()`, `reset_db()`.
+- All mojo controller tests converted to use real file-based SQLite databases
+  (eliminated `:memory:` and inline mocks).
+- `TestMocks.pm` slimmed from 254 to 173 lines; unused mock methods and log
+  fields removed.
+- Dovecot Docker container started/stopped automatically via `make test`;
+  `docker compose -f docker-compose.test.yml` integrated into CI.
+- End-to-end POP3 classification test; IMAP training and watched-folder
+  classification integration tests.
+
+**UI Polish**
+- IMAP moved into Settings as a sub-tab alongside POP3/SMTP/NNTP.
+- Service status indicators (green/grey dot) in settings navigation.
+- IMAP enable toggle positioned first, training mode/limit in collapsible
+  "Advanced" section at the bottom.
+- SSL toggle now precedes port field; port auto-switches 143↔993 on SSL change.
+- Section labels simplified ("POP3 Proxy" → "POP3", etc.).
+- `api_local` moved from UI section to Security; preventing uncheck when no
+  password is set.
+
+**Bug Fixes**
+- SQL injection in `delete_slot()` replaced with `Query::Builder`.
+- SQLite 999-variable limit avoided in `get_word_colors`, `classify`,
+  `add_words_to_bucket`, and `search_words_fetch` via chunked IN clauses.
+- `GROUP BY` emitted before `ORDER BY` in query builder.
+- IMAP `uid_next` reset restored in `request_folder_move` fallback path.
+- Various Perl warnings silenced (`used only once`, uninitialised values).
+- Database schema upgrade no longer triggered spuriously on fresh test
+  databases (file-based SQLite in temp dir).
+- Uninitialised `$file` warning in `add_message_to_bucket` fixed.
+- `t/services-classifier.t` SEGV resolved.
 
 ---
 
