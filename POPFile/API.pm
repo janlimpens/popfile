@@ -47,6 +47,7 @@ the server is ready (config key: C<open_browser>).
 
 method initialize() {
     $self->config(port => 0);
+    $self->config(password => '');
     $self->config(static_dir => 'public');
     $self->config(local => 1);
     $self->config(page_size => 25);
@@ -211,6 +212,17 @@ method build_app ($svc, $session = undef) {
         }
         return if $path =~ m{\.\w+$};   # has an extension → real asset
         $c->req->url->path(Mojo::Path->new('/index.html'));
+    });
+
+    # API authentication — when password is set, require X-POPFile-Token header
+    $app->hook(before_dispatch => sub ($c) {
+        my $path = $c->req->url->path->to_string;
+        return unless $path =~ m{^/api/};
+        my $password = $self->config('password') // '';
+        return if $password eq '';
+        my $token = $c->req->headers->header('X-POPFile-Token') // '';
+        return if $token eq $password;
+        $c->render(status => 401, json => { error => 'Unauthorized' });
     });
 
     my $r = $app->routes;
