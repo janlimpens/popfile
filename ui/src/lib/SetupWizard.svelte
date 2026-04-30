@@ -191,8 +191,8 @@
         <label for="wiz-proto">Protocol</label>
         <select id="wiz-proto" bind:value={protocol}
           onchange={() => port = protocol === 'IMAP' ? 993 : 995}>
-          <option value="IMAP">IMAP</option>
-          <option value="POP3">POP3</option>
+          <option value="IMAP">IMAP (recommended)</option>
+          <option value="POP3">POP3 (less common)</option>
         </select>
       </div>
       <div class="wizard-field">
@@ -302,14 +302,20 @@
       {:else}
         <p class="wizard-desc">
           POPFile is ready. Point your mail client at the machine running POPFile
-          (port 1110) instead of your usual mail server. It'll tag every incoming
-          message with a classification header.
+          (port 1110) instead of your usual mail server. POPFile will add an
+          <code>X-Text-Classification</code> header to every message it sees.
         </p>
         <p class="wizard-desc">
-          <strong>Before it can sort anything, it needs to know your categories.</strong>
-          Drop by the Corpus page and create a few buckets — work, personal, newsletters,
-          whatever makes sense for you. Then, as mail comes in, visit the History page
-          and tag messages. POPFile learns from every one.
+          <strong>POP3 doesn't move messages around</strong> — the History page is your
+          only interface. That's where you tag messages and teach the classifier.
+          Once POPFile is reliably labelling your mail, set up filters in your
+          email client to act on the <code>X-Text-Classification</code> header
+          (move to folders, mark as read, etc.).
+        </p>
+        <p class="wizard-desc">
+          Start by creating a few buckets on the Corpus page — work, personal,
+          newsletters, whatever fits. Then head to History and start tagging.
+          POPFile learns from every one.
         </p>
       {/if}
       <footer class="wizard-footer">
