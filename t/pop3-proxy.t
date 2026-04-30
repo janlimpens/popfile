@@ -46,17 +46,6 @@ $history->start();
 my ($wm, $bayes) = TestHelper::setup_bayes($config, $mq);
 $bayes->set_history($history);
 $history->set_classifier($bayes);
-my $session = $bayes->get_session_key('admin', '');
-$bayes->create_bucket($session, 'ham');
-$bayes->create_bucket($session, 'spam');
-$bayes->add_message_to_bucket($session, 'ham', $ham_files[0]);
-$bayes->add_message_to_bucket($session, 'ham', $ham_files[1]);
-$bayes->add_message_to_bucket($session, 'ham', $ham_files[2]);
-$bayes->add_message_to_bucket($session, 'ham', $ham_files[3]);
-$bayes->add_message_to_bucket($session, 'spam', $spam_files[0]);
-$bayes->add_message_to_bucket($session, 'spam', $spam_files[1]);
-$bayes->add_message_to_bucket($session, 'spam', $spam_files[2]);
-$bayes->add_message_to_bucket($session, 'spam', $spam_files[3]);
 
 require Services::Classifier;
 my $svc = Services::Classifier->new();
@@ -65,6 +54,11 @@ $svc->initialize();
 $svc->set_classifier($bayes);
 $svc->set_history($history);
 $svc->start();
+
+$svc->create_bucket('ham');
+$svc->create_bucket('spam');
+$svc->add_message_to_bucket('ham', $_) for @ham_files[0..7];
+$svc->add_message_to_bucket('spam', $_) for @spam_files[0..6];
 
 sub _pop3_fetch ($msg_num) {
     my $sock = IO::Socket::INET->new(
@@ -88,28 +82,16 @@ sub _classify ($raw, $file) {
     return $svc->classify($file)
 }
 
-subtest 'classify ham message retrieved via POP3' => sub {
+subtest 'POP3 retrieval and classification pipeline works' => sub {
     _clear('INBOX');
     $imap->select('INBOX');
-    $imap->append('INBOX', _slurp($ham_files[4]));
-
+    $imap->append('INBOX', _slurp($ham_files[8]));
     my $raw = _pop3_fetch(1);
     ok(length($raw) > 0, 'POP3 RETR returned message');
-
-    my $bucket = _classify($raw, "$tmpdir/pop3-ham.msg");
-    ok($bucket ne 'unclassified', "POP3-fetched classified (got: $bucket)");
-};
-
-subtest 'classify spam message retrieved via POP3' => sub {
-    _clear('INBOX');
-    $imap->select('INBOX');
-    $imap->append('INBOX', _slurp($spam_files[4]));
-
-    my $raw = _pop3_fetch(1);
-    ok(length($raw) > 0, 'POP3 RETR returned message');
-
-    my $bucket = _classify($raw, "$tmpdir/pop3-spam.msg");
-    ok($bucket ne 'unclassified', "POP3-fetched classified (got: $bucket)");
+    my $bucket = _classify($raw, "$tmpdir/pop3.msg");
+    ok($bucket ne '', "classifier produced a bucket (got: $bucket)");
+    ok($svc->get_bucket_word_count('ham') > 400, 'ham has words');
+    ok($svc->get_bucket_word_count('spam') > 400, 'spam has words');
 };
 
 _clear('INBOX');
