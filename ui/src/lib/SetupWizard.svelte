@@ -232,12 +232,12 @@
           <input id="wiz-login" type="text" bind:value={login} />
         </div>
         <div class="wizard-field">
-          <label for="wiz-pass">{t('Imap_Password')}</label>
-          <input id="wiz-pass" type="password" bind:value={password} />
-        </div>
-        <div class="wizard-field">
           <label for="wiz-server">Server</label>
           <input id="wiz-server" type="text" bind:value={server} />
+        </div>
+        <div class="wizard-field">
+          <label for="wiz-pass">Password</label>
+          <input id="wiz-pass" type="password" bind:value={password} />
         </div>
         <div class="wizard-field">
           <label for="wiz-enc">{t('Wizard_Encryption')}</label>
@@ -280,6 +280,7 @@
       {/if}
       <footer class="wizard-footer">
         <button class="btn btn-secondary" onclick={() => step = 2}>Back</button>
+        <button class="btn btn-secondary" onclick={applySettings}>Save &amp; finish</button>
         <button class="btn" onclick={applyFolders} disabled={folderSelected.size === 0}>
           {t('Imap_WizardApply')}
         </button>
