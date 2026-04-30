@@ -154,6 +154,49 @@ sub load_fixture($bayes, $session, $fixture) {
 }
 
 # ---------------------------------------------------------------------------
+# setup_mojo_services()
+#
+# Creates a real Classifier::Bayes + POPFile::History + Services::Classifier
+# stack backed by SQLite :memory:.  Returns ($config, $mq, $svc, $hist, $bayes).
+# The Classifier::Bayes session key is available via $svc->session().
+#
+# Use this when mojo controller tests need real database behaviour without
+# mocks.  Populate test data via $bayes->create_bucket(),
+# $bayes->add_message_to_bucket(), or load_fixture().
+# ---------------------------------------------------------------------------
+sub setup_mojo_services {
+    my ($config, $mq, $tmpdir) = setup();
+    configure_db($config);
+    $config->parameter('history_history_days', 9999);
+
+    require POPFile::Module;
+    require POPFile::History;
+    my $history = POPFile::History->new();
+    wire($history, $config, $mq);
+    $history->initialize();
+
+    my $wm = make_module('Classifier::WordMangle', $config, $mq);
+    $wm->start();
+
+    my $bayes = make_module('Classifier::Bayes', $config, $mq);
+    $bayes->parser()->set_mangle($wm);
+    $bayes->set_history($history);
+    $history->set_classifier($bayes);
+    $bayes->start();
+    $history->start();
+
+    require Services::Classifier;
+    my $svc = Services::Classifier->new();
+    wire($svc, $config, $mq);
+    $svc->initialize();
+    $svc->set_classifier($bayes);
+    $svc->set_history($history);
+    $svc->start();
+
+    return ($config, $mq, $svc, $history, $bayes, $tmpdir)
+}
+
+# ---------------------------------------------------------------------------
 # Stub History
 # ---------------------------------------------------------------------------
 package TestHelper::History;
