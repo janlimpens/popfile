@@ -44,11 +44,11 @@
   });
 
   const NAV = [
-    ['history',  'NavHistory',  'History'],
-    ['corpus',   'NavCorpus',   'Corpus'],
-    ['magnets',  'NavMagnets',  'Magnets'],
-    ['status',   'NavStatus',   'Status'],
-    ['settings', 'NavSettings', 'Settings'],
+    ['history',  'NavHistory',  'History',   'history'],
+    ['corpus',   'NavCorpus',   'Corpus',    'dataset'],
+    ['magnets',  'NavMagnets',  'Magnets',   'bookmark'],
+    ['status',   'NavStatus',   'Status',    'monitoring'],
+    ['settings', 'NavSettings', 'Settings',  'settings'],
   ];
 
   function toggleTheme() {
@@ -59,8 +59,11 @@
 <nav>
   <span class="logo">POPFile</span>
   <div class="nav-links">
-    {#each NAV as [id, key, fallback]}
-      <a href="#{id}" class:active={page === id}>{t(key) === key ? fallback : t(key)}</a>
+    {#each NAV as [id, key, fallback, icon]}
+      <a href="#{id}" class:active={page === id}>
+        <span class="icon nav-icon">{icon}</span>
+        {t(key) === key ? fallback : t(key)}
+      </a>
     {/each}
   </div>
   <button class="theme-btn" onclick={toggleTheme} title="Toggle theme">
@@ -165,6 +168,7 @@
   nav a {
     display: flex;
     align-items: center;
+    gap: 0.4rem;
     padding: 0 1rem;
     color: rgba(255,255,255,.6);
     text-decoration: none;
@@ -172,6 +176,7 @@
     border-bottom: 2px solid transparent;
     transition: color .15s, border-color .15s, background .15s;
   }
+  nav a .nav-icon { font-size: 1.05rem; }
   nav a:hover  { color: #fff; background: var(--nav-active); }
   nav a.active { color: #fff; border-bottom-color: var(--accent); }
 
