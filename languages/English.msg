@@ -598,3 +598,5 @@ Wizard_Encryption                       Encryption
 Wizard_SSL                              SSL/TLS
 Wizard_STARTTLS                         STARTTLS
 Wizard_None                             None
+Wizard_Welcome                          Welcome to POPFile. POPFile helps you keep your inbox organised. Start by entering your username — usually your email address.
+Wizard_Username                         Username

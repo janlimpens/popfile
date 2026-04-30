@@ -78,9 +78,9 @@
     <!-- Step 1: Welcome + email -->
     {#if step === 1}
       <h2>POPFile</h2>
-      <p class="wizard-desc">{t('Imap_Description')}</p>
+      <p class="wizard-desc">{t('Wizard_Welcome')}</p>
       <div class="wizard-field">
-        <label for="wiz-email">{t('Imap_Login')}</label>
+        <label for="wiz-email">{t('Wizard_Username')}</label>
         <input id="wiz-email" type="email" bind:value={email}
           placeholder="you@example.com"
           onkeydown={(e) => e.key === 'Enter' && startDetection()} />
@@ -106,7 +106,7 @@
       {/if}
       <div class="wizard-fields">
         <div class="wizard-field">
-          <label for="wiz-login">{t('Imap_Login')}</label>
+          <label for="wiz-login">{t('Wizard_Username')}</label>
           <input id="wiz-login" type="text" bind:value={login} />
         </div>
         <div class="wizard-field">
@@ -150,8 +150,8 @@
         <div class="exit-dialog">
           <p>Exit the setup wizard?</p>
           <footer class="wizard-footer">
-            <button class="btn btn-secondary" onclick={() => exitPrompt = false}>No</button>
             <button class="btn" onclick={dismiss}>Yes</button>
+            <button class="btn btn-secondary" onclick={() => exitPrompt = false}>No</button>
           </footer>
         </div>
       </div>
