@@ -55,3 +55,32 @@ jobs:
         run: |
           find . -name '*.pm' -not -path './lib/*' -not -path './local/*' -not -path './vendor/*' -print0 \
             | xargs -0 -I{} perl -Ilib -I. -Ivendor/perl-querybuilder/lib -c {} 2>&1
+
+  publish:
+    needs: [build-ui, test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Build UI (for Docker)
+        run: |
+          npm ci
+          npm run build
+        working-directory: ui
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest

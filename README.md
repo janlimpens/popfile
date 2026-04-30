@@ -38,11 +38,16 @@ where most of the action is.
 ## Quick start
 
 ```sh
-docker compose up
+docker run -d --name popfile -p 8080:8080 \
+  -e POPFILE_USER=/data \
+  -v popfile-data:/data \
+  ghcr.io/janlimpens/popfile
 ```
 
-Opens the web UI on `http://localhost:8080`. Configure your IMAP server under
-Settings → IMAP, add watched folders and bucket mappings, and you're running.
+Opens the web UI on `http://localhost:8080`. The setup wizard walks you through
+IMAP (or POP3) configuration on first launch. All your data (config, database,
+messages) lives in the `popfile-data` Docker volume — it survives restarts
+and image updates.
 
 ### From source (perlbrew + Carton)
 
