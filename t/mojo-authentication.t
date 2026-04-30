@@ -34,18 +34,18 @@ my $mq        = TestMocks::StubMQ->new();
 require POPFile::API;
 require POPFile::Configuration;
 
-sub _build_app ($password = '') {
+sub _build_app ($password = '', $local = 1) {
     my $config = POPFile::Configuration->new();
     $config->set_configuration($config);
     $config->set_mq($mq);
     $config->initialize();
     $config->set_started(1);
-    $config->parameter('api_local', 1);
     my $ui = POPFile::API->new();
     $ui->set_configuration($config);
     $ui->set_mq($mq);
     $ui->initialize();
     $ui->set_service($mock_svc);
+    $config->parameter('api_local', $local);
     $config->parameter('api_password', $password)
         if $password ne '';
     my $app = $ui->build_app($mock_svc, 'test-session');
@@ -118,6 +118,15 @@ subtest 'password set — health GET works without token' => sub {
     my $t = Test::Mojo->new(_build_app('sekret'));
     $t->get_ok('/api/v1/health')
         ->status_is(503);  # GET allowed, 503 because no loader
+};
+
+subtest 'local=0 — GET also requires token when not local-only' => sub {
+    my $t = Test::Mojo->new(_build_app('sekret', 0));
+    $t->get_ok('/api/v1/buckets')
+        ->status_is(403);  # GET blocked without token
+    $t->get_ok('/api/v1/buckets' => { 'X-POPFile-Token' => 'sekret' })
+        ->status_is(200)
+        ->json_has('/0/name');
 };
 
 done_testing;

@@ -18,8 +18,6 @@
       settings: [
         { key: 'api_port', label: t('Settings_HTTPPort'), type: 'number',
           desc: t('Settings_DescHTTPPort') },
-        { key: 'api_local', label: t('Settings_LocalOnly'), type: 'bool',
-          desc: t('Settings_DescLocalOnly_UI') },
         { key: 'api_page_size', label: t('Settings_ItemsPerPage'), type: 'number',
           desc: t('Settings_DescItemsPerPage') },
         { key: 'api_open_browser', label: t('Settings_OpenBrowser'), type: 'bool',
@@ -38,6 +36,9 @@
       settings: [
         { key: 'api_password', label: t('Settings_AdminPassword'), type: 'password',
           desc: t('Settings_DescAdminPassword') },
+        { key: 'api_local', label: t('Settings_LocalOnly'), type: 'bool',
+          desc: t('Settings_DescLocalOnly_UI'),
+          disabledWhen: (c) => c.api_local == 1 && (!c.api_password || c.api_password === '') },
       ],
     },
     {

@@ -241,15 +241,17 @@ method build_app ($svc, $session = undef) {
         $c->req->url->path(Mojo::Path->new('/index.html'));
     });
 
-    # API authentication / CSRF — when password is set, all mutating API
-    # requests require X-POPFile-Token. GET/HEAD are exempt for read access.
+    # API authentication — when password is set:
+    #   local=1: GET/HEAD exempt, mutating requests require X-POPFile-Token
+    #   local=0: all API requests require X-POPFile-Token
     $app->hook(before_dispatch => sub ($c) {
         my $path = $c->req->url->path->to_string;
         return unless $path =~ m{^/api/};
         my $password = $self->config('password') // '';
         return if $password eq '';
-        my $method = $c->req->method;
-        return if $method eq 'GET' || $method eq 'HEAD';
+        my $local = $self->config('local') // 1;
+        return if $local && $c->req->method eq 'GET';
+        return if $local && $c->req->method eq 'HEAD';
         my $token = $c->req->headers->header('X-POPFile-Token') // '';
         return if $token eq $password;
         $c->render(status => 403, json => { error => 'Forbidden' });
