@@ -233,8 +233,6 @@ method build_app ($svc, $session = undef) {
     $app->hook(before_dispatch => sub ($c) {
         my $path = $c->req->url->path->to_string;
         return if $path =~ m{^/api/};
-        if ($path eq '/favicon.ico') {
-            $c->req->url->path(Mojo::Path->new('/favicon.png'));
             return;
         }
         return if $path =~ m{\.\w+$};   # has an extension → real asset

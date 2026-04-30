@@ -57,7 +57,7 @@
 </script>
 
 <nav>
-  <span class="logo">POPFile</span>
+  <span class="logo"><img src="otto.png" alt="" class="logo-img" /> POPFile</span>
   <div class="nav-links">
     {#each NAV as [id, key, fallback, icon]}
       <a href="#{id}" class:active={page === id}>
@@ -156,7 +156,11 @@
     letter-spacing: .03em;
     margin-right: 1.5rem;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
+  .logo-img { height: 1.4rem; width: auto; }
 
   .nav-links {
     display: flex;
