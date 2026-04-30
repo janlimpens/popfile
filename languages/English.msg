@@ -595,7 +595,6 @@ Wizard_Next                             Next
 Wizard_Manual                           Manual setup
 Wizard_ManualDesc                       Enter your mail server details below.
 Wizard_Encryption                       Encryption
-Wizard_None                             None
 Wizard_Welcome                          Welcome to POPFile. POPFile helps you keep your inbox organised. Start by entering your username — usually your email address.
 Wizard_Username                         Username
 Wizard_Done                             All set!

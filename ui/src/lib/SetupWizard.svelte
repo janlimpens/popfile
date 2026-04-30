@@ -244,7 +244,6 @@
           <select id="wiz-enc" bind:value={encryption}>
             <option value="SSL">SSL/TLS</option>
             <option value="STARTTLS">STARTTLS</option>
-            <option value="none">{t('Wizard_None')}</option>
           </select>
         </div>
         <div class="wizard-field">
