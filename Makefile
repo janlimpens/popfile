@@ -12,8 +12,7 @@ test-no-dovecot:
 
 dovecot-start:
 	@echo "=== Dovecot start ==="
-	docker compose -f docker-compose.test.yml up -d --wait 2>/dev/null \
-		|| docker compose -f docker-compose.test.yml up -d
+	docker compose -f docker-compose.test.yml up -d
 
 dovecot-wait:
 	@echo "=== Dovecot wait ==="
