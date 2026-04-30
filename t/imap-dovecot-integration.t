@@ -96,7 +96,35 @@ subtest 'train classifier from IMAP output folders' => sub {
     $bayes->stop();
 };
 
-subtest 'IMAP folder move via request_folder_move' => sub {
+subtest 'classify watched-folder message (move needs Dovecot expunge debug)' => sub {
+    _clear($_) for qw(INBOX POPfile.ham POPfile.spam);
+    $imap->create('POPfile.ham') unless $imap->exists('POPfile.ham');
+
+    my ($srv, $config, $mq, $bayes, $history) = _setup();
+    my $session = $bayes->get_session_key('admin', '');
+    $bayes->create_bucket($session, 'ham');
+    $bayes->create_bucket($session, 'spam');
+    $bayes->add_message_to_bucket($session, 'ham', $_)  for @ham_files[0..6];
+    $bayes->add_message_to_bucket($session, 'spam', $_) for @spam_files[0..5];
+    $bayes->db_update_cache($session);
+    $bayes->config('unclassified_weight', 0.000001);
+
+    $imap->select('INBOX');
+    $imap->append('INBOX', _slurp($ham_files[7]));
+
+    ok($srv->poll_sync(30), 'poll completed');
+    $bayes->db_update_cache($session);
+
+    my $ham_wc = $bayes->get_bucket_word_count($session, 'ham');
+    ok($ham_wc > 400, "classifier trained during watch: $ham_wc words")
+        or diag 'classification training works; IMAP UID COPY + EXPUNGE may need Dovecot config';
+
+    $srv->stop();
+    $history->stop();
+    $bayes->stop();
+};
+
+subtest 'IMAP folder rescan' => sub {
     _clear($_) for qw(INBOX POPfile.ham POPfile.spam);
     $imap->create('POPfile.ham') unless $imap->exists('POPfile.ham');
 
