@@ -549,3 +549,41 @@ View_Chart Gráfico de decisión
 View_DownloadMessage Descargar mensaje
 
 Language_Name                           Español
+History_PerPage                          Entradas por página
+Imap_Advanced                            Avanzado
+Imap_Cancel                              Cancelar
+Imap_Wizard                              Asistente de configuración
+Imap_WizardApply                         Crear y mapear
+Imap_WizardClose                         Cerrar
+Imap_WizardDesc                          Seleccione carpetas para crear buckets y mapeos.
+Imap_WizardDeselectAll                   Deseleccionar todo
+Imap_WizardDone                          {count} bucket(s) creados y mapeados.
+Imap_WizardEmpty                         No se encontraron carpetas adicionales en el servidor.
+Imap_WizardSelectAll                     Seleccionar todo
+Imap_WizardTrain                         Entrenar ahora
+NavWordSearch                            Búsqueda de palabras
+Settings_DescEnableProxy                 Iniciar este proxy al arrancar POPFile.
+Settings_DescLogFormat                   Formato de salida del registro (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Abrir automáticamente el navegador al iniciar.
+Settings_DescSQLiteBackup                Respaldar automáticamente la base de datos antes de cambios de esquema.
+Settings_DescSQLiteFastWrites            Desactivar sincronización de base de datos (más rápido, menos seguro).
+Settings_EnableService                   Activar servicio
+Settings_LogFormat                       Formato de registro
+Settings_OpenBrowser                     Abrir navegador
+Settings_SQLiteBackup                    Copia de seguridad SQLite
+Settings_SQLiteFastWrites                Escritura rápida SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Añadir palabra vacía
+WordSearch_ColumnBuckets                 Buckets
+WordSearch_ColumnWord                    Palabra
+WordSearch_Coverage                      Cobertura
+WordSearch_IsStopword                    Palabra vacía
+WordSearch_Loading                       Cargando...
+WordSearch_NoResults                     Sin resultados.
+WordSearch_NoStopwords                   Sin palabras vacías.
+WordSearch_Placeholder                   Introduzca una palabra...
+WordSearch_RemoveStopword                Eliminar palabra vacía
+WordSearch_Search                        Buscar
+WordSearch_StopwordList                  Lista de palabras vacías
+WordSearch_Title                         Búsqueda de palabras
+WordSearch_Total                         Total

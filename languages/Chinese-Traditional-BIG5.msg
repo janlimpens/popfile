@@ -566,3 +566,41 @@ View_MessageBody	郵件內文
 View_MessageHeader	郵件標頭
 
 Language_Name                           中文（繁體）
+History_PerPage                          每頁條目
+Imap_Advanced                            進階
+Imap_Cancel                              取消
+Imap_Wizard                              設定精靈
+Imap_WizardApply                         創建並映射
+Imap_WizardClose                         關閉
+Imap_WizardDesc                          選擇要創建桶和映射的文件夾。
+Imap_WizardDeselectAll                   取消全選
+Imap_WizardDone                          已創建並映射 {count} 個桶。
+Imap_WizardEmpty                         伺服器上未找到其他文件夾。
+Imap_WizardSelectAll                     全選
+Imap_WizardTrain                         立即訓練
+NavWordSearch                            詞搜索
+Settings_DescEnableProxy                 POPFile 啟動時啟動此代理。
+Settings_DescLogFormat                   日誌輸出格式（default、tabbed、csv、plain）。
+Settings_DescOpenBrowser                 啟動時自動打開瀏覽器。
+Settings_DescSQLiteBackup                在模式更改前自動備份數據庫。
+Settings_DescSQLiteFastWrites            禁用數據庫同步（更快，安全性較低）。
+Settings_EnableService                   啟用服務
+Settings_LogFormat                       日誌格式
+Settings_OpenBrowser                     打開瀏覽器
+Settings_SQLiteBackup                    SQLite 備份
+Settings_SQLiteFastWrites                SQLite 快速寫入
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   添加停用詞
+WordSearch_ColumnBuckets                 桶
+WordSearch_ColumnWord                    單詞
+WordSearch_Coverage                      覆蓋率
+WordSearch_IsStopword                    停用詞
+WordSearch_Loading                       載入中...
+WordSearch_NoResults                     無結果。
+WordSearch_NoStopwords                   無停用詞。
+WordSearch_Placeholder                   輸入單詞...
+WordSearch_RemoveStopword                移除停用詞
+WordSearch_Search                        搜尋
+WordSearch_StopwordList                  停用詞列表
+WordSearch_Title                         詞搜索
+WordSearch_Total                         總計

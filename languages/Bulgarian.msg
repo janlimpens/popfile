@@ -546,3 +546,41 @@ Windows_NextTime	Следващия път
 Windows_TrayIcon	Икона в системния трей
 
 Language_Name                           Български
+History_PerPage                          Записи на страница
+Imap_Advanced                            Разширени
+Imap_Cancel                              Отказ
+Imap_Wizard                              Помощник за настройка
+Imap_WizardApply                         Създай и съпостави
+Imap_WizardClose                         Затвори
+Imap_WizardDesc                          Изберете папки, за които да създадете кофи и съпоставяния.
+Imap_WizardDeselectAll                   Премахни избора на всички
+Imap_WizardDone                          {count} кофи(и) създадени и съпоставени.
+Imap_WizardEmpty                         Няма намерени допълнителни папки на сървъра.
+Imap_WizardSelectAll                     Избери всички
+Imap_WizardTrain                         Обучи сега
+NavWordSearch                            Търсене на думи
+Settings_DescEnableProxy                 Стартиране на това прокси при стартиране на POPFile.
+Settings_DescLogFormat                   Формат на изхода на дневника (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Автоматично отваряне на браузъра при стартиране.
+Settings_DescSQLiteBackup                Автоматично архивиране на базата данни преди промени в схемата.
+Settings_DescSQLiteFastWrites            Деактивиране на синхронизацията на базата данни (по-бързо, по-малко сигурно).
+Settings_EnableService                   Активиране на услугата
+Settings_LogFormat                       Формат на дневника
+Settings_OpenBrowser                     Отваряне на браузър
+Settings_SQLiteBackup                    SQLite резервно копие
+Settings_SQLiteFastWrites                Бърз запис SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Добави стоп дума
+WordSearch_ColumnBuckets                 Кофи
+WordSearch_ColumnWord                    Дума
+WordSearch_Coverage                      Покритие
+WordSearch_IsStopword                    Стоп дума
+WordSearch_Loading                       Зареждане...
+WordSearch_NoResults                     Няма резултати.
+WordSearch_NoStopwords                   Няма стоп думи.
+WordSearch_Placeholder                   Въведете дума...
+WordSearch_RemoveStopword                Премахни стоп дума
+WordSearch_Search                        Търсене
+WordSearch_StopwordList                  Списък със стоп думи
+WordSearch_Title                         Търсене на думи
+WordSearch_Total                         Общо

@@ -547,3 +547,41 @@ Advanced_Value Værdi
 Advanced_Warning Dette er den komplette liste over POPFile-parametre. Kun til avancerede brugere: du kan ændre enhver og klikke Opdater; der er ingen gyldighed-kontrol. Elementer vist med fed er ændret fra standardindstillingen.
 
 Language_Name                           Dansk
+History_PerPage                          Poster pr. side
+Imap_Advanced                            Avanceret
+Imap_Cancel                              Annuller
+Imap_Wizard                              Opsætningsguide
+Imap_WizardApply                         Opret og map
+Imap_WizardClose                         Luk
+Imap_WizardDesc                          Vælg mapper at oprette buckets og mappings for.
+Imap_WizardDeselectAll                   Fravælg alle
+Imap_WizardDone                          {count} bucket(s) oprettet og mappet.
+Imap_WizardEmpty                         Ingen yderligere mapper fundet på serveren.
+Imap_WizardSelectAll                     Vælg alle
+Imap_WizardTrain                         Træn nu
+NavWordSearch                            Ordsøgning
+Settings_DescEnableProxy                 Start denne proxy når POPFile starter.
+Settings_DescLogFormat                   Format for logoutput (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Åbn automatisk browser ved opstart.
+Settings_DescSQLiteBackup                Tag automatisk backup af database før schemaændringer.
+Settings_DescSQLiteFastWrites            Deaktiver databasesynkronisering (hurtigere, mindre sikkert).
+Settings_EnableService                   Aktivér tjeneste
+Settings_LogFormat                       Logformat
+Settings_OpenBrowser                     Åbn browser
+Settings_SQLiteBackup                    SQLite backup
+Settings_SQLiteFastWrites                SQLite hurtig skrivning
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Tilføj stopord
+WordSearch_ColumnBuckets                 Buckets
+WordSearch_ColumnWord                    Ord
+WordSearch_Coverage                      Dækning
+WordSearch_IsStopword                    Stopord
+WordSearch_Loading                       Indlæser...
+WordSearch_NoResults                     Ingen resultater.
+WordSearch_NoStopwords                   Ingen stopord.
+WordSearch_Placeholder                   Indtast et ord...
+WordSearch_RemoveStopword                Fjern stopord
+WordSearch_Search                        Søg
+WordSearch_StopwordList                  Stopordsliste
+WordSearch_Title                         Ordsøgning
+WordSearch_Total                         I alt

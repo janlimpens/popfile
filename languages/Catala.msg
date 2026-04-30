@@ -583,3 +583,41 @@ WordView_Move Mou
 View_DownloadMessage Descarrega el missatge
 
 Language_Name                           Català
+History_PerPage                          Entrades per pàgina
+Imap_Advanced                            Avançat
+Imap_Cancel                              Cancel·lar
+Imap_Wizard                              Assistent de configuració
+Imap_WizardApply                         Crear i mapar
+Imap_WizardClose                         Tancar
+Imap_WizardDesc                          Seleccioneu carpetes per crear-hi buckets i mapatges.
+Imap_WizardDeselectAll                   Deseleccionar tot
+Imap_WizardDone                          {count} bucket(s) creats i mapats.
+Imap_WizardEmpty                         No sha trobat cap carpeta addicional al servidor.
+Imap_WizardSelectAll                     Seleccionar tot
+Imap_WizardTrain                         Entrenar ara
+NavWordSearch                            Cerca de paraules
+Settings_DescEnableProxy                 Iniciar aquest servidor intermediari en iniciar POPFile.
+Settings_DescLogFormat                   Format de sortida del registre (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Obrir automàticament el navegador en iniciar.
+Settings_DescSQLiteBackup                Fer còpia de seguretat automàtica abans de canvis desperma.
+Settings_DescSQLiteFastWrites            Desactivar la sincronització de la base de dades (més ràpid, menys segur).
+Settings_EnableService                   Activar servei
+Settings_LogFormat                       Format del registre
+Settings_OpenBrowser                     Obrir navegador
+Settings_SQLiteBackup                    Còpia de seguretat SQLite
+Settings_SQLiteFastWrites                Escriptura ràpida SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Afegir stopword
+WordSearch_ColumnBuckets                 Buckets
+WordSearch_ColumnWord                    Paraula
+WordSearch_Coverage                      Cobertura
+WordSearch_IsStopword                    Stopword
+WordSearch_Loading                       Carregant...
+WordSearch_NoResults                     Sense resultats.
+WordSearch_NoStopwords                   Sense stopwords.
+WordSearch_Placeholder                   Introduïu una paraula...
+WordSearch_RemoveStopword                Eliminar stopword
+WordSearch_Search                        Cercar
+WordSearch_StopwordList                  Llista de stopwords
+WordSearch_Title                         Cerca de paraules
+WordSearch_Total                         Total

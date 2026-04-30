@@ -569,3 +569,41 @@ WordView_Move Sposta
 View_DownloadMessage Scarica messaggio
 
 Language_Name                           Italiano
+History_PerPage                          Voci per pagina
+Imap_Advanced                            Avanzate
+Imap_Cancel                              Annulla
+Imap_Wizard                              Configurazione guidata
+Imap_WizardApply                         Crea e mappa
+Imap_WizardClose                         Chiudi
+Imap_WizardDesc                          Seleziona le cartelle per cui creare bucket e mappature.
+Imap_WizardDeselectAll                   Deseleziona tutto
+Imap_WizardDone                          {count} bucket creati e mappati.
+Imap_WizardEmpty                         Nessuna cartella aggiuntiva trovata sul server.
+Imap_WizardSelectAll                     Seleziona tutto
+Imap_WizardTrain                         Addestra ora
+NavWordSearch                            Ricerca parole
+Settings_DescEnableProxy                 Avvia questo proxy all avvio di POPFile.
+Settings_DescLogFormat                   Formato di output del log (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Apri automaticamente il browser all avvio.
+Settings_DescSQLiteBackup                Backup automatico del database prima di modifiche allo schema.
+Settings_DescSQLiteFastWrites            Disabilita sincronizzazione database (più veloce, meno sicuro).
+Settings_EnableService                   Abilita servizio
+Settings_LogFormat                       Formato log
+Settings_OpenBrowser                     Apri browser
+Settings_SQLiteBackup                    Backup SQLite
+Settings_SQLiteFastWrites                Scrittura veloce SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Aggiungi stopword
+WordSearch_ColumnBuckets                 Bucket
+WordSearch_ColumnWord                    Parola
+WordSearch_Coverage                      Copertura
+WordSearch_IsStopword                    Stopword
+WordSearch_Loading                       Caricamento...
+WordSearch_NoResults                     Nessun risultato.
+WordSearch_NoStopwords                   Nessuna stopword.
+WordSearch_Placeholder                   Inserisci una parola...
+WordSearch_RemoveStopword                Rimuovi stopword
+WordSearch_Search                        Cerca
+WordSearch_StopwordList                  Elenco stopword
+WordSearch_Title                         Ricerca parole
+WordSearch_Total                         Totale

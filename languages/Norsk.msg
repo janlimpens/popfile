@@ -547,3 +547,41 @@ Advanced_Value Verdi
 Advanced_Warning Dette er den fullstendige listen over POPFile-parametere. Kun for avanserte brukere: du kan endre hvilken som helst og klikke Oppdater; det er ingen gyldighetssjekk. Elementer vist med fet skrift er endret fra standardinnstillingen.
 
 Language_Name                           Norsk
+History_PerPage                          Oppføringer per side
+Imap_Advanced                            Avansert
+Imap_Cancel                              Avbryt
+Imap_Wizard                              Oppsettveiviser
+Imap_WizardApply                         Opprett og tilordne
+Imap_WizardClose                         Lukk
+Imap_WizardDesc                          Velg mapper å opprette bøtter og tilordninger for.
+Imap_WizardDeselectAll                   Fjern alle valg
+Imap_WizardDone                          {count} bøtte(r) opprettet og tilordnet.
+Imap_WizardEmpty                         Ingen flere mapper funnet på serveren.
+Imap_WizardSelectAll                     Velg alle
+Imap_WizardTrain                         Tren nå
+NavWordSearch                            Ordsøk
+Settings_DescEnableProxy                 Start denne proxyen når POPFile starter.
+Settings_DescLogFormat                   Format for loggutdata (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Åpne nettleser automatisk ved oppstart.
+Settings_DescSQLiteBackup                Ta automatisk sikkerhetskopi av database før skjemaendringer.
+Settings_DescSQLiteFastWrites            Deaktiver databasesynkronisering (raskere, mindre sikkert).
+Settings_EnableService                   Aktiver tjeneste
+Settings_LogFormat                       Loggformat
+Settings_OpenBrowser                     Åpne nettleser
+Settings_SQLiteBackup                    SQLite sikkerhetskopi
+Settings_SQLiteFastWrites                SQLite rask skriving
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Legg til stoppord
+WordSearch_ColumnBuckets                 Bøtter
+WordSearch_ColumnWord                    Ord
+WordSearch_Coverage                      Dekning
+WordSearch_IsStopword                    Stoppord
+WordSearch_Loading                       Laster...
+WordSearch_NoResults                     Ingen resultater.
+WordSearch_NoStopwords                   Ingen stoppord.
+WordSearch_Placeholder                   Skriv inn et ord...
+WordSearch_RemoveStopword                Fjern stoppord
+WordSearch_Search                        Søk
+WordSearch_StopwordList                  Stoppordliste
+WordSearch_Title                         Ordsøk
+WordSearch_Total                         Totalt

@@ -544,3 +544,43 @@ Windows_Console                         הפעל POPFile בחלון קונסול
 Windows_NextTime                        <p><font color="red">שינוי זה לא ייכנס לתוקף עד הפעם הבאה שתפעיל את POPFile</font>
 
 Language_Name                           עברית
+Bucket_Title                             Bucket Configuration
+History_PerPage                          רשומות לעמוד
+Imap_Advanced                            מתקדם
+Imap_Cancel                              ביטול
+Imap_Wizard                              אשף ההגדרה
+Imap_WizardApply                         צור ומפה
+Imap_WizardClose                         סגור
+Imap_WizardDesc                          בחר תיקיות ליצירת דליים ומיפויים עבורן.
+Imap_WizardDeselectAll                   בטל בחירת הכל
+Imap_WizardDone                          {count} דלי(ים) נוצרו ומופו.
+Imap_WizardEmpty                         לא נמצאו תיקיות נוספות בשרת.
+Imap_WizardSelectAll                     בחר הכל
+Imap_WizardTrain                         אמן כעת
+NavWordSearch                            חיפוש מילים
+Settings_DescEnableProxy                 הפעל פרוקסי זה בעת הפעלת POPFile.
+Settings_DescLogFormat                   פורמט פלט היומן (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 פתח דפדפן אוטומטית בעת ההפעלה.
+Settings_DescSQLiteBackup                גבה אוטומטית את מסד הנתונים לפני שינויי סכימה.
+Settings_DescSQLiteFastWrites            השבת סנכרון מסד נתונים (מהיר יותר, פחות בטוח).
+Settings_EnableService                   הפעל שירות
+Settings_LogFormat                       פורמט יומן
+Settings_OpenBrowser                     פתח דפדפן
+Settings_SQLiteBackup                    גיבוי SQLite
+Settings_SQLiteFastWrites                כתיבה מהירה SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   הוסף מילת עצירה
+WordSearch_ColumnBuckets                 דליים
+WordSearch_ColumnWord                    מילה
+WordSearch_Coverage                      כיסוי
+WordSearch_IsStopword                    מילת עצירה
+WordSearch_Loading                       טוען...
+WordSearch_NoResults                     אין תוצאות.
+WordSearch_NoStopwords                   אין מילות עצירה.
+WordSearch_Placeholder                   הזן מילה...
+WordSearch_RemoveStopword                הסר מילת עצירה
+WordSearch_Search                        חפש
+WordSearch_StopwordList                  רשימת מילות עצירה
+WordSearch_Title                         חיפוש מילים
+WordSearch_Total                         סך הכל
+Bucket_Title                             דליים

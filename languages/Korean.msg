@@ -547,3 +547,41 @@ View_MessageBody	메시지 본문
 View_MessageHeader	메시지 헤더
 
 Language_Name                           한국어
+History_PerPage                          페이지당 항목
+Imap_Advanced                            고급
+Imap_Cancel                              취소
+Imap_Wizard                              설정 마법사
+Imap_WizardApply                         생성 및 매핑
+Imap_WizardClose                         닫기
+Imap_WizardDesc                          버킷과 매핑을 생성할 폴더를 선택하세요.
+Imap_WizardDeselectAll                   전체 선택 해제
+Imap_WizardDone                          {count}개의 버킷이 생성 및 매핑되었습니다.
+Imap_WizardEmpty                         서버에서 추가 폴더를 찾을 수 없습니다.
+Imap_WizardSelectAll                     전체 선택
+Imap_WizardTrain                         지금 훈련
+NavWordSearch                            단어 검색
+Settings_DescEnableProxy                 POPFile 시작 시 이 프록시를 시작합니다.
+Settings_DescLogFormat                   로그 출력 형식 (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 시작 시 자동으로 브라우저를 엽니다.
+Settings_DescSQLiteBackup                스키마 변경 전에 데이터베이스를 자동으로 백업합니다.
+Settings_DescSQLiteFastWrites            데이터베이스 동기화 비활성화 (더 빠르지만 덜 안전함).
+Settings_EnableService                   서비스 활성화
+Settings_LogFormat                       로그 형식
+Settings_OpenBrowser                     브라우저 열기
+Settings_SQLiteBackup                    SQLite 백업
+Settings_SQLiteFastWrites                SQLite 빠른 쓰기
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   불용어 추가
+WordSearch_ColumnBuckets                 버킷
+WordSearch_ColumnWord                    단어
+WordSearch_Coverage                      범위
+WordSearch_IsStopword                    불용어
+WordSearch_Loading                       로딩 중...
+WordSearch_NoResults                     결과 없음.
+WordSearch_NoStopwords                   불용어 없음.
+WordSearch_Placeholder                   단어 입력...
+WordSearch_RemoveStopword                불용어 제거
+WordSearch_Search                        검색
+WordSearch_StopwordList                  불용어 목록
+WordSearch_Title                         단어 검색
+WordSearch_Total                         합계

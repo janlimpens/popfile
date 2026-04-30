@@ -564,3 +564,41 @@ View_MessageHeader                      Mesaj Başlığı
 WikiLink                                index.php
 
 Language_Name                           Türkçe
+History_PerPage                          Sayfa başına kayıt
+Imap_Advanced                            Gelişmiş
+Imap_Cancel                              İptal
+Imap_Wizard                              Kurulum sihirbazı
+Imap_WizardApply                         Oluştur ve eşle
+Imap_WizardClose                         Kapat
+Imap_WizardDesc                          Kova ve eşlemeler oluşturmak için klasörleri seçin.
+Imap_WizardDeselectAll                   Tüm seçimi kaldır
+Imap_WizardDone                          {count} kova oluşturuldu ve eşlendi.
+Imap_WizardEmpty                         Sunucuda ek klasör bulunamadı.
+Imap_WizardSelectAll                     Tümünü seç
+Imap_WizardTrain                         Şimdi eğit
+NavWordSearch                            Kelime arama
+Settings_DescEnableProxy                 POPFile başladığında bu vekil sunucuyu başlat.
+Settings_DescLogFormat                   Günlük çıktı biçimi (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Başlangıçta tarayıcıyı otomatik aç.
+Settings_DescSQLiteBackup                Şema değişikliklerinden önce veritabanını otomatik yedekle.
+Settings_DescSQLiteFastWrites            Veritabanı senkronizasyonunu devre dışı bırak (daha hızlı, daha az güvenli).
+Settings_EnableService                   Hizmeti etkinleştir
+Settings_LogFormat                       Günlük biçimi
+Settings_OpenBrowser                     Tarayıcıyı aç
+Settings_SQLiteBackup                    SQLite yedekleme
+Settings_SQLiteFastWrites                SQLite hızlı yazma
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Durdurma kelimesi ekle
+WordSearch_ColumnBuckets                 Kovalar
+WordSearch_ColumnWord                    Kelime
+WordSearch_Coverage                      Kapsam
+WordSearch_IsStopword                    Durdurma kelimesi
+WordSearch_Loading                       Yükleniyor...
+WordSearch_NoResults                     Sonuç yok.
+WordSearch_NoStopwords                   Durdurma kelimesi yok.
+WordSearch_Placeholder                   Bir kelime girin...
+WordSearch_RemoveStopword                Durdurma kelimesini kaldır
+WordSearch_Search                        Ara
+WordSearch_StopwordList                  Durdurma kelimeleri listesi
+WordSearch_Title                         Kelime arama
+WordSearch_Total                         Toplam

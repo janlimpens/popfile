@@ -558,3 +558,41 @@ Advanced_Value Värde
 Advanced_Warning Det här är den fullständiga listan över POPFile-parametrar. Endast för avancerade användare: du kan ändra valfri parameter och klicka Uppdatera; det finns ingen giltighetsvalidering. Objekt visade i fetstil har ändrats från standardinställningen.
 
 Language_Name                           Svenska
+History_PerPage                          Poster per sida
+Imap_Advanced                            Avancerat
+Imap_Cancel                              Avbryt
+Imap_Wizard                              Installationsguide
+Imap_WizardApply                         Skapa och mappa
+Imap_WizardClose                         Stäng
+Imap_WizardDesc                          Välj mappar att skapa buckets och mappningar för.
+Imap_WizardDeselectAll                   Avmarkera alla
+Imap_WizardDone                          {count} bucket(s) skapade och mappade.
+Imap_WizardEmpty                         Inga ytterligare mappar hittades på servern.
+Imap_WizardSelectAll                     Välj alla
+Imap_WizardTrain                         Träna nu
+NavWordSearch                            Ordsökning
+Settings_DescEnableProxy                 Starta denna proxy när POPFile startar.
+Settings_DescLogFormat                   Format för loggutdata (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Öppna webbläsaren automatiskt vid start.
+Settings_DescSQLiteBackup                Ta automatiskt säkerhetskopia av databasen före schemaändringar.
+Settings_DescSQLiteFastWrites            Inaktivera databassynkronisering (snabbare, mindre säkert).
+Settings_EnableService                   Aktivera tjänst
+Settings_LogFormat                       Loggformat
+Settings_OpenBrowser                     Öppna webbläsare
+Settings_SQLiteBackup                    SQLite säkerhetskopia
+Settings_SQLiteFastWrites                SQLite snabb skrivning
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Lägg till stoppord
+WordSearch_ColumnBuckets                 Buckets
+WordSearch_ColumnWord                    Ord
+WordSearch_Coverage                      Täckning
+WordSearch_IsStopword                    Stoppord
+WordSearch_Loading                       Laddar...
+WordSearch_NoResults                     Inga resultat.
+WordSearch_NoStopwords                   Inga stoppord.
+WordSearch_Placeholder                   Ange ett ord...
+WordSearch_RemoveStopword                Ta bort stoppord
+WordSearch_Search                        Sök
+WordSearch_StopwordList                  Stoppordslista
+WordSearch_Title                         Ordsökning
+WordSearch_Total                         Totalt

@@ -564,3 +564,41 @@ View_MessageBody Viestin runko
 View_MessageHeader Viestin otsake
 
 Language_Name                           Suomi
+History_PerPage                          Merkintää sivua kohden
+Imap_Advanced                            Lisäasetukset
+Imap_Cancel                              Peruuta
+Imap_Wizard                              Asennusvelho
+Imap_WizardApply                         Luo ja yhdistä
+Imap_WizardClose                         Sulje
+Imap_WizardDesc                          Valitse kansiot, joille luodaan lokerot ja yhdistämiset.
+Imap_WizardDeselectAll                   Poista kaikki valinnat
+Imap_WizardDone                          {count} lokero(a) luotu ja yhdistetty.
+Imap_WizardEmpty                         Palvelimelta ei löytynyt lisäkansioita.
+Imap_WizardSelectAll                     Valitse kaikki
+Imap_WizardTrain                         Kouluta nyt
+NavWordSearch                            Sanahaku
+Settings_DescEnableProxy                 Käynnistä tämä välityspalvelin POPFilen käynnistyessä.
+Settings_DescLogFormat                   Lokin tulostusmuoto (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Avaa selain automaattisesti käynnistyessä.
+Settings_DescSQLiteBackup                Varmuuskopioi tietokanta automaattisesti ennen skeemamuutoksia.
+Settings_DescSQLiteFastWrites            Poista tietokannan synkronointi käytöstä (nopeampi, vähemmän turvallinen).
+Settings_EnableService                   Ota palvelu käyttöön
+Settings_LogFormat                       Lokin muoto
+Settings_OpenBrowser                     Avaa selain
+Settings_SQLiteBackup                    SQLite-varmuuskopio
+Settings_SQLiteFastWrites                SQLite nopea kirjoitus
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Lisää pysäytyssana
+WordSearch_ColumnBuckets                 Lokerot
+WordSearch_ColumnWord                    Sana
+WordSearch_Coverage                      Kattavuus
+WordSearch_IsStopword                    Pysäytyssana
+WordSearch_Loading                       Ladataan...
+WordSearch_NoResults                     Ei tuloksia.
+WordSearch_NoStopwords                   Ei pysäytyssanoja.
+WordSearch_Placeholder                   Kirjoita sana...
+WordSearch_RemoveStopword                Poista pysäytyssana
+WordSearch_Search                        Hae
+WordSearch_StopwordList                  Pysäytyssanalista
+WordSearch_Title                         Sanahaku
+WordSearch_Total                         Yhteensä

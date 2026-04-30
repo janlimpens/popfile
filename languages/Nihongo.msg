@@ -564,3 +564,41 @@ Status_LoadError	ステータスデータの読み込みに失敗しました。
 Status_NoChecks	確認項目なし。
 
 Language_Name                           日本語
+History_PerPage                          ページごとのエントリ
+Imap_Advanced                            詳細設定
+Imap_Cancel                              キャンセル
+Imap_Wizard                              セットアップウィザード
+Imap_WizardApply                         作成してマッピング
+Imap_WizardClose                         閉じる
+Imap_WizardDesc                          バケットとマッピングを作成するフォルダを選択してください。
+Imap_WizardDeselectAll                   すべて解除
+Imap_WizardDone                          {count} 個のバケットが作成され、マッピングされました。
+Imap_WizardEmpty                         サーバーに追加のフォルダが見つかりませんでした。
+Imap_WizardSelectAll                     すべて選択
+Imap_WizardTrain                         今すぐトレーニング
+NavWordSearch                            単語検索
+Settings_DescEnableProxy                 POPFile起動時にこのプロキシを開始する。
+Settings_DescLogFormat                   ログ出力形式（default, tabbed, csv, plain）。
+Settings_DescOpenBrowser                 起動時にブラウザを自動的に開く。
+Settings_DescSQLiteBackup                スキーマ変更前にデータベースを自動バックアップ。
+Settings_DescSQLiteFastWrites            データベース同期を無効にする（高速、安全性は低下）。
+Settings_EnableService                   サービスを有効にする
+Settings_LogFormat                       ログ形式
+Settings_OpenBrowser                     ブラウザを開く
+Settings_SQLiteBackup                    SQLite バックアップ
+Settings_SQLiteFastWrites                SQLite 高速書き込み
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   ストップワードを追加
+WordSearch_ColumnBuckets                 バケット
+WordSearch_ColumnWord                    単語
+WordSearch_Coverage                      カバレッジ
+WordSearch_IsStopword                    ストップワード
+WordSearch_Loading                       読み込み中...
+WordSearch_NoResults                     結果なし。
+WordSearch_NoStopwords                   ストップワードなし。
+WordSearch_Placeholder                   単語を入力...
+WordSearch_RemoveStopword                ストップワードを削除
+WordSearch_Search                        検索
+WordSearch_StopwordList                  ストップワードリスト
+WordSearch_Title                         単語検索
+WordSearch_Total                         合計

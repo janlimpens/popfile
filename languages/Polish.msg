@@ -547,3 +547,41 @@ Windows_NextTime <p><font color="red">Ta zmiana nie wejdzie w życie do następn
 Windows_TrayIcon Pokazać ikonę POPFile na pasku zadań Windows?
 
 Language_Name                           Polski
+History_PerPage                          Wpisów na stronę
+Imap_Advanced                            Zaawansowane
+Imap_Cancel                              Anuluj
+Imap_Wizard                              Kreator konfiguracji
+Imap_WizardApply                         Utwórz i mapuj
+Imap_WizardClose                         Zamknij
+Imap_WizardDesc                          Wybierz foldery, dla których utworzyć zasobniki i mapowania.
+Imap_WizardDeselectAll                   Odznacz wszystkie
+Imap_WizardDone                          Utworzono i zmapowano {count} zasobnik(ów).
+Imap_WizardEmpty                         Nie znaleziono dodatkowych folderów na serwerze.
+Imap_WizardSelectAll                     Zaznacz wszystkie
+Imap_WizardTrain                         Trenuj teraz
+NavWordSearch                            Szukanie słów
+Settings_DescEnableProxy                 Uruchom to proxy przy starcie POPFile.
+Settings_DescLogFormat                   Format wyjścia dziennika (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Automatycznie otwórz przeglądarkę przy starcie.
+Settings_DescSQLiteBackup                Automatycznie twórz kopię zapasową bazy przed zmianami schematu.
+Settings_DescSQLiteFastWrites            Wyłącz synchronizację bazy danych (szybciej, mniej bezpiecznie).
+Settings_EnableService                   Włącz usługę
+Settings_LogFormat                       Format dziennika
+Settings_OpenBrowser                     Otwórz przeglądarkę
+Settings_SQLiteBackup                    Kopia zapasowa SQLite
+Settings_SQLiteFastWrites                Szybki zapis SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Dodaj stop słowo
+WordSearch_ColumnBuckets                 Zasobniki
+WordSearch_ColumnWord                    Słowo
+WordSearch_Coverage                      Pokrycie
+WordSearch_IsStopword                    Stop słowo
+WordSearch_Loading                       Ładowanie...
+WordSearch_NoResults                     Brak wyników.
+WordSearch_NoStopwords                   Brak stop słów.
+WordSearch_Placeholder                   Wpisz słowo...
+WordSearch_RemoveStopword                Usuń stop słowo
+WordSearch_Search                        Szukaj
+WordSearch_StopwordList                  Lista stop słów
+WordSearch_Title                         Szukanie słów
+WordSearch_Total                         Razem

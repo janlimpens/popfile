@@ -552,3 +552,41 @@ Windows_NextTime	Наступного разу
 Windows_TrayIcon	Значок у треї
 
 Language_Name                           Українська
+History_PerPage                          Записів на сторінці
+Imap_Advanced                            Розширені
+Imap_Cancel                              Скасувати
+Imap_Wizard                              Майстер налаштування
+Imap_WizardApply                         Створити та зіставити
+Imap_WizardClose                         Закрити
+Imap_WizardDesc                          Виберіть папки для створення категорій та зіставлень.
+Imap_WizardDeselectAll                   Зняти вибір
+Imap_WizardDone                          Створено та зіставлено категорій: {count}.
+Imap_WizardEmpty                         Додаткових папок на сервері не знайдено.
+Imap_WizardSelectAll                     Вибрати все
+Imap_WizardTrain                         Навчити зараз
+NavWordSearch                            Пошук слів
+Settings_DescEnableProxy                 Запускати цей проксі при старті POPFile.
+Settings_DescLogFormat                   Формат виводу журналу (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Автоматично відкривати браузер при запуску.
+Settings_DescSQLiteBackup                Автоматично створювати резервну копію БД перед змінами схеми.
+Settings_DescSQLiteFastWrites            Вимкнути синхронізацію БД (швидше, менш безпечно).
+Settings_EnableService                   Увімкнути службу
+Settings_LogFormat                       Формат журналу
+Settings_OpenBrowser                     Відкрити браузер
+Settings_SQLiteBackup                    Резервна копія SQLite
+Settings_SQLiteFastWrites                Швидкий запис SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Додати стоп-слово
+WordSearch_ColumnBuckets                 Категорії
+WordSearch_ColumnWord                    Слово
+WordSearch_Coverage                      Охоплення
+WordSearch_IsStopword                    Стоп-слово
+WordSearch_Loading                       Завантаження...
+WordSearch_NoResults                     Немає результатів.
+WordSearch_NoStopwords                   Немає стоп-слів.
+WordSearch_Placeholder                   Введіть слово...
+WordSearch_RemoveStopword                Видалити стоп-слово
+WordSearch_Search                        Шукати
+WordSearch_StopwordList                  Список стоп-слів
+WordSearch_Title                         Пошук слів
+WordSearch_Total                         Всього

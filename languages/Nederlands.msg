@@ -547,3 +547,41 @@ Advanced_Value Waarde
 Advanced_Warning Dit is de volledige lijst van POPFile-parameters. Alleen voor gevorderde gebruikers: u kunt elk item wijzigen en op Bijwerken klikken; er is geen geldigheidscontrole. Vetgedrukte items zijn gewijzigd ten opzichte van de standaardinstelling.
 
 Language_Name                           Nederlands
+History_PerPage                          Items per pagina
+Imap_Advanced                            Geavanceerd
+Imap_Cancel                              Annuleren
+Imap_Wizard                              Installatiewizard
+Imap_WizardApply                         Aanmaken en koppelen
+Imap_WizardClose                         Sluiten
+Imap_WizardDesc                          Selecteer mappen om buckets en koppelingen voor aan te maken.
+Imap_WizardDeselectAll                   Alles deselecteren
+Imap_WizardDone                          {count} bucket(s) aangemaakt en gekoppeld.
+Imap_WizardEmpty                         Geen extra mappen gevonden op de server.
+Imap_WizardSelectAll                     Alles selecteren
+Imap_WizardTrain                         Nu trainen
+NavWordSearch                            Woorden zoeken
+Settings_DescEnableProxy                 Start deze proxy wanneer POPFile opstart.
+Settings_DescLogFormat                   Formaat van loguitvoer (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Browser automatisch openen bij opstarten.
+Settings_DescSQLiteBackup                Automatisch back-up maken van database voor schema-wijzigingen.
+Settings_DescSQLiteFastWrites            Database synchronisatie uitschakelen (sneller, minder veilig).
+Settings_EnableService                   Service inschakelen
+Settings_LogFormat                       Logformaat
+Settings_OpenBrowser                     Browser openen
+Settings_SQLiteBackup                    SQLite back-up
+Settings_SQLiteFastWrites                SQLite snel schrijven
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Stopwoord toevoegen
+WordSearch_ColumnBuckets                 Buckets
+WordSearch_ColumnWord                    Woord
+WordSearch_Coverage                      Dekking
+WordSearch_IsStopword                    Stopwoord
+WordSearch_Loading                       Laden...
+WordSearch_NoResults                     Geen resultaten.
+WordSearch_NoStopwords                   Geen stopwoorden.
+WordSearch_Placeholder                   Voer een woord in...
+WordSearch_RemoveStopword                Stopwoord verwijderen
+WordSearch_Search                        Zoeken
+WordSearch_StopwordList                  Stopwoordenlijst
+WordSearch_Title                         Woorden zoeken
+WordSearch_Total                         Totaal

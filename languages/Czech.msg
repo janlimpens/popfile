@@ -561,3 +561,41 @@ Probability	Věrohodnost
 Score	Skóre
 
 Language_Name                           Čeština
+History_PerPage                          Položek na stránku
+Imap_Advanced                            Pokročilé
+Imap_Cancel                              Zrušit
+Imap_Wizard                              Průvodce nastavením
+Imap_WizardApply                         Vytvořit a mapovat
+Imap_WizardClose                         Zavřít
+Imap_WizardDesc                          Vyberte složky pro vytvoření přihrádek a mapování.
+Imap_WizardDeselectAll                   Zrušit výběr
+Imap_WizardDone                          {count} přihrádka(ek) vytvořeno a namapováno.
+Imap_WizardEmpty                         Na serveru nebyly nalezeny žádné další složky.
+Imap_WizardSelectAll                     Vybrat vše
+Imap_WizardTrain                         Trénovat nyní
+NavWordSearch                            Hledání slov
+Settings_DescEnableProxy                 Spustit toto proxy při startu POPFile.
+Settings_DescLogFormat                   Formát výstupu logu (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Automaticky otevřít prohlížeč při spuštění.
+Settings_DescSQLiteBackup                Automaticky zálohovat databázi před změnami schématu.
+Settings_DescSQLiteFastWrites            Vypnout synchronizaci databáze (rychlejší, méně bezpečné).
+Settings_EnableService                   Povolit službu
+Settings_LogFormat                       Formát logu
+Settings_OpenBrowser                     Otevřít prohlížeč
+Settings_SQLiteBackup                    Záloha SQLite
+Settings_SQLiteFastWrites                Rychlý zápis SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Přidat stop slovo
+WordSearch_ColumnBuckets                 Přihrádky
+WordSearch_ColumnWord                    Slovo
+WordSearch_Coverage                      Pokrytí
+WordSearch_IsStopword                    Stop slovo
+WordSearch_Loading                       Načítání...
+WordSearch_NoResults                     Žádné výsledky.
+WordSearch_NoStopwords                   Žádná stop slova.
+WordSearch_Placeholder                   Zadejte slovo...
+WordSearch_RemoveStopword                Odebrat stop slovo
+WordSearch_Search                        Hledat
+WordSearch_StopwordList                  Seznam stop slov
+WordSearch_Title                         Hledání slov
+WordSearch_Total                         Celkem

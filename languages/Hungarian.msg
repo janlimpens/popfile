@@ -543,3 +543,41 @@ Windows_NextTime <p><font color="red">Ez a változtatás csak a POPFile követke
 Windows_TrayIcon POPFile ikon megjelenítése a Windows rendszertálcán?
 
 Language_Name                           Magyar
+History_PerPage                          Bejegyzés oldalanként
+Imap_Advanced                            Haladó
+Imap_Cancel                              Mégse
+Imap_Wizard                              Beállítási varázsló
+Imap_WizardApply                         Létrehozás és hozzárendelés
+Imap_WizardClose                         Bezárás
+Imap_WizardDesc                          Válasszon mappákat, amelyekhez vödröket és hozzárendeléseket hoz létre.
+Imap_WizardDeselectAll                   Kijelölés megszüntetése
+Imap_WizardDone                          {count} vödör/vödrök létrehozva és hozzárendelve.
+Imap_WizardEmpty                         Nem található további mappa a kiszolgálón.
+Imap_WizardSelectAll                     Összes kiválasztása
+Imap_WizardTrain                         Edzés most
+NavWordSearch                            Szókeresés
+Settings_DescEnableProxy                 Proxy indítása a POPFile indulásakor.
+Settings_DescLogFormat                   Napló kimeneti formátuma (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Böngésző automatikus megnyitása indításkor.
+Settings_DescSQLiteBackup                Adatbázis automatikus biztonsági mentése séma módosítása előtt.
+Settings_DescSQLiteFastWrites            Adatbázis szinkronizáció letiltása (gyorsabb, kevésbé biztonságos).
+Settings_EnableService                   Szolgáltatás engedélyezése
+Settings_LogFormat                       Napló formátum
+Settings_OpenBrowser                     Böngésző megnyitása
+Settings_SQLiteBackup                    SQLite biztonsági mentés
+Settings_SQLiteFastWrites                SQLite gyors írás
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Tiltószó hozzáadása
+WordSearch_ColumnBuckets                 Vödrök
+WordSearch_ColumnWord                    Szó
+WordSearch_Coverage                      Lefedettség
+WordSearch_IsStopword                    Tiltószó
+WordSearch_Loading                       Betöltés...
+WordSearch_NoResults                     Nincs találat.
+WordSearch_NoStopwords                   Nincsenek tiltószavak.
+WordSearch_Placeholder                   Írjon be egy szót...
+WordSearch_RemoveStopword                Tiltószó eltávolítása
+WordSearch_Search                        Keresés
+WordSearch_StopwordList                  Tiltószó lista
+WordSearch_Title                         Szókeresés
+WordSearch_Total                         Összesen

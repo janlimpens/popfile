@@ -564,3 +564,41 @@ WordView_Move Déplacer
 View_DownloadMessage Télécharger le message
 
 Language_Name                           Français
+History_PerPage                          Entrées par page
+Imap_Advanced                            Avancé
+Imap_Cancel                              Annuler
+Imap_Wizard                              Assistant de configuration
+Imap_WizardApply                         Créer et mapper
+Imap_WizardClose                         Fermer
+Imap_WizardDesc                          Sélectionnez les dossiers pour créer des buckets et des mappings.
+Imap_WizardDeselectAll                   Tout désélectionner
+Imap_WizardDone                          {count} bucket(s) créé(s) et mappé(s).
+Imap_WizardEmpty                         Aucun dossier supplémentaire trouvé sur le serveur.
+Imap_WizardSelectAll                     Tout sélectionner
+Imap_WizardTrain                         Entraîner maintenant
+NavWordSearch                            Recherche de mots
+Settings_DescEnableProxy                 Démarrer ce proxy au lancement de POPFile.
+Settings_DescLogFormat                   Format de sortie du journal (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Ouvrir automatiquement le navigateur au démarrage.
+Settings_DescSQLiteBackup                Sauvegarder automatiquement la base avant les changements de schéma.
+Settings_DescSQLiteFastWrites            Désactiver la synchronisation de la base (plus rapide, moins sûr).
+Settings_EnableService                   Activer le service
+Settings_LogFormat                       Format du journal
+Settings_OpenBrowser                     Ouvrir le navigateur
+Settings_SQLiteBackup                    Sauvegarde SQLite
+Settings_SQLiteFastWrites                Écriture rapide SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Ajouter mot vide
+WordSearch_ColumnBuckets                 Buckets
+WordSearch_ColumnWord                    Mot
+WordSearch_Coverage                      Couverture
+WordSearch_IsStopword                    Mot vide
+WordSearch_Loading                       Chargement...
+WordSearch_NoResults                     Aucun résultat.
+WordSearch_NoStopwords                   Aucun mot vide.
+WordSearch_Placeholder                   Saisissez un mot...
+WordSearch_RemoveStopword                Supprimer mot vide
+WordSearch_Search                        Rechercher
+WordSearch_StopwordList                  Liste de mots vides
+WordSearch_Title                         Recherche de mots
+WordSearch_Total                         Total

@@ -549,3 +549,41 @@ Windows_TrayIcon Zobraziť ikonu POPFile na paneli úloh Windows?
 Word Slovo
 
 Language_Name                           Slovenčina
+History_PerPage                          Záznamov na stranu
+Imap_Advanced                            Pokročilé
+Imap_Cancel                              Zrušiť
+Imap_Wizard                              Sprievodca nastavením
+Imap_WizardApply                         Vytvoriť a mapovať
+Imap_WizardClose                         Zatvoriť
+Imap_WizardDesc                          Vyberte priečinky na vytvorenie priečinkov a mapovaní.
+Imap_WizardDeselectAll                   Zrušiť výber
+Imap_WizardDone                          {count} priečinkov vytvorených a namapovaných.
+Imap_WizardEmpty                         Na serveri neboli nájdené žiadne ďalšie priečinky.
+Imap_WizardSelectAll                     Vybrať všetko
+Imap_WizardTrain                         Trénovať teraz
+NavWordSearch                            Hľadanie slov
+Settings_DescEnableProxy                 Spustiť toto proxy pri štarte POPFile.
+Settings_DescLogFormat                   Formát výstupu logu (default, tabbed, csv, plain).
+Settings_DescOpenBrowser                 Automaticky otvoriť prehliadač pri spustení.
+Settings_DescSQLiteBackup                Automaticky zálohovať databázu pred zmenami schémy.
+Settings_DescSQLiteFastWrites            Vypnúť synchronizáciu databázy (rýchlejšie, menej bezpečné).
+Settings_EnableService                   Povoliť službu
+Settings_LogFormat                       Formát logu
+Settings_OpenBrowser                     Otvoriť prehliadač
+Settings_SQLiteBackup                    Záloha SQLite
+Settings_SQLiteFastWrites                Rýchly zápis SQLite
+Settings_SectionIMAP                     IMAP
+WordSearch_AddStopword                   Pridať stop slovo
+WordSearch_ColumnBuckets                 Priečinky
+WordSearch_ColumnWord                    Slovo
+WordSearch_Coverage                      Pokrytie
+WordSearch_IsStopword                    Stop slovo
+WordSearch_Loading                       Načítavanie...
+WordSearch_NoResults                     Žiadne výsledky.
+WordSearch_NoStopwords                   Žiadne stop slová.
+WordSearch_Placeholder                   Zadajte slovo...
+WordSearch_RemoveStopword                Odstrániť stop slovo
+WordSearch_Search                        Hľadať
+WordSearch_StopwordList                  Zoznam stop slov
+WordSearch_Title                         Hľadanie slov
+WordSearch_Total                         Celkom
