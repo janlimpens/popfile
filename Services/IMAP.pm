@@ -32,11 +32,11 @@ connect.
 
 =cut
 
-field $classifier :writer(set_classifier) = 0;
-field $history :writer(set_history) = 0;
+field $classifier :reader :writer(set_classifier) = 0;
+field $history :reader :writer(set_history) = 0;
 field %folders;
 field @mailboxes;
-field $folder_change_flag = 0;
+field $folder_change_flag :reader = 0;
 field %hash_values;
 field %pending_folder_moves;
 field $api_session = '';
@@ -44,8 +44,8 @@ field $imap_error = '';
 field $last_update = 0;
 field $timer_id = undef;
 field $poll_pid = undef;
-field $poll_running = 0;
-field $poll_started_at = 0;
+field $poll_running :reader = 0;
+field $poll_started_at :reader = 0;
 field @pending_train_flags;
 field @pending_train_buckets;
 field %_uid_next_override;
@@ -84,6 +84,33 @@ method initialize() {
     $last_update = time - $self->config('update_interval');
     return 1
 }
+
+=head2 start()
+
+=head2 folders()
+
+Returns the current C<%folders> map as a hashref.  Keys are folder names,
+values are hashes with C<watched>, C<output>, and C<imap> keys.
+
+=cut
+
+method folders() { \%folders }
+
+=head2 mailboxes()
+
+Returns the current C<@mailboxes> list from the last C<get_mailbox_list()> call.
+
+=cut
+
+method mailboxes() { \@mailboxes }
+
+=head2 pending_folder_moves()
+
+Returns the current C<%pending_folder_moves> as a hashref (hash → target bucket).
+
+=cut
+
+method pending_folder_moves() { \%pending_folder_moves }
 
 =head2 start()
 
@@ -203,6 +230,27 @@ method poll() {
         }
     );
     $poll_pid = ref $sp ? $sp->pid() : undef;
+}
+
+=head2 poll_sync($timeout)
+
+Blocks the caller until the current IMAP poll cycle completes or C<$timeout>
+seconds elapse (default 30).  Starts the IOLoop if it is not already running.
+Returns 1 if the poll completed, 0 on timeout.
+
+=cut
+
+method poll_sync ($timeout = 30) {
+    $self->poll();
+    my $deadline = $self->_now() + $timeout;
+    my $timer = Mojo::IOLoop->recurring(0.1 => sub {
+        return if $poll_running && $self->_now() < $deadline;
+        Mojo::IOLoop->stop();
+    });
+    Mojo::IOLoop->start()
+        unless Mojo::IOLoop->is_running();
+    Mojo::IOLoop->remove($timer);
+    return !$poll_running ? 1 : 0
 }
 
 method _run_poll_work() {
