@@ -290,26 +290,26 @@
       <h2>{t('Wizard_Done')}</h2>
       {#if protocol === 'IMAP'}
         <p class="wizard-desc">
-          POPFile is now watching your IMAP folders. New messages will be classified automatically
-          and moved to the folders you selected.
+          POPFile is now watching your inbox. New messages will be classified
+          and sorted into the folders you picked.
         </p>
         <p class="wizard-desc">
-          <strong>POPFile hasn't learned yet.</strong> It doesn't know which emails belong where.
-          You need to help it — either by training from existing sorted mail
-          (Settings → IMAP → Train), or by manually reclassifying messages
-          (History → click a message → Reclassify). Every correction makes it smarter.
-          You'll see it picks up the drift pretty quickly — watch it learn!
+          <strong>It's still learning, though.</strong> At first, everything lands in
+          <em>unclassified</em> — that's normal. Head to the History page, click a message,
+          and tell POPFile where it belongs. Every correction makes it sharper.
+          You'll see it pick up the drift pretty quickly — watch it learn!
         </p>
       {:else}
         <p class="wizard-desc">
-          POPFile is now set up as a POP3 proxy. Configure your mail client to connect
-          to POPFile (host where POPFile runs, port 1110) instead of your real mail server.
-          POPFile will insert an X-Text-Classification header into every message.
+          POPFile is ready. Point your mail client at the machine running POPFile
+          (port 1110) instead of your usual mail server. It'll tag every incoming
+          message with a classification header.
         </p>
         <p class="wizard-desc">
-          <strong>Next steps:</strong> Go to the Corpus page and create your categories (buckets).
-          As new emails arrive, tag them in the History view — each correction trains
-          the classifier. You can also add magnet rules for automatic sorting.
+          <strong>Before it can sort anything, it needs to know your categories.</strong>
+          Drop by the Corpus page and create a few buckets — work, personal, newsletters,
+          whatever makes sense for you. Then, as mail comes in, visit the History page
+          and tag messages. POPFile learns from every one.
         </p>
       {/if}
       <footer class="wizard-footer">
