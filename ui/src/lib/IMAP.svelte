@@ -70,6 +70,7 @@
       mappings = data.mappings ?? [];
     }
     if (bucketRes.ok) loadedBuckets = await bucketRes.json();
+    if (cfg.imap_hostname && cfg.imap_port) fetchServerFolders();
   }
 
   // ── Save connection settings ──────────────────────────────────────────
