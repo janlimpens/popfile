@@ -60,8 +60,12 @@ echo "  Logs:   ~/.popfile/bin/popfile logs"
 
 # ── offer systemd ──
 if command -v systemctl >/dev/null 2>&1; then
-    SERVICE_FILE="$DEST/popfile.service"
-    cat > "$SERVICE_FILE" << SERVICEOF
+    echo ""
+    printf "Install POPFile as a background service (systemd)? [y/N] "
+    read -r answer
+    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+        SERVICE_FILE="$DEST/popfile.service"
+        cat > "$SERVICE_FILE" << SERVICEOF
 [Unit]
 Description=POPFile email classifier
 After=network-online.target
@@ -79,11 +83,13 @@ WorkingDirectory=$DEST
 [Install]
 WantedBy=default.target
 SERVICEOF
-    echo ""
-    echo "To run POPFile as a background service:"
-    echo "  mkdir -p ~/.config/systemd/user"
-    echo "  ln -s $SERVICE_FILE ~/.config/systemd/user/popfile.service"
-    echo "  systemctl --user daemon-reload"
-    echo "  systemctl --user enable --now popfile"
+        mkdir -p "$HOME/.config/systemd/user"
+        ln -sf "$SERVICE_FILE" "$HOME/.config/systemd/user/popfile.service"
+        systemctl --user daemon-reload
+        systemctl --user enable --now popfile
+        echo "→ POPFile service installed and started."
+        echo "  Stop:   systemctl --user stop popfile"
+        echo "  Logs:   journalctl --user -u popfile -f"
+    fi
 fi
 echo "  Stop:   kill \$(cat $DEST/popfile.pid)"
