@@ -41,6 +41,7 @@
     if (!cfg.imap_hostname) wizardOpen.set(true);
     window.addEventListener('hashchange', () => {
       const [p, sub] = parseHash();
+      if (p === 'wizard') { wizardOpen.set(true); return }
       page = p;
       pageSub = sub;
     });
@@ -52,6 +53,7 @@
     ['magnets',  'NavMagnets',  'Magnets',   'bookmark'],
     ['status',   'NavStatus',   'Status',    'monitoring'],
     ['settings', 'NavSettings', 'Settings',  'settings'],
+    ['wizard',   'Wizard',     'Wizard',    'auto_fix_high'],
   ];
 
   function toggleTheme() {
@@ -63,10 +65,17 @@
   <span class="logo"><img src="otto.png" alt="" class="logo-img" /> POPFile</span>
   <div class="nav-links">
     {#each NAV as [id, key, fallback, icon]}
+      {#if id === 'wizard'}
+        <a href="#" class:active={false}
+          onclick={(e) => { e.preventDefault(); wizardOpen.set(true); }}>
+          <span class="icon nav-icon">{icon}</span>
+        </a>
+      {:else}
       <a href="#{id}" class:active={page === id}>
         <span class="icon nav-icon">{icon}</span>
         {t(key) === key ? fallback : t(key)}
       </a>
+      {/if}
     {/each}
   </div>
   <button class="theme-btn" onclick={toggleTheme} title="Toggle theme">
