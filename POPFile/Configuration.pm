@@ -323,6 +323,8 @@ method load_configuration() {
                 $value = '' if !defined($value);
                 $parameter = $self->upgrade_parameter($parameter);
                 if (defined($configuration_parameters{$parameter})) {
+                    $value = $self->_decrypt_config($value)
+                        if $self->_is_sensitive_key($parameter);
                     $configuration_parameters{$parameter}{value} = $value;
                 } else {
                     $deprecated_parameters{$parameter} = $value;
@@ -356,7 +358,10 @@ method save_configuration() {
     }
     if (open my $tmp, '>', $config_temp) {
         for my $key (sort keys %configuration_parameters) {
-            print $tmp "$key $configuration_parameters{$key}{value}\n";
+            my $value = $configuration_parameters{$key}{value};
+            $value = $self->_encrypt_config($value)
+                if $self->_is_sensitive_key($key);
+            print $tmp "$key $value\n";
         }
         close $tmp;
         if (copy($config_temp, $config_file)) {
@@ -368,6 +373,8 @@ method save_configuration() {
     } else {
         $self->log_msg(WARN => "Couldn't open a temporary configuration file $config_temp");
     }
+    chmod 0600, $config_file
+        if -e $config_file;
 }
 
 =head2 get_user_path
@@ -488,6 +495,77 @@ no longer registered by any module, or C<undef> if it was never seen.
 
 method deprecated_parameter ($name) {
     return $deprecated_parameters{$name};
+}
+
+=head2 _is_sensitive_key
+
+Returns true for configuration keys whose values should be encrypted at rest.
+Currently covers C<imap_password>.
+
+=cut
+
+my @SENSITIVE_KEYS = qw(imap_password);
+
+method _is_sensitive_key($key) {
+    return 1 if grep { $_ eq $key } @SENSITIVE_KEYS;
+    return 0
+}
+
+=head2 _encrypt_config
+
+Encrypts a sensitive configuration value using AES-256-CBC with a key derived
+from the POPFile root path.  Returns the base64-encoded ciphertext prefixed
+with C<ENC:> so legacy plaintext configs are not broken on upgrade.
+
+=cut
+
+method _encrypt_config($plaintext) {
+    return $plaintext if $plaintext eq '' || $plaintext =~ /^ENC:/;
+    require Crypt::Cipher::AES;
+    require Crypt::Mode::CBC;
+    require MIME::Base64;
+    my $key = $self->_crypto_key();
+    my $iv = Crypt::Cipher::AES->new($key)->encrypt('0' x 16);
+    my $padded = $plaintext . chr(16 - (length($plaintext) % 16)) x (16 - (length($plaintext) % 16));
+    my $cbc = Crypt::Mode::CBC->new('AES', 0);
+    my $cipher = $cbc->encrypt($padded, $key, $iv);
+    return 'ENC:' . MIME::Base64::encode_base64($iv . $cipher, '')
+}
+
+=head2 _decrypt_config
+
+Decrypts a value previously encrypted with C<_encrypt_config>.  Returns the
+input unchanged if it is not prefixed with C<ENC:>.
+
+=cut
+
+method _decrypt_config($ciphertext) {
+    return $ciphertext unless $ciphertext =~ s/^ENC://;
+    require MIME::Base64;
+    require Crypt::Mode::CBC;
+    my $raw = MIME::Base64::decode_base64($ciphertext);
+    return $ciphertext if length($raw) < 16;
+    my $iv = substr($raw, 0, 16, '');
+    my $key = $self->_crypto_key();
+    my $cbc = Crypt::Mode::CBC->new('AES', 0);
+    my $plain = $cbc->decrypt($raw, $key, $iv);
+    my $pad = ord(substr($plain, -1));
+    $plain = substr($plain, 0, -$pad)
+        if $pad > 0 && $pad <= 16;
+    return $plain
+}
+
+=head2 _crypto_key
+
+Derives a 32-byte AES-256 key from the POPFile root path using SHA-256.
+The key is deterministic per installation.
+
+=cut
+
+method _crypto_key() {
+    require Digest::SHA;
+    my $seed = $popfile_root . ':popfile-config-key';
+    return Digest::SHA::sha256($seed)
 }
 
 1;

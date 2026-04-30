@@ -93,4 +93,41 @@ subtest 'get_user_path and get_root_path' => sub {
     ok( -e $root_path, 'resolved root path actually exists' );
 };
 
+subtest 'sensitive config values are encrypted at rest' => sub {
+    my ($config_local, $mq_local, $tmpdir_local) = TestHelper::setup();
+    $config_local->set_started(0);
+    $config_local->parameter('api_password', '');
+    $config_local->parameter('imap_password', 's3cret');
+    $config_local->parameter('imap_hostname', 'mail.example.com');
+    $config_local->parameter('imap_login', 'alice');
+    $config_local->set_started(1);
+    $config_local->set_save_needed(1);
+    $config_local->save_configuration();
+
+    my $cfg_file = "$tmpdir_local/popfile.cfg";
+    ok(-f $cfg_file, 'config file written');
+    open my $fh, '<', $cfg_file;
+    my %on_disk;
+    while (<$fh>) { chomp; my ($k, $v) = split / /, $_, 2; $on_disk{$k} = $v }
+    close $fh;
+
+    ok($on_disk{imap_password} =~ /^ENC:/, 'password encrypted on disk');
+    is($on_disk{imap_hostname}, 'mail.example.com', 'hostname plaintext on disk');
+    is($on_disk{imap_login}, 'alice', 'login plaintext on disk');
+
+    my $config2 = POPFile::Configuration->new();
+    $config2->set_configuration($config2);
+    $config2->set_mq($mq_local);
+    $config2->set_popfile_root($TestHelper::REPO_ROOT);
+    $config2->set_popfile_user($tmpdir_local);
+    $config2->set_started(0);
+    $config2->parameter('imap_password', '');
+    $config2->parameter('imap_hostname', '');
+    $config2->parameter('imap_login', '');
+    $config2->set_started(1);
+    $config2->load_configuration();
+    is($config2->parameter('imap_password'), 's3cret', 'password decrypted correctly');
+    is($config2->parameter('imap_hostname'), 'mail.example.com', 'hostname intact');
+};
+
 done_testing;
