@@ -3,49 +3,62 @@
   import { t } from './locale.svelte.js';
   import { wizardOpen } from './wizard.svelte.js';
 
+  const PROVIDERS = {
+    'gmail.com':      { host: 'imap.gmail.com',         port: 993, enc: 'SSL',     hint: 'Use an app password: https://myaccount.google.com/apppasswords' },
+    'googlemail.com': { host: 'imap.gmail.com',         port: 993, enc: 'SSL',     hint: 'Use an app password: https://myaccount.google.com/apppasswords' },
+    'outlook.com':    { host: 'outlook.office365.com',  port: 993, enc: 'SSL' },
+    'hotmail.com':    { host: 'outlook.office365.com',  port: 993, enc: 'SSL' },
+    'live.com':       { host: 'outlook.office365.com',  port: 993, enc: 'SSL' },
+    'yahoo.com':      { host: 'imap.mail.yahoo.com',    port: 993, enc: 'SSL',     hint: 'Use an app password: https://account.yahoo.com/security' },
+    'icloud.com':     { host: 'imap.mail.me.com',       port: 993, enc: 'SSL',     hint: 'Use an app-specific password: https://appleid.apple.com' },
+    'me.com':         { host: 'imap.mail.me.com',       port: 993, enc: 'SSL',     hint: 'Use an app-specific password: https://appleid.apple.com' },
+    'gmx.net':        { host: 'imap.gmx.net',           port: 993, enc: 'SSL' },
+    'gmx.de':         { host: 'imap.gmx.net',           port: 993, enc: 'SSL' },
+    'web.de':         { host: 'imap.web.de',            port: 993, enc: 'SSL' },
+    'zoho.com':       { host: 'imap.zoho.com',          port: 993, enc: 'SSL' },
+    'fastmail.com':   { host: 'imap.fastmail.com',      port: 993, enc: 'SSL' },
+    'mailbox.org':    { host: 'imap.mailbox.org',       port: 993, enc: 'SSL' },
+    'posteo.de':      { host: 'imap.posteo.de',         port: 993, enc: 'SSL' },
+    'proton.me':      { host: '127.0.0.1',              port: 1143, enc: 'none',   hint: 'Requires Proton Mail Bridge: https://proton.me/mail/bridge' },
+    'protonmail.com': { host: '127.0.0.1',              port: 1143, enc: 'none',   hint: 'Requires Proton Mail Bridge: https://proton.me/mail/bridge' },
+  };
+
   let step = $state(1);
   let email = $state('');
+  let provider = $state(null);
   let detecting = $state(false);
 
-  // Server settings — pre-filled by auto-detect or empty for manual
-  let server = $state('');
-  let port = $state(993);
-  let encryption = $state('SSL');
+  // Server settings
   let login = $state('');
   let password = $state('');
+  let server = $state('');
+  let encryption = $state('SSL');
+  let port = $state(993);
   let testResult = $state(null);
   let testing = $state(false);
+  let exitPrompt = $state(false);
 
-  // Folder mapping (step 4)
-  let folders = $state([]);
-  let selected = $state(new Set());
-  let wizardDone = $state([]);
+  function handleKeydown(e) {
+    if (e.key === 'Escape') { exitPrompt = true }
+  }
 
   function startDetection() {
     if (!email.trim()) return;
-    detecting = true;
-    // TODO: auto-detect in next commit
-    detecting = false;
-    step = 3;
-  }
-
-  function folderToBucket(f) {
-    let name = f.replace(/^INBOX\./, '')
-      .replace(/&APY-/g, 'ö').replace(/&APw-/g, 'ü')
-      .replace(/&AOQ-/g, 'ä').replace(/&AN8-/g, 'ß')
-      .replace(/&AME-/g, 'é').replace(/&APE-/g, 'è')
-      .replace(/&AMg-/g, 'ê').replace(/&AMQ-/g, 'ë')
-      .replace(/&AMk-/g, 'í').replace(/&AM0-/g, 'ó')
-      .replace(/&APU-/g, 'ú').replace(/&AM8-/g, 'ñ')
-      .replace(/&AMM-/g, 'ç')
-      .replace(/&[A-Za-z0-9+\/]+-/g, '')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s_-]/gi, '').replace(/\s+/g, '').toLowerCase();
-    return name || f.replace(/[^a-z0-9]/gi, '').toLowerCase();
+    const domain = email.split('@')[1]?.toLowerCase();
+    provider = PROVIDERS[domain] || null;
+    login = email;
+    if (provider) {
+      server = provider.host;
+      port = provider.port;
+      encryption = provider.enc;
+    }
+    step = 2;
   }
 
   function dismiss() { wizardOpen.set(false) }
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="wizard-overlay">
   <div class="wizard-card">
@@ -61,36 +74,25 @@
           onkeydown={(e) => e.key === 'Enter' && startDetection()} />
       </div>
       <footer class="wizard-footer">
+        <button class="btn btn-secondary" onclick={dismiss}>Skip</button>
         <button class="btn" onclick={startDetection} disabled={!email.trim()}>
-          Find settings
+          {t('Wizard_Next')}
         </button>
       </footer>
 
-    <!-- Step 2: detecting -->
+    <!-- Step 2: provider found or manual -->
     {:else if step === 2}
-      <h2>{t('Imap_Testing')}</h2>
-      <p class="wizard-desc">Trying to discover your mail server settings…</p>
-
-    <!-- Step 3: server settings (pre-filled or manual) -->
-    {:else if step === 3}
-      <h2>Mail Server</h2>
+      {#if provider}
+        <h2>{t('Imap_Connected')}</h2>
+        <p class="wizard-desc">
+          Pre-configured for <strong>{provider.host}</strong>.
+          {#if provider.hint}<br /><em>{provider.hint}</em>{/if}
+        </p>
+      {:else}
+        <h2>{t('Wizard_Manual')}</h2>
+        <p class="wizard-desc">{t('Wizard_ManualDesc')}</p>
+      {/if}
       <div class="wizard-fields">
-        <div class="wizard-field">
-          <label for="wiz-server">{t('Imap_Server')}</label>
-          <input id="wiz-server" type="text" bind:value={server} />
-        </div>
-        <div class="wizard-field">
-          <label for="wiz-port">{t('Imap_Port')}</label>
-          <input id="wiz-port" type="number" bind:value={port} />
-        </div>
-        <div class="wizard-field">
-          <label for="wiz-enc">Encryption</label>
-          <select id="wiz-enc" bind:value={encryption}>
-            <option value="SSL">SSL/TLS</option>
-            <option value="STARTTLS">STARTTLS</option>
-            <option value="none">None</option>
-          </select>
-        </div>
         <div class="wizard-field">
           <label for="wiz-login">{t('Imap_Login')}</label>
           <input id="wiz-login" type="text" bind:value={login} />
@@ -99,10 +101,48 @@
           <label for="wiz-pass">{t('Imap_Password')}</label>
           <input id="wiz-pass" type="password" bind:value={password} />
         </div>
+        <div class="wizard-field">
+          <label for="wiz-server">{t('Imap_Server')}</label>
+          <input id="wiz-server" type="text" bind:value={server} />
+        </div>
+        <div class="wizard-field">
+          <label for="wiz-enc">{t('Wizard_Encryption')}</label>
+          <select id="wiz-enc" bind:value={encryption}>
+            <option value="SSL">{t('Wizard_SSL')}</option>
+            <option value="STARTTLS">{t('Wizard_STARTTLS')}</option>
+            <option value="none">{t('Wizard_None')}</option>
+          </select>
+        </div>
+        <div class="wizard-field">
+          <label for="wiz-port">{t('Imap_Port')}</label>
+          <input id="wiz-port" type="number" bind:value={port} />
+        </div>
       </div>
       <footer class="wizard-footer">
-        <button class="btn" onclick={() => step = 4}>{t('Imap_WizardApply')}</button>
+        <button class="btn btn-secondary" onclick={() => step = 1}>Back</button>
+        <button class="btn" onclick={() => step = 3}>{t('Imap_WizardApply')}</button>
       </footer>
+
+    <!-- Step 3: folder mapping (placeholder) -->
+    {:else if step === 3}
+      <h2>{t('Imap_Wizard')}</h2>
+      <p class="wizard-desc">Folder mapping will go here.</p>
+      <footer class="wizard-footer">
+        <button class="btn btn-secondary" onclick={() => step = 2}>Back</button>
+        <button class="btn" onclick={dismiss}>{t('Imap_WizardClose')}</button>
+      </footer>
+    {/if}
+
+    {#if exitPrompt}
+      <div class="exit-overlay">
+        <div class="exit-dialog">
+          <p>Exit the setup wizard?</p>
+          <footer class="wizard-footer">
+            <button class="btn btn-secondary" onclick={() => exitPrompt = false}>No</button>
+            <button class="btn" onclick={dismiss}>Yes</button>
+          </footer>
+        </div>
+      </div>
     {/if}
   </div>
 </div>
@@ -118,6 +158,7 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
+    position: relative;
     padding: 2rem 2.5rem;
     min-width: 420px;
     max-width: 520px;
@@ -152,4 +193,19 @@
     cursor: pointer;
   }
   .btn:disabled { opacity: 0.4; cursor: default; }
+
+  .exit-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.5);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+  }
+  .exit-dialog {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .exit-dialog p { margin: 0 0 1rem; font-size: 0.95rem; color: var(--text); }
 </style>

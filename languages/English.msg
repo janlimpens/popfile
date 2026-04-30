@@ -591,3 +591,10 @@ Settings_OptInfo                        Info
 Settings_OptDebug                       Debug
 
 Language_Name                           English
+Wizard_Next                             Next
+Wizard_Manual                           Manual setup
+Wizard_ManualDesc                       Enter your mail server details below.
+Wizard_Encryption                       Encryption
+Wizard_SSL                              SSL/TLS
+Wizard_STARTTLS                         STARTTLS
+Wizard_None                             None
