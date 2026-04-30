@@ -49,6 +49,16 @@ To stop: `docker stop popfile` (Docker) or `kill $(cat ~/.popfile/popfile.pid)`
 (source install). Your data lives in a Docker volume or `~/.popfile/` and
 survives restarts and updates.
 
+### Windows
+
+Use PowerShell (or WSL):
+
+```powershell
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/janlimpens/popfile/main/install.ps1 | Invoke-Expression
+```
+
+Or with Docker Desktop installed, the Linux script works in WSL / Git Bash too.
+
 ## CLI
 
 ```sh
