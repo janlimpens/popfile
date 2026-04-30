@@ -567,8 +567,6 @@ Wizard_Next                             Próximo
 Wizard_Manual                           Configuração manual
 Wizard_ManualDesc                       Insira os dados do seu servidor de email.
 Wizard_Encryption                       Encriptação
-Wizard_SSL                              SSL/TLS
-Wizard_STARTTLS                         STARTTLS
 Wizard_None                             Nenhuma
 Wizard_Done                             Pronto!
 Wizard_Welcome                          Bem-vindo ao POPFile. POPFile ajuda a organizar a sua caixa de entrada. Comece por indicar o seu nome de utilizador — normalmente o seu email.

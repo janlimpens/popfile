@@ -242,8 +242,8 @@
         <div class="wizard-field">
           <label for="wiz-enc">{t('Wizard_Encryption')}</label>
           <select id="wiz-enc" bind:value={encryption}>
-            <option value="SSL">{t('Wizard_SSL')}</option>
-            <option value="STARTTLS">{t('Wizard_STARTTLS')}</option>
+            <option value="SSL">SSL/TLS</option>
+            <option value="STARTTLS">STARTTLS</option>
             <option value="none">{t('Wizard_None')}</option>
           </select>
         </div>
