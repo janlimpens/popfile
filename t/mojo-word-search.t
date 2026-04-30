@@ -8,107 +8,63 @@ BEGIN {
     lib->import("$root/local/lib/perl5");
     unshift @INC, "$FindBin::Bin/lib", $root;
 }
-use strict;
+use v5.38;
 use warnings;
 
 use Test2::V0;
 use Test::Mojo;
+use TestHelper;
 
-my @buckets_list = ('ham', 'spam');
-my %search_result = (
-    words => [
-        { word => 'font-size', buckets => { ham => 38, spam => 42 }, coverage => 2, is_stopword => \0 },
-        { word => 'invoice', buckets => { ham => 1, spam => 80 }, coverage => 2, is_stopword => \0 },
-    ],
-    total => 2,
-    buckets => \@buckets_list,
-);
+my ($config, $mq, $svc, $hist, $bayes, $tmpdir) = TestHelper::setup_mojo_services();
+my $session = $svc->session();
+my $fixture_dir = "$TestHelper::REPO_ROOT/t/fixtures";
 
-package MockSvc;
-sub get_all_buckets { () }
-sub is_bucket { 0 }
-sub is_pseudo_bucket { 0 }
-sub get_bucket_color { '#666666' }
-sub get_bucket_word_count { 0 }
-sub get_bucket_parameter { 0 }
-sub get_bucket_word_list { () }
-sub create_bucket { 1 }
-sub delete_bucket { }
-sub rename_bucket { }
-sub clear_bucket { }
-sub set_bucket_color { }
-sub get_magnet_types { () }
-sub get_buckets_with_magnets { () }
-sub get_magnet_types_in_bucket { () }
-sub get_magnets { () }
-sub create_magnet { }
-sub delete_magnet { }
-sub remove_message_from_bucket { }
-sub add_message_to_bucket { }
-sub classify { 'ham' }
-sub mangle_word { lc($_[1]) }
-sub get_word_colors { () }
-sub get_stopword_list { () }
-sub add_stopword { 1 }
-sub remove_stopword { }
-sub get_stopword_candidates { () }
-sub history_obj { undef }
-sub bayes { undef }
-sub get_words_for_bucket { { words => [], total => 0 } }
-sub remove_word_from_bucket { }
-sub move_word_between_buckets { }
-sub search_words_cross_bucket {
-    my ($self, $prefix, %opts) = @_;
-    return \%search_result;
-}
-
-package StubMQ;
-sub post { }
-sub register { }
-
-package main;
+$svc->create_bucket('ham');
+$svc->add_message_to_bucket('ham', "$fixture_dir/ham.eml")
+    for 1 .. 5;
+$svc->create_bucket('spam');
+$svc->add_message_to_bucket('spam', "$fixture_dir/spam.eml")
+    for 1 .. 3;
 
 require POPFile::API;
-require POPFile::Configuration;
-
-my $mq = bless {}, 'StubMQ';
-my $config = POPFile::Configuration->new();
-$config->set_configuration($config);
-$config->set_mq($mq);
-$config->initialize();
-$config->set_started(1);
-
-my $mock_svc = bless {}, 'MockSvc';
 
 my $ui = POPFile::API->new();
 $ui->set_configuration($config);
 $ui->set_mq($mq);
 $ui->initialize();
-$ui->set_service($mock_svc);
+$ui->set_service($svc);
 
-my $app = $ui->build_app($mock_svc, 'test-session');
+my $app = $ui->build_app($svc, $session);
 $app->log->level('fatal');
 my $t = Test::Mojo->new($app);
 
 subtest 'GET /api/v1/words/search returns structure' => sub {
-    $t->get_ok('/api/v1/words/search?q=font')
-      ->status_is(200)
-      ->json_has('/words')
-      ->json_has('/total')
-      ->json_has('/buckets');
+    $t->get_ok('/api/v1/words/search?q=meeting')
+        ->status_is(200)
+        ->json_has('/words')
+        ->json_has('/total')
+        ->json_has('/buckets');
     my $body = $t->tx->res->json;
-    is $body->{total}, 2, 'total is 2';
-    is scalar $body->{buckets}->@*, 2, 'two buckets';
+    ok($body->{total} > 0, 'found matching words');
+    ok(scalar $body->{buckets}->@* > 0, 'buckets listed');
     my $first = $body->{words}[0];
-    ok exists $first->{word}, 'word key present';
-    ok exists $first->{coverage}, 'coverage key present';
-    ok exists $first->{is_stopword}, 'is_stopword key present';
-    ok ref $first->{buckets} eq 'HASH', 'per-bucket hash present';
+    ok(exists $first->{word}, 'word key present');
+    ok(exists $first->{coverage}, 'coverage key present');
+    ok(exists $first->{is_stopword}, 'is_stopword key present');
+    ok(ref $first->{buckets} eq 'HASH', 'per-bucket hash present');
 };
 
 subtest 'GET /api/v1/words/search passes sort and dir params' => sub {
-    $t->get_ok('/api/v1/words/search?q=&sort=coverage&dir=desc')
-      ->status_is(200);
+    $t->get_ok('/api/v1/words/search?q=meeting&sort=coverage&dir=desc')
+        ->status_is(200);
+};
+
+subtest 'GET /api/v1/words/search with empty query returns all words' => sub {
+    $t->get_ok('/api/v1/words/search?q=')
+        ->status_is(200)
+        ->json_has('/total');
+    my $body = $t->tx->res->json;
+    ok($body->{total} > 0, 'empty query returns all words');
 };
 
 done_testing;
