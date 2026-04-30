@@ -476,6 +476,13 @@
     color: var(--text);
   }
 
+  .section header p {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
   /* ── Field rows ── */
   .fields {
     display: flex;
