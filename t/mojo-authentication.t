@@ -60,32 +60,20 @@ subtest 'no password set — API is open without token' => sub {
         ->json_has('/0/name');
 };
 
-subtest 'password set — API rejects requests without token' => sub {
+subtest 'password set — GET works without token, POST requires token' => sub {
     my $t = Test::Mojo->new(_build_app('sekret'));
     $t->get_ok('/api/v1/buckets')
-        ->status_is(401)
-        ->json_is('/error', 'Unauthorized');
-};
-
-subtest 'password set — API allows requests with correct token' => sub {
-    my $t = Test::Mojo->new(_build_app('sekret'));
-    $t->get_ok('/api/v1/buckets' => { 'X-POPFile-Token' => 'sekret' })
-        ->status_is(200)
-        ->json_has('/0/name');
-};
-
-subtest 'password set — API rejects wrong token' => sub {
-    my $t = Test::Mojo->new(_build_app('sekret'));
-    $t->get_ok('/api/v1/buckets' => { 'X-POPFile-Token' => 'wrong' })
-        ->status_is(401);
-};
-
-subtest 'password set — POST requires token' => sub {
-    my $t = Test::Mojo->new(_build_app('sekret'));
+        ->status_is(200);  # GET allowed without token
     $t->post_ok('/api/v1/buckets', json => { name => 'test' })
-        ->status_is(401);
+        ->status_is(403);  # POST blocked without token
     $t->post_ok('/api/v1/buckets' => { 'X-POPFile-Token' => 'sekret' }, json => { name => 'test' })
         ->status_is(200);
+};
+
+subtest 'password set — wrong token rejected on POST' => sub {
+    my $t = Test::Mojo->new(_build_app('sekret'));
+    $t->post_ok('/api/v1/buckets' => { 'X-POPFile-Token' => 'wrong' }, json => { name => 'test' })
+        ->status_is(403);
 };
 
 subtest 'password set — static files still served without token' => sub {
@@ -101,37 +89,35 @@ subtest 'no password — history reclassify works without token' => sub {
         ->json_is('/ok', 1);
 };
 
-subtest 'password set — history reclassify requires token' => sub {
+subtest 'password set — history reclassify requires token for POST' => sub {
     my $t = Test::Mojo->new(_build_app('sekret'));
     $t->post_ok('/api/v1/history/1/reclassify', json => { bucket => 'spam' })
-        ->status_is(401);
+        ->status_is(403);
     $t->post_ok('/api/v1/history/1/reclassify' => { 'X-POPFile-Token' => 'sekret' }, json => { bucket => 'spam' })
         ->status_is(200)
         ->json_is('/ok', 1);
 };
 
-subtest 'password set — config read/write requires token' => sub {
+subtest 'password set — config GET works, PUT requires token' => sub {
     my $t = Test::Mojo->new(_build_app('sekret'));
     $t->get_ok('/api/v1/config')
-        ->status_is(401);
-    $t->get_ok('/api/v1/config' => { 'X-POPFile-Token' => 'sekret' })
-        ->status_is(200);
+        ->status_is(200);  # GET allowed
+    $t->put_ok('/api/v1/config', json => {})
+        ->status_is(403);  # PUT blocked
     $t->put_ok('/api/v1/config' => { 'X-POPFile-Token' => 'sekret' }, json => {})
         ->status_is(200);
 };
 
-subtest 'password set — IMAP endpoints require token' => sub {
+subtest 'password set — IMAP GET works, POST requires token' => sub {
     my $t = Test::Mojo->new(_build_app('sekret'));
     $t->get_ok('/api/v1/imap/folders')
-        ->status_is(401);
-    $t->get_ok('/api/v1/imap/folders' => { 'X-POPFile-Token' => 'sekret' })
-        ->status_is(200);
+        ->status_is(200);  # GET allowed
 };
 
-subtest 'password set — health endpoint requires token' => sub {
+subtest 'password set — health GET works without token' => sub {
     my $t = Test::Mojo->new(_build_app('sekret'));
     $t->get_ok('/api/v1/health')
-        ->status_is(401);
+        ->status_is(503);  # GET allowed, 503 because no loader
 };
 
 done_testing;

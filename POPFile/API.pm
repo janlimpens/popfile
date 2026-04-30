@@ -205,8 +205,29 @@ method build_app ($svc, $session = undef) {
     $app->max_request_size(10_000_000);  # 10 MB
     $app->log->level('warn');
 
+    $app->hook(after_dispatch => sub ($c) {
+        $c->res->headers->header('X-Content-Type-Options' => 'nosniff');
+        $c->res->headers->header('X-Frame-Options'        => 'DENY');
+        $c->res->headers->header('Referrer-Policy'        => 'no-referrer');
+        $c->res->headers->header('Permissions-Policy'     => 'interest-cohort=()');
+    });
+
     # Serve the built Svelte bundle as static files
     push $app->static->paths->@*, $static;
+
+    # Rate limiting — 60 requests per second per IP for API endpoints
+    my %rate_limit;
+    $app->hook(before_dispatch => sub ($c) {
+        return unless $c->req->url->path->to_string =~ m{^/api/};
+        my $ip = $c->tx->remote_address // '127.0.0.1';
+        my $now = time();
+        my $window = $rate_limit{$ip} // [0, $now];
+        if ($now - $window->[1] > 1) { $window = [1, $now]; $rate_limit{$ip} = $window }
+        elsif (++$window->[0] > 60) {
+            $c->render(status => 429, json => { error => 'Too many requests' });
+            return undef;
+        }
+    });
 
     # Fall back to index.html for any non-API path (SPA routing)
     $app->hook(before_dispatch => sub ($c) {
@@ -220,15 +241,19 @@ method build_app ($svc, $session = undef) {
         $c->req->url->path(Mojo::Path->new('/index.html'));
     });
 
-    # API authentication — when password is set, require X-POPFile-Token header
+    # API authentication / CSRF — when password is set, all mutating API
+    # requests require X-POPFile-Token. GET/HEAD are exempt for read access.
     $app->hook(before_dispatch => sub ($c) {
         my $path = $c->req->url->path->to_string;
         return unless $path =~ m{^/api/};
         my $password = $self->config('password') // '';
         return if $password eq '';
+        my $method = $c->req->method;
+        return if $method eq 'GET' || $method eq 'HEAD';
         my $token = $c->req->headers->header('X-POPFile-Token') // '';
         return if $token eq $password;
-        $c->render(status => 401, json => { error => 'Unauthorized' });
+        $c->render(status => 403, json => { error => 'Forbidden' });
+        return undef;
     });
 
     my $r = $app->routes;
