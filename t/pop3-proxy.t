@@ -18,7 +18,6 @@ use File::Spec;
 use File::Temp qw(tempdir);
 
 my $tmpdir = tempdir(CLEANUP => 1);
-$ENV{TEST_DBCONNECT} = "dbi:SQLite:dbname=$tmpdir/pf.db";
 
 my $imap = Mail::IMAPClient->new(
     Server => 'localhost', Port => 10143, User => 'test', Password => 'test', Uid => 1)

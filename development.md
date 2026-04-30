@@ -1,94 +1,53 @@
-# Development: Test Mail Server Environment
+# Development
 
-POPFile's integration tests use a Dockerised Dovecot instance that exposes both IMAP and POP3.
-
-## Prerequisites
-
-- Docker with Compose v2 (`docker compose`)
-- Carton / perlbrew configured (see README)
-
-## Start the test servers
+## Run all tests
 
 ```sh
-docker compose -f docker-compose.test.yml up -d
+make test
 ```
 
-This starts:
+Starts a Dockerised Dovecot instance, runs the full test suite (including IMAP/POP3
+integration tests), and tears down Dovecot afterwards.
 
-| Service | Protocol | Host port |
-|---------|----------|-----------|
-| Dovecot | IMAP     | 10143     |
-| Dovecot | POP3     | 10110     |
-| SnappyMail (optional webmail) | HTTP | 8888 |
-
-The single test account is `test` / `test`.
-
-## Seed test mail (IMAP)
+To run tests without Dovecot (integration tests will skip):
 
 ```sh
-carton exec perl t/fixtures/seed_imap.pl
+make test-no-dovecot
 ```
 
-Appends 100 messages (mix of ham and spam fixtures) to INBOX.
-Accepts environment overrides: `IMAP_HOST`, `IMAP_PORT`, `IMAP_USER`, `IMAP_PASS`, `SEED_COUNT`.
+## Test mail server (manual)
 
-To remove all seeded mail:
+POPFile integration tests use Dovecot via Docker Compose.
+
+| Service   | Protocol | Host port |
+|-----------|----------|-----------|
+| Dovecot   | IMAP     | 10143     |
+| Dovecot   | POP3     | 10110     |
+
+Test account: `test` / `test`.
+
+### Manual lifecycle
 
 ```sh
-carton exec perl t/fixtures/seed_imap.pl --teardown
+docker compose -f docker-compose.test.yml up -d    # start
+docker compose -f docker-compose.test.yml down -v  # stop (clean)
 ```
 
-## Run IMAP tests
-
-Write the IMAP config into `popfile.cfg`:
+### Seed test mail
 
 ```sh
-carton exec perl t/fixtures/setup_test_config.pl
+carton exec perl t/fixtures/seed_imap.pl           # seed INBOX
+carton exec perl t/fixtures/seed_imap.pl --teardown # remove
 ```
 
-Then run the IMAP-related tests (requires a running server and seeded mail):
+## POP3 tests (manual)
 
-```sh
-carton exec prove -l t/mojo-history.t
-```
-
-## Run POP3 tests
-
-### Direct (no proxy)
+Direct connection:
 
 ```sh
 POP3_TEST_HOST=localhost carton exec prove -l t/pop3-proxy.t
 ```
 
-The test connects directly to Dovecot on port 10110 using the default credentials (`testuser` / `testpass`; override with `POP3_TEST_USER` / `POP3_TEST_PASS`).
-
-### Via the POPFile POP3 proxy
-
-Write the proxy config, then start POPFile:
-
-```sh
-carton exec perl t/fixtures/setup_test_pop3_config.pl
-carton exec perl popfile.pl &
-```
-
-Run with proxy mode enabled:
-
-```sh
-POP3_TEST_HOST=localhost POP3_TEST_PORT=1110 POP3_VIA_PROXY=1 \
-  carton exec prove -l t/pop3-proxy.t
-```
-
-In proxy mode the test verifies that the `X-Text-Classification:` header is present on retrieved messages.
-
-## Tear down
-
-```sh
-docker compose -f docker-compose.test.yml down -v
-```
-
-The `-v` flag removes the `imap-mail` volume so the next run starts clean.
-
 ## License
 
-POPFile is licensed under the **GNU General Public License v3.0 or later** (GPL-3.0-or-later).
-See the [LICENSE](LICENSE) file in the repository root for the full license text.
+GNU General Public License v3.0 or later. See [LICENSE](LICENSE).

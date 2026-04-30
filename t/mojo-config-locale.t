@@ -14,17 +14,16 @@ use warnings;
 use Test2::V0;
 use Test::Mojo;
 use Encode qw(decode);
+use FindBin qw($Bin);
+use Cwd qw(abs_path);
+use TestMocks;
 
-require FindBin;
-require Cwd;
-my $root = Cwd::abs_path("$FindBin::Bin/..");
+my $root = abs_path("$Bin/..");
 
 require POPFile::API;
 require POPFile::Configuration;
 
-my $mq = bless {}, 'StubMQ';
-sub StubMQ::post     {}
-sub StubMQ::register {}
+my $mq = TestMocks::StubMQ->new();
 
 my $config = POPFile::Configuration->new();
 $config->set_configuration($config);

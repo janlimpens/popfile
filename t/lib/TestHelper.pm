@@ -55,8 +55,8 @@ sub wire($mod, $config, $mq) {
 # ---------------------------------------------------------------------------
 # configure_db($config)
 #
-# Overrides the Bayes DB connection to use an in-memory SQLite database,
-# or a real DB if TEST_DBCONNECT is set in the environment.
+# Overrides the Bayes DB connection to use a file-based SQLite database
+# in the test temp directory, or a real DB if TEST_DBCONNECT is set.
 # Must be called after Classifier::Bayes->initialize() and before start().
 # ---------------------------------------------------------------------------
 sub configure_db($config) {
@@ -66,7 +66,8 @@ sub configure_db($config) {
         $config->parameter('bayes_dbauth',    $ENV{TEST_DBAUTH}   // '');
         $config->parameter('bayes_database',  $ENV{TEST_DATABASE} // 'popfile_test');
     } else {
-        $config->parameter('bayes_dbconnect', 'dbi:SQLite:dbname=:memory:');
+        my $db_file = $config->popfile_user() . '/popfile_test.db';
+        $config->parameter('bayes_dbconnect', "dbi:SQLite:dbname=$db_file");
     }
 }
 
@@ -157,7 +158,7 @@ sub load_fixture($bayes, $session, $fixture) {
 # setup_mojo_services()
 #
 # Creates a real Classifier::Bayes + POPFile::History + Services::Classifier
-# stack backed by SQLite :memory:.  Returns ($config, $mq, $svc, $hist, $bayes).
+# stack backed by SQLite file-based DB.  Returns ($config, $mq, $svc, $hist, $bayes).
 # The Classifier::Bayes session key is available via $svc->session().
 #
 # Use this when mojo controller tests need real database behaviour without

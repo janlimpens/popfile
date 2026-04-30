@@ -24,6 +24,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      imap:
+        image: dovecot/dovecot
+        ports:
+          - 10143:31143
+          - 10110:31110
+        volumes:
+          - ${{ github.workspace }}/t/fixtures/dovecot/conf:/etc/dovecot/conf.d:ro
+        env:
+          DOVECOT_DISABLE_PLAINTEXT_AUTH: "no"
+
     steps:
       - uses: actions/checkout@v4
         with:

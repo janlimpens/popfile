@@ -3920,12 +3920,12 @@ method add_message_to_bucket ($session, $bucket, $file) {
         unless defined $userid;
 
     unless (defined($db_bucketid->{$userid}{$bucket})) {
-        $self->log_msg(WARN => "add_message_to_bucket: bucket '$bucket' not found for user=$userid file=$file");
+        $self->log_msg(WARN => "add_message_to_bucket: bucket '$bucket' not found for user=$userid file=" . ($file // 'undef'));
         return 0;
     }
 
     my $result = $self->add_messages_to_bucket($session, $bucket, $file);
-    $self->log_msg(5, "add_message_to_bucket: user=$userid bucket=$bucket file=$file result=" . (defined $result ? $result : 'undef'));
+    $self->log_msg(5, "add_message_to_bucket: user=$userid bucket=$bucket file=" . ($file // 'undef') . " result=" . (defined $result ? $result : 'undef'));
     return $result;
 }
 

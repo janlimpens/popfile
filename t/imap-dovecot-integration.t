@@ -14,10 +14,6 @@ use Test2::V0;
 use TestHelper;
 use Mail::IMAPClient;
 use File::Spec;
-use File::Temp qw(tempdir);
-
-my $tmpdir = tempdir(CLEANUP => 1);
-$ENV{TEST_DBCONNECT} = "dbi:SQLite:dbname=$tmpdir/pf.db";
 
 my $host = $ENV{IMAP_TEST_HOST} // 'localhost';
 my $port = $ENV{IMAP_TEST_PORT} // 10143;
