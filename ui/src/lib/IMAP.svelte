@@ -484,7 +484,7 @@
 
   <!-- ── Wizard modal ───────────────────────────────────────────────── -->
   {#if wizardOpen}
-    <div class="modal-overlay" role="dialog" onclick={() => wizardOpen = false} onkeydown={(e) => e.key === 'Escape' && (wizardOpen = false)}></div>
+    <div class="modal-overlay" role="dialog" tabindex="-1" onclick={() => wizardOpen = false} onkeydown={(e) => e.key === 'Escape' && (wizardOpen = false)}></div>
     <div class="modal">
       <h3><span class="icon">auto_fix_high</span> {t('Imap_Wizard')}</h3>
       {#if wizardStep === 1}
