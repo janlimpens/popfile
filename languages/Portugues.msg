@@ -571,5 +571,5 @@ Wizard_SSL                              SSL/TLS
 Wizard_STARTTLS                         STARTTLS
 Wizard_None                             Nenhuma
 Wizard_Done                             Pronto!
-Wizard_Welcome                          Bem-vindo ao POPFile. O POPFile ajuda a organizar a sua caixa de entrada. Comece por introduzir o seu nome de utilizador — normalmente o seu endereço de email.
+Wizard_Welcome                          Bem-vindo ao POPFile. POPFile ajuda a organizar a sua caixa de entrada. Comece por indicar o seu nome de utilizador — normalmente o seu email.
 Wizard_Username                         Utilizador
