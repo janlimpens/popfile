@@ -1,5 +1,7 @@
 <script>
+  import { onMount } from 'svelte';
   import { t } from './locale.svelte.js';
+  import { wizardOpen } from './wizard.svelte.js';
 
   let step = $state(1);
   let email = $state('');
@@ -41,6 +43,8 @@
       .replace(/[^a-z0-9\s_-]/gi, '').replace(/\s+/g, '').toLowerCase();
     return name || f.replace(/[^a-z0-9]/gi, '').toLowerCase();
   }
+
+  function dismiss() { wizardOpen.set(false) }
 </script>
 
 <div class="wizard-overlay">
@@ -76,12 +80,12 @@
           <input id="wiz-server" type="text" bind:value={server} />
         </div>
         <div class="wizard-field">
-          <label>{t('Imap_Port')}</label>
-          <input type="number" bind:value={port} />
+          <label for="wiz-port">{t('Imap_Port')}</label>
+          <input id="wiz-port" type="number" bind:value={port} />
         </div>
         <div class="wizard-field">
-          <label>Encryption</label>
-          <select bind:value={encryption}>
+          <label for="wiz-enc">Encryption</label>
+          <select id="wiz-enc" bind:value={encryption}>
             <option value="SSL">SSL/TLS</option>
             <option value="STARTTLS">STARTTLS</option>
             <option value="none">None</option>

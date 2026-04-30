@@ -9,6 +9,7 @@
   import { installFetchInterceptor } from './lib/connectivity.svelte.js';
   import ReconnectModal from './lib/ReconnectModal.svelte';
   import SetupWizard   from './lib/SetupWizard.svelte';
+  import { wizardOpen } from './lib/wizard.svelte.js';
 
   installFetchInterceptor();
 
@@ -23,7 +24,6 @@
   let pageSub = $state(initSub);
   let buckets = $state([]);
   let theme   = $state(localStorage.getItem('pf-theme') || 'dark');
-  let showWizard = $state(false);
 
   $effect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -38,7 +38,7 @@
     if (bucketsRes.ok) buckets = await bucketsRes.json();
     const cfg = cfgRes.ok ? await cfgRes.json() : {};
     await initLocale(cfg.api_locale || '');
-    if (!cfg.imap_hostname) showWizard = true;
+    if (!cfg.imap_hostname) wizardOpen.set(true);
     window.addEventListener('hashchange', () => {
       const [p, sub] = parseHash();
       page = p;
@@ -75,7 +75,7 @@
 </nav>
 
 <ReconnectModal />
-{#if showWizard}<SetupWizard />{/if}
+{#if $wizardOpen}<SetupWizard />{/if}
 
 <main>
   {#if page === 'history'}

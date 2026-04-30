@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { t } from './locale.svelte.js';
+  import { wizardOpen as setupWizardOpen } from './wizard.svelte.js';
 
   let { buckets = [] } = $props();
   let loadedBuckets = $state([]);
@@ -252,6 +253,9 @@
       <h2>{t('NavIMAP')}</h2>
       <p>{t('Imap_Description')}</p>
     </div>
+    <button class="btn btn-secondary" onclick={() => setupWizardOpen.set(true)}>
+      <span class="icon">auto_fix_high</span> Setup wizard
+    </button>
   </div>
 
   <!-- ── Enable toggle ───────────────────────────────────────────────── -->
