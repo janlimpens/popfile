@@ -9,7 +9,7 @@ $docker = Get-Command docker -ErrorAction SilentlyContinue
 if ($docker -and (docker info 2>$null)) {
     Write-Host "→ Docker found, launching container…" -ForegroundColor Green
     docker run -d --name popfile --restart unless-stopped `
-        -p 7070:7070 -e POPFILE_USER=/data -v popfile-data:/data `
+        -p 7070:7070 -v popfile-data:/data `
         ghcr.io/janlimpens/popfile:latest
     Write-Host "→ POPFile is running at http://localhost:7070" -ForegroundColor Green
     Write-Host "  Stop:   docker stop popfile"

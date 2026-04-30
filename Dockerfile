@@ -9,6 +9,9 @@ RUN carton install --deployment
 
 COPY . .
 
-EXPOSE 8080
+EXPOSE 7070
 
-CMD ["carton", "exec", "perl", "popfile.pl"]
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]

@@ -46,7 +46,7 @@ the server is ready (config key: C<open_browser>).
 =cut
 
 method initialize() {
-    $self->config(port => 7070);
+    $self->config(port => 0);
     $self->config(password => '');
     $self->config(static_dir => 'public');
     $self->config(local => 1);
