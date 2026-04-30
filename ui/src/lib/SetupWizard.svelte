@@ -45,6 +45,7 @@
   let fetchingFolders = $state(false);
 
   async function testConnection() {
+    if (protocol === 'POP3') { testResult = { ok: true }; return }
     testing = true;
     const res = await fetch('/api/v1/imap/test-connection', {
       method: 'POST',
@@ -222,9 +223,9 @@
         <p class="wizard-desc">{t('Wizard_ManualDesc')}</p>
       {/if}
 
-      {#if testResult?.ok}
+      {#if protocol === 'IMAP' && testResult?.ok}
         <p class="msg-ok"><span class="icon">check</span> Connected</p>
-      {:else if testResult && !testResult.ok}
+      {:else if protocol === 'IMAP' && testResult && !testResult.ok}
         <p class="msg-err"><span class="icon">close</span> {testResult.error || 'Connection failed'}</p>
       {/if}
       <div class="wizard-fields">
@@ -237,7 +238,7 @@
           <input id="wiz-pass" type="password" bind:value={password} />
         </div>
         <div class="wizard-field">
-          <label for="wiz-server">{t('Imap_Server')}</label>
+          <label for="wiz-server">{protocol} {t('Imap_Server')}</label>
           <input id="wiz-server" type="text" bind:value={server} />
         </div>
         <div class="wizard-field">
@@ -249,15 +250,17 @@
           </select>
         </div>
         <div class="wizard-field">
-          <label for="wiz-port">{t('Imap_Port')}</label>
+          <label for="wiz-port">{protocol} {t('Imap_Port')}</label>
           <input id="wiz-port" type="number" bind:value={port} />
         </div>
       </div>
       <footer class="wizard-footer">
         <button class="btn btn-secondary" onclick={() => step = 1}>Back</button>
+        {#if protocol === 'IMAP'}
         <button class="btn btn-secondary" onclick={testConnection} disabled={testing || !server.trim() || !login.trim() || !password.trim()}>
           {testing ? 'Testing…' : t('Imap_TestConnection')}
         </button>
+        {/if}
         <button class="btn" onclick={fetchFolders} disabled={!testResult?.ok || fetchingFolders}>
           {fetchingFolders ? '…' : protocol === 'POP3' ? t('Imap_WizardClose') : t('Wizard_Next')}
         </button>
