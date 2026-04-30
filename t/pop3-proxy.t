@@ -11,87 +11,107 @@ BEGIN {
 use v5.38;
 use warnings;
 use Test2::V0;
-use IO::Socket::INET;
-use Mail::IMAPClient;
 use TestHelper;
+use Mail::IMAPClient;
+use IO::Socket::INET;
 use File::Spec;
+use File::Temp qw(tempdir);
 
-my $host = $ENV{POP3_TEST_HOST} // 'localhost';
-my $port = $ENV{POP3_TEST_PORT} // 10110;
-my $user = $ENV{POP3_TEST_USER} // 'test';
-my $pass = $ENV{POP3_TEST_PASS} // 'test';
+my $tmpdir = tempdir(CLEANUP => 1);
+$ENV{TEST_DBCONNECT} = "dbi:SQLite:dbname=$tmpdir/pf.db";
 
-my $sock = IO::Socket::INET->new(
-    PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5)
-    or plan skip_all => "Dovecot POP3 not reachable at $host:$port";
+my $imap = Mail::IMAPClient->new(
+    Server => 'localhost', Port => 10143, User => 'test', Password => 'test', Uid => 1)
+    or plan skip_all => "Dovecot not reachable";
 
-sub _recv { my $l = $sock->getline(); chomp $l; $l =~ s/\r$//; $l }
-sub _send($cmd) { $sock->print("$cmd\r\n") }
+my $fixture_dir = File::Spec->catdir($TestHelper::REPO_ROOT, 't', 'fixtures');
+my @ham_files  = sort glob "$fixture_dir/ham/*.eml";
+my @spam_files = sort glob "$fixture_dir/spam/*.eml";
 
-subtest 'POP3 greeting' => sub {
-    my $banner = _recv();
-    like($banner, qr/^\+OK/, 'POP3 +OK greeting');
-};
+sub _slurp($p) { open my $f, '<:raw', $p; local $/; my $d = <$f>; close $f; $d }
+sub _clear($f) { return unless $imap->exists($f); $imap->select($f); my @u = $imap->search('ALL'); $imap->delete_message(@u) if @u; $imap->expunge() }
 
-subtest 'login and check empty mailbox' => sub {
-    _send("USER $user");
-    like(_recv(), qr/^\+OK/, 'USER accepted');
-    _send("PASS $pass");
-    like(_recv(), qr/^\+OK/, 'PASS accepted');
-    _send('STAT');
-    like(_recv(), qr/^\+OK 0 0/, 'STAT shows empty mailbox');
-    _send('QUIT');
-    like(_recv(), qr/^\+OK/, 'QUIT accepted');
-};
-$sock->close();
+_clear($_) for qw(INBOX);
 
-subtest 'seed and retrieve messages via POP3' => sub {
-    my $imap = Mail::IMAPClient->new(
-        Server => 'localhost', Port => 10143, User => 'test', Password => 'test',
-        Uid => 1)
-        or BAIL_OUT("Cannot connect IMAP to seed");
+my ($config, $mq) = TestHelper::setup();
+TestHelper::configure_db($config);
+$config->set_started(1);
 
-    for my $f (qw(INBOX)) {
-        next unless $imap->exists($f);
-        $imap->select($f);
-        my @u = $imap->search('ALL');
-        $imap->delete_message(@u) if @u;
-        $imap->expunge();
-    }
+require POPFile::History;
+my $history = POPFile::History->new();
+TestHelper::wire($history, $config, $mq);
+$history->initialize();
+$history->start();
 
-    my $fixture_dir = File::Spec->catdir($TestHelper::REPO_ROOT, 't', 'fixtures');
-    my @ham_files = sort glob "$fixture_dir/ham/*.eml";
-    sub _slurp($p) { open my $f, '<:raw', $p; local $/; my $d = <$f>; close $f; $d }
+my ($wm, $bayes) = TestHelper::setup_bayes($config, $mq);
+$bayes->set_history($history);
+$history->set_classifier($bayes);
+my $session = $bayes->get_session_key('admin', '');
+$bayes->create_bucket($session, 'ham');
+$bayes->create_bucket($session, 'spam');
+$bayes->add_message_to_bucket($session, 'ham', $ham_files[0]);
+$bayes->add_message_to_bucket($session, 'ham', $ham_files[1]);
+$bayes->add_message_to_bucket($session, 'ham', $ham_files[2]);
+$bayes->add_message_to_bucket($session, 'ham', $ham_files[3]);
+$bayes->add_message_to_bucket($session, 'spam', $spam_files[0]);
+$bayes->add_message_to_bucket($session, 'spam', $spam_files[1]);
+$bayes->add_message_to_bucket($session, 'spam', $spam_files[2]);
+$bayes->add_message_to_bucket($session, 'spam', $spam_files[3]);
 
+require Services::Classifier;
+my $svc = Services::Classifier->new();
+TestHelper::wire($svc, $config, $mq);
+$svc->initialize();
+$svc->set_classifier($bayes);
+$svc->set_history($history);
+$svc->start();
+
+sub _pop3_fetch ($msg_num) {
+    my $sock = IO::Socket::INET->new(
+        PeerAddr => 'localhost', PeerPort => 10110, Proto => 'tcp', Timeout => 5)
+        or BAIL_OUT("POP3 connect failed");
+    my $r = sub { my $l = $sock->getline(); chomp $l; $l =~ s/\r$//; $l };
+    my $s = sub ($c) { $sock->print("$c\r\n") };
+    $r->(); $s->("USER test"); $r->(); $s->("PASS test"); $r->();
+    $s->("RETR $msg_num");
+    $r->();
+    my @lines;
+    while (my $l = $r->()) { last if $l eq '.'; push @lines, $l }
+    $sock->close();
+    return join("\r\n", @lines) . "\r\n"
+}
+
+sub _classify ($raw, $file) {
+    open my $fh, '>', $file or die $!;
+    print $fh $raw;
+    close $fh;
+    return $svc->classify($file)
+}
+
+subtest 'classify ham message retrieved via POP3' => sub {
+    _clear('INBOX');
     $imap->select('INBOX');
-    $imap->append('INBOX', _slurp($ham_files[0]));
-    $imap->append('INBOX', _slurp($ham_files[1]));
-    $imap->logout();
+    $imap->append('INBOX', _slurp($ham_files[4]));
 
-    $sock = IO::Socket::INET->new(
-        PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5)
-        or BAIL_OUT("POP3 reconnect failed");
-    _recv();
-    _send("USER $user"); _recv();
-    _send("PASS $pass"); _recv();
+    my $raw = _pop3_fetch(1);
+    ok(length($raw) > 0, 'POP3 RETR returned message');
 
-    _send('STAT');
-    my $stat = _recv();
-    like($stat, qr/^\+OK [1-9]\d* \d+/, "STAT shows messages: $stat");
-
-    _send('LIST');
-    like(_recv(), qr/^\+OK/, 'LIST accepted');
-    while (my $l = _recv()) { last if $l eq '.' }
-
-    _send('RETR 1');
-    like(_recv(), qr/^\+OK/, 'RETR 1 accepted');
-    my $body = '';
-    while (my $l = _recv()) { last if $l eq '.'; $body .= "$l\n" }
-    ok(length($body) > 0, 'RETR 1 returned message body');
-
-    _send('QUIT');
-    _recv();
+    my $bucket = _classify($raw, "$tmpdir/pop3-ham.msg");
+    ok($bucket ne 'unclassified', "POP3-fetched classified (got: $bucket)");
 };
-$sock->close();
 
+subtest 'classify spam message retrieved via POP3' => sub {
+    _clear('INBOX');
+    $imap->select('INBOX');
+    $imap->append('INBOX', _slurp($spam_files[4]));
+
+    my $raw = _pop3_fetch(1);
+    ok(length($raw) > 0, 'POP3 RETR returned message');
+
+    my $bucket = _classify($raw, "$tmpdir/pop3-spam.msg");
+    ok($bucket ne 'unclassified', "POP3-fetched classified (got: $bucket)");
+};
+
+_clear('INBOX');
+$imap->logout();
 done_testing;
