@@ -336,6 +336,7 @@ Imap_SaveAnyway Guardar mesmo assim
 Imap_SaveConnection Guardar ligação
 Imap_SaveFolders Guardar pastas
 Imap_Saving A guardar...
+Imap_Advanced                           Avançado
 Imap_Service Serviço
 Imap_TestConnection Testar ligação
 Imap_Testing A testar...
@@ -440,10 +441,11 @@ Settings_EnableService Activar serviço
 Settings_SectionClassifier Classificador
 Settings_SectionHistory Histórico
 Settings_SectionLogging Registo
-Settings_SectionNNTP Proxy NNTP
-Settings_SectionPOP3 Proxy POP3
+Settings_SectionNNTP NNTP
+Settings_SectionPOP3 POP3
+Settings_SectionIMAP                    IMAP
 Settings_SectionSecurity Segurança
-Settings_SectionSMTP Proxy SMTP
+Settings_SectionSMTP SMTP
 Settings_SectionUI Interface do utilizador
 Settings_ServerSeparator Separador de servidor
 Settings_SessionDividers Divisores de sessão
