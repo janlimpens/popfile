@@ -432,6 +432,11 @@ Imap_NoMappings                         No mappings defined.
 Imap_SaveFolders                        Save Folders
 Imap_Saving                             Saving...
 Imap_Advanced                           Advanced
+Imap_Wizard                             Setup Wizard
+Imap_WizardDesc                         Create buckets and mappings for your non-default IMAP folders automatically.
+Imap_WizardEmpty                        No additional folders found on the server.
+Imap_WizardApply                        Apply
+Imap_Cancel                             Cancel
 
 Corpus_Color                            Color
 Corpus_Actions                          Actions

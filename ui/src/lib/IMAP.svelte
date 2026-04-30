@@ -3,6 +3,8 @@
   import { t } from './locale.svelte.js';
 
   let { buckets = [] } = $props();
+  let loadedBuckets = $state([]);
+  let allBuckets = $derived(loadedBuckets.length ? loadedBuckets : buckets);
 
   // ── Connection config ─────────────────────────────────────────────────
   let cfg     = $state({});
@@ -25,6 +27,9 @@
   let testing = $state(false);
   let saveAnyway = $state(false);
   let showAdvanced = $state(false);
+  let wizardOpen = $state(false);
+  let wizardFolders = $state([]);
+  let wizardLoading = $state(false);
 
   let connectionReady = $derived(
     !!cfg.imap_hostname?.trim() &&
@@ -34,9 +39,10 @@
 
   // ── Load ──────────────────────────────────────────────────────────────
   async function load() {
-    const [cfgRes, folRes] = await Promise.all([
+    const [cfgRes, folRes, bucketRes] = await Promise.all([
       fetch('/api/v1/config'),
       fetch('/api/v1/imap/folders'),
+      fetch('/api/v1/buckets'),
     ]);
     if (cfgRes.ok) cfg = await cfgRes.json();
     if (folRes.ok) {
@@ -44,6 +50,7 @@
       watched  = data.watched  ?? [];
       mappings = data.mappings ?? [];
     }
+    if (bucketRes.ok) loadedBuckets = await bucketRes.json();
   }
 
   // ── Save connection settings ──────────────────────────────────────────
@@ -100,8 +107,8 @@
   }
 
   let trainStatus = $state('');
-  async function triggerTrain(buckets) {
-    const body = buckets.length ? { buckets } : { all: true };
+  async function triggerTrain(allBuckets) {
+    const body = allBuckets.length ? { buckets: allBuckets } : { all: true };
     const res = await fetch('/api/v1/imap/train', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -156,6 +163,48 @@
     else if (!cfg.imap_use_ssl && (!cfg.imap_port || cfg.imap_port == 993))
       cfg.imap_port = 143;
     markCfg();
+  }
+
+  async function runWizard() {
+    wizardOpen = true;
+    wizardLoading = true;
+    const res = await fetch('/api/v1/imap/server-folders');
+    wizardLoading = false;
+    if (!res.ok) { wizardOpen = false; return }
+    const allFolders = await res.json();
+    const defaults = new Set(['INBOX', 'Trash', 'Sent', 'Drafts', 'Junk', 'Archive', 'Templates',
+      'Papierkorb', 'Gesendet', 'Entwürfe', 'Spam', 'Vorlagen', 'Entw&APw-rfe',
+      'Spam PF', 'unclassified']);
+    wizardFolders = allFolders.filter(f => !defaults.has(f) && !f.startsWith('INBOX/'));
+  }
+
+  async function confirmWizard() {
+    wizardOpen = false;
+    for (const folder of wizardFolders) {
+      const bucket = folder.replace(/^INBOX\./, '').replace(/[^a-z0-9_-]/gi, '').toLowerCase() || folder;
+      if (!allBuckets.find(b => b.name === bucket)) {
+        await fetch('/api/v1/buckets', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: bucket }),
+        });
+      }
+      if (!mappings.find(m => m.folder === folder)) {
+        mappings = [...mappings.filter(m => m.bucket !== bucket), { bucket, folder }];
+      }
+    }
+    // Spam mapping
+    const spamFolder = allFolders.find(f => /spam|junk/i.test(f) && !/PF/i.test(f));
+    if (spamFolder && !mappings.find(m => m.folder === spamFolder)) {
+      if (!allBuckets.find(b => b.name === 'spam')) {
+        await fetch('/api/v1/buckets', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'spam' }),
+        });
+      }
+      mappings = [...mappings.filter(m => m.bucket !== 'spam'), { bucket: 'spam', folder: spamFolder }];
+    }
+    foldersDirty = true;
+    await load();  // reload buckets + mappings
   }
 
   onMount(load);
@@ -285,6 +334,11 @@
         disabled={!connectionReady || fetchingFolders}>
         {fetchingFolders ? t('Imap_Fetching') : t('Imap_FetchFolders')}
       </button>
+      <button class="btn btn-sm" onclick={runWizard}
+        disabled={!connectionReady}
+        title={t('Imap_Wizard')}>
+        <span class="icon">auto_fix_high</span>
+      </button>
     </div>
     <p class="hint">{t('Imap_MappingsHint')}</p>
     {#if fetchError}<p class="msg-err">{fetchError}</p>{/if}
@@ -298,7 +352,7 @@
           {#each mappings as m (m.bucket)}
             <tr>
               <td>
-                <span class="bucket-dot" style="background:{getBucketColor(m.bucket, buckets)}"></span>
+                <span class="bucket-dot" style="background:{getBucketColor(m.bucket, allBuckets)}"></span>
                 {m.bucket}
               </td>
               <td class="folder-cell">
@@ -329,7 +383,7 @@
     <div class="add-row">
       <select bind:value={newMapBucket}>
         <option value="">— bucket —</option>
-        {#each buckets.filter(b => !b.pseudo && !mappings.some(m => m.bucket === b.name)) as b}
+        {#each allBuckets.filter(b => !b.pseudo && !mappings.some(m => m.bucket === b.name)) as b}
           <option value={b.name}>{b.name}</option>
         {/each}
       </select>
@@ -392,11 +446,35 @@
   </section>
   {/if}
 
+  <!-- ── Wizard modal ───────────────────────────────────────────────── -->
+  {#if wizardOpen}
+    <div class="modal-overlay" role="dialog" aria-label="wizard" onclick={() => wizardOpen = false} onkeydown={(e) => e.key === 'Escape' && (wizardOpen = false)}></div>
+    <div class="modal">
+      <h3><span class="icon">auto_fix_high</span> {t('Imap_Wizard')}</h3>
+      <p>{t('Imap_WizardDesc')}</p>
+      {#if wizardLoading}
+        <p class="hint">{t('Imap_Fetching')}</p>
+      {:else if wizardFolders.length > 0}
+        <ul class="wizard-list">
+          {#each wizardFolders as f}
+            <li><span class="tag">{f}</span> → <span class="tag bucket-tag">{f.replace(/^INBOX\./, '').replace(/[^a-z0-9_-]/gi, '').toLowerCase() || f}</span></li>
+          {/each}
+        </ul>
+      {:else}
+        <p class="hint">{t('Imap_WizardEmpty')}</p>
+      {/if}
+      <footer class="card-footer">
+        <button class="btn btn-secondary" onclick={() => wizardOpen = false}>{t('Imap_Cancel')}</button>
+        <button class="btn" onclick={confirmWizard} disabled={wizardLoading || wizardFolders.length === 0}>{t('Imap_WizardApply')}</button>
+      </footer>
+    </div>
+  {/if}
+
 </div>
 
 <script module>
-  function getBucketColor(name, buckets) {
-    const b = buckets.find(b => b.name === name);
+  function getBucketColor(name, allBuckets) {
+    const b = allBuckets.find(b => b.name === name);
     return b?.color ?? '#888';
   }
 </script>
@@ -626,4 +704,22 @@
     color: var(--text-muted);
     cursor: pointer;
   }
+
+  /* ── Wizard modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200;
+  }
+  .modal {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.5rem;
+    min-width: 360px; max-width: 480px; z-index: 201;
+    box-shadow: 0 8px 32px rgba(0,0,0,.3);
+  }
+  .modal h3 { display: flex; align-items: center; gap: 0.5rem; margin: 0 0 0.75rem; }
+  .wizard-list { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+  .wizard-list li { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
+  .bucket-tag { background: var(--accent-subtle); color: var(--accent); }
+  .card-footer { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
 </style>

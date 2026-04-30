@@ -446,6 +446,11 @@ Imap_SaveConnection Salvar conexão
 Imap_SaveFolders Salvar pastas
 Imap_Saving Salvando...
 Imap_Advanced                           Avançado
+Imap_Wizard                             Einrichtungs-Assistent
+Imap_WizardDesc                         Erstellt automatisch Buckets und Zuordnungen für deine IMAP-Ordner.
+Imap_WizardEmpty                        Keine weiteren Ordner auf dem Server gefunden.
+Imap_WizardApply                        Anwenden
+Imap_Cancel                             Abbrechen
 Imap_Service Serviço
 Imap_TestConnection Testar conexão
 Imap_Testing Testando...
