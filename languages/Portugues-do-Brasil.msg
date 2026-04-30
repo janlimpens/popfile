@@ -503,17 +503,17 @@ Settings_DescLogSQLToStdout Incluir instruções SQL com valores vinculados na s
 Settings_DescLogToStdout Espelhar a saída de log no stdout além do arquivo de log.
 Settings_DescOpenBrowser Abrir o navegador padrão quando a interface web estiver pronta.
 Settings_DescMessageCutoff Número máximo de palavras analisadas por mensagem (0 = ilimitado).
-Settings_DescNNTPLocalOnly Aceitar apenas conexões NNTP do localhost.
-Settings_DescNNTPPort Porta em que o POPFile escuta para NNTP (padrão 119).
-Settings_DescNNTPSeparator Caractere que separa o usuário do servidor.
+Settings_DescNNTP                        Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
+Settings_DescNNTP                        Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
+Settings_DescNNTP                        Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
 Settings_DescEnableProxy Iniciar este proxy quando o POPFile iniciar.
-Settings_DescPOP3LocalOnly Aceitar apenas conexões POP3 do localhost.
-Settings_DescPOP3Port Porta em que o POPFile escuta para POP3 (padrão 1110).
-Settings_DescPOP3Separator Caractere que separa o usuário do servidor (ex. usuário:mailhost).
+Settings_DescPOP3                        Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
+Settings_DescPOP3                        Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
+Settings_DescPOP3                        Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
 Settings_DescRetentionDays Quantos dias manter o histórico de mensagens.
 Settings_DescSessionDividers Mostrar divisores entre sessões de navegação no Histórico.
-Settings_DescSMTPLocalOnly Aceitar apenas conexões SMTP do localhost.
-Settings_DescSMTPPort Porta em que o POPFile escuta para SMTP (padrão 25).
+Settings_DescSMTP                        Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
+Settings_DescSMTP                        Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
 Settings_DescSQLiteJournal Modo de diário SQLite / WAL.
 Settings_DescSQLiteBackup Copiar o banco de dados para um arquivo .backup a cada hora.
 Settings_DescSQLiteFastWrites Desativar a sincronização de escrita SQLite para inserções mais rápidas. Risco mínimo de perda de dados em caso de falha.
@@ -561,10 +561,13 @@ Settings_SectionClassifier Classificador
 Settings_SectionHistory Histórico
 Settings_SectionLogging Log
 Settings_SectionNNTP NNTP
+Settings_DescNNTP                        Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
 Settings_SectionPOP3 POP3
+Settings_DescPOP3                        Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
 Settings_SectionIMAP                    IMAP
 Settings_SectionSecurity Segurança
 Settings_SectionSMTP SMTP
+Settings_DescSMTP                        Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
 Settings_SectionUI Interface do usuário
 Settings_ServerSeparator Separador de servidor
 Settings_SessionDividers Divisores de sessão

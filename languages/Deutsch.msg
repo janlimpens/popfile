@@ -494,17 +494,17 @@ Settings_DescLogSQLToStdout SQL-Anweisungen mit gebundenen Werten in die Log-Aus
 Settings_DescLogToStdout Log-Ausgabe zusätzlich zur Log-Datei auf stdout spiegeln.
 Settings_DescOpenBrowser Standardbrowser öffnen, wenn die Web-Oberfläche bereit ist.
 Settings_DescMessageCutoff Maximale analysierte Wörter pro Nachricht (0 = unbegrenzt).
-Settings_DescNNTPLocalOnly Nur NNTP-Verbindungen von localhost akzeptieren.
-Settings_DescNNTPPort Port, auf dem POPFile für NNTP lauscht (Standard 119).
-Settings_DescNNTPSeparator Trennzeichen zwischen Benutzer und Server.
+Settings_DescNNTP                        NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
+Settings_DescNNTP                        NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
+Settings_DescNNTP                        NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
 Settings_DescEnableProxy Diesen Proxy-Listener beim Start von POPFile starten.
-Settings_DescPOP3LocalOnly Nur POP3-Verbindungen von localhost akzeptieren.
-Settings_DescPOP3Port Port, auf dem POPFile für POP3 lauscht (Standard 1110).
-Settings_DescPOP3Separator Zeichen, das Benutzer von Server trennt (z.B. benutzer:mailhost).
+Settings_DescPOP3                        POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
+Settings_DescPOP3                        POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
+Settings_DescPOP3                        POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
 Settings_DescRetentionDays Wie viele Tage der Nachrichtenverlauf aufbewahrt wird.
 Settings_DescSessionDividers Trennlinien zwischen Browsersitzungen im Verlauf anzeigen.
-Settings_DescSMTPLocalOnly Nur SMTP-Verbindungen von localhost akzeptieren.
-Settings_DescSMTPPort Port, auf dem POPFile für SMTP lauscht (Standard 25).
+Settings_DescSMTP                        SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
+Settings_DescSMTP                        SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
 Settings_DescSQLiteJournal SQLite Journal / WAL-Modus.
 Settings_DescSQLiteBackup Datenbank stündlich als .backup-Datei sichern.
 Settings_DescSQLiteFastWrites SQLite-Schreib-Sync deaktivieren für schnellere Einfügeoperationen. Geringes Datenverlustrisiko bei Absturz.
@@ -552,10 +552,13 @@ Settings_SectionClassifier Klassifizierer
 Settings_SectionHistory Verlauf
 Settings_SectionLogging Protokollierung
 Settings_SectionNNTP NNTP
+Settings_DescNNTP                        NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
 Settings_SectionPOP3 POP3
+Settings_DescPOP3                        POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
 Settings_SectionIMAP                    IMAP
 Settings_SectionSecurity Sicherheit
 Settings_SectionSMTP SMTP
+Settings_DescSMTP                        SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
 Settings_SectionUI Benutzeroberfläche
 Settings_ServerSeparator Server-Trennzeichen
 Settings_SessionDividers Sitzungstrennlinien

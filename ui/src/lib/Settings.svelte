@@ -48,6 +48,7 @@
     },
     {
       id: 'pop3', label: t('Settings_SectionPOP3'), icon: 'mail', serviceKey: 'pop3_enabled',
+      desc: t('Settings_DescPOP3'),
       settings: [
         { key: 'pop3_enabled', label: t('Settings_EnableService'), type: 'bool',
           desc: t('Settings_DescEnableProxy') },
@@ -69,6 +70,7 @@
     },
     {
       id: 'smtp', label: t('Settings_SectionSMTP'), icon: 'outbox', serviceKey: 'smtp_enabled',
+      desc: t('Settings_DescSMTP'),
       settings: [
         { key: 'smtp_enabled', label: t('Settings_EnableService'), type: 'bool',
           desc: t('Settings_DescEnableProxy') },
@@ -86,6 +88,7 @@
     },
     {
       id: 'nntp', label: t('Settings_SectionNNTP'), icon: 'article', serviceKey: 'nntp_enabled',
+      desc: t('Settings_DescNNTP'),
       settings: [
         { key: 'nntp_enabled', label: t('Settings_EnableService'), type: 'bool',
           desc: t('Settings_DescEnableProxy') },
@@ -255,6 +258,7 @@
         <div class="section">
           <header>
             <h2>{section.label}</h2>
+            {#if section.desc}<p class="desc">{section.desc}</p>{/if}
           </header>
           <div class="fields">
             {#each visibleFields(section) as f (f.key)}
@@ -319,6 +323,7 @@
           <div class="section">
             <header>
               <h2>{section.label}</h2>
+              {#if section.desc}<p class="desc">{section.desc}</p>{/if}
             </header>
             <div class="fields">
               {#each section.settings as f (f.key)}

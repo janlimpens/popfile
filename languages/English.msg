@@ -486,8 +486,11 @@ Settings_Saving                         Saving...
 Settings_SectionUI                      User Interface
 Settings_SectionSecurity                Security
 Settings_SectionPOP3                    POP3
+Settings_DescPOP3                        POP3 proxy — sits between your mail client and your POP3 server. It classifies every message and adds an X-Text-Classification header. Point your mail client at the host and port POPFile listens on (default 1110) instead of your real POP3 server.
 Settings_SectionSMTP                    SMTP
+Settings_DescSMTP                        SMTP proxy — sits between your mail client and your SMTP server. It classifies outgoing messages and forwards them to the real server. Point your mail client at the host and port POPFile listens on (default 25).
 Settings_SectionNNTP                    NNTP
+Settings_DescNNTP                        NNTP proxy — sits between your newsreader and your NNTP server. It classifies articles and adds classification headers. Point your newsreader at the host and port POPFile listens on (default 119).
 Settings_SectionIMAP                    IMAP
 Settings_EnableService                  Enable service
 Settings_SectionClassifier              Classifier
@@ -538,21 +541,21 @@ Settings_DescSessionDividers            Show dividers between browsing sessions 
 Settings_DescWordTable                  What to display in the word probability table.
 Settings_DescLanguage                   UI display language. Leave empty to auto-detect from browser.
 Settings_DescAdminPassword              Leave empty to disable password protection.
-Settings_DescPOP3Port                   Port POPFile listens on for POP3 (default 1110).
-Settings_DescPOP3Separator              Character that separates user from server (e.g. user:mailhost).
-Settings_DescPOP3LocalOnly              Only accept POP3 connections from localhost.
+Settings_DescPOP3                        POP3 proxy — sits between your mail client and your POP3 server. It classifies every message and adds an X-Text-Classification header. Point your mail client at the host and port POPFile listens on (default 1110) instead of your real POP3 server.
+Settings_DescPOP3                        POP3 proxy — sits between your mail client and your POP3 server. It classifies every message and adds an X-Text-Classification header. Point your mail client at the host and port POPFile listens on (default 1110) instead of your real POP3 server.
+Settings_DescPOP3                        POP3 proxy — sits between your mail client and your POP3 server. It classifies every message and adds an X-Text-Classification header. Point your mail client at the host and port POPFile listens on (default 1110) instead of your real POP3 server.
 Settings_DescEnableProxy                Start this proxy listener when POPFile starts.
 Settings_DescForceFork                  Fork a new process for each connection.
 Settings_DescTOPFetchesBody             Also retrieve message body with the TOP command.
 Settings_DescSSLChainServer             Upstream SSL POP3 server hostname for SSL chaining.
 Settings_DescSSLChainPort               Upstream SSL POP3 server port.
-Settings_DescSMTPPort                   Port POPFile listens on for SMTP (default 25).
+Settings_DescSMTP                        SMTP proxy — sits between your mail client and your SMTP server. It classifies outgoing messages and forwards them to the real server. Point your mail client at the host and port POPFile listens on (default 25).
 Settings_DescChainServer                Upstream SMTP server hostname.
 Settings_DescChainPort                  Upstream SMTP server port.
-Settings_DescSMTPLocalOnly              Only accept SMTP connections from localhost.
-Settings_DescNNTPPort                   Port POPFile listens on for NNTP (default 119).
-Settings_DescNNTPSeparator              Character separating user from server.
-Settings_DescNNTPLocalOnly              Only accept NNTP connections from localhost.
+Settings_DescSMTP                        SMTP proxy — sits between your mail client and your SMTP server. It classifies outgoing messages and forwards them to the real server. Point your mail client at the host and port POPFile listens on (default 25).
+Settings_DescNNTP                        NNTP proxy — sits between your newsreader and your NNTP server. It classifies articles and adds classification headers. Point your newsreader at the host and port POPFile listens on (default 119).
+Settings_DescNNTP                        NNTP proxy — sits between your newsreader and your NNTP server. It classifies articles and adds classification headers. Point your newsreader at the host and port POPFile listens on (default 119).
+Settings_DescNNTP                        NNTP proxy — sits between your newsreader and your NNTP server. It classifies articles and adds classification headers. Point your newsreader at the host and port POPFile listens on (default 119).
 Settings_DescHEADFetchesBody            Retrieve full article with the HEAD command.
 Settings_DescListenAddress              IP address to bind to. Empty = all interfaces.
 Settings_DescMessageCutoff              Maximum words analysed per message (0 = unlimited).
