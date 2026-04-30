@@ -38,6 +38,96 @@
   let testing = $state(false);
   let exitPrompt = $state(false);
 
+  // Folder mapping (step 3)
+  let folders = $state([]);
+  let folderSelected = $state(new Set());
+  let fetchingFolders = $state(false);
+
+  async function testConnection() {
+    testing = true;
+    const res = await fetch('/api/v1/imap/test-connection', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hostname: server, port, login, password, use_ssl: encryption === 'SSL' ? 1 : 0 }),
+    });
+    testing = false;
+    testResult = await res.json();
+  }
+
+  async function fetchFolders() {
+    fetchingFolders = true;
+    if (!testResult?.ok) await testConnection();
+    if (!testResult?.ok) { fetchingFolders = false; return }
+    const res = await fetch('/api/v1/imap/server-folders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hostname: server, port, login, password, use_ssl: encryption === 'SSL' ? 1 : 0 }),
+    });
+    fetchingFolders = false;
+    if (res.ok) {
+      const all = await res.json();
+      const defaults = new Set(['INBOX', 'Trash', 'Sent', 'Drafts', 'Junk', 'Archive', 'Templates',
+        'Papierkorb', 'Gesendet', 'Entwürfe', 'Spam', 'Vorlagen',
+        'Entw&APw-rfe', 'Spam PF', 'unclassified']);
+      folders = all.filter(f => !defaults.has(f) && !f.startsWith('INBOX/'));
+      folderSelected = new Set(folders);
+      step = 3;
+    }
+  }
+
+  function folderToBucket(f) {
+    let name = f.replace(/^INBOX\./, '')
+      .replace(/&APY-/g, 'ö').replace(/&APw-/g, 'ü')
+      .replace(/&AOQ-/g, 'ä').replace(/&AN8-/g, 'ß')
+      .replace(/&AME-/g, 'é').replace(/&APE-/g, 'è')
+      .replace(/&AMg-/g, 'ê').replace(/&AMQ-/g, 'ë')
+      .replace(/&AMk-/g, 'í').replace(/&AM0-/g, 'ó')
+      .replace(/&APU-/g, 'ú').replace(/&AM8-/g, 'ñ')
+      .replace(/&AMM-/g, 'ç')
+      .replace(/&[A-Za-z0-9+\/]+-/g, '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s_-]/gi, '').replace(/\s+/g, '').toLowerCase();
+    return name || f.replace(/[^a-z0-9]/gi, '').toLowerCase();
+  }
+
+  function toggleFolder(f) {
+    const s = new Set(folderSelected);
+    s.has(f) ? s.delete(f) : s.add(f);
+    folderSelected = s;
+  }
+
+  async function applyFolders() {
+    const selected = [...folderSelected];
+    for (const folder of selected) {
+      const bucket = folderToBucket(folder);
+      await fetch('/api/v1/buckets', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: bucket }),
+      });
+      await fetch('/api/v1/imap/folders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          watched: [],
+          mappings: selected.map(f => ({ bucket: folderToBucket(f), folder: f }))
+        }),
+      });
+    }
+    // Save connection settings
+    await fetch('/api/v1/config', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        imap_hostname: server,
+        imap_port: port,
+        imap_login: login,
+        imap_password: password,
+        imap_use_ssl: encryption === 'SSL' ? 1 : 0,
+      }),
+    });
+    dismiss();
+  }
+
   function handleKeydown(e) {
     if (e.key === 'Escape') { exitPrompt = true }
   }
@@ -104,6 +194,12 @@
         <h2>{t('Wizard_Manual')}</h2>
         <p class="wizard-desc">{t('Wizard_ManualDesc')}</p>
       {/if}
+
+      {#if testResult?.ok}
+        <p class="msg-ok"><span class="icon">check</span> Connected</p>
+      {:else if testResult && !testResult.ok}
+        <p class="msg-err"><span class="icon">close</span> {testResult.error || 'Connection failed'}</p>
+      {/if}
       <div class="wizard-fields">
         <div class="wizard-field">
           <label for="wiz-login">{t('Wizard_Username')}</label>
@@ -132,16 +228,35 @@
       </div>
       <footer class="wizard-footer">
         <button class="btn btn-secondary" onclick={() => step = 1}>Back</button>
-        <button class="btn" onclick={() => step = 3}>{t('Imap_WizardApply')}</button>
+        <button class="btn btn-secondary" onclick={testConnection} disabled={testing || !server.trim() || !login.trim() || !password.trim()}>
+          {testing ? 'Testing…' : t('Imap_TestConnection')}
+        </button>
+        <button class="btn" onclick={fetchFolders} disabled={!testResult?.ok}>
+          {fetchingFolders ? '…' : t('Wizard_Next')}
+        </button>
       </footer>
 
-    <!-- Step 3: folder mapping (placeholder) -->
+    <!-- Step 3: folder mapping -->
     {:else if step === 3}
       <h2>{t('Imap_Wizard')}</h2>
-      <p class="wizard-desc">Folder mapping will go here.</p>
+      <p class="wizard-desc">{t('Imap_WizardDesc')}</p>
+      {#if folders.length > 0}
+        <div class="wizard-folder-list">
+          {#each folders as f}
+            {@const bucket = folderToBucket(f)}
+            <label class="wizard-folder-row">
+              <input type="checkbox" checked={folderSelected.has(f)}
+                onchange={() => toggleFolder(f)} />
+              <span class="tag">{f}</span> → <span class="tag bucket-tag">{bucket}</span>
+            </label>
+          {/each}
+        </div>
+      {/if}
       <footer class="wizard-footer">
         <button class="btn btn-secondary" onclick={() => step = 2}>Back</button>
-        <button class="btn" onclick={dismiss}>{t('Imap_WizardClose')}</button>
+        <button class="btn" onclick={applyFolders} disabled={folderSelected.size === 0}>
+          {t('Imap_WizardApply')}
+        </button>
       </footer>
     {/if}
 
@@ -243,4 +358,20 @@
     text-align: center;
   }
   .exit-dialog p { margin: 0 0 1rem; font-size: 0.95rem; color: var(--text); }
+
+  .wizard-folder-list { max-height: 18rem; overflow-y: auto; margin-bottom: 1rem; }
+  .wizard-folder-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 0; cursor: pointer;
+    font-size: 0.85rem; border-bottom: 1px solid var(--border);
+  }
+  .wizard-folder-row:hover { background: var(--surface-hover); }
+  .tag {
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 0.15rem 0.45rem; font-size: 0.82rem;
+  }
+  .bucket-tag { background: var(--accent-subtle); color: var(--accent); }
+  .msg-ok  { font-size: 0.85rem; color: var(--success); margin: 0.5rem 0 0; }
+  .msg-err { font-size: 0.85rem; color: var(--danger);  margin: 0.5rem 0 0; }
 </style>
