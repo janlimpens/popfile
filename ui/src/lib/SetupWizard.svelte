@@ -34,6 +34,7 @@
   let server = $state('');
   let encryption = $state('SSL');
   let port = $state(993);
+  let protocol = $state('IMAP');  // IMAP or POP3
   let testResult = $state(null);
   let testing = $state(false);
   let exitPrompt = $state(false);
@@ -55,14 +56,23 @@
   }
 
   async function fetchFolders() {
-    fetchingFolders = true;
-    if (!testResult?.ok) await testConnection();
-    if (!testResult?.ok) { fetchingFolders = false; return }
-    const res = await fetch('/api/v1/imap/server-folders', {
-      method: 'POST',
+    // Save config first — server-folders reads from stored config
+    await fetch('/api/v1/config', {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ hostname: server, port, login, password, use_ssl: encryption === 'SSL' ? 1 : 0 }),
+      body: JSON.stringify({
+        imap_hostname: server, imap_port: port,
+        imap_login: login, imap_password: password,
+        imap_use_ssl: encryption === 'SSL' ? 1 : 0,
+      }),
     });
+    if (protocol === 'POP3') {
+      // POP3: skip folder mapping, just save and finish
+      await applySettings();
+      return
+    }
+    fetchingFolders = true;
+    const res = await fetch('/api/v1/imap/server-folders');
     fetchingFolders = false;
     if (res.ok) {
       const all = await res.json();
@@ -96,36 +106,37 @@
     folderSelected = s;
   }
 
-  async function applyFolders() {
-    const selected = [...folderSelected];
-    for (const folder of selected) {
-      const bucket = folderToBucket(folder);
-      await fetch('/api/v1/buckets', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: bucket }),
-      });
-      await fetch('/api/v1/imap/folders', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          watched: [],
-          mappings: selected.map(f => ({ bucket: folderToBucket(f), folder: f }))
-        }),
-      });
-    }
-    // Save connection settings
+  async function applySettings() {
     await fetch('/api/v1/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        imap_hostname: server,
-        imap_port: port,
-        imap_login: login,
-        imap_password: password,
+        imap_hostname: server, imap_port: port,
+        imap_login: login, imap_password: password,
         imap_use_ssl: encryption === 'SSL' ? 1 : 0,
+        imap_enabled: protocol === 'IMAP' ? 1 : 0,
+        pop3_enabled: protocol === 'POP3' ? 1 : 0,
+        pop3_port: protocol === 'POP3' ? 1110 : undefined,
       }),
     });
     dismiss();
+  }
+
+  async function applyFolders() {
+    const selected = [...folderSelected];
+    const mappings = selected.map(f => ({ bucket: folderToBucket(f), folder: f }));
+    for (const m of mappings) {
+      await fetch('/api/v1/buckets', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: m.bucket }),
+      });
+    }
+    await fetch('/api/v1/imap/folders', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ watched: [], mappings }),
+    });
+    await applySettings();
   }
 
   function handleKeydown(e) {
@@ -141,6 +152,8 @@
       server = provider.host;
       port = provider.port;
       encryption = provider.enc;
+    } else {
+      port = protocol === 'IMAP' ? 993 : 995;
     }
     step = 2;
   }
@@ -170,6 +183,14 @@
       <h2>POPFile</h2>
       <p class="wizard-desc">{t('Wizard_Welcome')}</p>
       <div class="wizard-field">
+        <label for="wiz-proto">Protocol</label>
+        <select id="wiz-proto" bind:value={protocol}
+          onchange={() => port = protocol === 'IMAP' ? 993 : 995}>
+          <option value="IMAP">IMAP</option>
+          <option value="POP3">POP3</option>
+        </select>
+      </div>
+      <div class="wizard-field">
         <label for="wiz-email">{t('Wizard_Username')}</label>
         <input id="wiz-email" type="email" bind:value={email}
           placeholder="you@example.com"
@@ -185,13 +206,13 @@
     <!-- Step 2: provider found or manual -->
     {:else if step === 2}
       {#if provider}
-        <h2>{t('Imap_Connected')}</h2>
+        <h2>{protocol} — {t('Imap_Connected')}</h2>
         <p class="wizard-desc">
           Pre-configured for <strong>{provider.host}</strong>.
           {#if provider.hint}<br /><em>{provider.hint}</em>{/if}
         </p>
       {:else}
-        <h2>{t('Wizard_Manual')}</h2>
+        <h2>{protocol} — {t('Wizard_Manual')}</h2>
         <p class="wizard-desc">{t('Wizard_ManualDesc')}</p>
       {/if}
 
@@ -231,8 +252,8 @@
         <button class="btn btn-secondary" onclick={testConnection} disabled={testing || !server.trim() || !login.trim() || !password.trim()}>
           {testing ? 'Testing…' : t('Imap_TestConnection')}
         </button>
-        <button class="btn" onclick={fetchFolders} disabled={!testResult?.ok}>
-          {fetchingFolders ? '…' : t('Wizard_Next')}
+        <button class="btn" onclick={fetchFolders} disabled={!testResult?.ok || fetchingFolders}>
+          {fetchingFolders ? '…' : protocol === 'POP3' ? t('Imap_WizardClose') : t('Wizard_Next')}
         </button>
       </footer>
 
