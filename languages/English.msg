@@ -431,6 +431,7 @@ Imap_IMAFFolder                         IMAP Folder
 Imap_NoMappings                         No mappings defined.
 Imap_SaveFolders                        Save Folders
 Imap_Saving                             Saving...
+Imap_Advanced                           Advanced
 
 Corpus_Color                            Color
 Corpus_Actions                          Actions
@@ -474,9 +475,10 @@ Settings_Saving                         Saving...
 
 Settings_SectionUI                      User Interface
 Settings_SectionSecurity                Security
-Settings_SectionPOP3                    POP3 Proxy
-Settings_SectionSMTP                    SMTP Proxy
-Settings_SectionNNTP                    NNTP Proxy
+Settings_SectionPOP3                    POP3
+Settings_SectionSMTP                    SMTP
+Settings_SectionNNTP                    NNTP
+Settings_SectionIMAP                    IMAP
 Settings_EnableService                  Enable service
 Settings_SectionClassifier              Classifier
 Settings_SectionHistory                 History

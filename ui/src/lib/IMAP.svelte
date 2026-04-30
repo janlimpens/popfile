@@ -24,6 +24,7 @@
   let testStatus = $state(null);
   let testing = $state(false);
   let saveAnyway = $state(false);
+  let showAdvanced = $state(false);
 
   let connectionReady = $derived(
     !!cfg.imap_hostname?.trim() &&
@@ -168,35 +169,18 @@
     </div>
   </div>
 
-  <!-- ── Service settings ─────────────────────────────────────────────── -->
-  <section class="card">
-    <h3>{t('Imap_Service')}</h3>
-    <div class="fields">
-      <div class="field-row">
-        <label for="imap_enabled">{t('Imap_EnableService')}</label>
-        <input id="imap_enabled" class="switch" type="checkbox"
-          checked={cfg.imap_enabled == 1}
-          disabled={!connectionReady}
-          onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
-        />
-      </div>
-      <div class="field-row">
-        <label for="imap_training_mode">{t('Imap_TrainingMode')}</label>
-        <input id="imap_training_mode" class="switch" type="checkbox"
-          checked={cfg.imap_training_mode == 1}
-          onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; saveCfg(); }}
-        />
-      </div>
-      <div class="field-row">
-        <label for="imap_training_limit">{t('Imap_TrainingLimit')}</label>
-        <input id="imap_training_limit" type="number" min="0"
-          bind:value={cfg.imap_training_limit}
-          onchange={saveCfg}
-        />
-      </div>
-    </div>
-    <p class="hint" style="margin-top:0.75rem">{t('Imap_TrainingHint')}</p>
-  </section>
+  <!-- ── Enable toggle ───────────────────────────────────────────────── -->
+  <div class="enable-bar">
+    <label class="enable-label" for="imap_enabled">
+      <span class="enable-title">{t('NavIMAP')}</span>
+      <span class="enable-desc">{t('Imap_Description')}</span>
+    </label>
+    <input id="imap_enabled" class="switch" type="checkbox"
+      checked={cfg.imap_enabled == 1}
+      disabled={!connectionReady}
+      onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
+    />
+  </div>
 
   <!-- ── Connection settings ──────────────────────────────────────────── -->
   <section class="card">
@@ -409,6 +393,34 @@
     </footer>
   </section>
 
+  <!-- ── Advanced: training ──────────────────────────────────────────── -->
+  <button class="advanced-toggle" onclick={() => showAdvanced = !showAdvanced}>
+    <span>{t('Imap_Advanced')}</span>
+    <span class="icon">{showAdvanced ? 'expand_less' : 'expand_more'}</span>
+  </button>
+
+  {#if showAdvanced}
+  <section class="card">
+    <div class="fields">
+      <div class="field-row">
+        <label for="imap_training_mode">{t('Imap_TrainingMode')}</label>
+        <input id="imap_training_mode" class="switch" type="checkbox"
+          checked={cfg.imap_training_mode == 1}
+          onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; saveCfg(); }}
+        />
+      </div>
+      <div class="field-row">
+        <label for="imap_training_limit">{t('Imap_TrainingLimit')}</label>
+        <input id="imap_training_limit" type="number" min="0"
+          bind:value={cfg.imap_training_limit}
+          onchange={saveCfg}
+        />
+      </div>
+    </div>
+    <p class="hint" style="margin-top:0.75rem">{t('Imap_TrainingHint')}</p>
+  </section>
+  {/if}
+
 </div>
 
 <script module>
@@ -433,6 +445,42 @@
   }
   .page-header h2 { margin: 0 0 0.25rem; }
   .page-header p  { margin: 0; font-size: 0.875rem; }
+
+  /* ── Enable bar ── */
+  .enable-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .enable-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    cursor: pointer;
+  }
+  .enable-title { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+  .enable-desc  { font-size: 0.8rem; color: var(--text-muted); }
+
+  /* ── Advanced toggle ── */
+  .advanced-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0;
+    margin: 1rem 0 0.5rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .advanced-toggle:hover { color: var(--text); }
 
   /* ── Cards ── */
   .card {

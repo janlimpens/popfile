@@ -41,6 +41,11 @@
       ],
     },
     {
+      id: 'imap', label: t('Settings_SectionIMAP'), icon: 'cloud', serviceKey: 'imap_enabled',
+      component: 'IMAP',
+      settings: [],
+    },
+    {
       id: 'pop3', label: t('Settings_SectionPOP3'), icon: 'mail', serviceKey: 'pop3_enabled',
       settings: [
         { key: 'pop3_enabled', label: t('Settings_EnableService'), type: 'bool',
@@ -94,11 +99,6 @@
         { key: 'nntp_headtoo', label: t('Settings_HEADFetchesBody'), type: 'bool',
           desc: t('Settings_DescHEADFetchesBody') },
       ],
-    },
-    {
-      id: 'imap', label: t('NavIMAP'), icon: 'cloud', serviceKey: 'imap_enabled',
-      component: 'IMAP',
-      settings: [],
     },
     {
       id: 'classifier', label: t('Settings_SectionClassifier'), icon: 'psychology',
