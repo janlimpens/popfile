@@ -54,5 +54,5 @@ carton install --deployment
 echo "→ Starting POPFile…"
 carton exec perl popfile.pl &
 
-echo "→ POPFile is running at http://localhost:7070"
+echo "→ POPFile is running — check the console output for the port."
 echo "  Stop:   kill \$(cat $DEST/popfile.pid)"
