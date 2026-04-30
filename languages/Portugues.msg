@@ -563,3 +563,13 @@ Windows_NextTime <p><font color="red">Esta alteração não terá efeito até da
 Windows_TrayIcon Mostrar ícone do POPFile na barra de sistema do Windows?
 
 Language_Name                           Português
+Wizard_Next                             Próximo
+Wizard_Manual                           Configuração manual
+Wizard_ManualDesc                       Insira os dados do seu servidor de email.
+Wizard_Encryption                       Encriptação
+Wizard_SSL                              SSL/TLS
+Wizard_STARTTLS                         STARTTLS
+Wizard_None                             Nenhuma
+Wizard_Done                             Pronto!
+Wizard_Welcome                          Bem-vindo ao POPFile. O POPFile ajuda a organizar a sua caixa de entrada. Comece por introduzir o seu nome de utilizador — normalmente o seu endereço de email.
+Wizard_Username                         Utilizador
