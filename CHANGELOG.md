@@ -2,121 +2,99 @@
 
 ## main (unreleased) — post-v1.1.3 rewrite
 
-This branch represents a substantial modernisation of POPFile beyond the last
-released version (v1.1.3, 2012).
+This branch is a ground-up modernisation of POPFile beyond the last released
+version (v1.1.3, 2012).  Most of the code was written by LLM coding agents
+as a real-world testbed for AI-assisted development.
 
 ### Architecture
 
-- Replaced the legacy fork-per-request HTTP UI with an in-process
-  [Mojolicious](https://mojolicious.org) HTTP server running on `Mojo::IOLoop`.
-- Replaced all Perl-templated HTML pages with a Svelte 5 single-page
-  application served from `public/`.
-- REST API exposed under `/api/v1/*`; backend and frontend are fully decoupled.
-- Switched from ad-hoc `print` logging to `Log::Any` with a custom adapter
-  (`POPFile::Log::Adapter`) that supports file output, stdout, ring buffer, and
-  level filtering — all live-reconfigurable from the UI.
-- Adopted `Object::Pad` class syntax and `use feature 'signatures'` throughout.
-- Dependency management moved to Carton (`cpanfile` + `local/`).
+- Mojolicious REST backend replacing the fork-per-request HTTP UI.
+- Svelte 5 single-page application replacing Perl-templated HTML.
+- `Object::Pad` class syntax and `use feature 'signatures'` throughout.
+- `Log::Any` with a custom live-reconfigurable adapter replacing ad-hoc `print`.
+- Carton dependency management (`cpanfile` + `local/`).
 - CI via GitHub Actions.
-
-### Classification
-
-- `Classifier::Bayes` now computes a **per-bucket** `not_likely` floor
-  (previously global), eliminating classification bias when one bucket
-  dominates the corpus.
-- `Classifier::WordMangle` filters noise tokens before they reach the corpus:
-  - HTML/CSS pseudo-tokens that carry embedded values
-    (`html:css*`, `html:comment`, `html:fontcolor*`, `html:backcolor*`,
-    `html:fontsize*`, `html:imgwidth*`, `html:imgheight*`).
-  - Zero-width character entity artifacts (`zwnj`, `zwj`).
-  - Random opaque strings detected via impossible consonant bigrams
-    (`jk` anywhere; `hg`, `bk`, `dk` at word start) — tracks tracking IDs
-    and hashed CSS class names out of the corpus.
-- Database indices added for `matrix(bucketid)`, `history(userid, committed)`,
-  `history(bucketid)`, `history(hash)`, `history(inserted)`,
-  `magnets(bucketid)`.
 
 ### IMAP
 
-- New `Services::IMAP` module: recurring poll timer, per-folder UID tracking,
-  automatic classification and folder moves, reclassification detection by
-  observing message moves into mapped output folders.
-- UID-next state persisted in `imap_folder_state` table; override bug that
-  caused repeated reclassification of old messages fixed.
-- Message-ID-backed direct moves for reclassification from the web UI.
-- Training triggers via filesystem flag files (`popfile.train*`).
-- `poll_sync()` method for synchronous integration tests.
+IMAP is the primary interface for this release.  A new `Services::IMAP` module
+polls watched folders, tracks UIDs per folder, classifies new messages, and
+moves them to mapped output folders.  Reclassification from the web UI triggers
+direct IMAP moves via Message-ID lookups.  Training mode scans existing sorted
+folders and feeds the classifier.
+
+IMAP folder state (UIDNEXT, UIDVALIDITY) is persisted in a new
+`imap_folder_state` table so it survives restarts and config resets.
+
+### Classification
+
+`Classifier::Bayes` now uses a per-bucket `not_likely` floor, eliminating bias
+when one bucket dominates the corpus.  `Classifier::WordMangle` filters HTML/CSS
+pseudo-tokens, zero-width entity artifacts, and random opaque strings before
+they reach the corpus.  Database indices added on `matrix(bucketid)`,
+`history(userid, committed)`, `history(bucketid)`, `history(hash)`,
+`history(inserted)`, and `magnets(bucketid)`.
+
+### Cross-bucket word search
+
+A new `GET /api/v1/words/search` endpoint returns words with per-bucket coverage
+percentages, sortable across columns, with inline stopword management.
+`WordSearch.svelte` provides the UI, replacing the old `WordView` and
+`Stopwords` views.
+
+### API & Security
+
+- Token-based authentication (`X-POPFile-Token`) for all API endpoints.
+  When `api_local=1` (localhost), GET and HEAD requests are exempt; when
+  `api_local=0`, every request requires the token.
+- CSRF protection: all state-changing requests (POST, PUT, DELETE) require
+  the auth token when a password is set.
+- Rate limiting: 60 requests/second/IP on API endpoints.
+- Security headers: `X-Content-Type-Options`, `X-Frame-Options`,
+  `Referrer-Policy`, `Permissions-Policy`.
+- Request body size limited to 10 MB.
+- Sensitive config values (`imap_password`) encrypted at rest with AES-256-CBC.
+- SQL injection in `delete_slot()` replaced with parameterised queries via
+  `Query::Builder`.
+- SQLite 999-variable limit handled through chunked IN clauses in
+  classification and word-search code paths.
+
+### Test infrastructure
+
+All mojo controller tests run against real file-based SQLite databases instead
+of `:memory:` or inline mocks.  `TestHelper.pm` provides centralised setup
+routines (`setup_bayes`, `setup_mojo_services`, `load_fixture`, `reset_db`).
+`TestMocks.pm` is stripped to the minimum required by the three mock-based
+controller tests.
+
+A Dockerised Dovecot instance provides IMAP and POP3 for integration tests.
+`make test` starts the container, runs the full suite, and tears it down.
+The same Dovecot compose file is wired into CI.
+
+End-to-end tests cover the IMAP training and watched-folder classification
+pipeline, plus POP3 retrieval and classification.
 
 ### Web UI
 
-- History view: pagination with configurable page size (persisted to config and
-  `sessionStorage`), search, bucket filter, bulk reclassify.
-- Corpus / Word view: sortable columns, per-bucket word inspector, stopword
-  management, word move and delete.
-- Settings page exposes all runtime configuration including logging options.
-- IMAP configuration page: watched folders, bucket-folder mappings, live folder
-  discovery, connection test.
-- Self-hosted Material Symbols icons; no external font CDN dependency.
+- History: pagination, search, bucket filter, bulk reclassify.
+- Corpus: per-bucket word inspector with sortable columns, word move/delete.
+- Word search: cross-bucket coverage view with stopword management.
+- Settings: all runtime configuration including logging, with service status
+  indicators in the navigation sidebar.
+- IMAP: connection setup, watched folders, bucket→folder mappings, live
+  folder discovery, connection test.
+- Material Symbols icons in navigation, self-hosted, no external CDN.
 
-### Recent additions (April 2026)
+### Bug fixes
 
-**Word Search**
-- New `GET /api/v1/words/search` endpoint with cross-bucket coverage,
-  sortable columns, and stopword management.
-- `WordSearch.svelte` replaces the old `WordView` and `Stopwords` views.
-- `search_words_cross_bucket` in `Classifier::Bayes` with coverage and
-  bucket-sort support.
-
-**Security Hardening**
-- API authentication via `X-POPFile-Token` header (#259, #261).
-- GET/HEAD exempt when `api_local=1` (localhost); all requests require
-  token when `api_local=0`.
-- CSRF protection: all mutating API requests (POST/PUT/DELETE) require
-  the auth token when a password is set.
-- Rate limiting: 60 requests per second per IP for API endpoints (#263).
-- Security headers: `X-Content-Type-Options`, `X-Frame-Options`,
-  `Referrer-Policy`, `Permissions-Policy` (#260).
-- Request body size limit: 10 MB via `max_request_size` (#265).
-- Atomic port file writes via tempfile+rename to prevent TOCTOU (#262).
-- Symlink resolution in static file serving (#266).
-- Config error messages no longer leak full filesystem paths (#268).
-- Browser auto-open URL validated before launching (#267).
-- Sensitive config values encrypted at rest (`imap_password`) via AES-256-CBC.
-- IMAP credentials removed from config-update diagnostic logging.
-
-**Test Infrastructure**
-- Centralised test helper (`TestHelper.pm`): `setup()`, `setup_bayes()`,
-  `setup_mojo_services()`, `configure_db()`, `load_fixture()`, `reset_db()`.
-- All mojo controller tests converted to use real file-based SQLite databases
-  (eliminated `:memory:` and inline mocks).
-- `TestMocks.pm` slimmed from 254 to 173 lines; unused mock methods and log
-  fields removed.
-- Dovecot Docker container started/stopped automatically via `make test`;
-  `docker compose -f docker-compose.test.yml` integrated into CI.
-- End-to-end POP3 classification test; IMAP training and watched-folder
-  classification integration tests.
-
-**UI Polish**
-- IMAP moved into Settings as a sub-tab alongside POP3/SMTP/NNTP.
-- Service status indicators (green/grey dot) in settings navigation.
-- IMAP enable toggle positioned first, training mode/limit in collapsible
-  "Advanced" section at the bottom.
-- SSL toggle now precedes port field; port auto-switches 143↔993 on SSL change.
-- Section labels simplified ("POP3 Proxy" → "POP3", etc.).
-- `api_local` moved from UI section to Security; preventing uncheck when no
-  password is set.
-
-**Bug Fixes**
-- SQL injection in `delete_slot()` replaced with `Query::Builder`.
-- SQLite 999-variable limit avoided in `get_word_colors`, `classify`,
-  `add_words_to_bucket`, and `search_words_fetch` via chunked IN clauses.
-- `GROUP BY` emitted before `ORDER BY` in query builder.
-- IMAP `uid_next` reset restored in `request_folder_move` fallback path.
-- Various Perl warnings silenced (`used only once`, uninitialised values).
-- Database schema upgrade no longer triggered spuriously on fresh test
-  databases (file-based SQLite in temp dir).
-- Uninitialised `$file` warning in `add_message_to_bucket` fixed.
-- `t/services-classifier.t` SEGV resolved.
+| Area | Fix |
+|------|-----|
+| IMAP | uid_next reset restored in fallback move path; orphan poll guard removed |
+| Query::Builder | `GROUP BY` emitted before `ORDER BY` |
+| Database | Schema upgrade no longer spuriously triggered on fresh test databases |
+| Logging | IMAP credentials stripped from config-update diagnostic output |
+| Port file | Atomic write via tempfile+rename prevents TOCTOU |
+| Static files | Symlinks resolved before serving |
 
 ---
 
