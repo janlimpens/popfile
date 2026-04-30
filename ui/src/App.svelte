@@ -66,10 +66,9 @@
   <div class="nav-links">
     {#each NAV as [id, key, fallback, icon]}
       {#if id === 'wizard'}
-        <a href="#" class:active={false}
-          onclick={(e) => { e.preventDefault(); wizardOpen.set(true); }}>
+        <button class="nav-wizard-btn" onclick={() => wizardOpen.set(true)}>
           <span class="icon nav-icon">{icon}</span>
-        </a>
+        </button>
       {:else}
       <a href="#{id}" class:active={page === id}>
         <span class="icon nav-icon">{icon}</span>
@@ -196,6 +195,17 @@
   nav a .nav-icon { font-size: 1.05rem; }
   nav a:hover  { color: #fff; background: var(--nav-active); }
   nav a.active { color: #fff; border-bottom-color: var(--accent); }
+
+  .nav-wizard-btn {
+    display: flex; align-items: center;
+    padding: 0 1rem;
+    background: none; border: none;
+    color: rgba(255,255,255,.6);
+    font-size: 0.875rem; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, background .15s;
+  }
+  .nav-wizard-btn:hover { color: #fff; background: var(--nav-active); }
 
   .theme-btn {
     margin-left: auto;
