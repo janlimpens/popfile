@@ -258,7 +258,7 @@
         <div class="section">
           <header>
             <h2>{section.label}</h2>
-            {#if section.desc}<p class="desc">{section.desc}</p>{/if}
+            {#if section.desc}<p class="section-desc">{section.desc}</p>{/if}
           </header>
           <div class="fields">
             {#each visibleFields(section) as f (f.key)}
@@ -323,7 +323,7 @@
           <div class="section">
             <header>
               <h2>{section.label}</h2>
-              {#if section.desc}<p class="desc">{section.desc}</p>{/if}
+              {#if section.desc}<p class="section-desc">{section.desc}</p>{/if}
             </header>
             <div class="fields">
               {#each section.settings as f (f.key)}
@@ -476,7 +476,7 @@
     color: var(--text);
   }
 
-  .section header p {
+  .section-desc {
     margin: 0.25rem 0 0;
     font-size: 0.875rem;
     color: var(--text-muted);
