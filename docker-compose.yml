@@ -2,7 +2,7 @@ services:
   popfile:
     build: .
     ports:
-      - "8080:8080"
+      - "7070:7070"
     volumes:
       - ./popfile.cfg:/app/popfile.cfg
       - ./popfile.db:/app/popfile.db

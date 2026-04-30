@@ -41,7 +41,7 @@ where most of the action is.
 curl -fsSL https://raw.githubusercontent.com/janlimpens/popfile/main/install.sh | sh
 ```
 
-Opens `http://localhost:8080` when ready. The script detects whether you have
+Opens `http://localhost:7070` when ready. The script detects whether you have
 Docker and uses it if available; otherwise falls back to Perl + Carton. The
 setup wizard guides you through IMAP or POP3 configuration on first launch.
 

@@ -38,7 +38,7 @@ BUILD {
 
 =head2 initialize
 
-Registers configuration defaults: C<port> (8080), C<static_dir> (public),
+Registers configuration defaults: C<port> (7070), C<static_dir> (public),
 and C<open_browser> (1).  Set C<port> to 0 to let the OS pick a free port
 at startup.  Set C<open_browser> to 0 to suppress opening a browser when
 the server is ready (config key: C<open_browser>).
@@ -46,7 +46,7 @@ the server is ready (config key: C<open_browser>).
 =cut
 
 method initialize() {
-    $self->config(port => 0);
+    $self->config(port => 7070);
     $self->config(password => '');
     $self->config(static_dir => 'public');
     $self->config(local => 1);
@@ -134,7 +134,7 @@ method daemon() { $daemon_ref }
 =head2 url
 
 Returns the base URL of the running web interface (e.g.
-C<http://localhost:8080/>), or an empty string before C<start()> is called.
+C<http://localhost:7070/>), or an empty string before C<start()> is called.
 
 =cut
 

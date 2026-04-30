@@ -8,9 +8,9 @@ echo "================="
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     echo "→ Docker found, launching container…"
     docker run -d --name popfile --restart unless-stopped \
-        -p 8080:8080 -e POPFILE_USER=/data -v popfile-data:/data \
+        -p 7070:7070 -e POPFILE_USER=/data -v popfile-data:/data \
         ghcr.io/janlimpens/popfile:latest
-    echo "→ POPFile is running at http://localhost:8080"
+    echo "→ POPFile is running at http://localhost:7070"
     echo "  Stop:   docker stop popfile"
     echo "  Logs:   docker logs popfile"
     exit 0
@@ -54,5 +54,5 @@ carton install --deployment
 echo "→ Starting POPFile…"
 carton exec perl popfile.pl &
 
-echo "→ POPFile is running at http://localhost:8080"
+echo "→ POPFile is running at http://localhost:7070"
 echo "  Stop:   kill \$(cat $DEST/popfile.pid)"
