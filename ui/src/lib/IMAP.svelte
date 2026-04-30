@@ -170,17 +170,18 @@
   </div>
 
   <!-- ── Enable toggle ───────────────────────────────────────────────── -->
-  <div class="enable-bar">
-    <label class="enable-label" for="imap_enabled">
-      <span class="enable-title">{t('NavIMAP')}</span>
-      <span class="enable-desc">{t('Imap_Description')}</span>
-    </label>
-    <input id="imap_enabled" class="switch" type="checkbox"
-      checked={cfg.imap_enabled == 1}
-      disabled={!connectionReady}
-      onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
-    />
-  </div>
+  <section class="card">
+    <div class="fields">
+      <div class="field-row">
+        <label for="imap_enabled">{t('Settings_EnableService')}</label>
+        <input id="imap_enabled" class="switch" type="checkbox"
+          checked={cfg.imap_enabled == 1}
+          disabled={!connectionReady}
+          onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
+        />
+      </div>
+    </div>
+  </section>
 
   <!-- ── Connection settings ──────────────────────────────────────────── -->
   <section class="card">
@@ -246,36 +247,6 @@
         {saving ? t('Imap_Saving') : t('Imap_SaveConnection')}
       </button>
     </footer>
-  </section>
-
-  <!-- ── Service settings ─────────────────────────────────────────────── -->
-  <section class="card">
-    <h3>{t('Imap_Service')}</h3>
-    <div class="fields">
-      <div class="field-row">
-        <label for="imap_enabled">{t('Imap_EnableService')}</label>
-        <input id="imap_enabled" class="switch" type="checkbox"
-          checked={cfg.imap_enabled == 1}
-          disabled={!connectionReady}
-          onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
-        />
-      </div>
-      <div class="field-row">
-        <label for="imap_training_mode">{t('Imap_TrainingMode')}</label>
-        <input id="imap_training_mode" class="switch" type="checkbox"
-          checked={cfg.imap_training_mode == 1}
-          onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; saveCfg(); }}
-        />
-      </div>
-      <div class="field-row">
-        <label for="imap_training_limit">{t('Imap_TrainingLimit')}</label>
-        <input id="imap_training_limit" type="number" min="0"
-          bind:value={cfg.imap_training_limit}
-          onchange={saveCfg}
-        />
-      </div>
-    </div>
-    <p class="hint" style="margin-top:0.75rem">{t('Imap_TrainingHint')}</p>
   </section>
 
   <!-- ── Watched folders ──────────────────────────────────────────────── -->
@@ -445,26 +416,6 @@
   }
   .page-header h2 { margin: 0 0 0.25rem; }
   .page-header p  { margin: 0; font-size: 0.875rem; }
-
-  /* ── Enable bar ── */
-  .enable-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.25rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 1.25rem;
-  }
-  .enable-label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    cursor: pointer;
-  }
-  .enable-title { font-weight: 600; font-size: 0.95rem; color: var(--text); }
-  .enable-desc  { font-size: 0.8rem; color: var(--text-muted); }
 
   /* ── Advanced toggle ── */
   .advanced-toggle {
