@@ -54,8 +54,8 @@ POPFile originally ran from 2001–2012. This 2026 reboot is a ground-up
 modernisation — Mojolicious REST backend, Svelte 5 frontend, Object::Pad
 throughout, IMAP replacing POP3 as the primary interface.
 
-Most of the code was written by LLM coding agents (Claude Code, pi, and
-others) as a real-world testbed for AI-assisted development across a
+Most of the code was written by LLM coding agents (Claude Code, DeepSeek, pi,
+and others) as a real-world testbed for AI-assisted development across a
 non-trivial, multi-module Perl codebase. The commit history is the lab
 notebook. All contributions, human and synthetic, are welcome.
 
