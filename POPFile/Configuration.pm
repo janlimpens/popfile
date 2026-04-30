@@ -23,6 +23,7 @@ use Object::Pad;
 use locale;
 
 use File::Copy qw(copy);
+use File::Basename qw(basename);
 use Getopt::Long;
 
 class POPFile::Configuration
@@ -353,7 +354,7 @@ method save_configuration() {
     my $config_file = $self->get_user_path('popfile.cfg');
     my $config_temp = $self->get_user_path('popfile.cfg.tmp');
     if (-e $config_file && !-w _) {
-        $self->log_msg(WARN => "Can't write to the configuration file $config_file");
+        $self->log_msg(WARN => "Can't write to the configuration file " . basename($config_file));
         return
     }
     if (open my $tmp, '>', $config_temp) {
