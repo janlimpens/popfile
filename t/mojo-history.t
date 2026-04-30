@@ -8,12 +8,13 @@ BEGIN {
     lib->import("$root/local/lib/perl5");
     unshift @INC, "$FindBin::Bin/lib", $root;
 }
-use strict;
+use v5.38;
 use warnings;
 
 use Test2::V0;
 use Test::Mojo;
 use File::Temp qw(tempdir tempfile);
+use TestMocks;
 
 my $tmpdir = tempdir(CLEANUP => 1);
 
@@ -28,21 +29,13 @@ my %slots = (
 
 my %buckets = (ham => '#aaffaa', spam => '#ffaaaa');
 
-my $mock_hist = bless {
-    slots => \%slots,
-    queries => {},
-    next_qid => 1,
-}, 'MockHist';
-
-my $mock_svc = bless {
-    hist => $mock_hist,
-    buckets => \%buckets,
-}, 'MockSvc';
+my $mock_hist = TestMocks::MockHist->new(slots => \%slots);
+my $mock_svc  = TestMocks::MockSvc->new(buckets => \%buckets, hist => $mock_hist);
+my $mq = TestMocks::StubMQ->new();
 
 require POPFile::API;
 require POPFile::Configuration;
 
-my $mq = bless {}, 'StubMQ';
 my $config = POPFile::Configuration->new();
 $config->set_configuration($config);
 $config->set_mq($mq);
@@ -141,144 +134,3 @@ subtest 'POST /api/v1/history/reclassify-unclassified returns updated and total'
 };
 
 done_testing;
-
-package MockHist;
-
-sub get_search_queries {
-    my ($self, %args) = @_;
-    my $bucket = $args{bucket} // '';
-    my $search = $args{search} // '';
-    my $page = $args{page} // 1;
-    my $per_page = $args{per_page} // 25;
-    my @ids = sort { $a <=> $b } grep {
-        my $s = $self->{slots}{$_};
-        ($bucket eq '' || $s->{bucket} eq $bucket)
-        && ($search eq '' || $s->{fields}[1] =~ /\Q$search\E/i || $s->{fields}[4] =~ /\Q$search\E/i)
-    } keys %{$self->{slots}};
-    my $total = scalar @ids;
-    my $offset = ($page - 1) * $per_page;
-    my @page_ids = splice(@ids, $offset, $per_page);
-    my @rows = map {
-        my $f = $self->{slots}{$_}{fields};
-        { slot => $f->[0], from => $f->[1], to => $f->[2], cc => $f->[3],
-          subject => $f->[4], date => $f->[5], hash => $f->[6],
-          inserted => $f->[7], bucket => $f->[8], usedtobe => $f->[9],
-          bucket_id => $f->[10], magnet => $f->[11], size => $f->[12] }
-    } @page_ids;
-    return ($total, \@rows)
-}
-
-sub start_query {
-    my ($self) = @_;
-    my $qid = $self->{next_qid}++;
-    $self->{queries}{$qid} = { filter => '', search => '' };
-    return $qid
-}
-
-sub stop_query {
-    my ($self, $qid) = @_;
-    delete $self->{queries}{$qid};
-}
-
-sub set_query {
-    my ($self, $qid, $filter, $search, $sort, $not) = @_;
-    $self->{queries}{$qid}{filter} = $filter // '';
-    $self->{queries}{$qid}{search} = $search // '';
-}
-
-sub get_query_size {
-    my ($self, $qid) = @_;
-    my $filter = $self->{queries}{$qid}{filter} // '';
-    my @matching = grep {
-        $filter eq '' || $self->{slots}{$_}{bucket} eq $filter
-    } keys %{$self->{slots}};
-    return scalar @matching
-}
-
-sub get_query_rows {
-    my ($self, $qid, $start, $count) = @_;
-    my $filter = $self->{queries}{$qid}{filter} // '';
-    my @ids = sort { $a <=> $b } grep {
-        $filter eq '' || $self->{slots}{$_}{bucket} eq $filter
-    } keys %{$self->{slots}};
-    my @page = splice(@ids, $start - 1, $count);
-    return map { $self->{slots}{$_}{fields} } @page
-}
-
-sub get_slot_file {
-    my ($self, $slot) = @_;
-    return $self->{slots}{$slot} ? $self->{slots}{$slot}{file} : undef
-}
-
-sub get_slot_fields {
-    my ($self, $slot) = @_;
-    return () unless $self->{slots}{$slot};
-    return @{$self->{slots}{$slot}{fields}}
-}
-
-sub change_slot_classification {
-    my ($self, $slot, $class, $session, $undo) = @_;
-    return unless $self->{slots}{$slot};
-    $self->{slots}{$slot}{fields}[8] = $class;
-    $self->{slots}{$slot}{bucket} = $class;
-}
-
-package MockSvc;
-
-sub history_obj { return $_[0]->{hist} }
-sub bayes { return undef }
-
-sub get_all_buckets { return keys %{$_[0]->{buckets}} }
-
-sub is_bucket {
-    my ($self, $name) = @_;
-    return exists $self->{buckets}{$name} ? 1 : 0
-}
-
-sub is_pseudo_bucket { return 0 }
-
-sub get_bucket_color {
-    my ($self, $name) = @_;
-    return $self->{buckets}{$name} // '#666666'
-}
-
-sub get_bucket_word_count { return 0 }
-sub get_bucket_parameter { return 0 }
-sub get_bucket_word_list { return () }
-sub create_bucket {
-    my ($self, $name) = @_;
-    return 0 if exists $self->{buckets}{$name};
-    $self->{buckets}{$name} = '#666666';
-    return 1
-}
-sub delete_bucket { }
-sub rename_bucket { }
-sub clear_bucket { }
-sub set_bucket_color { }
-sub get_magnet_types { return () }
-sub get_buckets_with_magnets { return () }
-sub get_magnet_types_in_bucket { return () }
-sub get_magnets { return () }
-sub create_magnet { }
-sub delete_magnet { }
-sub remove_message_from_bucket { }
-sub add_message_to_bucket { }
-
-sub classify {
-    my ($self, $file) = @_;
-    return 'ham'
-}
-
-sub mangle_word {
-    my ($self, $word) = @_;
-    return lc($word)
-}
-
-sub get_word_colors {
-    my ($self, @words) = @_;
-    return ()
-}
-
-package StubMQ;
-sub post { }
-sub register { }

@@ -14,6 +14,7 @@ use warnings;
 use Test2::V0;
 use Test::Mojo;
 use File::Temp qw(tempdir tempfile);
+use TestMocks;
 
 my $tmpdir = tempdir(CLEANUP => 1);
 
@@ -53,26 +54,17 @@ sub _reset_slots () {
 }
 _reset_slots();
 
-my $mock_hist = bless {
-    slots => \%slots,
-    queries => {},
-    next_qid => 1,
-    mid_log => [] }, 'MockHist';
-
-my $mock_imap = bless {
-    cached_mids => {},
-    move_requests => [] }, 'MockImap';
-
-my $mock_svc = bless {
-    hist => $mock_hist,
-    buckets => \%buckets,
-    remove_log => [],
-    add_log => [] }, 'MockSvc';
+my $mock_hist = TestMocks::MockHist->new(slots => \%slots);
+$mock_hist->{mid_log} = [];
+my $mock_imap = TestMocks::MockImap->new();
+my $mock_svc  = TestMocks::MockSvc->new(buckets => \%buckets, hist => $mock_hist);
+$mock_svc->{remove_log} = [];
+$mock_svc->{add_log} = [];
 
 require POPFile::API;
 require POPFile::Configuration;
 
-my $mq = bless {}, 'StubMQ';
+my $mq = TestMocks::StubMQ->new();
 my $config = POPFile::Configuration->new();
 $config->set_configuration($config);
 $config->set_mq($mq);
@@ -211,134 +203,3 @@ subtest 'reclassify without IMAP service still succeeds' => sub {
 };
 
 done_testing;
-
-package MockHist;
-
-sub get_search_queries ($self, %args) {
-    my $bucket = $args{bucket} // '';
-    my $search = $args{search} // '';
-    my $page = $args{page} // 1;
-    my $per_page = $args{per_page} // 25;
-    my @ids = sort { $a <=> $b } grep {
-        my $s = $self->{slots}{$_};
-        ($bucket eq '' || $s->{bucket} eq $bucket)
-            && ($search eq '' || $s->{fields}[1] =~ /\Q$search\E/i
-                || $s->{fields}[4] =~ /\Q$search\E/i)
-    } keys $self->{slots}->%*;
-    my $total = scalar @ids;
-    my $offset = ($page - 1) * $per_page;
-    my @page_ids = splice(@ids, $offset, $per_page);
-    my @rows = map {
-        my $f = $self->{slots}{$_}{fields};
-        { slot => $f->[0], from => $f->[1], to => $f->[2], cc => $f->[3],
-            subject => $f->[4], date => $f->[5], hash => $f->[6],
-            inserted => $f->[7], bucket => $f->[8], usedtobe => $f->[9],
-            bucket_id => $f->[10], magnet => $f->[11], size => $f->[12] }
-    } @page_ids;
-    return ($total, \@rows)
-}
-
-sub get_slot_file ($self, $slot) {
-    return $self->{slots}{$slot}{file}
-        if $self->{slots}{$slot};
-    return undef
-}
-
-sub get_slot_fields ($self, $slot) {
-    return ()
-        unless $self->{slots}{$slot};
-    return $self->{slots}{$slot}{fields}->@*
-}
-
-sub change_slot_classification ($self, $slot, $class, $session, $undo) {
-    return
-        unless $self->{slots}{$slot};
-    $self->{slots}{$slot}{fields}[8] = $class;
-    $self->{slots}{$slot}{bucket} = $class;
-}
-
-sub set_message_id ($self, $slot, $mid) {
-    push $self->{mid_log}->@*, { slot => $slot, mid => $mid };
-}
-
-sub start_query ($self) {
-    my $qid = $self->{next_qid}++;
-    $self->{queries}{$qid} = { filter => '', search => '' };
-    return $qid
-}
-
-sub stop_query ($self, $qid) { delete $self->{queries}{$qid} }
-
-sub set_query ($self, $qid, $filter, $search, $sort, $not) {
-    $self->{queries}{$qid}{filter} = $filter // '';
-    $self->{queries}{$qid}{search} = $search // '';
-}
-
-sub get_query_size ($self, $qid) {
-    my $filter = $self->{queries}{$qid}{filter} // '';
-    my @matching = grep { $filter eq '' || $self->{slots}{$_}{bucket} eq $filter }
-        keys $self->{slots}->%*;
-    return scalar @matching
-}
-
-sub get_query_rows ($self, $qid, $start, $count) {
-    my $filter = $self->{queries}{$qid}{filter} // '';
-    my @ids = sort { $a <=> $b } grep {
-        $filter eq '' || $self->{slots}{$_}{bucket} eq $filter
-    } keys $self->{slots}->%*;
-    my @page = splice(@ids, $start - 1, $count);
-    return map { $self->{slots}{$_}{fields} } @page
-}
-
-package MockSvc;
-
-sub history_obj ($self) { $self->{hist} }
-sub bayes ($self) { undef }
-sub get_all_buckets ($self) { keys $self->{buckets}->%* }
-sub is_bucket ($self, $name) { exists $self->{buckets}{$name} ? 1 : 0 }
-sub is_pseudo_bucket ($self, $name) { 0 }
-sub get_bucket_color ($self, $name) { $self->{buckets}{$name} // '#666666' }
-sub get_bucket_word_count ($self, $name) { 0 }
-sub get_bucket_parameter ($self, $name, $param) { 0 }
-sub get_bucket_word_list ($self, $name, $prefix) { () }
-sub create_bucket ($self, $name) {
-    return 0 if exists $self->{buckets}{$name};
-    $self->{buckets}{$name} = '#666666';
-    return 1
-}
-sub delete_bucket ($self, $name) { }
-sub rename_bucket ($self, $old, $new) { }
-sub clear_bucket ($self, $name) { }
-sub set_bucket_color ($self, $name, $color) { }
-sub get_magnet_types ($self) { () }
-sub get_buckets_with_magnets ($self) { () }
-sub get_magnet_types_in_bucket ($self, $name) { () }
-sub get_magnets ($self, $name, $type) { () }
-sub create_magnet ($self, $bucket, $type, $val) { }
-sub delete_magnet ($self, $bucket, $type, $val) { }
-sub remove_message_from_bucket ($self, $bucket, $file) {
-    push $self->{remove_log}->@*, { bucket => $bucket, file => $file };
-}
-sub add_message_to_bucket ($self, $bucket, $file) {
-    push $self->{add_log}->@*, { bucket => $bucket, file => $file };
-}
-sub classify ($self, $file) { 'ham' }
-sub mangle_word ($self, $word) { lc($word) }
-sub get_word_colors ($self, @words) { () }
-
-package MockImap;
-
-sub cache_message_id ($self, $hash, $mid) {
-    $self->{cached_mids}{$hash} = $mid;
-}
-
-sub request_folder_move ($self, $hash, $target_bucket, $source_bucket = undef) {
-    push $self->{move_requests}->@*, {
-        hash => $hash,
-        target_bucket => $target_bucket,
-        source_bucket => $source_bucket };
-}
-
-package StubMQ;
-sub post ($self, $type, @msg) { }
-sub register ($self, $type, $obj) { }
