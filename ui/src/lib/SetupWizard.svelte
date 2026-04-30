@@ -62,6 +62,18 @@
 
 <div class="wizard-overlay">
   <div class="wizard-card">
+    <button class="wizard-close" onclick={() => exitPrompt = true}
+      title="Close (Esc)">
+      <span class="icon">close</span>
+    </button>
+
+    <div class="wizard-steps">
+      <span class="step-dot" class:active={step === 1}><span class="icon">mail</span></span>
+      <span class="step-line"></span>
+      <span class="step-dot" class:active={step === 2}><span class="icon">cloud</span></span>
+      <span class="step-line"></span>
+      <span class="step-dot" class:active={step >= 3}><span class="icon">folder</span></span>
+    </div>
 
     <!-- Step 1: Welcome + email -->
     {#if step === 1}
@@ -165,6 +177,29 @@
     box-shadow: 0 12px 40px rgba(0,0,0,.4);
   }
   .wizard-card h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
+  .wizard-close {
+    position: absolute; top: 0.75rem; right: 0.75rem;
+    background: none; border: none;
+    color: var(--text-muted); cursor: pointer;
+    font-size: 1.2rem; padding: 0.25rem;
+    border-radius: 50%; width: 2rem; height: 2rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s, color .15s;
+  }
+  .wizard-close:hover { background: var(--border); color: var(--text); }
+  .wizard-steps {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0; margin-bottom: 1.5rem;
+  }
+  .step-dot {
+    width: 2rem; height: 2rem; border-radius: 50%;
+    background: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem; color: var(--text-muted);
+    transition: background .2s, color .2s;
+  }
+  .step-dot.active { background: var(--accent); color: var(--accent-fg); }
+  .step-line { width: 2.5rem; height: 2px; background: var(--border); }
   .wizard-desc { margin: 0 0 1.5rem; font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; }
   .wizard-fields { display: flex; flex-direction: column; gap: 0.75rem; }
   .wizard-field { display: flex; flex-direction: column; gap: 0.25rem; }
