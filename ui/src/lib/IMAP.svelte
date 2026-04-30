@@ -168,6 +168,36 @@
     </div>
   </div>
 
+  <!-- ── Service settings ─────────────────────────────────────────────── -->
+  <section class="card">
+    <h3>{t('Imap_Service')}</h3>
+    <div class="fields">
+      <div class="field-row">
+        <label for="imap_enabled">{t('Imap_EnableService')}</label>
+        <input id="imap_enabled" class="switch" type="checkbox"
+          checked={cfg.imap_enabled == 1}
+          disabled={!connectionReady}
+          onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
+        />
+      </div>
+      <div class="field-row">
+        <label for="imap_training_mode">{t('Imap_TrainingMode')}</label>
+        <input id="imap_training_mode" class="switch" type="checkbox"
+          checked={cfg.imap_training_mode == 1}
+          onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; saveCfg(); }}
+        />
+      </div>
+      <div class="field-row">
+        <label for="imap_training_limit">{t('Imap_TrainingLimit')}</label>
+        <input id="imap_training_limit" type="number" min="0"
+          bind:value={cfg.imap_training_limit}
+          onchange={saveCfg}
+        />
+      </div>
+    </div>
+    <p class="hint" style="margin-top:0.75rem">{t('Imap_TrainingHint')}</p>
+  </section>
+
   <!-- ── Connection settings ──────────────────────────────────────────── -->
   <section class="card">
     <h3>{t('Imap_Connection')}</h3>
@@ -190,16 +220,16 @@
       {/each}
 
       <div class="field-row">
-        <label for="imap_port">{t('Imap_Port')}</label>
-        <input id="imap_port" type="number" bind:value={cfg.imap_port} oninput={onPortInput} />
-      </div>
-
-      <div class="field-row">
         <label for="imap_use_ssl">{t('Imap_Use_SSL')}</label>
         <input id="imap_use_ssl" class="switch" type="checkbox"
           checked={cfg.imap_use_ssl == 1}
           onchange={onSslChange}
         />
+      </div>
+
+      <div class="field-row">
+        <label for="imap_port">{t('Imap_Port')}</label>
+        <input id="imap_port" type="number" bind:value={cfg.imap_port} oninput={onPortInput} />
       </div>
 
       <div class="field-row">

@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import History  from './lib/History.svelte';
   import Corpus   from './lib/Corpus.svelte';
-  import IMAP     from './lib/IMAP.svelte';
   import Magnets  from './lib/Magnets.svelte';
   import Settings from './lib/Settings.svelte';
   import Status   from './lib/Status.svelte';
@@ -48,7 +47,6 @@
     ['history',  'NavHistory',  'History'],
     ['corpus',   'NavCorpus',   'Corpus'],
     ['magnets',  'NavMagnets',  'Magnets'],
-    ['imap',     'NavIMAP',     'IMAP'],
     ['status',   'NavStatus',   'Status'],
     ['settings', 'NavSettings', 'Settings'],
   ];
@@ -79,8 +77,6 @@
     <Corpus bind:buckets initialBucket={pageSub} />
   {:else if page === 'magnets'}
     <Magnets {buckets} />
-  {:else if page === 'imap'}
-    <IMAP {buckets} />
   {:else if page === 'status'}
     <Status />
   {:else if page === 'settings'}

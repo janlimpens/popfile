@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { initLocale, t } from './locale.svelte.js';
+  import IMAP from './IMAP.svelte';
 
   let config = $state({});
   let active = $state('ui');
@@ -40,7 +41,7 @@
       ],
     },
     {
-      id: 'pop3', label: t('Settings_SectionPOP3'), icon: 'mail',
+      id: 'pop3', label: t('Settings_SectionPOP3'), icon: 'mail', serviceKey: 'pop3_enabled',
       settings: [
         { key: 'pop3_enabled', label: t('Settings_EnableService'), type: 'bool',
           desc: t('Settings_DescEnableProxy') },
@@ -61,7 +62,7 @@
       ],
     },
     {
-      id: 'smtp', label: t('Settings_SectionSMTP'), icon: 'outbox',
+      id: 'smtp', label: t('Settings_SectionSMTP'), icon: 'outbox', serviceKey: 'smtp_enabled',
       settings: [
         { key: 'smtp_enabled', label: t('Settings_EnableService'), type: 'bool',
           desc: t('Settings_DescEnableProxy') },
@@ -78,7 +79,7 @@
       ],
     },
     {
-      id: 'nntp', label: t('Settings_SectionNNTP'), icon: 'article',
+      id: 'nntp', label: t('Settings_SectionNNTP'), icon: 'article', serviceKey: 'nntp_enabled',
       settings: [
         { key: 'nntp_enabled', label: t('Settings_EnableService'), type: 'bool',
           desc: t('Settings_DescEnableProxy') },
@@ -93,6 +94,11 @@
         { key: 'nntp_headtoo', label: t('Settings_HEADFetchesBody'), type: 'bool',
           desc: t('Settings_DescHEADFetchesBody') },
       ],
+    },
+    {
+      id: 'imap', label: t('NavIMAP'), icon: 'cloud', serviceKey: 'imap_enabled',
+      component: 'IMAP',
+      settings: [],
     },
     {
       id: 'classifier', label: t('Settings_SectionClassifier'), icon: 'psychology',
@@ -221,6 +227,9 @@
         >
           <span class="icon nav-icon">{s.icon}</span>
           <span class="nav-label">{s.label}</span>
+          {#if s.serviceKey}
+            <span class="nav-status" class:on={config[s.serviceKey] == 1}></span>
+          {/if}
         </button>
       {/if}
     {/each}
@@ -303,6 +312,9 @@
     {:else}
       {#each SECTIONS as section (section.id)}
         {#if active === section.id}
+          {#if section.component === 'IMAP'}
+            <IMAP />
+          {:else}
           <div class="section">
             <header>
               <h2>{section.label}</h2>
@@ -359,6 +371,7 @@
               {/each}
             </div>
           </div>
+          {/if}
         {/if}
       {/each}
     {/if}
@@ -428,6 +441,14 @@
   }
   .nav-icon { font-size: 1rem; width: 1.25rem; text-align: center; }
   .nav-label { flex: 1; }
+  .nav-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .nav-status.on { background: var(--success); }
 
   /* ── Panel ── */
   .panel {
