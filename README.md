@@ -1,9 +1,17 @@
 # POPFile
 
-POPFile classifies email automatically. It watches your IMAP inbox, runs incoming
-messages through a Naive Bayes classifier, and moves them to the right folder —
-spam to Spam, newsletters to Subscriptions, work mail to Work. You correct
-misclassifications in the web UI and it learns from every correction.
+POPFile is a personal email sorting tool. It watches your IMAP inbox, learns
+what belongs where from the corrections you make, and moves messages to the
+right folders automatically.
+
+Under the hood it uses Naive Bayes — a simple statistical method that counts
+which words appear in which folders and uses the tallies to guess where new
+messages belong. The more you correct it, the better it gets.
+
+**This is not an LLM or cloud service.** POPFile runs entirely on your
+machine. No email ever leaves your computer. No data is sent anywhere. Every
+word it reads stays local. The classifier is a few hundred lines of Perl —
+there is no giant model, no API keys, no telemetry.
 
 It also speaks POP3, SMTP, and NNTP for setups that need a proxy, but IMAP is
 where most of the action is.
