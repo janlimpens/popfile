@@ -55,4 +55,6 @@ echo "→ Starting POPFile…"
 carton exec perl popfile.pl &
 
 echo "→ POPFile is running — check the console output for the port."
+echo "  Stop:   ~/.popfile/bin/popfile stop"
+echo "  Logs:   ~/.popfile/bin/popfile logs"
 echo "  Stop:   kill \$(cat $DEST/popfile.pid)"

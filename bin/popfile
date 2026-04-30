@@ -1,29 +1,41 @@
-#!/usr/bin/env bash
+#!/bin/sh
+# POPFile control script — start | stop | logs
+# The install.sh script clones into ~/.popfile and this script lives there.
 set -e
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+POPFILE_HOME="${POPFILE_HOME:-$HOME/.popfile}"
+PIDFILE="$POPFILE_HOME/popfile.pid"
+LOGFILE="$POPFILE_HOME/popfile.log"
 
-if ! command -v carton >/dev/null 2>&1; then
-    echo "carton not found. Install it with:"
-    echo "  cpan Carton"
-    echo "  # or: curl -L https://cpanmin.us | perl - Carton"
-    exit 1
-fi
-
-if [ ! -d "$ROOT/local" ]; then
-    echo "Installing dependencies (first run)..."
-    cd "$ROOT" && carton install
-fi
-
-if [ -d "$ROOT/ui" ]; then
-    if [ ! -d "$ROOT/ui/node_modules" ]; then
-        echo "Installing UI dependencies..."
-        cd "$ROOT/ui" && npm install
-    fi
-    if [ "$ROOT/ui/src" -nt "$ROOT/public/assets" ]; then
-        echo "Building UI..."
-        cd "$ROOT/ui" && npm run build
-    fi
-fi
-
-POPFILE_ROOT="$ROOT" exec carton exec -- perl "$ROOT/script/popfile" "$@"
+case "${1:-start}" in
+    start)
+        if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+            echo "POPFile is already running (PID $(cat "$PIDFILE"))."
+            exit 0
+        fi
+        cd "$POPFILE_HOME"
+        carton exec perl popfile.pl &
+        sleep 1
+        if [ -f "$PIDFILE" ]; then
+            echo "POPFile started (PID $(cat "$PIDFILE"))."
+        else
+            echo "POPFile started — see $LOGFILE for the port."
+        fi
+        ;;
+    stop)
+        if [ -f "$PIDFILE" ]; then
+            PID=$(cat "$PIDFILE")
+            kill "$PID" 2>/dev/null && echo "POPFile stopped." || echo "POPFile was not running."
+            rm -f "$PIDFILE"
+        else
+            echo "No PID file found — is POPFile running?"
+        fi
+        ;;
+    logs)
+        tail -f "$LOGFILE"
+        ;;
+    *)
+        echo "Usage: popfile {start|stop|logs}"
+        exit 1
+        ;;
+esac

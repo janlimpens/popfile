@@ -45,7 +45,7 @@ Opens `http://localhost:7070` when ready. The script detects whether you have
 Docker and uses it if available; otherwise falls back to Perl + Carton. The
 setup wizard guides you through IMAP or POP3 configuration on first launch.
 
-To stop: `docker stop popfile` (Docker) or `kill $(cat ~/.popfile/popfile.pid)`
+To stop: `docker stop popfile` (Docker) or `~/.popfile/bin/popfile stop`
 (source install). Your data lives in a Docker volume or `~/.popfile/` and
 survives restarts and updates.
 
