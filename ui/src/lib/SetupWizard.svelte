@@ -67,8 +67,9 @@
       }),
     });
     if (protocol === 'POP3') {
-      // POP3: skip folder mapping, just save and finish
+      // POP3: skip folder mapping, go to done screen
       await applySettings();
+      step = 4;
       return
     }
     fetchingFolders = true;
@@ -137,6 +138,7 @@
       body: JSON.stringify({ watched: [], mappings }),
     });
     await applySettings();
+    step = 4;
   }
 
   function handleKeydown(e) {
@@ -175,7 +177,11 @@
       <span class="step-line"></span>
       <span class="step-dot" class:active={step === 2}><span class="icon">cloud</span></span>
       <span class="step-line"></span>
-      <span class="step-dot" class:active={step >= 3}><span class="icon">folder</span></span>
+      <span class="step-dot" class:active={step >= 3 && protocol === 'IMAP'}><span class="icon">folder</span></span>
+      {#if protocol === 'IMAP'}
+        <span class="step-line"></span>
+        <span class="step-dot" class:active={step >= 4}><span class="icon">check</span></span>
+      {/if}
     </div>
 
     <!-- Step 1: Welcome + email -->
@@ -278,6 +284,37 @@
         <button class="btn" onclick={applyFolders} disabled={folderSelected.size === 0}>
           {t('Imap_WizardApply')}
         </button>
+      </footer>
+
+    <!-- Step 4: Done -->
+    {:else if step === 4}
+      <h2>{t('Wizard_Done')}</h2>
+      {#if protocol === 'IMAP'}
+        <p class="wizard-desc">
+          POPFile is now watching your IMAP folders. New messages will be classified automatically
+          and moved to the folders you selected.
+        </p>
+        <p class="wizard-desc">
+          <strong>POPFile hasn't learned yet.</strong> It doesn't know which emails belong where.
+          You need to help it — either by training from existing sorted mail
+          (Settings → IMAP → Train), or by manually reclassifying messages
+          (History → click a message → Reclassify). Every correction makes it smarter.
+          You'll see it picks up the drift pretty quickly — watch it learn!
+        </p>
+      {:else}
+        <p class="wizard-desc">
+          POPFile is now set up as a POP3 proxy. Configure your mail client to connect
+          to POPFile (host where POPFile runs, port 1110) instead of your real mail server.
+          POPFile will insert an X-Text-Classification header into every message.
+        </p>
+        <p class="wizard-desc">
+          <strong>POPFile hasn't learned yet.</strong> Messages will start out as unclassified.
+          Go to the History page and reclassify messages to train the classifier.
+          You can also create filter rules via the Magnets page.
+        </p>
+      {/if}
+      <footer class="wizard-footer">
+        <button class="btn" onclick={dismiss}>{t('Imap_WizardClose')}</button>
       </footer>
     {/if}
 
