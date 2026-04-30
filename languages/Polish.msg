@@ -555,7 +555,7 @@ Imap_WizardApply                         Utwórz i mapuj
 Imap_WizardClose                         Zamknij
 Imap_WizardDesc                          Wybierz foldery, dla których utworzyć zasobniki i mapowania.
 Imap_WizardDeselectAll                   Odznacz wszystkie
-Imap_WizardDone                          Utworzono i zmapowano {count} zasobnik(ów).
+Imap_WizardDone                          Utworzono i zmapowano {count} kategorii.
 Imap_WizardEmpty                         Nie znaleziono dodatkowych folderów na serwerze.
 Imap_WizardSelectAll                     Zaznacz wszystkie
 Imap_WizardTrain                         Trenuj teraz
@@ -572,7 +572,7 @@ Settings_SQLiteBackup                    Kopia zapasowa SQLite
 Settings_SQLiteFastWrites                Szybki zapis SQLite
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   Dodaj stop słowo
-WordSearch_ColumnBuckets                 Zasobniki
+WordSearch_ColumnBuckets                 Kategorie
 WordSearch_ColumnWord                    Słowo
 WordSearch_Coverage                      Pokrycie
 WordSearch_IsStopword                    Stop słowo

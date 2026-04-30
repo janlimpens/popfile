@@ -569,7 +569,7 @@ Imap_WizardApply                         Vytvořit a mapovat
 Imap_WizardClose                         Zavřít
 Imap_WizardDesc                          Vyberte složky pro vytvoření přihrádek a mapování.
 Imap_WizardDeselectAll                   Zrušit výběr
-Imap_WizardDone                          {count} přihrádka(ek) vytvořeno a namapováno.
+Imap_WizardDone                          {count} kategorií vytvořeno a namapováno.
 Imap_WizardEmpty                         Na serveru nebyly nalezeny žádné další složky.
 Imap_WizardSelectAll                     Vybrat vše
 Imap_WizardTrain                         Trénovat nyní
@@ -586,7 +586,7 @@ Settings_SQLiteBackup                    Záloha SQLite
 Settings_SQLiteFastWrites                Rychlý zápis SQLite
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   Přidat stop slovo
-WordSearch_ColumnBuckets                 Přihrádky
+WordSearch_ColumnBuckets                 Kategorie
 WordSearch_ColumnWord                    Slovo
 WordSearch_Coverage                      Pokrytí
 WordSearch_IsStopword                    Stop slovo

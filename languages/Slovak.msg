@@ -557,7 +557,7 @@ Imap_WizardApply                         Vytvoriť a mapovať
 Imap_WizardClose                         Zatvoriť
 Imap_WizardDesc                          Vyberte priečinky na vytvorenie priečinkov a mapovaní.
 Imap_WizardDeselectAll                   Zrušiť výber
-Imap_WizardDone                          {count} priečinkov vytvorených a namapovaných.
+Imap_WizardDone                          {count} kategórií vytvorených a namapovaných.
 Imap_WizardEmpty                         Na serveri neboli nájdené žiadne ďalšie priečinky.
 Imap_WizardSelectAll                     Vybrať všetko
 Imap_WizardTrain                         Trénovať teraz
@@ -574,7 +574,7 @@ Settings_SQLiteBackup                    Záloha SQLite
 Settings_SQLiteFastWrites                Rýchly zápis SQLite
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   Pridať stop slovo
-WordSearch_ColumnBuckets                 Priečinky
+WordSearch_ColumnBuckets                 Kategórie
 WordSearch_ColumnWord                    Slovo
 WordSearch_Coverage                      Pokrytie
 WordSearch_IsStopword                    Stop slovo

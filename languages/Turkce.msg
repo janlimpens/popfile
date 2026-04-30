@@ -572,7 +572,7 @@ Imap_WizardApply                         Oluştur ve eşle
 Imap_WizardClose                         Kapat
 Imap_WizardDesc                          Kova ve eşlemeler oluşturmak için klasörleri seçin.
 Imap_WizardDeselectAll                   Tüm seçimi kaldır
-Imap_WizardDone                          {count} kova oluşturuldu ve eşlendi.
+Imap_WizardDone                          {count} kategori oluşturuldu ve eşlendi.
 Imap_WizardEmpty                         Sunucuda ek klasör bulunamadı.
 Imap_WizardSelectAll                     Tümünü seç
 Imap_WizardTrain                         Şimdi eğit
@@ -589,7 +589,7 @@ Settings_SQLiteBackup                    SQLite yedekleme
 Settings_SQLiteFastWrites                SQLite hızlı yazma
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   Durdurma kelimesi ekle
-WordSearch_ColumnBuckets                 Kovalar
+WordSearch_ColumnBuckets                 Kategoriler
 WordSearch_ColumnWord                    Kelime
 WordSearch_Coverage                      Kapsam
 WordSearch_IsStopword                    Durdurma kelimesi

@@ -569,12 +569,12 @@ Imap_WizardApply                         إنشاء وتعيين
 Imap_WizardClose                         إغلاق
 Imap_WizardDesc                          حدد المجلدات لإنشاء الدلاء والتعيينات لها.
 Imap_WizardDeselectAll                   إلغاء تحديد الكل
-Imap_WizardDone                          تم إنشاء وتعيين {count} دلو (دلاء).
+Imap_WizardDone                          تم إنشاء وتعيين {count} فئة (فئات).
 Imap_WizardEmpty                         لم يتم العثور على مجلدات إضافية على الخادم.
 Imap_WizardSelectAll                     تحديد الكل
 Imap_WizardTrain                         تدريب الآن
 NavWordSearch                            بحث في الكلمات
-Settings_DescEnableProxy                 بدء تشغيل هذا الخادم الوكيل عند بدء POPFile.
+Settings_DescEnableProxy                 بدء تشغيل هذه الخدمة عند بدء POPFile.
 Settings_DescLogFormat                   تنسيق إخراج السجل (افتراضي، مبوب، CSV، عادي).
 Settings_DescOpenBrowser                 فتح المتصفح تلقائياً عند بدء التشغيل.
 Settings_DescSQLiteBackup                نسخ قاعدة البيانات احتياطياً تلقائياً قبل تغييرات المخطط.
@@ -586,7 +586,7 @@ Settings_SQLiteBackup                    نسخ احتياطي SQLite
 Settings_SQLiteFastWrites                كتابة سريعة SQLite
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   إضافة كلمة توقف
-WordSearch_ColumnBuckets                 دلاء
+WordSearch_ColumnBuckets                 فئات
 WordSearch_ColumnWord                    كلمة
 WordSearch_Coverage                      تغطية
 WordSearch_IsStopword                    كلمة توقف

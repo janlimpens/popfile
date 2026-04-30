@@ -572,7 +572,7 @@ Imap_WizardApply                         Luo ja yhdistä
 Imap_WizardClose                         Sulje
 Imap_WizardDesc                          Valitse kansiot, joille luodaan lokerot ja yhdistämiset.
 Imap_WizardDeselectAll                   Poista kaikki valinnat
-Imap_WizardDone                          {count} lokero(a) luotu ja yhdistetty.
+Imap_WizardDone                          {count} kategoria(a) luotu ja yhdistetty.
 Imap_WizardEmpty                         Palvelimelta ei löytynyt lisäkansioita.
 Imap_WizardSelectAll                     Valitse kaikki
 Imap_WizardTrain                         Kouluta nyt
@@ -589,7 +589,7 @@ Settings_SQLiteBackup                    SQLite-varmuuskopio
 Settings_SQLiteFastWrites                SQLite nopea kirjoitus
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   Lisää pysäytyssana
-WordSearch_ColumnBuckets                 Lokerot
+WordSearch_ColumnBuckets                 Kategoriat
 WordSearch_ColumnWord                    Sana
 WordSearch_Coverage                      Kattavuus
 WordSearch_IsStopword                    Pysäytyssana

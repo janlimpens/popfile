@@ -555,7 +555,7 @@ Imap_WizardApply                         생성 및 매핑
 Imap_WizardClose                         닫기
 Imap_WizardDesc                          버킷과 매핑을 생성할 폴더를 선택하세요.
 Imap_WizardDeselectAll                   전체 선택 해제
-Imap_WizardDone                          {count}개의 버킷이 생성 및 매핑되었습니다.
+Imap_WizardDone                          {count}개의 카테고리가 생성 및 매핑되었습니다.
 Imap_WizardEmpty                         서버에서 추가 폴더를 찾을 수 없습니다.
 Imap_WizardSelectAll                     전체 선택
 Imap_WizardTrain                         지금 훈련
@@ -572,7 +572,7 @@ Settings_SQLiteBackup                    SQLite 백업
 Settings_SQLiteFastWrites                SQLite 빠른 쓰기
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   불용어 추가
-WordSearch_ColumnBuckets                 버킷
+WordSearch_ColumnBuckets                 카테고리
 WordSearch_ColumnWord                    단어
 WordSearch_Coverage                      범위
 WordSearch_IsStopword                    불용어

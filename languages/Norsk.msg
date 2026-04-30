@@ -555,7 +555,7 @@ Imap_WizardApply                         Opprett og tilordne
 Imap_WizardClose                         Lukk
 Imap_WizardDesc                          Velg mapper å opprette bøtter og tilordninger for.
 Imap_WizardDeselectAll                   Fjern alle valg
-Imap_WizardDone                          {count} bøtte(r) opprettet og tilordnet.
+Imap_WizardDone                          {count} kategori(er) opprettet og tilordnet.
 Imap_WizardEmpty                         Ingen flere mapper funnet på serveren.
 Imap_WizardSelectAll                     Velg alle
 Imap_WizardTrain                         Tren nå
@@ -572,7 +572,7 @@ Settings_SQLiteBackup                    SQLite sikkerhetskopi
 Settings_SQLiteFastWrites                SQLite rask skriving
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   Legg til stoppord
-WordSearch_ColumnBuckets                 Bøtter
+WordSearch_ColumnBuckets                 Kategorier
 WordSearch_ColumnWord                    Ord
 WordSearch_Coverage                      Dekning
 WordSearch_IsStopword                    Stoppord

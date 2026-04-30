@@ -553,7 +553,7 @@ Imap_WizardApply                         צור ומפה
 Imap_WizardClose                         סגור
 Imap_WizardDesc                          בחר תיקיות ליצירת דליים ומיפויים עבורן.
 Imap_WizardDeselectAll                   בטל בחירת הכל
-Imap_WizardDone                          {count} דלי(ים) נוצרו ומופו.
+Imap_WizardDone                          {count} קטגוריה(ות) נוצרו ומופו.
 Imap_WizardEmpty                         לא נמצאו תיקיות נוספות בשרת.
 Imap_WizardSelectAll                     בחר הכל
 Imap_WizardTrain                         אמן כעת
@@ -570,7 +570,7 @@ Settings_SQLiteBackup                    גיבוי SQLite
 Settings_SQLiteFastWrites                כתיבה מהירה SQLite
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   הוסף מילת עצירה
-WordSearch_ColumnBuckets                 דליים
+WordSearch_ColumnBuckets                 קטגוריות
 WordSearch_ColumnWord                    מילה
 WordSearch_Coverage                      כיסוי
 WordSearch_IsStopword                    מילת עצירה

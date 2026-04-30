@@ -572,7 +572,7 @@ Imap_WizardApply                         作成してマッピング
 Imap_WizardClose                         閉じる
 Imap_WizardDesc                          バケットとマッピングを作成するフォルダを選択してください。
 Imap_WizardDeselectAll                   すべて解除
-Imap_WizardDone                          {count} 個のバケットが作成され、マッピングされました。
+Imap_WizardDone                          {count} 個のカテゴリが作成され、マッピングされました。
 Imap_WizardEmpty                         サーバーに追加のフォルダが見つかりませんでした。
 Imap_WizardSelectAll                     すべて選択
 Imap_WizardTrain                         今すぐトレーニング
@@ -589,7 +589,7 @@ Settings_SQLiteBackup                    SQLite バックアップ
 Settings_SQLiteFastWrites                SQLite 高速書き込み
 Settings_SectionIMAP                     IMAP
 WordSearch_AddStopword                   ストップワードを追加
-WordSearch_ColumnBuckets                 バケット
+WordSearch_ColumnBuckets                 カテゴリ
 WordSearch_ColumnWord                    単語
 WordSearch_Coverage                      カバレッジ
 WordSearch_IsStopword                    ストップワード
