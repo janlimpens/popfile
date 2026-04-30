@@ -8,7 +8,7 @@ BEGIN {
     lib->import("$root/local/lib/perl5");
     unshift @INC, "$FindBin::Bin/lib", $root;
 }
-use strict;
+use v5.38;
 use warnings;
 
 use Test2::V0;
@@ -90,6 +90,20 @@ subtest 'JSON response Content-Type is application/json' => sub {
     $t->get_ok('/api/v1/config')
       ->status_is(200)
       ->content_type_like(qr{application/json});
+};
+
+subtest 'imap_password accepted in config update without errors' => sub {
+    $t->put_ok('/api/v1/config', json => {
+        imap_hostname => 'mail.example.com',
+        imap_login => 'alice',
+        imap_password => 's3cret',
+    })->status_is(200)->json_is('/ok', 1);
+    $t->get_ok('/api/v1/config')
+      ->status_is(200);
+    my $cfg = $t->tx->res->json;
+    is($cfg->{imap_hostname}, 'mail.example.com', 'hostname persisted');
+    is($cfg->{imap_login}, 'alice', 'login persisted');
+    is($cfg->{imap_password}, 's3cret', 'password persisted but not logged');
 };
 
 done_testing;
