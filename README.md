@@ -29,6 +29,11 @@ where most of the action is.
   messages you always want in a specific bucket.
 - **REST API** — everything the UI does is available programmatically under
   `/api/v1/`.
+- **30 languages** — Arabic, Bulgarian, Catalan, Chinese (simplified &
+  traditional), Czech, Danish, Dutch, English (UK & US), Finnish, French,
+  German, Greek, Hebrew, Hungarian, Italian, Japanese, Korean, Norwegian,
+  Polish, Portuguese (BR & PT), Russian, Slovak, Spanish, Swedish, Turkish,
+  Ukrainian.
 
 ## Quick start
 
@@ -77,3 +82,7 @@ make build            # rebuild Svelte frontend → public/
 
 The frontend lives in `ui/` (Svelte 5, built with Vite). See `development.md`
 for the Dovecot test server setup and `ARCHITECTURE.md` for module layout.
+
+The UI is available in 30 languages (Arabic through Ukrainian). Translations
+live in `languages/*.msg` as simple key–value files. Missing keys fall back to
+English automatically.
