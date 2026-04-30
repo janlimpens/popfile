@@ -546,6 +546,21 @@ method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
         if defined $source_folder;
 }
 
+=head2 cache_message_id($hash, $mid)
+
+Caches a Message-ID for C<$hash> in the in-memory C<%hash_to_mid> map so that
+a subsequent C<request_folder_move> for the same hash takes the direct-move
+path instead of the uid_next-reset fallback.  Called by the API controller
+when a reclassification request is received and the local message file
+contains a C<Message-ID> header.
+
+=cut
+
+method cache_message_id ($hash, $mid) {
+    $self->log_msg(INFO => "Message-ID cached for hash $hash.");
+    $hash_to_mid{$hash} = $mid
+}
+
 =head2 request_folder_rescan($folder)
 
 Schedules a full rescan of C<$folder> on the next poll cycle by resetting

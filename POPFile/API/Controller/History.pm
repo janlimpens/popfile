@@ -218,9 +218,33 @@ sub _do_reclassify ($self, $slot, $bucket) {
     $svc->remove_message_from_bucket($old_bucket, $file);
     $svc->add_message_to_bucket($bucket, $file);
     my $imap = $self->popfile_imap;
-    $imap->request_folder_move($hash, $bucket, $old_bucket)
-        if defined $imap && defined $hash;
+    if (defined $imap && defined $hash) {
+        my $mid = $self->_extract_message_id($file);
+        if (defined $mid) {
+            $hist->set_message_id($slot, $mid);
+            $imap->cache_message_id($hash, $mid);
+        }
+        $imap->request_folder_move($hash, $bucket, $old_bucket);
+    }
     return {}
+}
+
+sub _extract_message_id ($self, $file) {
+    return undef
+        unless defined $file && -f $file;
+    open my $fh, '<:raw', $file
+        or return undef;
+    while (my $line = <$fh>) {
+        last if $line =~ /^\r?\n$/;
+        if ($line =~ /^message-id:\s*(.+)/is) {
+            (my $mid = $1) =~ s/\r?\n//;
+            $mid =~ s/^<|>$//g;
+            close $fh;
+            return $mid
+        }
+    }
+    close $fh;
+    return undef
 }
 
 __PACKAGE__
