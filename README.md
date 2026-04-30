@@ -49,6 +49,9 @@ To stop: `docker stop popfile` (Docker) or `~/.popfile/bin/popfile stop`
 (source install). Your data lives in a Docker volume or `~/.popfile/` and
 survives restarts and updates.
 
+The install script also generates a systemd user service if you're on Linux —
+run the commands it prints to enable POPFile as a background daemon.
+
 ### Windows
 
 Use PowerShell (or WSL):

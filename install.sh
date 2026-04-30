@@ -57,4 +57,33 @@ carton exec perl popfile.pl &
 echo "→ POPFile is running — check the console output for the port."
 echo "  Stop:   ~/.popfile/bin/popfile stop"
 echo "  Logs:   ~/.popfile/bin/popfile logs"
+
+# ── offer systemd ──
+if command -v systemctl >/dev/null 2>&1; then
+    SERVICE_FILE="$DEST/popfile.service"
+    cat > "$SERVICE_FILE" << SERVICEOF
+[Unit]
+Description=POPFile email classifier
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+ExecStart=$DEST/bin/popfile start
+ExecStop=$DEST/bin/popfile stop
+PIDFile=$DEST/popfile.pid
+Restart=on-failure
+User=$USER
+WorkingDirectory=$DEST
+
+[Install]
+WantedBy=default.target
+SERVICEOF
+    echo ""
+    echo "To run POPFile as a background service:"
+    echo "  mkdir -p ~/.config/systemd/user"
+    echo "  ln -s $SERVICE_FILE ~/.config/systemd/user/popfile.service"
+    echo "  systemctl --user daemon-reload"
+    echo "  systemctl --user enable --now popfile"
+fi
 echo "  Stop:   kill \$(cat $DEST/popfile.pid)"
