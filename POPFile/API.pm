@@ -114,7 +114,9 @@ method start() {
     $self->log_msg(WARN => "POPFile::API: listening on port $port");
     if ($self->config('open_browser') && !$ENV{HARNESS_ACTIVE}) {
         require Browser::Open;
-        Browser::Open::open_browser("http://localhost:$port/");
+        my $url = "http://localhost:$port/";
+        Browser::Open::open_browser($url)
+            if $url =~ /^https?:\/\/localhost(?::\d+)?\/?$/;
     }
     return 1
 }
@@ -197,6 +199,7 @@ method build_app ($svc, $session = undef) {
 
     my $static = $self->get_root_path($self->config('static_dir'));
     my $app = Mojolicious->new();
+    $app->max_request_size(10_000_000);  # 10 MB
     $app->log->level('warn');
 
     # Serve the built Svelte bundle as static files
