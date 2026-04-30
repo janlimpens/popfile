@@ -236,7 +236,7 @@
           <input id="wiz-pass" type="password" bind:value={password} />
         </div>
         <div class="wizard-field">
-          <label for="wiz-server">{protocol} {t('Imap_Server')}</label>
+          <label for="wiz-server">Server</label>
           <input id="wiz-server" type="text" bind:value={server} />
         </div>
         <div class="wizard-field">
@@ -244,10 +244,11 @@
           <select id="wiz-enc" bind:value={encryption}>
             <option value="SSL">SSL/TLS</option>
             <option value="STARTTLS">STARTTLS</option>
+            <option value="none">{t('Wizard_None')}</option>
           </select>
         </div>
         <div class="wizard-field">
-          <label for="wiz-port">{protocol} {t('Imap_Port')}</label>
+          <label for="wiz-port">Port</label>
           <input id="wiz-port" type="number" bind:value={port} />
         </div>
       </div>
