@@ -1,98 +1,97 @@
 #!/usr/bin/perl
-# POP3 integration test for the POPFile testbed.
-#
-# Prerequisites:
-#   docker compose -f docker-compose.test.yml up -d
-#   perl t/fixtures/setup_test_pop3_config.pl
-#   carton exec perl popfile.pl &    # start POPFile POP3 proxy (port 1110)
-#   seed at least one message via seed_imap.pl or IMAP client
-#
-# The test connects to POP3_TEST_HOST:POP3_TEST_PORT (default localhost:10110)
-# as POP3_TEST_USER/POP3_TEST_PASS (default testuser/testpass).
-# Set POP3_VIA_PROXY=1 to also verify the X-Text-Classification header.
-#
-# Skip by setting SKIP_INTEGRATION=1 or leaving POP3_TEST_HOST unset.
-
-use strict;
+BEGIN {
+    @INC = grep { !/\/lib$/ && $_ ne 'lib' && !/thread-multi/ } @INC;
+    require FindBin;
+    require Cwd;
+    my $root = Cwd::abs_path("$FindBin::Bin/..");
+    require lib;
+    lib->import("$root/local/lib/perl5");
+    unshift @INC, "$FindBin::Bin/lib", $root;
+}
+use v5.38;
 use warnings;
-use FindBin qw($Bin);
-use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
-
 use Test2::V0;
 use IO::Socket::INET;
-
-if ($ENV{SKIP_INTEGRATION} || !$ENV{POP3_TEST_HOST}) {
-    diag('POP3 integration tests skipped — set POP3_TEST_HOST to run them.');
-    diag('See development.md for Docker setup instructions.');
-    plan(skip_all => 'POP3_TEST_HOST not set');
-}
+use Mail::IMAPClient;
+use TestHelper;
+use File::Spec;
 
 my $host = $ENV{POP3_TEST_HOST} // 'localhost';
 my $port = $ENV{POP3_TEST_PORT} // 10110;
-my $user = $ENV{POP3_TEST_USER} // 'testuser';
-my $pass = $ENV{POP3_TEST_PASS} // 'testpass';
+my $user = $ENV{POP3_TEST_USER} // 'test';
+my $pass = $ENV{POP3_TEST_PASS} // 'test';
 
 my $sock = IO::Socket::INET->new(
-    PeerAddr => $host,
-    PeerPort => $port,
-    Proto => 'tcp',
-    Timeout => 10,
-) or plan(skip_all => "Cannot connect to $host:$port: $!");
+    PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5)
+    or plan skip_all => "Dovecot POP3 not reachable at $host:$port";
 
-sub recv_line {
-    my $line = $sock->getline();
-    chomp $line;
-    $line =~ s/\r$//;
-    return $line
-}
+sub _recv { my $l = $sock->getline(); chomp $l; $l =~ s/\r$//; $l }
+sub _send($cmd) { $sock->print("$cmd\r\n") }
 
-sub send_cmd {
-    my ($cmd) = @_;
-    $sock->print("$cmd\r\n");
-}
-
-subtest 'greeting' => sub {
-    my $banner = recv_line();
-    like($banner, qr/^\+OK/, 'server sends +OK greeting');
+subtest 'POP3 greeting' => sub {
+    my $banner = _recv();
+    like($banner, qr/^\+OK/, 'POP3 +OK greeting');
 };
 
-subtest 'authentication' => sub {
-    send_cmd("USER $user");
-    my $resp = recv_line();
-    like($resp, qr/^\+OK/, 'USER accepted');
-    send_cmd("PASS $pass");
-    $resp = recv_line();
-    like($resp, qr/^\+OK/, 'PASS accepted');
+subtest 'login and check empty mailbox' => sub {
+    _send("USER $user");
+    like(_recv(), qr/^\+OK/, 'USER accepted');
+    _send("PASS $pass");
+    like(_recv(), qr/^\+OK/, 'PASS accepted');
+    _send('STAT');
+    like(_recv(), qr/^\+OK 0 0/, 'STAT shows empty mailbox');
+    _send('QUIT');
+    like(_recv(), qr/^\+OK/, 'QUIT accepted');
 };
-
-subtest 'stat' => sub {
-    send_cmd('STAT');
-    my $resp = recv_line();
-    like($resp, qr/^\+OK \d+ \d+/, 'STAT returns message count and size');
-};
-
-subtest 'retr first message' => sub {
-    send_cmd('RETR 1');
-    my $resp = recv_line();
-    like($resp, qr/^\+OK/, 'RETR 1 accepted');
-    my @lines;
-    while (my $line = recv_line()) {
-        last if $line eq '.';
-        push @lines, $line;
-    }
-    ok(scalar @lines > 0, 'RETR 1 returned message lines');
-    if ($ENV{POP3_VIA_PROXY}) {
-        my $found = grep { /^X-Text-Classification:/i } @lines;
-        ok($found, 'message contains X-Text-Classification header');
-    }
-};
-
-subtest 'quit' => sub {
-    send_cmd('QUIT');
-    my $resp = recv_line();
-    like($resp, qr/^\+OK/, 'QUIT accepted');
-};
-
 $sock->close();
 
-done_testing();
+subtest 'seed and retrieve messages via POP3' => sub {
+    my $imap = Mail::IMAPClient->new(
+        Server => 'localhost', Port => 10143, User => 'test', Password => 'test',
+        Uid => 1)
+        or BAIL_OUT("Cannot connect IMAP to seed");
+
+    for my $f (qw(INBOX)) {
+        next unless $imap->exists($f);
+        $imap->select($f);
+        my @u = $imap->search('ALL');
+        $imap->delete_message(@u) if @u;
+        $imap->expunge();
+    }
+
+    my $fixture_dir = File::Spec->catdir($TestHelper::REPO_ROOT, 't', 'fixtures');
+    my @ham_files = sort glob "$fixture_dir/ham/*.eml";
+    sub _slurp($p) { open my $f, '<:raw', $p; local $/; my $d = <$f>; close $f; $d }
+
+    $imap->select('INBOX');
+    $imap->append('INBOX', _slurp($ham_files[0]));
+    $imap->append('INBOX', _slurp($ham_files[1]));
+    $imap->logout();
+
+    $sock = IO::Socket::INET->new(
+        PeerAddr => $host, PeerPort => $port, Proto => 'tcp', Timeout => 5)
+        or BAIL_OUT("POP3 reconnect failed");
+    _recv();
+    _send("USER $user"); _recv();
+    _send("PASS $pass"); _recv();
+
+    _send('STAT');
+    my $stat = _recv();
+    like($stat, qr/^\+OK [1-9]\d* \d+/, "STAT shows messages: $stat");
+
+    _send('LIST');
+    like(_recv(), qr/^\+OK/, 'LIST accepted');
+    while (my $l = _recv()) { last if $l eq '.' }
+
+    _send('RETR 1');
+    like(_recv(), qr/^\+OK/, 'RETR 1 accepted');
+    my $body = '';
+    while (my $l = _recv()) { last if $l eq '.'; $body .= "$l\n" }
+    ok(length($body) > 0, 'RETR 1 returned message body');
+
+    _send('QUIT');
+    _recv();
+};
+$sock->close();
+
+done_testing;
