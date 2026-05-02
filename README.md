@@ -46,8 +46,11 @@ Docker and uses it if available; otherwise falls back to Perl + Carton. The
 setup wizard guides you through IMAP or POP3 configuration on first launch.
 
 To stop: `docker stop popfile` (Docker) or `~/.popfile/bin/popfile stop`
-(source install). Your data lives in a Docker volume or `~/.popfile/` and
-survives restarts and updates.
+(source install). Your data lives in a Docker volume (`popfile-data`) or
+`~/.popfile/` and survives restarts and updates.
+
+On a headless server, the UI listens on all interfaces. Set a password via
+the `POPFILE_PASSWORD` environment variable to protect API access.
 
 The install script can optionally set up a systemd user service on Linux —
 just answer "y" when prompted.
@@ -65,8 +68,11 @@ Or with Docker Desktop installed, the Linux script works in WSL / Git Bash too.
 ## CLI
 
 ```sh
-carton exec perl bayes.pl <message-file>      # classify and show word scores
-carton exec perl insert.pl <bucket> <file>    # train a message into a bucket
+carton exec perl script/popfile classify <file>   # classify a message
+carton exec perl script/popfile insert <bucket> <file>  # train a message
+carton exec perl script/popfile pipe              # classify stdin → stdout
+carton exec perl script/popfile train             # queue IMAP training
+carton exec perl script/popfile status            # check if running
 ```
 
 ## About this revival
@@ -83,13 +89,48 @@ notebook. All contributions, human and synthetic, are welcome.
 ## Development
 
 ```sh
-make test          # full suite with Dovecot
-make test-no-dovecot  # skip IMAP/POP3 integration tests
-make build            # rebuild Svelte frontend → public/
+make test              # full suite with Dovecot
+make test-no-dovecot   # skip IMAP/POP3 integration tests
+make test-docker       # Docker integration test (TEST_DOCKER=1)
+make build             # rebuild Svelte frontend → public/
 ```
 
-The frontend lives in `ui/` (Svelte 5, built with Vite). See `development.md`
-for the Dovecot test server setup and `ARCHITECTURE.md` for module layout.
+### Run from source
+
+```sh
+carton install --deployment
+carton exec perl script/popfile start
+```
+
+Set `POPFILE_USER` to customise where config and data live (defaults to
+`POPFILE_ROOT`, which defaults to `.`).
+
+### Docker
+
+```sh
+docker compose up -d          # build and start
+docker compose down -v         # stop and remove data volume
+
+# Override defaults:
+POPFILE_LOCAL=1 docker compose up -d     # bind to localhost only
+POPFILE_PASSWORD=secret docker compose up -d  # require API token
+```
+
+### Frontend
+
+The UI lives in `ui/` (Svelte 5, built with Vite). See `development.md` for
+the Dovecot test server setup and `ARCHITECTURE.md` for module layout.
+
+### CLI
+
+```sh
+carton exec perl script/popfile classify <file>  # classify a message
+carton exec perl script/popfile insert <bucket> <file>  # train a message
+carton exec perl script/popfile pipe    # classify stdin → stdout
+carton exec perl script/popfile train   # queue IMAP training
+```
+
+### Internationalisation
 
 The UI is available in 30 languages (Arabic through Ukrainian). Translations
 live in `languages/*.msg` as simple key–value files. Missing keys fall back to
