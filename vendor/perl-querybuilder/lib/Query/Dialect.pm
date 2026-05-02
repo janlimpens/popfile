@@ -8,6 +8,7 @@ use builtin ':5.40';
 use Query::Expression;
 use Query::Expression::Comparison;
 use Query::Expression::Compound;
+use Query::Expression::Exists;
 use Query::Expression::Join;
 use Query::Expression::OrderBy;
 use Query::Expression::Relation;
@@ -153,6 +154,13 @@ method relation($name) {
 
 method select(@columns) {
     return Query::Expression::Select->new()->columns(@columns)
+}
+
+method exists($subquery) {
+    die 'exists requires a subquery expression'
+        unless defined $subquery;
+    return Query::Expression::Exists->new(
+        subquery => $subquery)
 }
 
 1;

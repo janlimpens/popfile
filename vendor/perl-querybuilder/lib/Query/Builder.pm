@@ -87,6 +87,10 @@ class Query::Builder {
             return $dialect_impl->relation($name)
     }
 
+    method exists($subquery) {
+        return $dialect_impl->exists($subquery)
+    }
+
 }
 
 1;
