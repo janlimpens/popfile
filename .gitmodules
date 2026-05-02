@@ -1,4 +1,4 @@
 [submodule "vendor/perl-querybuilder"]
 	path = vendor/perl-querybuilder
 	url = https://github.com/janlimpens/perl-querybuilder.git
-	branch = feat/exists-expression
+	branch = main
