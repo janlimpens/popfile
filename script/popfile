@@ -70,6 +70,10 @@ if ($verb eq 'status') { exit do_status() }
 if ($verb eq 'logs') { exit do_logs() }
 if ($verb eq 'restart') { do_restart(@orig_argv) }
 if ($verb eq 'train')   { exit do_train(@verb_args) }
+if ($verb eq 'config' && @ARGV && $ARGV[0] eq '--stdin') {
+    shift @ARGV;
+    push @verb_args, '--stdin';
+}
 if ($verb eq 'config')  { exit do_config(@verb_args) }
 
 push @ARGV, '--set', "logger_log_to_stdout=1"
@@ -156,10 +160,36 @@ sub _port_in_use {
     return 1;
 }
 
+sub _crypto_key {
+    require Digest::SHA;
+    my $root = $ENV{POPFILE_ROOT} // '.';
+    return Digest::SHA::sha256($root . ':popfile-config-key')
+}
+
+sub _is_sensitive {
+    my ($key) = @_;
+    return $key eq 'imap_password' || $key eq 'api_password'
+}
+
+sub _encrypt_value {
+    my ($plain) = @_;
+    return $plain if $plain eq '' || $plain =~ /^ENC:/;
+    require Crypt::Cipher::AES;
+    require Crypt::Mode::CBC;
+    require MIME::Base64;
+    my $key = _crypto_key();
+    my $iv = Crypt::Cipher::AES->new($key)->encrypt('0' x 16);
+    my $padded = $plain . chr(16 - (length($plain) % 16)) x (16 - (length($plain) % 16));
+    my $cbc = Crypt::Mode::CBC->new('AES', 0);
+    my $cipher = $cbc->encrypt($padded, $key, $iv);
+    return 'ENC:' . MIME::Base64::encode_base64($iv . $cipher, '')
+}
+
 sub do_config {
-    my @pairs = @_;
-    unless (@pairs) {
-        print STDERR "Usage: popfile config key=value [key=value ...]\n";
+    my @args = @_;
+    my $from_stdin = @args && $args[0] eq '--stdin' ? shift(@args) && 1 : 0;
+    unless (@args || $from_stdin) {
+        print STDERR "Usage: popfile config [--stdin] [key=value ...]\n";
         return 1;
     }
     my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
@@ -175,10 +205,19 @@ sub do_config {
         }
         close $fh;
     }
+    my @pairs = @args;
+    if ($from_stdin) {
+        while (<STDIN>) {
+            chomp;
+            push @pairs, $_ if /^(\S+)=/;
+        }
+    }
     for my $pair (@pairs) {
         if ($pair =~ /^([^=]+)=(.*)/) {
-            $config{$1} = $2;
-            print "$1 = $2\n";
+            my ($k, $v) = ($1, $2);
+            $v = _encrypt_value($v) if _is_sensitive($k);
+            $config{$k} = $v;
+            print "$k set\n";
         }
         else {
             print STDERR "Invalid format: $pair (use key=value)\n";
@@ -399,7 +438,7 @@ Verbs:
   status                    Show daemon status
   logs                      Tail the log file
   train [bucket...]         Queue IMAP training (all mappings if no bucket given)
-  config key=value [...]   Write configuration parameters to popfile.cfg
+  config [--stdin] [k=v..] Write config parameters (--stdin for piped values)
   insert <bucket> [file...] Train message(s) into a bucket (stdin if no file)
   classify [file...]        Classify a message and print the result
   pipe                      Classify stdin, write modified message to stdout

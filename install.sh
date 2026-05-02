@@ -28,9 +28,13 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     echo "  On a headless server, replace 'localhost' with the server's IP."
     echo ""
     printf "Set a UI password? (leave empty to skip) " > /dev/tty 2>/dev/null
+    stty -echo 2>/dev/null
     read -r password < /dev/tty 2>/dev/null
+    stty echo 2>/dev/null
+    echo ""
     if [ -n "$password" ]; then
-        if docker exec popfile popfile config "api_password=$password" "api_local=0" 2>/dev/null; then
+        printf 'api_password=%s\napi_local=0\n' "$password" | docker exec -i popfile popfile config --stdin 2>/dev/null
+        if [ $? -eq 0 ]; then
             echo "→ Password set, external access enabled."
         else
             echo "→ To set a password, run:"

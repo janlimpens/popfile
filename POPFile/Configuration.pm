@@ -505,7 +505,7 @@ Currently covers C<imap_password>.
 
 =cut
 
-my @SENSITIVE_KEYS = qw(imap_password);
+my @SENSITIVE_KEYS = qw(api_password imap_password);
 
 method _is_sensitive_key($key) {
     return 1 if grep { $_ eq $key } @SENSITIVE_KEYS;
