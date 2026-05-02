@@ -27,8 +27,8 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     echo "→ POPFile is running at http://localhost:7070"
     echo "  On a headless server, replace 'localhost' with the server's IP."
     echo ""
-    printf "Set a UI password? (leave empty to skip) "
-    read -r password
+    printf "Set a UI password? (leave empty to skip) " > /dev/tty 2>/dev/null
+    read -r password < /dev/tty 2>/dev/null
     if [ -n "$password" ]; then
         if docker exec popfile popfile config "api_password=$password" 2>/dev/null; then
             echo "→ Password set."
