@@ -22,9 +22,12 @@ my $fixture_dir = "$TestHelper::REPO_ROOT/t/fixtures";
 $svc->create_bucket('spam');
 $svc->add_message_to_bucket('spam', "$fixture_dir/spam.eml")
     for 1 .. 10;
+my $spam_id = $svc->get_bucket_id('spam');
+
 $svc->create_bucket('ham');
 $svc->add_message_to_bucket('ham', "$fixture_dir/ham.eml")
     for 1 .. 10;
+my $ham_id = $svc->get_bucket_id('ham');
 
 require POPFile::API;
 
@@ -38,8 +41,8 @@ my $app = $ui->build_app($svc, $session);
 $app->log->level('fatal');
 my $t = Test::Mojo->new($app);
 
-subtest 'GET /api/v1/corpus/:bucket/words returns correct structure' => sub {
-    $t->get_ok('/api/v1/corpus/spam/words')
+subtest 'GET /api/v1/buckets/:id/words/accuracy returns correct structure' => sub {
+    $t->get_ok("/api/v1/buckets/$spam_id/words/accuracy")
         ->status_is(200)
         ->json_has('/words')
         ->json_has('/total')
@@ -54,32 +57,30 @@ subtest 'GET /api/v1/corpus/:bucket/words returns correct structure' => sub {
     ok(exists $first->{count}, 'count key present');
 };
 
-subtest 'GET /api/v1/corpus/:bucket/words accepts page and per_page params' => sub {
-    $t->get_ok('/api/v1/corpus/spam/words?page=1&per_page=10')
+subtest 'GET /api/v1/buckets/:id/words/accuracy accepts page and per_page params' => sub {
+    $t->get_ok("/api/v1/buckets/$spam_id/words/accuracy?page=1&per_page=10")
         ->status_is(200)
         ->json_is('/page', 1)
         ->json_is('/per_page', 10);
 };
 
-subtest 'GET /api/v1/corpus/:bucket/words for unknown bucket returns empty' => sub {
-    $t->get_ok('/api/v1/corpus/noexist/words')
-        ->status_is(200);
-    my $body = $t->tx->res->json;
-    is($body->{total}, 0, 'total is 0 for unknown bucket');
-    is(scalar $body->{words}->@*, 0, 'no words for unknown bucket');
+subtest 'GET /api/v1/buckets/:id/words/accuracy unknown id returns 404' => sub {
+    $t->get_ok('/api/v1/buckets/99999/words/accuracy')
+        ->status_is(404)
+        ->json_has('/error');
 };
 
-subtest 'DELETE /api/v1/corpus/:bucket/word/:word removes a word' => sub {
+subtest 'DELETE /api/v1/buckets/:id/word/:word removes a word' => sub {
     my $word = $svc->get_words_for_bucket('spam', per_page => 1)->{words}[0]{word};
-    $t->delete_ok("/api/v1/corpus/spam/word/$word")
+    $t->delete_ok("/api/v1/buckets/$spam_id/word/$word")
         ->status_is(200)
         ->json_is('/ok', 1);
 };
 
-subtest 'POST /api/v1/corpus/:bucket/word/:word/move moves a word' => sub {
+subtest 'POST /api/v1/buckets/:id/word/:word/move moves a word' => sub {
     my $word = $svc->get_words_for_bucket('spam', per_page => 1)->{words}[0]{word};
     my $spam_before = $svc->get_count_for_word('spam', $word);
-    $t->post_ok("/api/v1/corpus/spam/word/$word/move",
+    $t->post_ok("/api/v1/buckets/$spam_id/word/$word/move",
         json => { to => 'ham' })
         ->status_is(200)
         ->json_is('/ok', 1);
@@ -89,8 +90,8 @@ subtest 'POST /api/v1/corpus/:bucket/word/:word/move moves a word' => sub {
     is($spam_after, 0, 'spam no longer has the word');
 };
 
-subtest 'POST /api/v1/corpus/:bucket/word/:word/move missing to returns 400' => sub {
-    $t->post_ok('/api/v1/corpus/spam/word/money/move', json => {})
+subtest 'POST /api/v1/buckets/:id/word/:word/move missing to returns 400' => sub {
+    $t->post_ok("/api/v1/buckets/$spam_id/word/money/move", json => {})
         ->status_is(400)
         ->json_has('/error');
 };

@@ -46,7 +46,11 @@ subtest 'GET /api/v1/buckets returns JSON array' => sub {
 subtest 'POST /api/v1/buckets creates a bucket' => sub {
     $t->post_ok('/api/v1/buckets', json => { name => 'spam' })
       ->status_is(200)
-      ->json_is('/ok', 1);
+      ->json_is('/ok', 1)
+      ->json_has('/id');
+    my $spam_id = $t->tx->res->json->{id};
+    ok($spam_id > 0, 'got bucket id');
+    $t->tx->res->json->{spam_id} = $spam_id;  # save for later
 };
 
 # -----------------------------------------------------------------------
@@ -71,11 +75,11 @@ subtest 'GET /api/v1/config has api_locale key' => sub {
 };
 
 # -----------------------------------------------------------------------
-subtest 'DELETE /api/v1/buckets/:name removes the bucket' => sub {
-    $t->delete_ok('/api/v1/buckets/spam')
+subtest 'DELETE /api/v1/buckets/:id removes the bucket' => sub {
+    my $spam_id = $svc->get_bucket_id('spam');
+    $t->delete_ok("/api/v1/buckets/$spam_id")
       ->status_is(200)
       ->json_is('/ok', 1);
-
     $t->get_ok('/api/v1/buckets')
       ->status_is(200);
     my $list = $t->tx->res->json;

@@ -34,9 +34,9 @@
     }
   }
 
-  async function deleteBucket(name) {
+  async function deleteBucket(id, name) {
     if (!confirm(`Delete bucket "${name}"?`)) return;
-    const res = await fetch(`/api/v1/buckets/${name}`, { method: 'DELETE' });
+    const res = await fetch(`/api/v1/buckets/${id}`, { method: 'DELETE' });
     status = res.ok ? `Deleted "${name}"` : 'Error';
     refresh();
   }
@@ -53,15 +53,15 @@
     refresh();
   }
 
-  async function clearBucket(name) {
+  async function clearBucket(id, name) {
     if (!confirm(`Clear all words from "${name}"?`)) return;
-    const res = await fetch(`/api/v1/buckets/${name}/words`, { method: 'DELETE' });
+    const res = await fetch(`/api/v1/buckets/${id}/words`, { method: 'DELETE' });
     status = res.ok ? `Cleared "${name}"` : 'Error';
     refresh();
   }
 
-  async function setColor(name, color) {
-    await fetch(`/api/v1/buckets/${name}/params`, {
+  async function setColor(id, color) {
+    await fetch(`/api/v1/buckets/${id}/params`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ color }),
@@ -97,14 +97,14 @@
             <input
               type="color"
               value={b.color || '#666666'}
-              onchange={e => setColor(b.name, e.target.value)}
+              onchange={e => setColor(b.id, e.target.value)}
             />
           </td>
           <td>
             <a class="btn-link" href="#corpus/words">{t('NavWordSearch')}</a>
             {#if !b.pseudo}
-              <button class="btn-danger" onclick={() => deleteBucket(b.name)}>{t('Delete')}</button>
-              <button onclick={() => clearBucket(b.name)}>{t('Corpus_Clear')}</button>
+              <button class="btn-danger" onclick={() => deleteBucket(b.id, b.name)}>{t('Delete')}</button>
+              <button onclick={() => clearBucket(b.id, b.name)}>{t('Corpus_Clear')}</button>
             {/if}
           </td>
         </tr>
@@ -117,7 +117,7 @@
   <h3>{t('Bucket_CreateBucket')}</h3>
   <div class="row">
     <input type="color" bind:value={newColor} />
-    <input type="text" placeholder="my-bucket-1" pattern="[a-z0-9_-]+" title="lowercase letters, digits, - and _ only" bind:value={newName} />
+    <input type="text" placeholder="my-bucket-1" bind:value={newName} />
     <button onclick={createBucket}>{t('Create')}</button>
   </div>
 </section>
@@ -128,7 +128,7 @@
     <select bind:value={renameFrom}>
       <option value="">— select —</option>
       {#each buckets.filter(b => !b.pseudo) as b}
-        <option value={b.name}>{b.name}</option>
+        <option value={b.id}>{b.name}</option>
       {/each}
     </select>
     <input type="text" placeholder="new name" bind:value={renameTo} />

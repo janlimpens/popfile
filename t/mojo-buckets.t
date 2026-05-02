@@ -17,19 +17,21 @@ use TestHelper;
 
 my ($config, $mq, $svc, $hist, $bayes, $tmpdir) = TestHelper::setup_mojo_services();
 my $session = $svc->session();
-
 my $fixture_dir = "$TestHelper::REPO_ROOT/t/fixtures";
+
 $svc->create_bucket('ham');
 $svc->set_bucket_color('ham', '#00cc00');
 $svc->set_bucket_parameter('ham', 'fpcount', 1);
 $svc->set_bucket_parameter('ham', 'fncount', 2);
 $svc->add_message_to_bucket('ham', "$fixture_dir/ham.eml")
     for 1 .. 3;
+my $ham_id = $svc->get_bucket_id('ham');
 
 $svc->create_bucket('spam');
 $svc->set_bucket_color('spam', '#cc0000');
 $svc->add_message_to_bucket('spam', "$fixture_dir/spam.eml")
     for 1 .. 2;
+my $spam_id = $svc->get_bucket_id('spam');
 
 require POPFile::API;
 
@@ -56,27 +58,30 @@ subtest 'GET /api/v1/buckets returns all buckets' => sub {
     is($names{spam}{color}, '#cc0000', 'spam color correct');
     ok($names{spam}{word_count} > 0, 'spam has words');
     is($names{unclassified}{pseudo}, 1, 'unclassified is pseudo');
+    ok($names{ham}{id} > 0, 'ham has id');
 };
 
-subtest 'GET /api/v1/buckets/:name found' => sub {
-    $t->get_ok('/api/v1/buckets/ham')
+subtest 'GET /api/v1/buckets/:id found' => sub {
+    $t->get_ok("/api/v1/buckets/$ham_id")
         ->status_is(200)
         ->json_is('/name', 'ham')
+        ->json_is('/id', $ham_id)
         ->json_is('/color', '#00cc00')
         ->json_has('/word_count')
         ->json_is('/fpcount', 1)
         ->json_is('/fncount', 2);
 };
 
-subtest 'GET /api/v1/buckets/:name pseudo bucket found' => sub {
-    $t->get_ok('/api/v1/buckets/unclassified')
+subtest 'GET /api/v1/buckets/:id pseudo bucket found' => sub {
+    my $u_id = $svc->get_bucket_id('unclassified');
+    $t->get_ok("/api/v1/buckets/$u_id")
         ->status_is(200)
         ->json_is('/name', 'unclassified')
         ->json_is('/pseudo', 1);
 };
 
-subtest 'GET /api/v1/buckets/:name not found' => sub {
-    $t->get_ok('/api/v1/buckets/nosuchbucket')
+subtest 'GET /api/v1/buckets/:id not found' => sub {
+    $t->get_ok('/api/v1/buckets/99999')
         ->status_is(404)
         ->json_has('/error');
 };
@@ -84,14 +89,16 @@ subtest 'GET /api/v1/buckets/:name not found' => sub {
 subtest 'POST /api/v1/buckets success' => sub {
     $t->post_ok('/api/v1/buckets', json => { name => 'newbucket' })
         ->status_is(200)
-        ->json_is('/ok', 1);
+        ->json_is('/ok', 1)
+        ->json_has('/id');
     ok($svc->is_bucket('newbucket'), 'bucket created');
 };
 
 subtest 'POST /api/v1/buckets with color' => sub {
     $t->post_ok('/api/v1/buckets', json => { name => 'coloredbucket', color => '#ff0000' })
         ->status_is(200)
-        ->json_is('/ok', 1);
+        ->json_is('/ok', 1)
+        ->json_has('/id');
     is($svc->get_bucket_color('coloredbucket'), '#ff0000', 'color set');
 };
 
@@ -102,7 +109,7 @@ subtest 'POST /api/v1/buckets missing name' => sub {
 };
 
 subtest 'POST /api/v1/buckets invalid chars in name' => sub {
-    $t->post_ok('/api/v1/buckets', json => { name => 'UPPERCASE' })
+    $t->post_ok('/api/v1/buckets', json => { name => 'Bad/Name' })
         ->status_is(422)
         ->json_has('/error');
 };
@@ -113,45 +120,47 @@ subtest 'POST /api/v1/buckets already exists' => sub {
         ->json_has('/error');
 };
 
-subtest 'DELETE /api/v1/buckets/:name' => sub {
+subtest 'DELETE /api/v1/buckets/:id' => sub {
     $svc->create_bucket('tobedeleted');
-    $t->delete_ok('/api/v1/buckets/tobedeleted')
+    my $del_id = $svc->get_bucket_id('tobedeleted');
+    $t->delete_ok("/api/v1/buckets/$del_id")
         ->status_is(200)
         ->json_is('/ok', 1);
     ok(!$svc->is_bucket('tobedeleted'), 'bucket removed');
 };
 
-subtest 'PUT /api/v1/buckets/:name/rename' => sub {
+subtest 'PUT /api/v1/buckets/:id/rename' => sub {
     $svc->create_bucket('oldbucket');
-    $t->put_ok('/api/v1/buckets/oldbucket/rename', json => { new_name => 'renamedto' })
+    my $old_id = $svc->get_bucket_id('oldbucket');
+    $t->put_ok("/api/v1/buckets/$old_id/rename", json => { new_name => 'renamedto' })
         ->status_is(200)
         ->json_is('/ok', 1);
     ok(!$svc->is_bucket('oldbucket'), 'old name removed');
     ok($svc->is_bucket('renamedto'), 'new name exists');
 };
 
-subtest 'PUT /api/v1/buckets/:name/rename missing new_name' => sub {
-    $t->put_ok('/api/v1/buckets/ham/rename', json => {})
+subtest 'PUT /api/v1/buckets/:id/rename missing new_name' => sub {
+    $t->put_ok("/api/v1/buckets/$ham_id/rename", json => {})
         ->status_is(400)
         ->json_has('/error');
 };
 
-subtest 'DELETE /api/v1/buckets/:name/words clears bucket' => sub {
-    $t->delete_ok('/api/v1/buckets/spam/words')
+subtest 'DELETE /api/v1/buckets/:id/words clears bucket' => sub {
+    $t->delete_ok("/api/v1/buckets/$spam_id/words")
         ->status_is(200)
         ->json_is('/ok', 1);
     is($svc->get_bucket_word_count('spam'), 0, 'word count cleared');
 };
 
-subtest 'PUT /api/v1/buckets/:name/params color' => sub {
-    $t->put_ok('/api/v1/buckets/spam/params', json => { color => '#0000ff' })
+subtest 'PUT /api/v1/buckets/:id/params color' => sub {
+    $t->put_ok("/api/v1/buckets/$spam_id/params", json => { color => '#0000ff' })
         ->status_is(200)
         ->json_is('/ok', 1);
     is($svc->get_bucket_color('spam'), '#0000ff', 'color updated');
 };
 
-subtest 'GET /api/v1/buckets/:name/words returns word list' => sub {
-    $t->get_ok('/api/v1/buckets/ham/words')
+subtest 'GET /api/v1/buckets/:id/words returns word list' => sub {
+    $t->get_ok("/api/v1/buckets/$ham_id/words")
         ->status_is(200);
     my $body = $t->tx->res->json;
     ok(scalar @$body > 0, 'words returned');

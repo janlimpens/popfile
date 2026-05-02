@@ -23,11 +23,13 @@ $svc->create_bucket('news');
 $svc->set_bucket_color('news', '#aaffaa');
 $svc->add_message_to_bucket('news', "$fixture_dir/ham.eml")
     for 1 .. 5;
+my $news_id = $svc->get_bucket_id('news');
 
 $svc->create_bucket('spam');
 $svc->set_bucket_color('spam', '#ffaaaa');
 $svc->add_message_to_bucket('spam', "$fixture_dir/spam.eml")
     for 1 .. 10;
+my $spam_id = $svc->get_bucket_id('spam');
 
 require POPFile::API;
 
@@ -49,22 +51,25 @@ subtest 'GET /api/v1/buckets returns all buckets' => sub {
     ok($by_name{spam}, 'spam bucket present');
     ok($by_name{news}, 'news bucket present');
     ok($by_name{unclassified}, 'unclassified bucket present');
+    ok($by_name{spam}{id} > 0, 'spam has id');
+    ok($by_name{news}{id} > 0, 'news has id');
     ok($by_name{spam}{word_count} > 0, 'spam has words');
     is($by_name{news}{color}, '#aaffaa', 'news color correct');
     is($by_name{unclassified}{pseudo} + 0, 1, 'unclassified is pseudo');
     is($by_name{spam}{pseudo} + 0, 0, 'spam is not pseudo');
 };
 
-subtest 'GET /api/v1/buckets/:name returns single bucket' => sub {
-    $t->get_ok('/api/v1/buckets/spam')
+subtest 'GET /api/v1/buckets/:id returns single bucket' => sub {
+    $t->get_ok("/api/v1/buckets/$spam_id")
         ->status_is(200)
         ->json_is('/name', 'spam')
+        ->json_is('/id', $spam_id)
         ->json_has('/word_count')
         ->json_is('/color', '#ffaaaa');
 };
 
-subtest 'GET /api/v1/buckets/:name unknown bucket returns 404' => sub {
-    $t->get_ok('/api/v1/buckets/noexist')
+subtest 'GET /api/v1/buckets/:id unknown bucket returns 404' => sub {
+    $t->get_ok('/api/v1/buckets/99999')
         ->status_is(404)
         ->json_has('/error');
 };
@@ -72,7 +77,10 @@ subtest 'GET /api/v1/buckets/:name unknown bucket returns 404' => sub {
 subtest 'POST /api/v1/buckets creates bucket' => sub {
     $t->post_ok('/api/v1/buckets', json => { name => 'ham' })
         ->status_is(200)
-        ->json_is('/ok', 1);
+        ->json_is('/ok', 1)
+        ->json_has('/id');
+    my $ham_id = $t->tx->res->json->{id};
+    ok($ham_id > 0, 'ham got an id');
 };
 
 subtest 'POST /api/v1/buckets missing name returns 400' => sub {
@@ -82,13 +90,13 @@ subtest 'POST /api/v1/buckets missing name returns 400' => sub {
 };
 
 subtest 'POST /api/v1/buckets invalid name returns 422' => sub {
-    $t->post_ok('/api/v1/buckets', json => { name => 'Bad Name!' })
+    $t->post_ok('/api/v1/buckets', json => { name => 'Bad/Name' })
         ->status_is(422)
         ->json_has('/error');
 };
 
-subtest 'DELETE /api/v1/buckets/:name' => sub {
-    $t->delete_ok('/api/v1/buckets/spam')
+subtest 'DELETE /api/v1/buckets/:id' => sub {
+    $t->delete_ok("/api/v1/buckets/$spam_id")
         ->status_is(200)
         ->json_is('/ok', 1);
     ok(!$svc->is_bucket('spam'), 'spam bucket removed');
