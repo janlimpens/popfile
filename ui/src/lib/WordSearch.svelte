@@ -89,6 +89,7 @@
 
   onMount(() => {
     loadStopwords();
+    loadWords();
   });
 </script>
 
