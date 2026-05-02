@@ -22,8 +22,8 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     printf "Set a UI password? (leave empty to skip) " > /dev/tty
     read -r password < /dev/tty
     if [ -n "$password" ]; then
-        printf 'api_password=%s\napi_local=0\n' "$password" | docker exec -i popfile carton exec perl script/popfile config --stdin 2>/dev/null
-        if [ $? -eq 0 ]; then
+        status=$(printf '{"api_password":"%s","api_local":0}' "$password" | curl -s -o /dev/null -w '%{http_code}' -X PUT http://localhost:7070/api/v1/config -H 'Content-Type: application/json' -d @-)
+        if [ "$status" = "200" ]; then
             echo "→ Password set, external access enabled."
         else
             echo "→ To set a password, run:"
