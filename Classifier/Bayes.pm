@@ -2081,7 +2081,7 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
         unless @buckets;
 
     return "unclassified"
-        unless %{$not_likely->{$userid} // {}};
+        unless $not_likely->{$userid}->%*;
 
     # Check to see if this email should be classified based on a magnet
 

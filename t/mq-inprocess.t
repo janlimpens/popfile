@@ -41,7 +41,7 @@ subtest 'post drops unregistered type silently' => sub {
 
 {
     package TestInprocWaiter;
-    sub deliver { my ($self, $type, @msg) = @_; push @{$self->{received}}, { type => $type, msg => \@msg } }
+    sub deliver { my ($self, $type, @msg) = @_; push $self->{received}->@*, { type => $type, msg => \@msg } }
     sub name    { 'inproc-waiter' }
 }
 

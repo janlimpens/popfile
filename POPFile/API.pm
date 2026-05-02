@@ -225,7 +225,7 @@ method build_app ($svc, $session = undef) {
         if ($now - $window->[1] > 1) { $window = [1, $now]; $rate_limit{$ip} = $window }
         elsif (++$window->[0] > 60) {
             $c->render(status => 429, json => { error => 'Too many requests' });
-            return undef;
+            return;
         }
     });
 
@@ -251,7 +251,7 @@ method build_app ($svc, $session = undef) {
         my $token = $c->req->headers->header('X-POPFile-Token') // '';
         return if $token eq $password;
         $c->render(status => 403, json => { error => 'Forbidden' });
-        return undef;
+        return;
     });
 
     my $r = $app->routes;

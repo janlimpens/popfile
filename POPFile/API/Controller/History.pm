@@ -248,7 +248,7 @@ sub _extract_message_id ($self, $file) {
         }
     }
     close $fh;
-    return undef
+    return
 }
 
 1;

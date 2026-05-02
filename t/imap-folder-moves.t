@@ -44,9 +44,9 @@ require Services::IMAP;
     sub noop                            {}
     sub logout                          {}
     sub expunge                         {}
-    sub move_message                    { my ($s,$uid,$dest) = @_; push @{$s->{moves}}, [$uid, $dest] }
-    sub get_new_message_list_unselected { @{$_[0]->{uids}} }
-    sub search_header_in_folder         { @{$_[0]->{search_results}} }
+    sub move_message                    { my ($s,$uid,$dest) = @_; push $s->{moves}->@*, [$uid, $dest] }
+    sub get_new_message_list_unselected { $_[0]->{uids}->@* }
+    sub search_header_in_folder         { $_[0]->{search_results}->@* }
 }
 
 sub make_imap {

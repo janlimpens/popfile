@@ -60,12 +60,14 @@ if ($opt_version) {
     exit 0;
 }
 
-usage(0) if $opt_help;
-usage(0) if $verb eq 'help';
+usage(0)
+    if $opt_help;
+usage(0)
+    if $verb eq 'help';
 
-if ($verb eq 'stop')    { exit do_stop() }
-if ($verb eq 'status')  { exit do_status() }
-if ($verb eq 'logs')    { exit do_logs() }
+if ($verb eq 'stop') { exit do_stop() }
+if ($verb eq 'status') { exit do_status() }
+if ($verb eq 'logs') { exit do_logs() }
 if ($verb eq 'restart') { do_restart(@orig_argv) }
 if ($verb eq 'train')   { exit do_train(@verb_args) }
 
@@ -98,10 +100,10 @@ unless ($POPFile->CORE_config()) {
     exit 1;
 }
 
-if    ($verb eq 'start')    { do_start($POPFile) }
-elsif ($verb eq 'insert')   { exit do_insert($POPFile, @verb_args) }
+if ($verb eq 'start') { do_start($POPFile) }
+elsif ($verb eq 'insert') { exit do_insert($POPFile, @verb_args) }
 elsif ($verb eq 'classify') { exit do_classify($POPFile, @verb_args) }
-elsif ($verb eq 'pipe')     { exit do_pipe($POPFile) }
+elsif ($verb eq 'pipe') { exit do_pipe($POPFile) }
 else {
     print STDERR "Unknown verb: $verb\n\n";
     usage(1);
@@ -111,11 +113,11 @@ sub _cfg_value {
     my ($key) = @_;
     my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
     $user =~ s{[\\/]+$}{};
-    open my $fh, '<', "$user/popfile.cfg" or return undef;
+    open my $fh, '<', "$user/popfile.cfg" or return;
     while (<$fh>) {
         return $1 if /^\Q$key\E[ \t]+(.+)/;
     }
-    return undef;
+    return
 }
 
 sub _pid_file {
@@ -127,7 +129,7 @@ sub _pid_file {
 }
 
 sub _read_pid {
-    open my $fh, '<', _pid_file() or return undef;
+    open my $fh, '<', _pid_file() or return;
     chomp(my $pid = <$fh> // '');
     return $pid =~ /^\d+$/ ? $pid : undef;
 }
@@ -135,7 +137,7 @@ sub _read_pid {
 sub _read_saved_port {
     my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
     $user =~ s{[\\/]+$}{};
-    open my $fh, '<', "$user/popfile.port" or return undef;
+    open my $fh, '<', "$user/popfile.port" or return;
     chomp(my $port = <$fh> // '');
     return $port =~ /^\d+$/ ? $port + 0 : undef;
 }

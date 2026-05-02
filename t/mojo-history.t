@@ -59,7 +59,7 @@ subtest 'GET /api/v1/history returns items and total' => sub {
       ->json_has('/total');
     my $data = $t->tx->res->json;
     is($data->{total}, 2, 'total matches slot count');
-    is(scalar @{$data->{items}}, 2, 'items count matches');
+    is(scalar $data->{items}->@*, 2, 'items count matches');
 };
 
 subtest 'GET /api/v1/history items include correct bucket color' => sub {
@@ -79,7 +79,7 @@ subtest 'GET /api/v1/history pagination' => sub {
       ->status_is(200);
     my $data = $t->tx->res->json;
     is($data->{total}, 2, 'total still 2');
-    is(scalar @{$data->{items}}, 1, 'per_page=1 returns 1 item');
+    is(scalar $data->{items}->@*, 1, 'per_page=1 returns 1 item');
 };
 
 subtest 'GET /api/v1/history/:slot valid slot' => sub {

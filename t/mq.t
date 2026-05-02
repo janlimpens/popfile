@@ -21,7 +21,7 @@ sub make_waiter {
 
 {
     package TestMQWaiter;
-    sub deliver { my ($self, $type, @msg) = @_; push @{$self->{received}}, { type => $type, msg => \@msg } }
+    sub deliver { my ($self, $type, @msg) = @_; push $self->{received}->@*, { type => $type, msg => \@msg } }
     sub name    { $_[0]->{name} }
 }
 

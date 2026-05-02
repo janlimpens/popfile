@@ -389,7 +389,7 @@ method CORE_start() {
     if ($verbose) {
         print "\n    Loading...\n";
         for my $type (@c) {
-            next unless %{$components{$type}};
+            next unless $components{$type}->%*;
             print "         {$type: " . join(' ', sort keys $components{$type}->%*) . "}\n";
         }
         if (defined $components{core}{api}) {
@@ -429,7 +429,7 @@ method CORE_register_timers() {
         for my $name (sort keys $components{proxy}->%*) {
             $components{proxy}{$name}->service();
         }
-    }) if %{$components{proxy} // {}};
+    }) if $components{proxy}->%*;
 }
 
 =head2 CORE_service
