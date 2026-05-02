@@ -79,14 +79,14 @@
       const defaults = new Set(['INBOX', 'Trash', 'Sent', 'Drafts', 'Junk', 'Archive', 'Templates',
         'Papierkorb', 'Gesendet', 'Entwürfe', 'Spam', 'Vorlagen',
         'Entw&APw-rfe', 'Spam PF', 'unclassified']);
-      folders = all.filter(f => !defaults.has(f) && !f.startsWith('INBOX/'));
+      folders = all.filter(f => !defaults.has(f));
       folderSelected = new Set(folders);
       step = 3;
     }
   }
 
   function folderToBucket(f) {
-    let name = f.replace(/^INBOX\./, '')
+    let name = f.replace(/^INBOX[.\/]/, '')
       .replace(/&APY-/g, 'ö').replace(/&APw-/g, 'ü')
       .replace(/&AOQ-/g, 'ä').replace(/&AN8-/g, 'ß')
       .replace(/&AME-/g, 'é').replace(/&APE-/g, 'è')
