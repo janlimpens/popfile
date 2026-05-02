@@ -12,10 +12,14 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         docker stop popfile 2>/dev/null
         docker rm popfile 2>/dev/null
     fi
-    docker pull ghcr.io/janlimpens/popfile:latest
+    PLATFORM_FLAG=""
+    if [ "$(uname -m)" = "aarch64" ]; then
+        PLATFORM_FLAG="--platform linux/amd64"
+    fi
+    docker pull $PLATFORM_FLAG ghcr.io/janlimpens/popfile:latest
     docker run -d --name popfile --restart unless-stopped \
         -p 7070:7070 -v popfile-data:/data \
-        ghcr.io/janlimpens/popfile:latest
+        $PLATFORM_FLAG ghcr.io/janlimpens/popfile:latest
     echo "→ POPFile is running at http://localhost:7070"
     echo "  On a headless server, replace 'localhost' with the server's IP."
     echo "  Set a password: docker stop popfile && docker rm popfile && docker run -d --name popfile --restart unless-stopped -p 7070:7070 -v popfile-data:/data -e POPFILE_PASSWORD=yourpass ghcr.io/janlimpens/popfile:latest"
