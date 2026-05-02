@@ -26,7 +26,17 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         $PLATFORM_FLAG ghcr.io/janlimpens/popfile:latest
     echo "→ POPFile is running at http://localhost:7070"
     echo "  On a headless server, replace 'localhost' with the server's IP."
-    echo "  Set a password: docker stop popfile && docker rm popfile && docker run -d --name popfile --restart unless-stopped -p 7070:7070 -v popfile-data:/data -e POPFILE_PASSWORD=yourpass ghcr.io/janlimpens/popfile:latest"
+    echo ""
+    printf "Set a UI password? (leave empty to skip) "
+    read -r password
+    if [ -n "$password" ]; then
+        if docker exec popfile popfile config "api_password=$password" 2>/dev/null; then
+            echo "→ Password set."
+        else
+            echo "→ To set a password, run:"
+            echo "  docker stop popfile && docker rm popfile && docker run -d --name popfile --restart unless-stopped -p 7070:7070 -v popfile-data:/data -e POPFILE_PASSWORD=$password ghcr.io/janlimpens/popfile:latest"
+        fi
+    fi
     echo "  Data:   stored in Docker volume 'popfile-data'"
     echo "  Stop:   docker stop popfile"
     echo "  Logs:   docker logs popfile"

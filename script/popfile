@@ -70,6 +70,7 @@ if ($verb eq 'status') { exit do_status() }
 if ($verb eq 'logs') { exit do_logs() }
 if ($verb eq 'restart') { do_restart(@orig_argv) }
 if ($verb eq 'train')   { exit do_train(@verb_args) }
+if ($verb eq 'config')  { exit do_config(@verb_args) }
 
 push @ARGV, '--set', "logger_log_to_stdout=1"
     if $opt_log_stdout;
@@ -153,6 +154,45 @@ sub _port_in_use {
     return 0 unless $sock;
     $sock->close();
     return 1;
+}
+
+sub do_config {
+    my @pairs = @_;
+    unless (@pairs) {
+        print STDERR "Usage: popfile config key=value [key=value ...]\n";
+        return 1;
+    }
+    my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
+    $user =~ s{[\\/]+$}{};
+    my $config_file = "$user/popfile.cfg";
+    my %config;
+    if (open my $fh, '<', $config_file) {
+        while (<$fh>) {
+            chomp;
+            if (/^(\S+)\s+(.*)/) {
+                $config{$1} = $2;
+            }
+        }
+        close $fh;
+    }
+    for my $pair (@pairs) {
+        if ($pair =~ /^([^=]+)=(.*)/) {
+            $config{$1} = $2;
+            print "$1 = $2\n";
+        }
+        else {
+            print STDERR "Invalid format: $pair (use key=value)\n";
+            return 1;
+        }
+    }
+    if (open my $fh, '>', $config_file) {
+        for my $key (sort keys %config) {
+            print $fh "$key $config{$key}\n";
+        }
+        close $fh;
+    }
+    chmod 0600, $config_file;
+    return 0;
 }
 
 sub do_train {
@@ -359,6 +399,7 @@ Verbs:
   status                    Show daemon status
   logs                      Tail the log file
   train [bucket...]         Queue IMAP training (all mappings if no bucket given)
+  config key=value [...]   Write configuration parameters to popfile.cfg
   insert <bucket> [file...] Train message(s) into a bucket (stdin if no file)
   classify [file...]        Classify a message and print the result
   pipe                      Classify stdin, write modified message to stdout
