@@ -6,7 +6,13 @@ echo "================="
 
 # ── try Docker ──
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
-    echo "→ Docker found, launching container…"
+    echo "→ Docker found."
+    if docker ps -a --format '{{.Names}}' | grep -qx popfile; then
+        echo "→ Existing container found, updating…"
+        docker stop popfile 2>/dev/null
+        docker rm popfile 2>/dev/null
+    fi
+    docker pull ghcr.io/janlimpens/popfile:latest
     docker run -d --name popfile --restart unless-stopped \
         -p 7070:7070 -v popfile-data:/data \
         ghcr.io/janlimpens/popfile:latest

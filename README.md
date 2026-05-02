@@ -55,6 +55,28 @@ the `POPFILE_PASSWORD` environment variable to protect API access.
 The install script can optionally set up a systemd user service on Linux —
 just answer "y" when prompted.
 
+### Updating
+
+Run the install script again — it detects the existing container and
+replaces it while keeping your data:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/janlimpens/popfile/main/install.sh | sh
+```
+
+Or manually:
+
+```sh
+docker stop popfile && docker rm popfile
+docker pull ghcr.io/janlimpens/popfile:latest
+docker run -d --name popfile --restart unless-stopped \
+    -p 7070:7070 -v popfile-data:/data \
+    ghcr.io/janlimpens/popfile:latest
+```
+
+Your database, config, and messages in the `popfile-data` volume are
+preserved across updates.
+
 ### Windows
 
 Use PowerShell (or WSL):
