@@ -30,8 +30,8 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     printf "Set a UI password? (leave empty to skip) " > /dev/tty 2>/dev/null
     read -r password < /dev/tty 2>/dev/null
     if [ -n "$password" ]; then
-        if docker exec popfile popfile config "api_password=$password" 2>/dev/null; then
-            echo "→ Password set."
+        if docker exec popfile popfile config "api_password=$password" "api_local=0" 2>/dev/null; then
+            echo "→ Password set, external access enabled."
         else
             echo "→ To set a password, run:"
             echo "  docker stop popfile && docker rm popfile && docker run -d --name popfile --restart unless-stopped -p 7070:7070 -v popfile-data:/data -e POPFILE_PASSWORD=$password ghcr.io/janlimpens/popfile:latest"
