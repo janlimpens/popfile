@@ -12,13 +12,14 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         docker stop popfile 2>/dev/null
         docker rm popfile 2>/dev/null
     fi
-    docker pull ghcr.io/janlimpens/popfile:latest
+    docker pull --platform linux/amd64 ghcr.io/janlimpens/popfile:latest
     docker run -d --name popfile --restart unless-stopped \
+        --platform linux/amd64 \
         -p 7070:7070 -v popfile-data:/data \
         ghcr.io/janlimpens/popfile:latest
     echo "→ POPFile is running at http://localhost:7070"
     echo "  On a headless server, replace 'localhost' with the server's IP."
-    echo "  Set a password: docker stop popfile && docker rm popfile && docker run -d --name popfile --restart unless-stopped -p 7070:7070 -v popfile-data:/data -e POPFILE_PASSWORD=yourpass ghcr.io/janlimpens/popfile:latest"
+    echo "  Set a password: docker stop popfile && docker rm popfile && docker run -d --name popfile --restart unless-stopped --platform linux/amd64 -p 7070:7070 -v popfile-data:/data -e POPFILE_PASSWORD=yourpass ghcr.io/janlimpens/popfile:latest"
     echo "  Data:   stored in Docker volume 'popfile-data'"
     echo "  Stop:   docker stop popfile"
     echo "  Logs:   docker logs popfile"
