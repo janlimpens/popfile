@@ -112,9 +112,10 @@
     border-radius: 50%;
     flex-shrink: 0;
   }
-  .indicator.ok    { background: var(--success); }
-  .indicator.warn  { background: #f5a623; }
-  .indicator.error { background: var(--danger); }
+  .indicator.ok       { background: var(--success); }
+  .indicator.warn      { background: #f5a623; }
+  .indicator.error     { background: var(--danger); }
+  .indicator.disabled  { background: var(--text-muted); }
 
   .check-body {
     display: flex;
@@ -133,9 +134,10 @@
     border-radius: 4px;
     flex-shrink: 0;
   }
-  .badge.ok    { background: rgba(158,206,106,.15); color: var(--success); }
-  .badge.warn  { background: rgba(245,166,35,.15);  color: #f5a623; }
-  .badge.error { background: rgba(247,118,142,.15); color: var(--danger); }
+  .badge.ok       { background: rgba(158,206,106,.15); color: var(--success); }
+  .badge.warn     { background: rgba(245,166,35,.15);  color: #f5a623; }
+  .badge.error    { background: rgba(247,118,142,.15); color: var(--danger); }
+  .badge.disabled { background: var(--border); color: var(--text-muted); }
 
   .btn {
     padding: 0.4rem 1rem;

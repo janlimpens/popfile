@@ -96,6 +96,15 @@ sub update_config($self) {
 
 sub get_status($self) {
     my $api = $self->popfile_api;
+    my $imap_enabled = $api->module_config('imap', 'enabled') // 0;
+    unless ($imap_enabled) {
+        return $self->render(json => { checks => [{
+            id => 'imap_service',
+            label => 'IMAP Service',
+            status => 'disabled',
+            detail => 'IMAP is disabled. Enable it in Settings → IMAP.',
+        }] });
+    }
     my $hostname = $api->module_config('imap', 'hostname') // '';
     my $port = $api->module_config('imap', 'port') // '';
     my $login = $api->module_config('imap', 'login') // '';
