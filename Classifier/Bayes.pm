@@ -3221,7 +3221,7 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
     $prefix =~ s/\0//g;
 
     my $rows = $self->db()->selectall_arrayref('
-        SELECT words.word, matrix.times
+        SELECT words.id, words.word, matrix.times
         FROM matrix, words
         WHERE matrix.wordid = words.id
             AND matrix.bucketid = ?
@@ -3270,7 +3270,7 @@ method get_words_for_bucket ($session, $bucket, %opts) {
     my $total = $count_row ? $count_row->[0] + 0 : 0;
     my $sth = $self->validate_sql_prepare_and_execute(
         "WITH wc AS (
-             SELECT w.word,
+             SELECT w.id, w.word,
                     m.times AS bucket_count,
                     (SELECT COALESCE(SUM(m2.times), 0)
                      FROM matrix m2
@@ -3279,7 +3279,7 @@ method get_words_for_bucket ($session, $bucket, %opts) {
              JOIN words w ON w.id = m.wordid
              WHERE m.bucketid = ?
          )
-         SELECT word, bucket_count, total_count
+         SELECT id, word, bucket_count, total_count
          FROM wc
          ORDER BY $sort $dir
          LIMIT ? OFFSET ?",
@@ -3290,6 +3290,7 @@ method get_words_for_bucket ($session, $bucket, %opts) {
         my $total_count = $row->{total_count} + 0;
         my $accuracy = $total_count > 0 ? $count / $total_count : 0;
         push @words, {
+            id => $row->{id} + 0,
             word => $row->{word},
             count => $count,
             total => $total_count,
@@ -3403,6 +3404,21 @@ method _search_words_fetch ($userid, $prefix, $sort, $dir, $per_page, $offset) {
         @words = grep { defined } @words[$offset .. $offset + $per_page - 1];
     }
     return (\@words, $total, \%data)
+}
+
+=head2 get_word_by_id
+
+Returns the word string for a given word ID, or undef if not found.
+
+C<$id> Word ID from the words table
+
+=cut
+
+method get_word_by_id ($id) {
+    my $row = $self->validate_sql_prepare_and_execute(
+        'SELECT word FROM words WHERE id = ?',
+        $id)->fetchrow_arrayref;
+    return $row ? $row->[0] : undef
 }
 
 =head2 remove_word_from_bucket
@@ -4318,40 +4334,6 @@ method magnet_count ($session) {
     } else {
         return 0;
     }
-}
-
-=head2 add_stopword, remove_stopword
-
-Adds or removes a stop word
-
-
-Return 0 for a bad stop word, and 1 otherwise
-
-C<$session> A valid session key returned by a call to get_session_key
-C<$stopword> The word to add or remove
-
-=cut
-
-method add_stopword ($session, $stopword) {
-    my $userid = $self->valid_session_key($session);
-    return
-        unless defined $userid;
-
-    # Pass language parameter to add_stopword()
-
-    return $parser->mangle()->add_stopword(
-        $stopword, $self->module_config('api', 'locale') // '');
-}
-
-method remove_stopword ($session, $stopword) {
-    my $userid = $self->valid_session_key($session);
-    return
-        unless defined $userid;
-
-    # Pass language parameter to remove_stopword()
-
-    return $parser->mangle()->remove_stopword(
-        $stopword, $self->module_config('api', 'locale') // '');
 }
 
 =head2 db_quote

@@ -24,3 +24,4 @@ lib
 popfile.db.backup
 tools/cleanup.pl
 popfile.port
+bin/*

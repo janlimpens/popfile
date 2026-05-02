@@ -9,8 +9,6 @@ use TestHelper;
 
 my ($config, $mq, $tmpdir) = TestHelper::setup();
 
-# WordMangle::start() only calls load_stopwords() which gracefully
-# fails if the stopwords file is absent; no PID or DB setup needed.
 my $wm = TestHelper::make_module('Classifier::WordMangle', $config, $mq);
 $wm->start();
 
@@ -73,25 +71,20 @@ subtest 'mangle_words colon split' => sub {
 };
 
 subtest 'stopwords' => sub {
-    $wm->add_stopword('the', '');
-    $wm->add_stopword('and', '');
-
-    is( $wm->mangle('the'), '', 'stopword filtered' );
-    is( $wm->mangle('and'),            '',      'stopword filtered' );
-    is( $wm->mangle('hello'),          'hello', 'non-stopword passes' );
-    is( $wm->mangle('the', undef, 1), 'the',   'stopword bypassed with ignore_stops' );
-
-    $wm->remove_stopword('the', '');
-    $wm->remove_stopword('and', '');
+    $wm->_init_language('en');
+    is( $wm->mangle('the'), '',      'english stopword "the" filtered' );
+    is( $wm->mangle('and'), '',       'english stopword "and" filtered' );
+    is( $wm->mangle('hello'), 'hello', 'non-stopword passes' );
+    is( $wm->mangle('the', undef, 1), 'the', 'stopword bypassed with ignore_stops' );
 };
 
-subtest 'add_stopword / remove_stopword' => sub {
-    is( $wm->add_stopword('badword', ''),   1, 'add_stopword returns 1 on success' );
-    is( $wm->mangle('badword'), '', 'newly added stopword is filtered' );
-    is( $wm->remove_stopword('badword', ''), 1, 'remove_stopword returns 1 on success' );
-    is( $wm->mangle('badword'), 'badword', 'removed stopword no longer filtered' );
-
-    is( $wm->add_stopword('bad word!', ''), 0, 'invalid stopword rejected' );
+subtest 'language switch cleans stopwords' => sub {
+    $wm->_init_language('de');
+    is( $wm->mangle('the'), 'the', '"the" not in german stopwords' );
+    is( $wm->mangle('und'), '',      'german stopword "und" filtered' );
+    $wm->_init_language('en');
+    is( $wm->mangle('und'), 'und', 'german stopword gone after switch to en' );
+    is( $wm->mangle('the'), '',      'english stopword back after switch' );
 };
 
 subtest 'stemming' => sub {

@@ -95,7 +95,7 @@ sub get_bucket_words ($self) {
     my $svc = $self->popfile_svc;
     my $prefix = $self->param('prefix') // '';
     my @words = $svc->get_bucket_word_list($name, $prefix);
-    my @result = map { { word => $_->[0], count => ($_->[1] // 0) + 0 } } @words;
+    my @result = map { { id => $_->[0] + 0, word => $_->[1], count => ($_->[2] // 0) + 0 } } @words;
     $self->render(json => \@result);
 }
 
@@ -143,7 +143,11 @@ sub remove_bucket_word ($self) {
     my $name = _bucket_or_404($self, $self->param('id'));
     return
         unless defined $name;
-    $self->popfile_svc->remove_word_from_bucket($name, $self->param('word'));
+    my $svc = $self->popfile_svc;
+    my $word = $svc->get_word_by_id($self->param('word_id'));
+    return $self->render(status => 404, json => { error => 'word not found' })
+        unless defined $word;
+    $svc->remove_word_from_bucket($name, $word);
     $self->render(json => { ok => \1 });
 }
 
@@ -152,33 +156,23 @@ sub move_bucket_word ($self) {
     return
         unless defined $name;
     my $body = $self->req->json // {};
-    my $to = $body->{to} // '';
-    return $self->render(status => 400, json => { error => 'to required' })
-        if $to eq '';
-    $self->popfile_svc->move_word_between_buckets($name, $to, $self->param('word'));
+    my $to_id = $body->{to_id};
+    return $self->render(status => 400, json => { error => 'to_id required' })
+        unless defined $to_id;
+    my $to = _bucket_or_404($self, $to_id);
+    return
+        unless defined $to;
+    my $svc = $self->popfile_svc;
+    my $word = $svc->get_word_by_id($self->param('word_id'));
+    return $self->render(status => 404, json => { error => 'word not found' })
+        unless defined $word;
+    $svc->move_word_between_buckets($name, $to, $word);
     $self->render(json => { ok => \1 });
 }
 
 sub list_stopwords ($self) {
     my @words = sort $self->popfile_svc->get_stopword_list();
     $self->render(json => \@words);
-}
-
-sub create_stopword ($self) {
-    my $svc = $self->popfile_svc;
-    my $body = $self->req->json // {};
-    my $word = $body->{word} // '';
-    return $self->render(status => 400, json => { error => 'word required' })
-        if $word eq '';
-    my $ok = $svc->add_stopword($word);
-    return $self->render(status => 400, json => { error => 'invalid word' })
-        unless $ok;
-    $self->render(json => { ok => \1 });
-}
-
-sub delete_stopword ($self) {
-    $self->popfile_svc->remove_stopword($self->param('word'));
-    $self->render(json => { ok => \1 });
 }
 
 sub list_stopword_candidates ($self) {

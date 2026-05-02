@@ -275,12 +275,10 @@ method build_app ($svc, $session = undef) {
     $r->get('/api/v1/buckets/:id/words/accuracy')->to('corpus#list_bucket_words_with_accuracy');
     $r->delete('/api/v1/buckets/:id/words')->to('corpus#clear_bucket_words');
     $r->put('/api/v1/buckets/:id/params')->to('corpus#update_bucket_params');
-    $r->delete('/api/v1/buckets/:id/word/:word')->to('corpus#remove_bucket_word');
-    $r->post('/api/v1/buckets/:id/word/:word/move')->to('corpus#move_bucket_word');
+    $r->delete('/api/v1/buckets/:id/word_id/:word_id')->to('corpus#remove_bucket_word');
+    $r->post('/api/v1/buckets/:id/word_id/:word_id/move')->to('corpus#move_bucket_word');
 
     $r->get('/api/v1/stopwords')->to('corpus#list_stopwords');
-    $r->post('/api/v1/stopwords')->to('corpus#create_stopword');
-    $r->delete('/api/v1/stopwords/:word')->to('corpus#delete_stopword');
     $r->get('/api/v1/stopword-candidates')->to('corpus#list_stopword_candidates');
     $r->get('/api/v1/words/search')->to('corpus#search_words');
 

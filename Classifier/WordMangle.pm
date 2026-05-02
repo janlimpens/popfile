@@ -92,53 +92,17 @@ the current language.  Returns 1.
 =cut
 
     method start() {
-        $self->load_stopwords();
         $self->_init_language($language);
         return 1
     }
 
-=head2 load_stopwords
-
-Load the stop word list from the stopwords file.
-
-=cut
-    method load_stopwords() {
-        my $path = $self->get_user_path('stopwords');
-        if (open my $stops, '<', $path) {
-            %stop__ = ();
-            while (<$stops>) {
-                s/[\r\n]//g;
-                $stop__{$_} = 1;
-            }
-            close $stops;
-        } elsif (-e $path) {
-            $self->log_msg(WARN => 'Failed to open stopwords file');
-        }
-    }
-
-
-=head2 save_stopwords
-
-Save the stop word list to the stopwords file.
-
-=cut
-    method save_stopwords() {
-        if (open my $stops, '>', $self->get_user_path('stopwords')) {
-            for my $word (keys %stop__) {
-                print $stops "$word\n";
-            }
-            close $stops;
-        }
-    }
-
     method _init_language ($lang) {
         $language = $lang;
-
         $stemmer = undef;
         if ($self->config('stemming') && $snowball_languages{$lang}) {
             $stemmer = Lingua::Stem::Snowball->new(lang => $lang, encoding => 'UTF-8');
         }
-
+        %stop__ = ();
         my $sw = Lingua::StopWords::getStopWords($lang, 'UTF-8') // {};
         $stop__{$_} = 1 for keys $sw->%*;
     }
@@ -261,68 +225,11 @@ Returns a (possibly empty) list of mangled tokens.
         return grep { $_ ne '' } map { $self->mangle($_) } @parts
     }
 
-=head2 add_stopword
-
-Add a stop word.  Returns 1 on success, 0 for invalid input.
-
-C<$stopword> The word to add.  C<$lang> The current language.
-
-=cut
-    method add_stopword ($stopword, $lang = '') {
-        if ($lang eq 'Nihongo') {
-            return 0 if $stopword !~ /^($euc_jp)+$/o;
-        } else {
-            return 0 if ($stopword !~ /:/)
-                     && ($stopword =~ /[^[:alpha:]\-_\.\@0-9]/i);
-        }
-
-        $stopword = $self->mangle($stopword, 1, 1);
-
-        if ($stopword ne '') {
-            $stop__{$stopword} = 1;
-            $self->save_stopwords();
-            return 1;
-        }
-
-        return 0;
-    }
-
-
-=head2 remove_stopword
-
-Remove a stop word.  Returns 1 on success, 0 for invalid input.
-
-C<$stopword> The word to remove.  C<$lang> The current language.
-
-=cut
-    method remove_stopword ($stopword, $lang = '') {
-        if ($lang eq 'Nihongo') {
-            return 0 if $stopword !~ /^($euc_jp)+$/o;
-        } else {
-            return 0 if ($stopword !~ /:/)
-                     && ($stopword =~ /[^[:alpha:]\-_\.\@0-9]/i);
-        }
-
-        $stopword = $self->mangle($stopword, 1, 1);
-
-        if ($stopword ne '') {
-            delete $stop__{$stopword};
-            $self->save_stopwords();
-            return 1;
-        }
-
-        return 0;
-    }
-
-
 =head2 stopwords
 
 Returns the list of current stop words.  If C<$value> is a hashref, replaces the list.
 
 =cut
-    method stopwords ($value = undef) {
-        %stop__ = $value->%* if defined $value;
-        return keys %stop__;
-    }
+    method stopwords($value = undef) { keys %stop__ }
 
 1;

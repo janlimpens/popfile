@@ -72,13 +72,17 @@ subtest 'sort by unknown bucket falls back gracefully' => sub {
 };
 
 subtest 'is_stopword flag' => sub {
-    my @some_words = map { $_->{word} } $bayes->search_words_cross_bucket($session, '', per_page => 5)->{words}->@*;
-    my $word = $some_words[0];
-    $bayes->add_stopword($session, $word);
-    my $result = $bayes->search_words_cross_bucket($session, $word);
-    my ($row) = grep { $_->{word} eq $word } $result->{words}->@*;
-    ok $row && $row->{is_stopword}, 'stopword flagged correctly';
-    $bayes->remove_stopword($session, $word);
+    my @sw = $bayes->get_stopword_list($session);
+    ok scalar @sw > 0, 'stopword list not empty';
+    note 'stopword count: ' . scalar @sw;
+    my %sw_hash = map { $_ => 1 } @sw;
+    my $result = $bayes->search_words_cross_bucket($session, 'meeting');
+    ok $result->{total} > 0, 'meeting found in search';
+    my $m = (grep { $_->{word} eq 'meeting' } $result->{words}->@*)[0];
+    ok $m, 'meeting row exists';
+    note 'meeting is_stopword=' . ($m->{is_stopword} // 'undef');
+    note 'meeting in %stopwords from get_stopword_list: ' . (exists $sw_hash{meeting} ? 'yes' : 'no');
+    ok !${$m->{is_stopword}}, 'meeting is NOT a stopword';
 };
 
 subtest 'pagination' => sub {

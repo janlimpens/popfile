@@ -18,8 +18,6 @@ use TestHelper;
 my ($config, $mq, $svc, $hist, $bayes, $tmpdir) = TestHelper::setup_mojo_services();
 my $session = $svc->session();
 
-$svc->add_stopword('viagra');
-
 require POPFile::API;
 
 my $ui = POPFile::API->new();
@@ -32,40 +30,22 @@ my $app = $ui->build_app($svc, $session);
 $app->log->level('fatal');
 my $t = Test::Mojo->new($app);
 
-subtest 'GET /api/v1/stopwords returns pre-seeded stopword' => sub {
+subtest 'GET /api/v1/stopwords returns module stopwords' => sub {
     $t->get_ok('/api/v1/stopwords')
         ->status_is(200);
     my $words = $t->tx->res->json;
-    ok((grep { $_ eq 'viagra' } @$words), 'viagra in stopwords');
+    ok(scalar @$words > 0, 'stopwords list is not empty');
+    ok((grep { $_ eq 'the' } @$words), 'common english stopword present');
 };
 
-subtest 'POST /api/v1/stopwords adds a word' => sub {
-    $t->post_ok('/api/v1/stopwords', json => { word => 'spamword' })
-        ->status_is(200)
-        ->json_is('/ok', 1);
+subtest 'POST /api/v1/stopwords removed — returns 404' => sub {
+    $t->post_ok('/api/v1/stopwords', json => { word => 'test' })
+        ->status_is(404);
 };
 
-subtest 'GET /api/v1/stopwords reflects added word' => sub {
-    $t->get_ok('/api/v1/stopwords')
-        ->status_is(200);
-    my $words = $t->tx->res->json;
-    ok((grep { $_ eq 'spamword' } @$words), 'spamword added');
-};
-
-subtest 'POST /api/v1/stopwords with empty word returns 400' => sub {
-    $t->post_ok('/api/v1/stopwords', json => { word => '' })
-        ->status_is(400)
-        ->json_has('/error');
-};
-
-subtest 'DELETE /api/v1/stopwords/:word removes a word' => sub {
-    $t->delete_ok('/api/v1/stopwords/spamword')
-        ->status_is(200)
-        ->json_is('/ok', 1);
-    $t->get_ok('/api/v1/stopwords')
-        ->status_is(200);
-    my $words = $t->tx->res->json;
-    ok(!(grep { $_ eq 'spamword' } @$words), 'spamword removed');
+subtest 'DELETE /api/v1/stopwords/:word removed — returns 404' => sub {
+    $t->delete_ok('/api/v1/stopwords/test')
+        ->status_is(404);
 };
 
 subtest 'GET /api/v1/stopword-candidates returns array' => sub {

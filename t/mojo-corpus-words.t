@@ -70,28 +70,28 @@ subtest 'GET /api/v1/buckets/:id/words/accuracy unknown id returns 404' => sub {
         ->json_has('/error');
 };
 
-subtest 'DELETE /api/v1/buckets/:id/word/:word removes a word' => sub {
-    my $word = $svc->get_words_for_bucket('spam', per_page => 1)->{words}[0]{word};
-    $t->delete_ok("/api/v1/buckets/$spam_id/word/$word")
+subtest 'DELETE /api/v1/buckets/:id/word_id/:word_id removes a word' => sub {
+    my $word_data = $svc->get_words_for_bucket('spam', per_page => 1)->{words}[0];
+    $t->delete_ok("/api/v1/buckets/$spam_id/word_id/$word_data->{id}")
         ->status_is(200)
         ->json_is('/ok', 1);
 };
 
-subtest 'POST /api/v1/buckets/:id/word/:word/move moves a word' => sub {
-    my $word = $svc->get_words_for_bucket('spam', per_page => 1)->{words}[0]{word};
-    my $spam_before = $svc->get_count_for_word('spam', $word);
-    $t->post_ok("/api/v1/buckets/$spam_id/word/$word/move",
-        json => { to => 'ham' })
+subtest 'POST /api/v1/buckets/:id/word_id/:word_id/move moves a word' => sub {
+    my $word_data = $svc->get_words_for_bucket('spam', per_page => 1)->{words}[0];
+    my $spam_before = $svc->get_count_for_word('spam', $word_data->{word});
+    $t->post_ok("/api/v1/buckets/$spam_id/word_id/$word_data->{id}/move",
+        json => { to_id => $ham_id })
         ->status_is(200)
         ->json_is('/ok', 1);
-    my $spam_after = $svc->get_count_for_word('spam', $word);
-    my $ham_count = $svc->get_count_for_word('ham', $word);
+    my $spam_after = $svc->get_count_for_word('spam', $word_data->{word});
+    my $ham_count = $svc->get_count_for_word('ham', $word_data->{word});
     ok($ham_count > 0, 'ham now has the word');
     is($spam_after, 0, 'spam no longer has the word');
 };
 
-subtest 'POST /api/v1/buckets/:id/word/:word/move missing to returns 400' => sub {
-    $t->post_ok("/api/v1/buckets/$spam_id/word/money/move", json => {})
+subtest 'POST /api/v1/buckets/:id/word_id/:word_id/move missing to_id returns 400' => sub {
+    $t->post_ok("/api/v1/buckets/$spam_id/word_id/1/move", json => {})
         ->status_is(400)
         ->json_has('/error');
 };
