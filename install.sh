@@ -77,10 +77,9 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-Type=forking
+Type=simple
 ExecStart=$DEST/bin/popfile start
 ExecStop=$DEST/bin/popfile stop
-PIDFile=$DEST/popfile.pid
 Restart=on-failure
 User=$USER
 WorkingDirectory=$DEST
@@ -97,4 +96,3 @@ SERVICEOF
         echo "  Logs:   journalctl --user -u popfile -f"
     fi
 fi
-echo "  Stop:   kill \$(cat $DEST/popfile.pid)"

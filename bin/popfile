@@ -1,41 +1,9 @@
 #!/bin/sh
-# POPFile control script — start | stop | logs
-# The install.sh script clones into ~/.popfile and this script lives there.
+# POPFile launcher — set up environment and delegate to script/popfile
 set -e
 
 POPFILE_HOME="${POPFILE_HOME:-$HOME/.popfile}"
-PIDFILE="$POPFILE_HOME/popfile.pid"
-LOGFILE="$POPFILE_HOME/popfile.log"
-
-case "${1:-start}" in
-    start)
-        if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
-            echo "POPFile is already running (PID $(cat "$PIDFILE"))."
-            exit 0
-        fi
-        cd "$POPFILE_HOME"
-        POPFILE_ROOT=. POPFILE_USER=. carton exec perl script/popfile start &
-        sleep 1
-        if [ -f "$PIDFILE" ]; then
-            echo "POPFile started (PID $(cat "$PIDFILE"))."
-        else
-            echo "POPFile started — see $LOGFILE for the port."
-        fi
-        ;;
-    stop)
-        if [ -f "$PIDFILE" ]; then
-            PID=$(cat "$PIDFILE")
-            kill "$PID" 2>/dev/null && echo "POPFile stopped." || echo "POPFile was not running."
-            rm -f "$PIDFILE"
-        else
-            echo "No PID file found — is POPFile running?"
-        fi
-        ;;
-    logs)
-        tail -f "$LOGFILE"
-        ;;
-    *)
-        echo "Usage: popfile {start|stop|logs}"
-        exit 1
-        ;;
-esac
+cd "$POPFILE_HOME"
+export POPFILE_ROOT=.
+export POPFILE_USER=.
+exec carton exec perl script/popfile "$@"

@@ -22,6 +22,7 @@ use strict;
 use warnings;
 use File::Spec;
 use Getopt::Long qw(:config pass_through no_auto_abbrev);
+use feature 'try';
 use lib $ENV{POPFILE_ROOT};
 use lib "$ENV{POPFILE_ROOT}/vendor/perl-querybuilder/lib";
 
@@ -64,6 +65,7 @@ usage(0) if $verb eq 'help';
 
 if ($verb eq 'stop')    { exit do_stop() }
 if ($verb eq 'status')  { exit do_status() }
+if ($verb eq 'logs')    { exit do_logs() }
 if ($verb eq 'restart') { do_restart(@orig_argv) }
 if ($verb eq 'train')   { exit do_train(@verb_args) }
 
@@ -233,14 +235,21 @@ sub do_restart {
 
 sub do_start {
     my ($POPFile) = @_;
-    eval { $POPFile->CORE_start() };
-    if ($@) {
-        if ($@ =~ /address already in use/i || $@ =~ /bind.*failed/i) {
+    my $pid = _read_pid();
+    if (defined $pid && kill 0, $pid) {
+        print STDERR "POPFile is already running (pid $pid)\n";
+        exit 1;
+    }
+    try {
+        $POPFile->CORE_start();
+    }
+    catch ($e) {
+        if ($e =~ /address already in use/i || $e =~ /bind.*failed/i) {
             my $port = _read_saved_port();
             print STDERR "Error: port " . ($port // 'unknown') . " is already in use.\n";
             print STDERR "Another instance may still be running. Try: popfile stop\n";
         } else {
-            print STDERR "Error starting POPFile: $@";
+            print STDERR "Error starting POPFile: $e";
         }
         exit 1;
     }
@@ -249,6 +258,14 @@ sub do_start {
     $POPFile->CORE_register_timers();
     Mojo::IOLoop->start();
     $POPFile->CORE_stop();
+}
+
+sub do_logs {
+    my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
+    $user =~ s{[\\/]+$}{};
+    my $logfile = "$user/popfile.log";
+    exec 'tail', '-f', $logfile
+        or die "Cannot tail $logfile: $!\n";
 }
 
 sub _tool_setup {
@@ -338,6 +355,7 @@ Verbs:
   stop                      Stop a running daemon
   restart                   Stop then restart the daemon
   status                    Show daemon status
+  logs                      Tail the log file
   train [bucket...]         Queue IMAP training (all mappings if no bucket given)
   insert <bucket> [file...] Train message(s) into a bucket (stdin if no file)
   classify [file...]        Classify a message and print the result
