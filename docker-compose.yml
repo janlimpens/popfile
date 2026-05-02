@@ -3,7 +3,11 @@ services:
     build: .
     ports:
       - "7070:7070"
+    environment:
+      - POPFILE_LOCAL=${POPFILE_LOCAL:-0}
+      - POPFILE_PASSWORD=${POPFILE_PASSWORD:-}
     volumes:
-      - ./popfile.cfg:/app/popfile.cfg
-      - ./popfile.db:/app/popfile.db
-      - ./messages:/app/messages
+      - popfile-data:/data
+
+volumes:
+  popfile-data:

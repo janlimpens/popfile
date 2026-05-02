@@ -1,4 +1,5 @@
 local
+cache/
 *.pid
 *.log
 popfile.cfg

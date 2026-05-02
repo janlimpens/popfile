@@ -28,3 +28,6 @@ dovecot-wait:
 dovecot-stop:
 	@echo "=== Dovecot stop ==="
 	docker compose -f docker-compose.test.yml down -v
+
+test-docker:
+	TEST_DOCKER=1 carton exec prove -lv t/docker-integration.t

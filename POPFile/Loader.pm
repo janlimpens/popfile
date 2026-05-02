@@ -15,7 +15,7 @@ module it finds, wires them together, and drives them through the standard
 lifecycle: C<initialize()> → C<start()> → C<service()> loop → C<stop()>.
 
 Methods whose names begin with C<CORE_> are reserved for use by the main
-entry point (C<popfile.pl>).  All other methods may be called by
+entry point (C<script/popfile>).  All other methods may be called by
 POPFile-based utilities that need to load a subset of modules.
 
 =cut

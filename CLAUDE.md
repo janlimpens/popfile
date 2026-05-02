@@ -18,7 +18,7 @@ POPFile is a Bayesian email classifier written in Perl. It acts as a IMAP client
 
 ```sh
 carton install          # install/update dependencies
-carton exec perl popfile.pl
+carton exec perl script/popfile start
 carton exec prove -l t/
 ```
 
@@ -30,7 +30,7 @@ Prefer well-established CPAN modules over maintaining custom code:
 ### Run POPFile
 
 ```sh
-carton exec perl popfile.pl
+carton exec perl script/popfile start
 ```
 
 The `POPFILE_ROOT` environment variable overrides the root directory (default: `./`).
@@ -63,7 +63,7 @@ All POPFile components inherit from `POPFile::Module` and follow a strict lifecy
 3. `service()` — called in a loop by the main process; do per-tick work
 4. `stop()` — clean up
 
-`POPFile::Loader` discovers, loads, links, and drives all modules through this lifecycle. The main entry point (`popfile.pl`) delegates entirely to `POPFile::Loader`.
+`POPFile::Loader` discovers, loads, links, and drives all modules through this lifecycle. The main entry point (`script/popfile`) delegates entirely to `POPFile::Loader`.
 
 ### Module groups
 

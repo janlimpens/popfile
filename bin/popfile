@@ -14,7 +14,7 @@ case "${1:-start}" in
             exit 0
         fi
         cd "$POPFILE_HOME"
-        carton exec perl popfile.pl &
+        POPFILE_ROOT=. POPFILE_USER=. carton exec perl script/popfile start &
         sleep 1
         if [ -f "$PIDFILE" ]; then
             echo "POPFile started (PID $(cat "$PIDFILE"))."

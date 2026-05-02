@@ -11,6 +11,9 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         -p 7070:7070 -v popfile-data:/data \
         ghcr.io/janlimpens/popfile:latest
     echo "→ POPFile is running at http://localhost:7070"
+    echo "  On a headless server, replace 'localhost' with the server's IP."
+    echo "  Set a password: docker stop popfile && docker rm popfile && docker run -d --name popfile --restart unless-stopped -p 7070:7070 -v popfile-data:/data -e POPFILE_PASSWORD=yourpass ghcr.io/janlimpens/popfile:latest"
+    echo "  Data:   stored in Docker volume 'popfile-data'"
     echo "  Stop:   docker stop popfile"
     echo "  Logs:   docker logs popfile"
     exit 0
@@ -52,9 +55,11 @@ fi
 cd "$DEST"
 carton install --deployment
 echo "→ Starting POPFile…"
-carton exec perl popfile.pl &
+POPFILE_ROOT=. POPFILE_USER=. carton exec perl script/popfile start &
 
 echo "→ POPFile is running — check the console output for the port."
+echo "  UI:     http://localhost:<port>/ (see output above)"
+echo "  Data:   $DEST (your config, database, and messages are here)"
 echo "  Stop:   ~/.popfile/bin/popfile stop"
 echo "  Logs:   ~/.popfile/bin/popfile logs"
 
