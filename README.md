@@ -75,7 +75,8 @@ docker run -d --name popfile --restart unless-stopped \
 ```
 
 Your database, config, and messages in the `popfile-data` volume are
-preserved across updates.
+preserved across updates. Docker images are published manually via the
+`Docker Publish` workflow action.
 
 ### Windows
 
