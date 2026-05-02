@@ -173,4 +173,4 @@ sub search_words ($self) {
         sort => $sort, dir => $dir, page => $page, per_page => $per_page));
 }
 
-__PACKAGE__
+1;

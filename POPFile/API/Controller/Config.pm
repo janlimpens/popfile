@@ -177,4 +177,4 @@ sub get_status($self) {
     );
 }
 
-__PACKAGE__
+1;

@@ -181,4 +181,4 @@ sub _imap_sep ($self) {
     return '-->'
 }
 
-__PACKAGE__
+1;

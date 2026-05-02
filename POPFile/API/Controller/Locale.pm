@@ -57,4 +57,4 @@ sub list_languages($self) {
     $self->render(json => \@languages)
 }
 
-__PACKAGE__
+1;

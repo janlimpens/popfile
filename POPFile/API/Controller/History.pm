@@ -251,4 +251,4 @@ sub _extract_message_id ($self, $file) {
     return undef
 }
 
-__PACKAGE__
+1;

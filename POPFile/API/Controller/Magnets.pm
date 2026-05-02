@@ -53,4 +53,4 @@ sub delete_magnet ($self) {
     $self->render(json => { ok => \1 });
 }
 
-__PACKAGE__
+1;
