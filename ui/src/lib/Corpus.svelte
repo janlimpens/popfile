@@ -117,7 +117,8 @@
   <h3>{t('Bucket_CreateBucket')}</h3>
   <div class="row">
     <input type="color" bind:value={newColor} />
-    <input type="text" placeholder="my-bucket-1" bind:value={newName} />
+    <input type="text" placeholder="my-bucket-1" bind:value={newName}
+      onkeydown={e => e.key === 'Enter' && createBucket()} />
     <button onclick={createBucket}>{t('Create')}</button>
   </div>
 </section>
@@ -131,7 +132,8 @@
         <option value={b.id}>{b.name}</option>
       {/each}
     </select>
-    <input type="text" placeholder="new name" bind:value={renameTo} />
+    <input type="text" placeholder="new name" bind:value={renameTo}
+      onkeydown={e => e.key === 'Enter' && renameBucket()} />
     <button onclick={renameBucket}>{t('Rename')}</button>
   </div>
 </section>
