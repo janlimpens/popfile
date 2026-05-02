@@ -12,18 +12,10 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         docker stop popfile 2>/dev/null
         docker rm popfile 2>/dev/null
     fi
-    ARCH="$(uname -m)"
-    PLATFORM_FLAG=""
-    case "$ARCH" in
-        aarch64|arm*)
-            PLATFORM_FLAG="--platform linux/amd64"
-            echo "→ ARM host ($ARCH), using amd64 emulation."
-            ;;
-    esac
-    docker pull $PLATFORM_FLAG ghcr.io/janlimpens/popfile:latest
+    docker pull ghcr.io/janlimpens/popfile:latest
     docker run -d --name popfile --restart unless-stopped \
         -p 7070:7070 -v popfile-data:/data \
-        $PLATFORM_FLAG ghcr.io/janlimpens/popfile:latest
+        ghcr.io/janlimpens/popfile:latest
     echo "→ POPFile is running at http://localhost:7070"
     echo "  On a headless server, replace 'localhost' with the server's IP."
     echo ""
