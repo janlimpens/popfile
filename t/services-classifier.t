@@ -43,4 +43,33 @@ subtest 'stop releases session' => sub {
     is($svc->session(), '', 'session empty after stop');
 };
 
+subtest 'Unicode bucket names' => sub {
+    my $session = $bayes->get_session_key('admin', '');
+    my $uname = "Test_Unicode_\x{00e4}\x{00f6}\x{00fc}";
+    ok($bayes->create_bucket($session, $uname), "create bucket '$uname'");
+    ok($bayes->is_bucket($session, $uname), 'is_bucket returns true');
+    ok($bayes->delete_bucket($session, $uname), "delete bucket '$uname'");
+    $bayes->release_session_key($session);
+};
+
+subtest 'Unicode bucket names with spaces' => sub {
+    my $session = $bayes->get_session_key('admin', '');
+    ok($bayes->create_bucket($session, "Pers\x{f6}nliches"), 'create Persönliches');
+    ok($bayes->create_bucket($session, "Imposto de Renda"), 'create with spaces');
+    ok($bayes->is_bucket($session, "Pers\x{f6}nliches"), 'is_bucket Persönliches');
+    ok($bayes->is_bucket($session, "Imposto de Renda"), 'is_bucket with spaces');
+    ok($bayes->delete_bucket($session, "Pers\x{f6}nliches"), 'delete Persönliches');
+    ok($bayes->delete_bucket($session, "Imposto de Renda"), 'delete with spaces');
+    $bayes->release_session_key($session);
+};
+
+subtest 'Reject dangerous bucket names' => sub {
+    my $session = $bayes->get_session_key('admin', '');
+    ok(!$bayes->create_bucket($session, '../etc'), 'reject path traversal');
+    ok(!$bayes->create_bucket($session, 'foo/bar'), 'reject slash');
+    ok(!$bayes->create_bucket($session, "foo\x{00}bar"), 'reject null byte');
+    ok(!$bayes->is_bucket($session, '../etc'), 'path traversal is not a bucket');
+    $bayes->release_session_key($session);
+};
+
 done_testing;

@@ -95,9 +95,11 @@
       .replace(/&APU-/g, 'ú').replace(/&AM8-/g, 'ñ')
       .replace(/&AMM-/g, 'ç')
       .replace(/&[A-Za-z0-9+\/]+-/g, '')
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s_-]/gi, '').replace(/\s+/g, '').toLowerCase();
-    return name || f.replace(/[^a-z0-9]/gi, '').toLowerCase();
+      .replace(/[\/@\\]|\.\./g, '')
+      .replace(/\s+/g, '_')
+      .replace(/^[_\s]+|[_\s]+$/g, '')
+      .toLowerCase();
+    return name || f.replace(/[^\p{L}\p{N}]/gu, '').toLowerCase();
   }
 
   function toggleFolder(f) {

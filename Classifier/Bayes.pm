@@ -1339,10 +1339,12 @@ method upgrade_predatabase_data() {
             unlink "$bucket/color";
         }
 
-        $bucket =~ /([[:alpha:]0-9-_]+)$/;
-        $bucket =  $1;
+    (my $clean = $bucket) =~ s{[/\\]|^\s+|\s+$}{}g;
+    $clean =~ s{\.\.}{}g;
+    $clean =~ s{[^\p{L}\p{N}\s\-_]+}{}g;
+    $bucket = $clean || $bucket;
 
-        $self->set_bucket_color($session, $bucket, ($color eq '')?$possible_colors->[$c]:$color);
+    $self->set_bucket_color($session, $bucket, ($color eq '')?$possible_colors->[$c]:$color);
 
         $c = ($c+1) % scalar $possible_colors->@*;
     }
@@ -1362,8 +1364,10 @@ C<$bucket> The bucket name
 =cut
 
 method upgrade_bucket ($session, $bucket) {
-    $bucket =~ /([[:alpha:]0-9-_]+)$/;
-    $bucket =  $1;
+    (my $clean = $bucket) =~ s{[/\\]|^\s+|\s+$}{}g;
+    $clean =~ s{\.\.}{}g;
+    $clean =~ s{[^\p{L}\p{N}\s\-_]+}{}g;
+    $bucket = $clean || $bucket;
 
     $self->create_bucket($session, $bucket);
 
@@ -3751,7 +3755,9 @@ method create_bucket ($session, $bucket) {
         return 0;
     }
 
-    return 0 if ($bucket =~ /[^[:lower:]\-_0-9]/);
+    return 0 if $bucket =~ /[^\p{L}\p{N}\s\-_]/;
+    return 0 if $bucket =~ m{[/\\]|\.\.};
+    return 0 if $bucket =~ /^\s|\s$/;
 
     $self->validate_sql_prepare_and_execute('
         INSERT INTO buckets (name, pseudo, userid)
@@ -3820,7 +3826,11 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
     }
 
     return 0
-        if ($new_bucket =~ /[^[:lower:]\-_0-9]/);
+        if $new_bucket =~ /[^\p{L}\p{N}\s\-_]/;
+    return 0
+        if $new_bucket =~ m{[/\\]|\.\.};
+    return 0
+        if $new_bucket =~ /^\s|\s$/;
 
     my $id = $db_bucketid->{$userid}{$old_bucket}{id};
 
