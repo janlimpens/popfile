@@ -89,7 +89,7 @@
   {#if page === 'history'}
     <History {buckets} />
   {:else if page === 'corpus'}
-    <Corpus bind:buckets initialBucket={pageSub} />
+    <Corpus bind:buckets initialBucket={pageSub} wordSearchBucket={page === 'corpus' && pageSub.startsWith('words/') ? pageSub.slice(6) : ''} />
   {:else if page === 'magnets'}
     <Magnets {buckets} />
   {:else if page === 'status'}

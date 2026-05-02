@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import { t } from './locale.svelte.js';
 
+  let { bucket = '' } = $props();
+
   let query = $state('');
   let sort = $state('word');
   let dir = $state('asc');
@@ -30,6 +32,7 @@
       page: String(page),
       per_page: String(perPage),
     });
+    if (bucket) params.set('bucket', bucket);
     const res = await fetch(`/api/v1/words/search?${params}`);
     if (res.ok) {
       const data = await res.json();
@@ -94,7 +97,7 @@
 </script>
 
 <div class="page">
-  <h2>{t('WordSearch_Title')}</h2>
+  <h2>{t('WordSearch_Title')}{bucket ? `: ${bucket}` : ''}</h2>
 
   <div class="search-bar">
     <input

@@ -3321,15 +3321,18 @@ method search_words_cross_bucket ($session, $prefix, %opts) {
     $per_page = 50 if $per_page < 1 || $per_page > 500;
     my $sort = $opts{sort} // 'word';
     my $dir = ($opts{dir} // '') eq 'desc' ? 'DESC' : 'ASC';
+    my $bucket_filter = $opts{bucket} // '';
     my @bucket_names = map { $_->[0] }
         $self->validate_sql_prepare_and_execute(
             'SELECT name FROM buckets WHERE userid = ? AND pseudo = 0 ORDER BY name',
             $userid)->fetchall_arrayref->@*;
     return { words => [], total => 0, buckets => \@bucket_names }
         unless @bucket_names;
+    return { words => [], total => 0, buckets => \@bucket_names }
+        if $bucket_filter ne '' && !(grep { $_ eq $bucket_filter } @bucket_names);
     my %stopwords = map { $_ => 1 } $self->get_stopword_list($session);
     my ($paged_words, $total, $bucket_data) =
-        $self->_search_words_fetch($userid, $prefix, $sort, $dir, $per_page, ($page - 1) * $per_page);
+        $self->_search_words_fetch($userid, $prefix, $bucket_filter, $sort, $dir, $per_page, ($page - 1) * $per_page);
     return { words => [], total => $total, buckets => \@bucket_names }
         unless $paged_words->@*;
     my @result = map {
@@ -3344,7 +3347,7 @@ method search_words_cross_bucket ($session, $prefix, %opts) {
     return { words => \@result, total => $total, buckets => \@bucket_names }
 }
 
-method _search_words_fetch ($userid, $prefix, $sort, $dir, $per_page, $offset) {
+method _search_words_fetch ($userid, $prefix, $bucket_filter, $sort, $dir, $per_page, $offset) {
     my $qb = $self->qb();
     my $pattern = ($prefix // '') . '%';
     my @joins = (
@@ -3354,6 +3357,16 @@ method _search_words_fetch ($userid, $prefix, $sort, $dir, $per_page, $offset) {
         $qb->like('w.word', $pattern),
         $qb->compare('b.userid', $userid),
         $qb->is_false('b.pseudo'));
+    if ($bucket_filter ne '') {
+        my $exists = $qb->exists(
+            $qb->select('1')
+                ->from('matrix mf')
+                ->joins($qb->join('buckets bf', on => $qb->combine_and(
+                    $qb->compare('bf.id', \'mf.bucketid'),
+                    $qb->compare('bf.name', $bucket_filter))))
+                ->where($qb->compare('mf.wordid', \'w.id')));
+        $where->add_expression($exists);
+    }
     my %sql_sort = (word => 'w.word', coverage => 'coverage', total => 'total');
     my (@words, $total);
     if (exists $sql_sort{$sort}) {

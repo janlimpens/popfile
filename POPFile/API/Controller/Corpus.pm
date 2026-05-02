@@ -188,13 +188,14 @@ sub list_stopword_candidates ($self) {
 sub search_words ($self) {
     my $svc = $self->popfile_svc;
     my $q = $self->param('q') // '';
+    my $bucket = $self->param('bucket') // '';
     my $sort = $self->param('sort') // 'word';
     my $dir = $self->param('dir') // 'asc';
     my $page = ($self->param('page') // 1) + 0;
     my $per_page = ($self->param('per_page') // 50) + 0;
     $self->render(json => $svc->search_words_cross_bucket(
         $q,
-        sort => $sort, dir => $dir, page => $page, per_page => $per_page));
+        bucket => $bucket, sort => $sort, dir => $dir, page => $page, per_page => $per_page));
 }
 
 1;

@@ -3,7 +3,7 @@
   import { t } from './locale.svelte.js';
   import WordSearch from './WordSearch.svelte';
 
-  let { buckets = $bindable([]), initialBucket = '' } = $props();
+  let { buckets = $bindable([]), initialBucket = '', wordSearchBucket = '' } = $props();
 
   let newName = $state('');
   let newColor = $state('#888888');
@@ -74,9 +74,9 @@
 
 <div class="page">
 
-{#if initialBucket === 'words'}
-  <WordSearch />
-{:else}
+{#if initialBucket.startsWith('words')}
+  <WordSearch bucket={wordSearchBucket} />
+{:else if !initialBucket}
 
 <h2>{t('NavCorpus')}</h2>
 
@@ -101,7 +101,7 @@
             />
           </td>
           <td>
-            <a class="btn-link" href="#corpus/words">{t('NavWordSearch')}</a>
+            <a class="btn-link" href="#corpus/words/{b.name}">{t('NavWordSearch')}</a>
             {#if !b.pseudo}
               <button class="btn-danger" onclick={() => deleteBucket(b.id, b.name)}>{t('Delete')}</button>
               <button onclick={() => clearBucket(b.id, b.name)}>{t('Corpus_Clear')}</button>
@@ -139,7 +139,7 @@
 </section>
 
 <section>
-  <a class="btn-link words-link" href="#corpus/words">{t('NavWordSearch')} →</a>
+  <a class="btn-link words-link" href="#corpus/words">{t('NavWordSearch')} (all buckets) →</a>
 </section>
 
 {/if}
