@@ -22,7 +22,7 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     printf "Set a UI password? (leave empty to skip) " > /dev/tty
     read -r password < /dev/tty
     if [ -n "$password" ]; then
-        printf 'api_password=%s\napi_local=0\n' "$password" | docker exec -i popfile popfile config --stdin 2>/dev/null
+        printf 'api_password=%s\napi_local=0\n' "$password" | docker exec -i popfile carton exec perl script/popfile config --stdin 2>/dev/null
         if [ $? -eq 0 ]; then
             echo "→ Password set, external access enabled."
         else
