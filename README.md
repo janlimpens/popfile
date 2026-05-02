@@ -68,9 +68,8 @@ Or manually:
 
 ```sh
 docker stop popfile && docker rm popfile
-docker pull --platform linux/amd64 ghcr.io/janlimpens/popfile:latest
+docker pull ghcr.io/janlimpens/popfile:latest
 docker run -d --name popfile --restart unless-stopped \
-    --platform linux/amd64 \
     -p 7070:7070 -v popfile-data:/data \
     ghcr.io/janlimpens/popfile:latest
 ```
