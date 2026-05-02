@@ -17,7 +17,7 @@ use Mojo::Base 'Mojolicious::Controller', -signatures;
 use Email::MIME;
 use Encode qw();
 use HTML::Entities qw(decode_entities);
-use feature 'current_sub';
+use feature qw(current_sub try);
 
 my sub decode_header($value) {
     return '' unless defined $value && length $value;
@@ -47,7 +47,8 @@ my sub _normalise($text) {
 my sub _part_text($part) {
     my $ct = $part->content_type // 'text/plain';
     return '' unless $ct =~ m{^text/}i;
-    my $body = eval { $part->body_str } // $part->body // '';
+    my $body = do { try { $part->body_str // $part->body // '' }
+        catch ($e) { $part->body // '' } };
     $body = _strip_html($body) if $ct =~ m{text/html}i;
     return _normalise($body)
 }
@@ -180,7 +181,8 @@ sub get_history_item ($self) {
         or return $self->render(status => 500, json => { error => 'cannot read' });
     my $raw = do { local $/; <$fh> };
     close $fh;
-    my $email = eval { Email::MIME->new($raw) };
+    my $email = do { try { Email::MIME->new($raw) }
+        catch ($e) { undef } };
     return $self->render(status => 500, json => { error => 'cannot parse' })
         unless defined $email;
     my $body = _extract_body($email);

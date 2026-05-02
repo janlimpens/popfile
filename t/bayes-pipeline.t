@@ -6,6 +6,7 @@ use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
 
 use Test2::V0;
 use TestHelper;
+use feature 'try';
 use File::Temp qw(tempfile);
 
 my ($config, $mq, $tmpdir) = TestHelper::setup();
@@ -48,7 +49,8 @@ subtest 'training and classification' => sub {
 # -----------------------------------------------------------------------
 $bayes->release_session_key($session);
 
-my $stopped = eval { $bayes->stop(); 1 };
+my $stopped = do { try { $bayes->stop(); 1 }
+    catch ($e) { 0 } };
 ok($stopped, 'bayes stop completes without error');
 
 done_testing;

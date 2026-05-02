@@ -4,6 +4,7 @@
 package Proxy::Proxy;
 
 use Object::Pad;
+use feature 'try';
 use locale;
 
 use IO::Handle;
@@ -276,8 +277,8 @@ the connected socket on success, C<undef> on failure.
                         ConnectPort => $port);
         } else {
             if ($ssl) {
-                eval { require IO::Socket::SSL; };
-                if ($@) {
+                try { require IO::Socket::SSL; }
+                catch ($e) {
                     $self->tee($client, "$ssl_not_supported_error$eol");
                     return;
                 }

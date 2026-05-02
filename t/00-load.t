@@ -5,6 +5,7 @@ use FindBin qw($Bin);
 use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
 
 use Test2::V0;
+use feature 'try';
 
 # Smoke test: verify all core modules can be loaded without errors.
 # This catches syntax errors and missing dependencies early.
@@ -32,8 +33,11 @@ my @modules = qw(
 
 for my $module (@modules) {
     (my $file = $module) =~ s{::}{/}g;
-    ok( eval { require "$file.pm"; 1 }, "loaded $module" )
-        or diag $@;
+    my $error;
+    my $loaded = do { try { require "$file.pm"; 1 }
+        catch ($e) { $error = $e; 0 } };
+    ok($loaded, "loaded $module")
+        or diag $error;
 }
 
 done_testing;

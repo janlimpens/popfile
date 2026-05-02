@@ -13,6 +13,7 @@ use warnings;
 
 use Test2::V0;
 use Test::Mojo;
+use feature 'try';
 use Encode qw(decode);
 use FindBin qw($Bin);
 use Cwd qw(abs_path);
@@ -80,9 +81,11 @@ subtest 'GET /api/v1/i18n/:locale response is valid UTF-8' => sub {
     $t->get_ok('/api/v1/i18n/Deutsch')
       ->status_is(200);
     my $body = $t->tx->res->body;
-    my $decoded = eval { decode('UTF-8', $body, Encode::FB_CROAK) };
-    ok(!$@, 'response body is valid UTF-8')
-        or diag "UTF-8 decode error: $@";
+    my $error;
+    my $decoded = do { try { decode('UTF-8', $body, Encode::FB_CROAK) }
+        catch ($e) { $error = $e; undef } };
+    ok(defined $decoded, 'response body is valid UTF-8')
+        or diag "UTF-8 decode error: $error";
 };
 
 subtest 'JSON response Content-Type is application/json' => sub {
