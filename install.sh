@@ -12,10 +12,14 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         docker stop popfile 2>/dev/null
         docker rm popfile 2>/dev/null
     fi
+    ARCH="$(uname -m)"
     PLATFORM_FLAG=""
-    if [ "$(uname -m)" = "aarch64" ]; then
-        PLATFORM_FLAG="--platform linux/amd64"
-    fi
+    case "$ARCH" in
+        aarch64|arm*)
+            PLATFORM_FLAG="--platform linux/amd64"
+            echo "→ ARM host ($ARCH), using amd64 emulation."
+            ;;
+    esac
     docker pull $PLATFORM_FLAG ghcr.io/janlimpens/popfile:latest
     docker run -d --name popfile --restart unless-stopped \
         -p 7070:7070 -v popfile-data:/data \
