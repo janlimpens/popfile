@@ -3,7 +3,14 @@
 set -e
 
 POPFILE_HOME="${POPFILE_HOME:-$HOME/.popfile}"
-cd "$POPFILE_HOME"
-export POPFILE_ROOT=.
-export POPFILE_USER=.
+mkdir -p "$POPFILE_HOME"
+export POPFILE_USER="$POPFILE_HOME"
+
+# Migrate config from legacy location (repo root) if needed
+OLD_CFG="${POPFILE_ROOT:-.}/popfile.cfg"
+NEW_CFG="$POPFILE_USER/popfile.cfg"
+if [ -f "$OLD_CFG" ] && [ ! -f "$NEW_CFG" ]; then
+    cp "$OLD_CFG" "$NEW_CFG"
+fi
+
 exec carton exec perl script/popfile "$@"
