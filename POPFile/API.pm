@@ -27,9 +27,10 @@ use Data::Page;
 
 class POPFile::API :isa(POPFile::Module);
 
-field $service = undef;
+field $classifier_service = undef;
 field $imap_service = undef;
 field $loader_ref = undef;
+field $activity_module = undef;
 field $daemon_ref = undef;
 
 BUILD {
@@ -102,7 +103,7 @@ method start() {
             rename "$port_file.tmp", $port_file;
         }
     }
-    my $app = $self->build_app($service, undef);
+    my $app = $self->build_app($classifier_service, undef);
     my $host = $self->config('local')
         ? '127.0.0.1'
         : '*';
@@ -164,14 +165,14 @@ No-op stub kept for Loader compatibility. Returns 1.
 
 method service() { return 1 }
 
-=head2 set_service
+=head2 set_classifier_service
 
 Injects the C<Services::Classifier> facade used by the child for REST calls.
 
 =cut
 
-method set_service ($svc = undef) {
-    $service = $svc;
+method set_classifier_service ($svc = undef) {
+    $classifier_service = $svc;
 }
 
 method set_imap ($svc = undef) {
@@ -180,6 +181,10 @@ method set_imap ($svc = undef) {
 
 method set_loader ($loader = undef) {
     $loader_ref = $loader;
+}
+
+method set_activity ($mod = undef) {
+    $activity_module = $mod;
 }
 
 
@@ -265,6 +270,7 @@ method build_app ($svc, $session = undef) {
     $app->helper(popfile_imap => sub ($c) { $imap_service });
     $app->helper(popfile_loader => sub ($c) { $loader_ref });
     $app->helper(popfile_lang_dir => sub ($c) { $languages_dir });
+    $app->helper(popfile_activity => sub ($c) { $activity_module });
 
     $r->get('/api/v1/buckets')->to('corpus#list_buckets');
     $r->post('/api/v1/buckets')->to('corpus#create_bucket');
@@ -310,6 +316,12 @@ method build_app ($svc, $session = undef) {
     $r->post('/api/v1/imap/train')->to('IMAP#trigger_training');
     $r->get('/api/v1/imap/train')->to('IMAP#training_status');
     $r->post('/api/v1/imap/rescan')->to('IMAP#rescan_folder');
+
+    $r->get('/api/v1/activity')->to('activity#recent');
+    $r->get('/api/v1/activity/stream')->to('activity#stream');
+
+    $r->get('/api/v1/logs/tail')->to('logs#tail');
+    $r->get('/api/v1/logs/download')->to('logs#download');
 
     return $app
 }

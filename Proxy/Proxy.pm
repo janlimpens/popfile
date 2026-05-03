@@ -14,7 +14,7 @@ use IO::Select;
 my $eol = "\015\012";
 
 class Proxy::Proxy :isa(POPFile::Module);
-    field $service = undef;
+    field $classifier_service = undef;
 
     field $connection_timeout_error :reader :writer = '';
     field $connection_failed_error :reader :writer = '';
@@ -360,16 +360,16 @@ the connected socket on success, C<undef> on failure.
         return;
     }
 
-=head2 set_service($svc)
+=head2 set_classifier_service($svc)
 
 Sets the classifier service reference used by subclasses to classify messages.
 Returns the current service.
 
 =cut
 
-    method set_service ($svc = undef) {
-        $service = $svc if defined $svc;
-        return $service
+    method set_classifier_service ($svc = undef) {
+        $classifier_service = $svc if defined $svc;
+        return $classifier_service
     }
 
     method child ($client) {}

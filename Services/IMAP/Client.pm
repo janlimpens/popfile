@@ -223,7 +223,8 @@ log.  Calls C<bail_out()> if the write fails.  Returns 1.
 =cut
 
 method say ($command) {
-    $last_command = $command;
+    (my $last = $command) =~ s/^(LOGIN ")[^"]+(" ")[^"]+(".*)/${1}xxxxx${2}xxxxx${3}/;
+    $last_command = $last;
     my $cmdstr = sprintf "A%05d %s%s", $tag, $command, $eol;
     unless (print { $socket } $cmdstr) {
         $self->bail_out("Lost connection while I tried to say '$cmdstr'.");
