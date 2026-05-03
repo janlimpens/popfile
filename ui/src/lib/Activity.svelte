@@ -82,7 +82,9 @@
 
   let logTimer;
   onMount(() => {
-    loadInitialEvents();
+    loadInitialEvents().then(() => {
+      requestAnimationFrame(() => scrollToBottom());
+    });
     connectSSE();
     loadLogs();
     logTimer = setInterval(loadLogs, 3000);
