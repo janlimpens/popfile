@@ -5,12 +5,12 @@ use Object::Pad;
 class Services::IMAP::Client :isa(POPFile::Module);
 
 use Carp qw(confess);
-use Encode qw(decode);
+use Encode qw(decode encode);
 use feature 'signatures';
 use IO::Socket::INET;
 use IO::Socket::SSL;
 use IO::Select;
-use MIME::Base64 qw(decode_base64);
+use MIME::Base64 qw(decode_base64 encode_base64);
 use Socket ();
 
 =head1 NAME
@@ -49,6 +49,37 @@ method _imap_utf7_decode($chunk) {
         if $chunk eq '';
     (my $b = $chunk) =~ tr/+/\//;
     return decode('UTF-16BE', decode_base64($b))
+}
+
+method _imap_utf7_encode($name) {
+    return ''
+        unless defined $name;
+    my $result = '';
+    my $non_ascii = '';
+    for my $char (split //, $name) {
+        my $ord = ord $char;
+        if ($ord >= 0x20 && $ord <= 0x7E && $char ne '&') {
+            if (length $non_ascii) {
+                $result .= '&' . _b64_utf16be($non_ascii) . '-';
+                $non_ascii = '';
+            }
+            $result .= $char;
+        } else {
+            $non_ascii .= $char;
+        }
+    }
+    if (length $non_ascii) {
+        $result .= '&' . _b64_utf16be($non_ascii) . '-';
+    }
+    return $result
+}
+
+sub _b64_utf16be($string) {
+    my $b64 = encode_base64(encode('UTF-16BE', $string));
+    chomp $b64;
+    $b64 =~ s/=+$//;
+    $b64 =~ tr/\//+/;
+    return $b64
 }
 
 =head2 connect()
@@ -160,8 +191,9 @@ C<undef> if the server did not supply them).
 =cut
 
 method status ($folder_name) {
+    my $encoded = $self->_imap_utf7_encode($folder_name);
     my $ret = { UIDNEXT => undef, UIDVALIDITY => undef };
-    $self->say("STATUS \"$folder_name\" (UIDNEXT UIDVALIDITY)");
+    $self->say("STATUS \"$encoded\" (UIDNEXT UIDVALIDITY)");
     if ($self->get_response() == 1) {
         my @lines = split /$eol/, $last_response;
         for (@lines) {
@@ -187,7 +219,8 @@ folder name on success.  Returns the IMAP response code.
 =cut
 
 method select ($folder_name) {
-    $self->say("SELECT \"$folder_name\"");
+    my $encoded = $self->_imap_utf7_encode($folder_name);
+    $self->say("SELECT \"$encoded\"");
     my $result = $self->get_response();
     $folder = $folder_name if $result == 1;
     return $result
@@ -200,7 +233,8 @@ Sends C<CREATE> for C<$folder_name>.  Returns the IMAP response code.
 =cut
 
 method create_folder ($folder_name) {
-    $self->say("CREATE \"$folder_name\"");
+    my $encoded = $self->_imap_utf7_encode($folder_name);
+    $self->say("CREATE \"$encoded\"");
     return $self->get_response()
 }
 
@@ -305,8 +339,9 @@ original C<\Deleted>.  Returns 1 on success, 0 on failure.
 =cut
 
 method move_message ($msg, $destination) {
+    my $encoded = $self->_imap_utf7_encode($destination);
     $self->log_msg(INFO => "Moving message $msg to $destination");
-    $self->say("UID COPY $msg \"$destination\"");
+    $self->say("UID COPY $msg \"$encoded\"");
     my $ok = $self->get_response();
     if ($ok == 1) {
         $self->say("UID STORE $msg +FLAGS (\\Deleted)");

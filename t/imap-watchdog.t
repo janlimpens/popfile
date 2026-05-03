@@ -50,9 +50,15 @@ sub make_imap {
 subtest 'second poll within limit is skipped and logged' => sub {
     my ($imap) = make_imap();
     my $subprocess_calls = 0;
+    my $mock_sp = bless {}, 'MockSubprocess';
     $log->clear();
     no warnings 'redefine', 'once';
-    local *Mojo::IOLoop::subprocess = sub { $subprocess_calls++ };
+    local *Mojo::IOLoop::subprocess = sub { $subprocess_calls++; $mock_sp };
+    {
+        package MockSubprocess;
+        sub on { shift }
+        sub pid { 12345 }
+    }
 
     $imap->poll();
     is($subprocess_calls, 1, 'first poll starts subprocess');
@@ -68,10 +74,16 @@ subtest 'watchdog resets guard when age exceeds 3x interval' => sub {
     my ($imap, $config) = make_imap();
     $config->parameter('imap_update_interval', 1);
     my $subprocess_calls = 0;
+    my $mock_sp = bless {}, 'MockSubprocess2';
     $log->clear();
     no warnings 'redefine', 'once';
-    local *Mojo::IOLoop::subprocess = sub { $subprocess_calls++ };
+    local *Mojo::IOLoop::subprocess = sub { $subprocess_calls++; $mock_sp };
     local *Services::IMAP::_poll_age = sub { 999 };
+    {
+        package MockSubprocess2;
+        sub on { shift }
+        sub pid { 12346 }
+    }
 
     $imap->poll();
     is($subprocess_calls, 1, 'first poll starts subprocess');

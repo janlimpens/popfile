@@ -266,7 +266,7 @@ method poll_sync ($timeout = 30) {
     return !$poll_running ? 1 : 0
 }
 
-method _run_poll_work($subprocess) {
+method _run_poll_work($subprocess = undef) {
     my $result = {};
     $result->{trained} = 0;
     $result->{training_done} = 0;
