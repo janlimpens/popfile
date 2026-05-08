@@ -1,7 +1,7 @@
 .PHONY: test test-ci test-no-dovecot dovecot-start dovecot-wait dovecot-stop build
 
 build:
-	cd ui && npm run build
+	cd ui && npm install --no-audit --no-fund && npm run build
 
 test: dovecot-start dovecot-wait
 	carton exec prove -l t/ 2>&1
