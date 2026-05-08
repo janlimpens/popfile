@@ -263,7 +263,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
                         my $response = $self->echo_response($mail, $client, "RETR $count");
                         last if ($response == 2);
                         if ($response == 0) {
-                            my ($class, $slot) = $self->set_service()->classify_message(
+                            my ($class, $slot) = $self->set_classifier_service()->classify_message(
                                 $mail, $client, 0, '', 0, 0, $eol);
                             $downloaded{$count}{slot} = $slot;
                             $downloaded{$count}{class} = $class;
@@ -271,7 +271,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
                             $response = $self->echo_response($mail, $client, $command, 1);
                             last if ($response == 2);
                             if ($response == 0) {
-                                $self->set_service()->classify_message(
+                                $self->set_classifier_service()->classify_message(
                                     $mail, $client, 1, $class, $slot, 1, $eol);
                             }
                         }
@@ -324,7 +324,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
                 my $count = $1;
                 my $class;
 
-                my $history = $self->set_service()->history_obj();
+                my $history = $self->set_classifier_service()->history_obj();
                 my $file;
 
                 if (defined($downloaded{$count}) &&
@@ -335,7 +335,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
                     $self->tee($client,
                         "+OK " . (-s $file) . " bytes from POPFile cache$eol");
 
-                    ($class, undef) = $self->set_service()->classify_message(
+                    ($class, undef) = $self->set_classifier_service()->classify_message(
                         $retrfile, $client, 1,
                         $downloaded{$count}{class},
                         $downloaded{$count}{slot}, undef, $eol);
@@ -346,7 +346,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
                     last if ($response == 2);
                     if ($response == 0) {
                         my $slot;
-                        ($class, $slot) = $self->set_service()->classify_message(
+                        ($class, $slot) = $self->set_classifier_service()->classify_message(
                             $mail, $client, 0, '', 0, undef, $eol);
                         $downloaded{$count}{slot} = $slot;
                         $downloaded{$count}{class} = $class;

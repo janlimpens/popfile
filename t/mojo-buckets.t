@@ -39,7 +39,7 @@ my $ui = POPFile::API->new();
 $ui->set_configuration($config);
 $ui->set_mq($mq);
 $ui->initialize();
-$ui->set_service($svc);
+$ui->set_classifier_service($svc);
 
 my $app = $ui->build_app($svc, $session);
 $app->log->level('fatal');

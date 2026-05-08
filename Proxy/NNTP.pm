@@ -179,7 +179,7 @@ classifying full articles via the classifier service.
 
             if ($connection_state eq "connected") {
                 my $message_id;
-                my $history = $self->set_service()->history_obj();
+                my $history = $self->set_classifier_service()->history_obj();
 
                 if ($command =~ /^ *ARTICLE ?(.*)?/i) {
                     my $file;
@@ -203,7 +203,7 @@ classifying full articles via the classifier service.
                         $self->log_msg(INFO => "Printing message from cache");
                         $self->tee($client, "220 0 $message_id$eol");
 
-                        (my $class, undef) = $self->set_service()->classify_message(
+                        (my $class, undef) = $self->set_classifier_service()->classify_message(
                             $retrfile, $client, 1,
                             $downloaded{$message_id}{class},
                             $downloaded{$message_id}{slot}, undef, $eol);
@@ -213,7 +213,7 @@ classifying full articles via the classifier service.
                         ($response, $ok) = $self->get_response($news, $client, $command);
                         if ($response =~ /^220 +(\d+) +([^ \015]+)/i) {
                             $message_id = $2;
-                            my ($class, $history_file) = $self->set_service()->classify_message(
+                            my ($class, $history_file) = $self->set_classifier_service()->classify_message(
                                 $news, $client, 0, '', 0, undef, $eol);
                             $downloaded{$message_id}{slot} = $history_file;
                             $downloaded{$message_id}{class} = $class;
@@ -252,7 +252,7 @@ classifying full articles via the classifier service.
                                 $response =~ s/^220/221/;
                                 $self->tee($client, "$response");
 
-                                ($class, $history_file) = $self->set_service()->classify_message(
+                                ($class, $history_file) = $self->set_classifier_service()->classify_message(
                                     $news, undef, 0, '', 0, 0, $eol);
                                 $downloaded{$message_id}{slot} = $history_file;
                                 $downloaded{$message_id}{class} = $class;
@@ -266,7 +266,7 @@ classifying full articles via the classifier service.
                                                                     $command, 0,
                                                                     ($cached ? 0 : 1));
                         if ($response =~ /^221 +(\d+) +([^ ]+)/i) {
-                            $self->set_service()->classify_message(
+                            $self->set_classifier_service()->classify_message(
                                 $news, $client, 1, $class, $history_file, 1, $eol);
                         }
                         next;
@@ -311,7 +311,7 @@ classifying full articles via the classifier service.
                             $response =~ s/^220/222/;
                             $self->tee($client, "$response");
 
-                            my ($class, $history_file) = $self->set_service()->classify_message(
+                            my ($class, $history_file) = $self->set_classifier_service()->classify_message(
                                 $news, undef, 0, '', 0, 0, $eol);
                             $downloaded{$message_id}{slot} = $history_file;
                             $downloaded{$message_id}{class} = $class;
