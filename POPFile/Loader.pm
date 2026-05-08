@@ -296,16 +296,16 @@ method CORE_link_components() {
 
         for my $name (sort keys $components{core}->%*) {
             my $mod = $components{core}{$name};
-            $mod->set_service($svc) if $mod->can('set_service');
+            $mod->set_classifier_service($svc) if $mod->can('set_classifier_service');
         }
         for my $name (sort keys $components{proxy}->%*) {
             my $mod = $components{proxy}{$name};
-            $mod->set_service($svc) if $mod->can('set_service');
+            $mod->set_classifier_service($svc) if $mod->can('set_classifier_service');
         }
         if (exists $components{interface}) {
             for my $name (sort keys $components{interface}->%*) {
                 my $mod = $components{interface}{$name};
-                $mod->set_service($svc) if $mod->can('set_service');
+                $mod->set_classifier_service($svc) if $mod->can('set_classifier_service');
             }
         }
     }
@@ -316,9 +316,15 @@ method CORE_link_components() {
 
     if (defined $components{core}{api}) {
         $components{core}{api}->set_loader($self);
+        $components{core}{api}->set_activity($components{core}{activity})
+            if defined $components{core}{activity};
     }
 
     $components{core}{mq}->register('HLTH_SET', $self);
+
+    if (defined $components{services}{imap} && defined $components{core}{activity}) {
+        $components{services}{imap}->set_activity($components{core}{activity});
+    }
 
     $components{core}{history}->set_classifier(
         $components{classifier}{bayes});

@@ -22,7 +22,7 @@ require POPFile::API;
 my $api = POPFile::API->new();
 TestHelper::wire($api, $config, $mq);
 $api->initialize();
-$api->set_service($svc);
+$api->set_classifier_service($svc);
 
 sub with_stubbed_daemon {
     my ($code) = @_;

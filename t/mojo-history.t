@@ -46,7 +46,7 @@ my $ui = POPFile::API->new();
 $ui->set_configuration($config);
 $ui->set_mq($mq);
 $ui->initialize();
-$ui->set_service($mock_svc);
+$ui->set_classifier_service($mock_svc);
 
 my $app = $ui->build_app($mock_svc, 'test-session');
 $app->log->level('fatal');

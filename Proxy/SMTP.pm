@@ -144,7 +144,7 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
             if ($command =~ /DATA/i) {
                 if ($self->smtp_echo_response($mail, $client, $command)) {
                     $count += 1;
-                    my ($class, $history_file) = $self->set_service()->classify_message(
+                    my ($class, $history_file) = $self->set_classifier_service()->classify_message(
                         $client, $mail, 0, '', 0, undef, $eol);
                     my $response = $self->slurp($mail);
                     $self->tee($client, $response);

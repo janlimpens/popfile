@@ -34,6 +34,7 @@ connect.
 
 field $classifier :reader :writer(set_classifier) = 0;
 field $history :reader :writer(set_history) = 0;
+field $activity :reader :writer(set_activity) = undef;
 field %folders;
 field @mailboxes;
 field $folder_change_flag :reader = 0;
@@ -199,8 +200,10 @@ method poll() {
     }
     $poll_started_at = $self->_now();
     $poll_running = 1;
+    my $activity = $self->activity();
+    my %local_to_real;
     my $sp = Mojo::IOLoop->subprocess(
-        sub { $self->_run_poll_work() },
+        sub ($subprocess) { $self->_run_poll_work($subprocess) },
         sub ($loop, $err, $result) {
             $poll_pid = undef;
             $poll_running = 0;
@@ -230,6 +233,17 @@ method poll() {
         }
     );
     $poll_pid = ref $sp ? $sp->pid() : undef;
+    return unless $poll_pid;
+    $sp->on(progress => sub ($sp, %raw) {
+        return unless defined $activity && ref $activity;
+        my $local_id = delete $raw{local_id};
+        my $parent_local = delete $raw{parent_local_id};
+        $raw{parent_id} = $local_to_real{$parent_local}
+            if defined $parent_local;
+        my $event = $activity->add_event(\%raw);
+        $local_to_real{$local_id} = $event->{id}
+            if defined $local_id && defined $event;
+    });
 }
 
 =head2 poll_sync($timeout)
@@ -253,8 +267,28 @@ method poll_sync ($timeout = 30) {
     return !$poll_running ? 1 : 0
 }
 
-method _run_poll_work() {
-    my $result = { trained => 0, training_done => 0, error => undef, moved_hashes => [], direct_moved_hashes => [], hash_to_mid => {}, consumed_uid_overrides => [] };
+method _run_poll_work($subprocess = undef) {
+    my $result = {};
+    $result->{trained} = 0;
+    $result->{training_done} = 0;
+    $result->{error} = undef;
+    $result->{moved_hashes} = [];
+    $result->{direct_moved_hashes} = [];
+    $result->{hash_to_mid} = {};
+    $result->{consumed_uid_overrides} = [];
+    my $local_id = 0;
+    my $emit = sub ($level, $task, $message, $parent_local_id = undef) {
+        return unless defined $subprocess;
+        $local_id++;
+        $subprocess->progress(
+            level => $level,
+            module => 'imap',
+            task => $task,
+            message => $message,
+            local_id => $local_id,
+            defined $parent_local_id ? (parent_local_id => $parent_local_id) : ());
+        return $local_id
+    };
     my $dbh;
     try {
         $dbh = $self->_open_uid_db();
@@ -283,13 +317,31 @@ method _run_poll_work() {
             if (!%folders || $folder_change_flag == 1) {
                 $self->build_folder_list();
             }
+            my $connect_local_id;
+            if (defined $subprocess) {
+                my $count = scalar keys %folders;
+                $connect_local_id = $emit->('info', 'IMAP Connect', "Connecting to $count folder(s)...");
+            }
             $self->connect_server(nexts => $nexts, validities => $validities);
+            if (defined $subprocess && defined $connect_local_id) {
+                my $count = scalar grep { exists $folders{$_}{imap} } keys %folders;
+                $emit->('info', 'IMAP Connect', "Connected $count folder(s)", $connect_local_id);
+            }
             %hash_values = ();
             $self->_drain_direct_moves($result);
             my %pending_before = %pending_folder_moves;
+            my $poll_local_id;
+            if (defined $subprocess) {
+                my @f = sort grep { exists $folders{$_}{imap} } keys %folders;
+                $poll_local_id = $emit->('info', 'IMAP Poll', 'Checking ' . join(', ', @f));
+            }
+            my $changes = 0;
             for my $folder (keys %folders) {
                 next unless exists $folders{$folder}{imap};
-                $self->scan_folder($folder);
+                $changes += $self->scan_folder($folder, $emit, $poll_local_id) // 0;
+            }
+            if (defined $subprocess && defined $poll_local_id) {
+                $emit->('info', 'IMAP Poll', $changes ? "$changes message(s) processed" : 'No changes', $poll_local_id);
             }
             $result->{moved_hashes} = [grep { !exists $pending_folder_moves{$_} } keys %pending_before];
             $result->{hash_to_mid} = \%hash_to_mid;
@@ -305,6 +357,8 @@ method _run_poll_work() {
             ? $1
             : "Unexpected IMAP error: $err";
         $result->{error} = $msg;
+        $emit->('error', 'IMAP Error', $msg)
+            if defined $subprocess;
         if ($self->config('training_mode') == 1) {
             $result->{training_done} = -1;
         }
@@ -483,7 +537,9 @@ method build_folder_list() {
     }
     for my $bucket ($classifier->get_all_buckets($self->api_session())) {
         my $folder = $self->folder_for_bucket($bucket);
-        $folders{$folder}{output} = $bucket if defined $folder;
+        if (defined $folder) {
+            $folders{$folder}{output} = $bucket;
+        }
     }
     $folder_change_flag = 0;
 }
@@ -634,21 +690,29 @@ moved and C<expunge> is configured.
 
 =cut
 
-method scan_folder ($folder) {
+method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
+    my $local_seq = 0;
+    my $emit = defined $emit_parent ? sub ($level, $task, $msg) {
+        $local_seq++;
+        $emit_parent->($level, $task, $msg, $parent_local_id)
+    } : sub {};
     my $is_watched = exists $folders{$folder}{watched} ? 1 : 0;
     my $is_output = exists $folders{$folder}{output}  ? $folders{$folder}{output} : '';
     $self->log_msg(DEBUG => "Looking for new messages in folder $folder.");
+    $emit->('info', 'Scan', $folder);
     my $imap = $folders{$folder}{imap};
     $imap->noop();
     my $moved_message = 0;
     my @uids = $imap->get_new_message_list_unselected($folder);
     for my $msg (@uids) {
         $self->log_msg(INFO => "Found new message in folder $folder (UID: $msg)");
+        $emit->('info', 'Found', "UID $msg in $folder");
         my ($hash, $mid) = $self->get_hash($folder, $msg);
         $hash_to_mid{$hash} = $mid if defined $hash && defined $mid;
         $imap->uid_next($folder, $msg + 1);
         unless (defined $hash) {
             $self->log_msg(WARN => "Skipping message $msg.");
+            $emit->('warn', 'Skipped', "UID $msg — could not hash");
             next;
         }
         if (exists $pending_folder_moves{$hash}) {
@@ -658,6 +722,7 @@ method scan_folder ($folder) {
                 $self->log_msg(WARN => "UI reclassification: moving message $msg to $destination.");
                 $imap->move_message($msg, $destination);
                 $moved_message++;
+                $emit->('info', 'Reclassified', "UID $msg → $destination (UI)");
             }
             next;
         }
@@ -677,24 +742,30 @@ method scan_folder ($folder) {
             my $result = $self->classify_message($msg, $hash, $folder, $mid);
             unless (defined $result) {
                 $self->log_msg(WARN => "classify_message failed for UID $msg in $folder — message left in place.");
+                $emit->('error', 'Classify failed', "UID $msg in $folder");
                 next;
             }
             $moved_message++ if $result ne '';
             $hash_values{$hash} = $result ne '' ? $result : $folder;
+            $emit->('info', 'Classified', "UID $msg → " . ($result || $folder));
             next;
         }
         if (my $bucket = $is_output) {
             if (my $old_bucket = $self->can_reclassify($hash, $bucket)) {
                 $self->reclassify_message($folder, $msg, $old_bucket, $hash);
+                $emit->('info', 'Reclassified', "UID $msg: $old_bucket → $bucket");
             }
             elsif (!ref $history || $history->get_slot_from_hash($hash) eq '') {
                 $self->insert_message_into_bucket($folder, $msg, $bucket);
+                $emit->('info', 'Trained', "UID $msg → $bucket");
             }
             next;
         }
         $self->log_msg(DEBUG => "Ignoring message $msg");
     }
     $imap->expunge() if $moved_message && $self->config('expunge');
+    $emit->('info', 'Scan done', "$folder: " . ($moved_message ? "$moved_message moved" : scalar(@uids) . ' checked, no moves'));
+    return $moved_message
 }
 
 =head2 classify_message($msg, $hash, $folder, $mid)

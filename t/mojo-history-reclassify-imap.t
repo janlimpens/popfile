@@ -75,7 +75,7 @@ my $ui = POPFile::API->new();
 $ui->set_configuration($config);
 $ui->set_mq($mq);
 $ui->initialize();
-$ui->set_service($mock_svc);
+$ui->set_classifier_service($mock_svc);
 $ui->set_imap($mock_imap);
 
 my $app = $ui->build_app($mock_svc, 'test-session');
@@ -192,7 +192,7 @@ subtest 'reclassify without IMAP service still succeeds' => sub {
     $ui_no_imap->set_configuration($config);
     $ui_no_imap->set_mq($mq);
     $ui_no_imap->initialize();
-    $ui_no_imap->set_service($mock_svc);
+    $ui_no_imap->set_classifier_service($mock_svc);
     my $app2 = $ui_no_imap->build_app($mock_svc, 'test-session');
     $app2->log->level('fatal');
     my $t2 = Test::Mojo->new($app2);
