@@ -29,10 +29,10 @@ where most of the action is.
   messages you always want in a specific bucket.
 - **REST API** — everything the UI does is available programmatically under
   `/api/v1/`.
-- **30 languages** — Arabic, Bulgarian, Catalan, Chinese (simplified &
-  traditional), Czech, Danish, Dutch, English (UK & US), Finnish, French,
-  German, Greek, Hebrew, Hungarian, Italian, Japanese, Korean, Norwegian,
-  Polish, Portuguese (BR & PT), Russian, Slovak, Spanish, Swedish, Turkish,
+- **29 languages** — Arabic, Bulgarian, Catalan, Chinese (simplified &
+  traditional), Czech, Danish, Dutch, English, Finnish, French, German,
+  Greek, Hebrew, Hungarian, Italian, Japanese, Korean, Norwegian, Polish,
+  Portuguese (BR & PT), Russian, Slovak, Spanish, Swedish, Turkish,
   Ukrainian.
 
 ## Quick start
@@ -155,6 +155,9 @@ carton exec perl script/popfile train   # queue IMAP training
 
 ### Internationalisation
 
-The UI is available in 30 languages (Arabic through Ukrainian). Translations
-live in `languages/*.msg` as simple key–value files. Missing keys fall back to
-English automatically.
+The UI is available in 29 languages. Translations live in `languages/*.msg`
+filed by BCP 47 code (e.g. `de.msg`, `pt-BR.msg`). Regional variants like
+`pt-BR.msg` are slim override files containing only the keys that differ
+from their base locale — the backend merges them at request time. The
+frontend matches your browser's `navigator.language` against the available
+codes and falls back to English for any missing keys.
