@@ -7,8 +7,6 @@ no warnings 'experimental::try';
 use Mojo::IOLoop;
 use Services::IMAP::Client;
 
-use constant REAPPEARED_UNKNOWN_BUCKET => 'unknown';
-
 class Services::IMAP :isa(POPFile::Module);
 
 =head1 NAME
@@ -33,6 +31,8 @@ connect.
 =head1 METHODS
 
 =cut
+
+use constant REAPPEARED_UNKNOWN_BUCKET => 'unknown';
 
 field $classifier :reader :writer(set_classifier) = 0;
 field $history :reader :writer(set_history) = 0;
