@@ -21,12 +21,26 @@ sub parse_keys {
 }
 
 my %en = parse_keys("$lang_dir/en.msg");
-my @enforced = ('de.msg', 'pt.msg', 'pt-BR.msg');
 
-for my $file (@enforced) {
+# Full files must have all keys, override files inherit from their base
+my @full = ('de.msg', 'pt.msg');
+my @overrides = (
+    ['en-GB.msg', 'en.msg'],
+    ['pt-BR.msg', 'pt.msg'],
+);
+
+for my $file (@full) {
     my %lang = parse_keys("$lang_dir/$file");
     my @missing = sort grep { !exists $lang{$_} } keys %en;
     is(\@missing, [], "No keys missing from $file");
+}
+
+for my $pair (@overrides) {
+    my ($ov_file, $base_file) = @$pair;
+    my %ov = parse_keys("$lang_dir/$ov_file");
+    my %base = parse_keys("$lang_dir/$base_file");
+    my @extra = sort grep { !exists $base{$_} } keys %ov;
+    is(\@extra, [], "$ov_file contains no extra keys beyond $base_file");
 }
 
 done_testing;

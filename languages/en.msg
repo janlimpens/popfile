@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-# Identify the language and character set used for the interface
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
+Language_Name English
 ManualLanguage en
 
 Add Add
@@ -80,8 +80,6 @@ Imap_WizardDone {count} bucket(s) created and mapped.
 Imap_WizardEmpty No additional folders found on the server.
 Imap_WizardSelectAll Select all
 Imap_WizardTrain Train now
-Language_Name English
-Magnet Magnet
 Magnet_CreateNew Create New Magnet
 Magnet_Created Magnet created
 Magnet_CurrentMagnets Current Magnets
@@ -133,17 +131,9 @@ Settings_DescLogSQLToStdout Include SQL statements with bound values in log outp
 Settings_DescLogToStdout Mirror log output to stdout in addition to the log file.
 Settings_DescMessageCutoff Maximum words analysed per message (0 = unlimited).
 Settings_DescNNTP NNTP proxy — sits between your newsreader and your NNTP server. It classifies articles and adds classification headers. Point your newsreader at the host and port POPFile listens on (default 119).
-Settings_DescNNTP NNTP proxy — sits between your newsreader and your NNTP server. It classifies articles and adds classification headers. Point your newsreader at the host and port POPFile listens on (default 119).
-Settings_DescNNTP NNTP proxy — sits between your newsreader and your NNTP server. It classifies articles and adds classification headers. Point your newsreader at the host and port POPFile listens on (default 119).
-Settings_DescNNTP NNTP proxy — sits between your newsreader and your NNTP server. It classifies articles and adds classification headers. Point your newsreader at the host and port POPFile listens on (default 119).
 Settings_DescOpenBrowser Open the default browser when the web UI is ready.
 Settings_DescPOP3 POP3 proxy — sits between your mail client and your POP3 server. It classifies every message and adds an X-Text-Classification header. Point your mail client at the host and port POPFile listens on (default 1110) instead of your real POP3 server.
-Settings_DescPOP3 POP3 proxy — sits between your mail client and your POP3 server. It classifies every message and adds an X-Text-Classification header. Point your mail client at the host and port POPFile listens on (default 1110) instead of your real POP3 server.
-Settings_DescPOP3 POP3 proxy — sits between your mail client and your POP3 server. It classifies every message and adds an X-Text-Classification header. Point your mail client at the host and port POPFile listens on (default 1110) instead of your real POP3 server.
-Settings_DescPOP3 POP3 proxy — sits between your mail client and your POP3 server. It classifies every message and adds an X-Text-Classification header. Point your mail client at the host and port POPFile listens on (default 1110) instead of your real POP3 server.
 Settings_DescRetentionDays How many days to keep message history.
-Settings_DescSMTP SMTP proxy — sits between your mail client and your SMTP server. It classifies outgoing messages and forwards them to the real server. Point your mail client at the host and port POPFile listens on (default 25).
-Settings_DescSMTP SMTP proxy — sits between your mail client and your SMTP server. It classifies outgoing messages and forwards them to the real server. Point your mail client at the host and port POPFile listens on (default 25).
 Settings_DescSMTP SMTP proxy — sits between your mail client and your SMTP server. It classifies outgoing messages and forwards them to the real server. Point your mail client at the host and port POPFile listens on (default 25).
 Settings_DescSQLiteBackup Copy the database to a .backup file every hour.
 Settings_DescSQLiteFastWrites Disable SQLite write-ahead sync for faster inserts. Risks minor data loss on crash.
@@ -218,7 +208,6 @@ Status_LoadError Failed to load status
 Status_NoChecks No checks available.
 Subject Subject
 Total Total
-Undo Undo
 Update Update
 Wizard_Done All set!
 Wizard_Encryption Encryption

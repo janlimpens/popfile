@@ -40,8 +40,24 @@ sub get_locale($self) {
     my $file = $self->_lang_dir() . "/$name.msg";
     return $self->render(status => 404, json => { error => 'locale not found' })
         unless -f $file;
-    my %strings = $self->_read_msg_file($file);
+    my %strings = $self->_load_with_fallback($name);
     $self->render(json => \%strings)
+}
+
+sub _load_with_fallback($self, $name) {
+    my $dir = $self->_lang_dir();
+    my %strings;
+    my ($base) = $name =~ /^([a-z]+)/;
+    if ($name ne $base) {
+        my $base_file = "$dir/$base.msg";
+        %strings = $self->_read_msg_file($base_file)
+            if -f $base_file;
+    }
+    my $override_file = "$dir/$name.msg";
+    my %override = $self->_read_msg_file($override_file)
+        if -f $override_file;
+    @strings{keys %override} = values %override;
+    return %strings
 }
 
 sub list_languages($self) {
