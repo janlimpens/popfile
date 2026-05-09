@@ -106,7 +106,9 @@
     loadLogs().then(() => {
       requestAnimationFrame(() => scrollLogToBottom());
     });
-    logTimer = setInterval(loadLogs, 3000);
+    logTimer = setInterval(() => {
+      if (!document.hidden) loadLogs();
+    }, 3000);
     return () => {
       if (eventSource) eventSource.close();
       clearInterval(logTimer);

@@ -179,14 +179,21 @@
       });
   }
 
+  let pollTimer;
+
   onMount(async () => {
     await loadPageSize();
     ready = true;
-    const interval = setInterval(() => {
-      if (page === 1 && !search) pollRefresh();
-    }, 10000);
-    return () => clearInterval(interval);
   });
+
+  $effect(() => {
+    if (!ready) return;
+    pollTimer = setInterval(() => {
+      if (page === 1 && !search && !document.hidden) pollRefresh();
+    }, 10000);
+    return () => clearInterval(pollTimer);
+  });
+
   $effect(() => {
     if (!ready) return;
     page; search; pageSize; bucket;
