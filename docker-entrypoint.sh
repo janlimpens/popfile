@@ -3,15 +3,43 @@
 POPFILE_USER="${POPFILE_USER:-/data}"
 POPFILE_ROOT="${POPFILE_ROOT:-/app}"
 mkdir -p "$POPFILE_USER/messages"
-if [ ! -f "$POPFILE_USER/popfile.cfg" ]; then
-    {
-        echo "api_port 7070"
-        echo "api_local ${POPFILE_LOCAL:-0}"
-        [ -n "${POPFILE_PASSWORD:-}" ] && echo "api_password $POPFILE_PASSWORD"
-        echo "bayes_database popfile.db"
-        echo "GLOBAL_msgdir $POPFILE_USER/messages/"
-        echo "config_piddir $POPFILE_USER/"
-    } > "$POPFILE_USER/popfile.cfg"
+if [ ! -f "$POPFILE_USER/popfile.json" ]; then
+    cat > "$POPFILE_USER/popfile.json" <<EOF
+{
+  "version": 2,
+  "api": {
+    "port": 7070,
+    "local": ${POPFILE_LOCAL:-0}
+  },
+  "bayes": {
+    "database": "popfile.db"
+  },
+  "GLOBAL": {
+    "msgdir": "$POPFILE_USER/messages/"
+  },
+  "config": {
+    "piddir": "$POPFILE_USER/"
+  }
+}
+EOF
+    if [ -n "${POPFILE_PASSWORD:-}" ]; then
+        # Inject password into the JSON
+        tmp="$(mktemp)"
+        perl -MCpanel::JSON::XS -e '
+            use Cpanel::JSON::XS;
+            my $json = Cpanel::JSON::XS->new->utf8->pretty->canonical;
+            open my $fh, "<", "$ARGV[0]" or die;
+            local $/;
+            my $data = $json->decode(<$fh>);
+            close $fh;
+            $data->{api}{password} = $ARGV[1];
+            open $fh, ">", "$ARGV[0]" or die;
+            print $fh $json->encode($data);
+            close $fh;
+        ' "$tmp" "$POPFILE_PASSWORD"
+        mv "$tmp" "$POPFILE_USER/popfile.json"
+        unlink "$tmp" 2>/dev/null || true
+    fi
 fi
 export POPFILE_USER POPFILE_ROOT
 echo "POPFile data directory: $POPFILE_USER (mount a volume here to persist)"

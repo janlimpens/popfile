@@ -94,7 +94,7 @@ unless ($noserver) {
     my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
     $user =~ s{[\\/]+$}{};
     print "\nPOPFile " . $POPFile->CORE_version() . "\n";
-    print "Config: " . File::Spec->rel2abs("$user/popfile.cfg") . "\n";
+    print "Config: " . File::Spec->rel2abs("$user/popfile.json") . "\n";
 }
 $POPFile->CORE_load($noserver);
 $POPFile->CORE_link_components();
@@ -118,7 +118,26 @@ sub _cfg_value {
     my ($key) = @_;
     my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
     $user =~ s{[\\/]+$}{};
-    open my $fh, '<', "$user/popfile.cfg" or return;
+    my $json_path = "$user/popfile.json";
+    if (-e $json_path) {
+        require POPFile::ConfigFile;
+        my $cf = POPFile::ConfigFile->new();
+        my $data = $cf->load($json_path);
+        for my $section (keys %$data) {
+            next if $section eq 'version';
+            my $nested = $data->{$section};
+            next unless ref $nested eq 'HASH';
+            for my $param (keys %$nested) {
+                my $full = "$section\_$param";
+                return $nested->{$param}
+                    if $full eq $key;
+            }
+        }
+        return
+    }
+    # Fallback to legacy format
+    my $legacy_path = "$user/popfile.cfg";
+    open my $fh, '<', $legacy_path or return;
     while (<$fh>) {
         return $1 if /^\Q$key\E[ \t]+(.+)/;
     }
@@ -194,17 +213,35 @@ sub do_config {
     }
     my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
     $user =~ s{[\\/]+$}{};
-    my $config_file = "$user/popfile.cfg";
+    
+    # Read existing config (JSON preferred, legacy fallback)
     my %config;
-    if (open my $fh, '<', $config_file) {
-        while (<$fh>) {
-            chomp;
-            if (/^(\S+)\s+(.*)/) {
-                $config{$1} = $2;
+    my $json_path = "$user/popfile.json";
+    my $legacy_path = "$user/popfile.cfg";
+    if (-e $json_path) {
+        require POPFile::ConfigFile;
+        my $cf = POPFile::ConfigFile->new();
+        my $data = $cf->load($json_path);
+        for my $section (keys %$data) {
+            next if $section eq 'version';
+            my $nested = $data->{$section};
+            next unless ref $nested eq 'HASH';
+            for my $param (keys %$nested) {
+                $config{"$section\_$param"} = $nested->{$param};
             }
         }
-        close $fh;
+    } elsif (-e $legacy_path) {
+        if (open my $fh, '<', $legacy_path) {
+            while (<$fh>) {
+                chomp;
+                if (/^(\S+)\s+(.*)/) {
+                    $config{$1} = $2;
+                }
+            }
+            close $fh;
+        }
     }
+    
     my @pairs = @args;
     if ($from_stdin) {
         while (<STDIN>) {
@@ -224,13 +261,21 @@ sub do_config {
             return 1;
         }
     }
-    if (open my $fh, '>', $config_file) {
-        for my $key (sort keys %config) {
-            print $fh "$key $config{$key}\n";
+    
+    # Write as JSON (with version marker)
+    require POPFile::ConfigFile;
+    my %data = (version => 2);
+    for my $key (sort keys %config) {
+        if ($key =~ /^(.+?)_(.+)$/) {
+            $data{$1}{$2} = $config{$key};
         }
-        close $fh;
     }
-    chmod 0600, $config_file;
+    my $cf = POPFile::ConfigFile->new();
+    $cf->save($json_path, \%data);
+    chmod 0600, $json_path;
+    
+    # Remove legacy file if it exists
+    unlink $legacy_path if -e $legacy_path;
     return 0;
 }
 
