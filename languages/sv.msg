@@ -1,43 +1,30 @@
 # Copyright (c) 2003-2011 John Graham-Cumming
-
-# This is used to get the appropriate subdirectory for the manual
-
-LanguageCharset				ISO-8859-1
-LanguageDirection                       ltr
-
-# Common words that are used on their own all over the interface
-Apply                                   Verkställ
-Add                                     Lägg till
-Remove                                  Ta bort
-Previous                                Föregående
-Next                                    Nästa
-From                                    Från
-Subject                                 Ämne
-Reclassify                              Reklassifikation
-Undo                                    Ångra
-Close                                   Stäng av server
-Bucket                                  Hink
-Magnet                                  Magnet
-Delete                                  Ta bort
-Create                                  Skapa
-Total                                   Totalt
-Rename                                  Döp om
-
-# The header and footer that appear on every UI page
-
-Configuration_Separator                 Avskiljare
-Configuration_SepUpdate                 Uppdaterade det avskiljande tecknet till %s
-Configuration_Language                  Språk
-
-History_SearchMessage                   Sök ämne
-
-Magnet_CurrentMagnets                   Aktuella magneter
-Magnet_CreateNew                        Skapa ny magnet
-
-Bucket_CreateBucket                     Skapa hink med namnet
-Bucket_RenameBucket                     Döp om hink
-
-# New keys added (translations batch 2)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+Apply Verkställ
+Add Lägg till
+Remove Ta bort
+Previous Föregående
+Next Nästa
+From Från
+Subject Ämne
+Reclassify Reklassifikation
+Undo Ångra
+Close Stäng av server
+Bucket Hink
+Magnet Magnet
+Delete Ta bort
+Create Skapa
+Total Totalt
+Rename Döp om
+Configuration_Separator Avskiljare
+Configuration_SepUpdate Uppdaterade det avskiljande tecknet till %s
+Configuration_Language Språk
+History_SearchMessage Sök ämne
+Magnet_CurrentMagnets Aktuella magneter
+Magnet_CreateNew Skapa ny magnet
+Bucket_CreateBucket Skapa hink med namnet
+Bucket_RenameBucket Döp om hink
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 ManualLanguage sv
@@ -101,15 +88,14 @@ Imap_Server IMAP-server värdnamn:
 Imap_TestConnection Testa anslutning
 Imap_Testing Testar...
 Imap_TrainingHint Träningsläget söker igenom befintliga arkivmappar och tränar klassificeraren på deras innehåll. Flaggan återställs automatiskt när träningen är klar.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Träningsläge
 Imap_TrainingLimit Meddelanden per mapp (0 = obegränsat)
 Imap_Use_SSL Använd SSL
 Imap_WatchedFolders Övervakade mappar
 Imap_WatchedHint POPFile övervakar dessa IMAP-mappar för nya meddelanden att klassificera.
-
 WordView_Title Ordnoggrannhet
 WordView_SelectBucket välj kategori
 WordView_Words ord
@@ -233,42 +219,41 @@ Status_Checking Kontrollerar...
 Status_Description Statuskontroller för POPFile-tjänster.
 Status_LoadError Det gick inte att läsa in status
 Status_NoChecks Inga kontroller tillgängliga.
-
-Language_Name                           Svenska
-History_PerPage                          Poster per sida
-Imap_Advanced                            Avancerat
-Imap_Cancel                              Avbryt
-Imap_Wizard                              Installationsguide
-Imap_WizardApply                         Skapa och mappa
-Imap_WizardClose                         Stäng
-Imap_WizardDesc                          Välj mappar att skapa buckets och mappningar för.
-Imap_WizardDeselectAll                   Avmarkera alla
-Imap_WizardDone                          {count} bucket(s) skapade och mappade.
-Imap_WizardEmpty                         Inga ytterligare mappar hittades på servern.
-Imap_WizardSelectAll                     Välj alla
-Imap_WizardTrain                         Träna nu
-NavWordSearch                            Ordsökning
-Settings_DescEnableProxy                 Starta denna proxy när POPFile startar.
-Settings_DescLogFormat                   Format för loggutdata (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Öppna webbläsaren automatiskt vid start.
-Settings_DescSQLiteBackup                Ta automatiskt säkerhetskopia av databasen före schemaändringar.
-Settings_DescSQLiteFastWrites            Inaktivera databassynkronisering (snabbare, mindre säkert).
-Settings_EnableService                   Aktivera tjänst
-Settings_LogFormat                       Loggformat
-Settings_OpenBrowser                     Öppna webbläsare
-Settings_SQLiteBackup                    SQLite säkerhetskopia
-Settings_SQLiteFastWrites                SQLite snabb skrivning
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Lägg till stoppord
-WordSearch_ColumnBuckets                 Buckets
-WordSearch_ColumnWord                    Ord
-WordSearch_IsStopword                    Stoppord
-WordSearch_Loading                       Laddar...
-WordSearch_NoResults                     Inga resultat.
-WordSearch_NoStopwords                   Inga stoppord.
-WordSearch_Placeholder                   Ange ett ord...
-WordSearch_RemoveStopword                Ta bort stoppord
-WordSearch_Search                        Sök
-WordSearch_StopwordList                  Stoppordslista
-WordSearch_Title                         Ordsökning
-WordSearch_Total                         Totalt
+Language_Name Svenska
+History_PerPage Poster per sida
+Imap_Advanced Avancerat
+Imap_Cancel Avbryt
+Imap_Wizard Installationsguide
+Imap_WizardApply Skapa och mappa
+Imap_WizardClose Stäng
+Imap_WizardDesc Välj mappar att skapa buckets och mappningar för.
+Imap_WizardDeselectAll Avmarkera alla
+Imap_WizardDone {count} bucket(s) skapade och mappade.
+Imap_WizardEmpty Inga ytterligare mappar hittades på servern.
+Imap_WizardSelectAll Välj alla
+Imap_WizardTrain Träna nu
+NavWordSearch Ordsökning
+Settings_DescEnableProxy Starta denna proxy när POPFile startar.
+Settings_DescLogFormat Format för loggutdata (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Öppna webbläsaren automatiskt vid start.
+Settings_DescSQLiteBackup Ta automatiskt säkerhetskopia av databasen före schemaändringar.
+Settings_DescSQLiteFastWrites Inaktivera databassynkronisering (snabbare, mindre säkert).
+Settings_EnableService Aktivera tjänst
+Settings_LogFormat Loggformat
+Settings_OpenBrowser Öppna webbläsare
+Settings_SQLiteBackup SQLite säkerhetskopia
+Settings_SQLiteFastWrites SQLite snabb skrivning
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Lägg till stoppord
+WordSearch_ColumnBuckets Buckets
+WordSearch_ColumnWord Ord
+WordSearch_IsStopword Stoppord
+WordSearch_Loading Laddar...
+WordSearch_NoResults Inga resultat.
+WordSearch_NoStopwords Inga stoppord.
+WordSearch_Placeholder Ange ett ord...
+WordSearch_RemoveStopword Ta bort stoppord
+WordSearch_Search Sök
+WordSearch_StopwordList Stoppordslista
+WordSearch_Title Ordsökning
+WordSearch_Total Totalt

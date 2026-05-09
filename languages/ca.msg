@@ -1,54 +1,40 @@
 # Copyright (c) 2001-2011 John Graham-Cumming
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-1
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          en
-
-# Common words that are used on their own all over the interface
-Apply                                   Aplicar
-Add                                     Afegir
-Remove                                  Suprimir
-Previous                                Anterior
-Next                                    Següent
-From                                    Des de
-Subject                                 Assumpte
-Reclassify                              Reclassificar
-Undo                                    Desfer
-Close                                   Tancar
-Bucket                                  Cistella
-Magnet                                  Imant
-Delete                                  Esborrar
-Create                                  Crear
-Total                                   Total
-Rename                                  Redenominar
-Update                                  Actualitzar
-Refresh                                 Recarregar
-Date                                    Data
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  Idioma
-
-History_SearchMessage                   Cercar Des de/Assumpte
-
-Magnet_CurrentMagnets                   Imants actuals
-Magnet_CreateNew                        Crear imant nou
-
-Bucket_CreateBucket                     Crear una cistella de nom
-Bucket_RenameBucket                     Redenominar la cistella anomenada
-
-Imap_Server                             Nom del servidor IMAP:
-Imap_Port                               Port del servidor IMAP:
-Imap_Login                              Nom del compte IMAP:
-Imap_Password                           Contrasenya del compte IMAP:
-Imap_Expunge                            Destruir de les carpetes mirades els missatges esborrats.
-Imap_Interval                           Interval d'actualització, en segons:
-Imap_NoConnectionMessage                Configureu abans els detalls de la connexió. Després que hi hagueu fet, hi haurà més opcions disponibles.
-
-# New keys added (translations batch 1)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+ManualLanguage en
+Apply Aplicar
+Add Afegir
+Remove Suprimir
+Previous Anterior
+Next Següent
+From Des de
+Subject Assumpte
+Reclassify Reclassificar
+Undo Desfer
+Close Tancar
+Bucket Cistella
+Magnet Imant
+Delete Esborrar
+Create Crear
+Total Total
+Rename Redenominar
+Update Actualitzar
+Refresh Recarregar
+Date Data
+Configuration_Language Idioma
+History_SearchMessage Cercar Des de/Assumpte
+Magnet_CurrentMagnets Imants actuals
+Magnet_CreateNew Crear imant nou
+Bucket_CreateBucket Crear una cistella de nom
+Bucket_RenameBucket Redenominar la cistella anomenada
+Imap_Server Nom del servidor IMAP:
+Imap_Port Port del servidor IMAP:
+Imap_Login Nom del compte IMAP:
+Imap_Password Contrasenya del compte IMAP:
+Imap_Expunge Destruir de les carpetes mirades els missatges esborrats.
+Imap_Interval Interval d'actualització, en segons:
+Imap_NoConnectionMessage Configureu abans els detalls de la connexió. Després que hi hagueu fet, hi haurà més opcions disponibles.
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 NavCorpus Corpus
@@ -101,9 +87,9 @@ Imap_Saving Desant...
 Imap_TestConnection Prova connexió
 Imap_Testing Provant...
 Imap_TrainingHint El mode d'entrenament analitza les carpetes d'arxiu existents i entrena el classificador amb el seu contingut. L'indicador es restableix automàticament quan acaba l'entrenament.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Mode d'entrenament
 Imap_TrainingLimit Missatges per carpeta (0 = il·limitat)
 Imap_WatchedFolders Carpetes supervisades
@@ -218,9 +204,7 @@ Status_Checking Comprovant...
 Status_Description Comprovacions d'estat per als serveis de POPFile.
 Status_LoadError Error en carregar l'estat
 Status_NoChecks Cap comprovació disponible.
-
 Imap_Use_SSL Utilitza SSL
-
 WordView_Title Precisió de paraules
 WordView_SelectBucket selecciona categoria
 WordView_Words paraules
@@ -234,42 +218,41 @@ WordView_ColActions Accions
 WordView_Remove Elimina
 WordView_MoveTo mou a
 WordView_Move Mou
-
-Language_Name                           Català
-History_PerPage                          Entrades per pàgina
-Imap_Advanced                            Avançat
-Imap_Cancel                              Cancel·lar
-Imap_Wizard                              Assistent de configuració
-Imap_WizardApply                         Crear i mapar
-Imap_WizardClose                         Tancar
-Imap_WizardDesc                          Seleccioneu carpetes per crear-hi buckets i mapatges.
-Imap_WizardDeselectAll                   Deseleccionar tot
-Imap_WizardDone                          {count} bucket(s) creats i mapats.
-Imap_WizardEmpty                         No sha trobat cap carpeta addicional al servidor.
-Imap_WizardSelectAll                     Seleccionar tot
-Imap_WizardTrain                         Entrenar ara
-NavWordSearch                            Cerca de paraules
-Settings_DescEnableProxy                 Iniciar aquest servidor intermediari en iniciar POPFile.
-Settings_DescLogFormat                   Format de sortida del registre (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Obrir automàticament el navegador en iniciar.
-Settings_DescSQLiteBackup                Fer còpia de seguretat automàtica abans de canvis desperma.
-Settings_DescSQLiteFastWrites            Desactivar la sincronització de la base de dades (més ràpid, menys segur).
-Settings_EnableService                   Activar servei
-Settings_LogFormat                       Format del registre
-Settings_OpenBrowser                     Obrir navegador
-Settings_SQLiteBackup                    Còpia de seguretat SQLite
-Settings_SQLiteFastWrites                Escriptura ràpida SQLite
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Afegir stopword
-WordSearch_ColumnBuckets                 Buckets
-WordSearch_ColumnWord                    Paraula
-WordSearch_IsStopword                    Stopword
-WordSearch_Loading                       Carregant...
-WordSearch_NoResults                     Sense resultats.
-WordSearch_NoStopwords                   Sense stopwords.
-WordSearch_Placeholder                   Introduïu una paraula...
-WordSearch_RemoveStopword                Eliminar stopword
-WordSearch_Search                        Cercar
-WordSearch_StopwordList                  Llista de stopwords
-WordSearch_Title                         Cerca de paraules
-WordSearch_Total                         Total
+Language_Name Català
+History_PerPage Entrades per pàgina
+Imap_Advanced Avançat
+Imap_Cancel Cancel·lar
+Imap_Wizard Assistent de configuració
+Imap_WizardApply Crear i mapar
+Imap_WizardClose Tancar
+Imap_WizardDesc Seleccioneu carpetes per crear-hi buckets i mapatges.
+Imap_WizardDeselectAll Deseleccionar tot
+Imap_WizardDone {count} bucket(s) creats i mapats.
+Imap_WizardEmpty No sha trobat cap carpeta addicional al servidor.
+Imap_WizardSelectAll Seleccionar tot
+Imap_WizardTrain Entrenar ara
+NavWordSearch Cerca de paraules
+Settings_DescEnableProxy Iniciar aquest servidor intermediari en iniciar POPFile.
+Settings_DescLogFormat Format de sortida del registre (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Obrir automàticament el navegador en iniciar.
+Settings_DescSQLiteBackup Fer còpia de seguretat automàtica abans de canvis desperma.
+Settings_DescSQLiteFastWrites Desactivar la sincronització de la base de dades (més ràpid, menys segur).
+Settings_EnableService Activar servei
+Settings_LogFormat Format del registre
+Settings_OpenBrowser Obrir navegador
+Settings_SQLiteBackup Còpia de seguretat SQLite
+Settings_SQLiteFastWrites Escriptura ràpida SQLite
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Afegir stopword
+WordSearch_ColumnBuckets Buckets
+WordSearch_ColumnWord Paraula
+WordSearch_IsStopword Stopword
+WordSearch_Loading Carregant...
+WordSearch_NoResults Sense resultats.
+WordSearch_NoStopwords Sense stopwords.
+WordSearch_Placeholder Introduïu una paraula...
+WordSearch_RemoveStopword Eliminar stopword
+WordSearch_Search Cercar
+WordSearch_StopwordList Llista de stopwords
+WordSearch_Title Cerca de paraules
+WordSearch_Total Total

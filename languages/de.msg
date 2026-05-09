@@ -1,53 +1,40 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          de
-
-# Common words that are used on their own all over the interface
-Apply                                   Anwenden
-Add                                     Hinzufügen
-Remove                                  Entfernen
-Previous                                Zurück
-Next                                    Weiter
-From                                    Absender
-Subject                                 Betreff
-Reclassify                              Neu einstufen
-Undo                                    widerrufen
-Close                                   Schließen
-Bucket                                  Kategorie
-Magnet                                  Magnet
-Delete                                  Löschen
-Create                                  Erstellen
-Total                                   Insgesamt
-Rename                                  Umbenennen
-Update                                  Ändern
-Refresh                                 Aktualisieren
-Date                                    Datum
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  Sprache
-
-History_SearchMessage                   Nach Absender/Betreff suchen
-
-Magnet_CurrentMagnets                   Aktuelle Magnete
-Magnet_CreateNew                        Neuen Magnet erstellen
-
-Bucket_CreateBucket                     Erstelle Kategorie
-Bucket_RenameBucket                     Benenne Kategorie um
-
-Imap_Server                             IMAP Server Hostname:
-Imap_Port                               IMAP Server Port:
-Imap_Login                              IMAP Benutzername (Login):
-Imap_Password                           Password für IMAP Konto:
-Imap_Expunge                            Gelöschte Nachrichten aus den überwachten Ordnern endgültig löschen.
-Imap_Interval                           Update Intervall in Sekunden:
-Imap_NoConnectionMessage                Bitte konfigurieren Sie erst die Verbindung zum Server. Nachdem Sie das getan haben, werden Sie an dieser Stelle mehr Konfigurationsmöglichkeiten finden.
-Imap_Use_SSL							SSL-gesicherte Verbindung
-
-# New keys added (translations batch 1)
+ManualLanguage de
+Apply Anwenden
+Add Hinzufügen
+Remove Entfernen
+Previous Zurück
+Next Weiter
+From Absender
+Subject Betreff
+Reclassify Neu einstufen
+Undo widerrufen
+Close Schließen
+Bucket Kategorie
+Magnet Magnet
+Delete Löschen
+Create Erstellen
+Total Insgesamt
+Rename Umbenennen
+Update Ändern
+Refresh Aktualisieren
+Date Datum
+Configuration_Language Sprache
+History_SearchMessage Nach Absender/Betreff suchen
+Magnet_CurrentMagnets Aktuelle Magnete
+Magnet_CreateNew Neuen Magnet erstellen
+Bucket_CreateBucket Erstelle Kategorie
+Bucket_RenameBucket Benenne Kategorie um
+Imap_Server IMAP Server Hostname:
+Imap_Port IMAP Server Port:
+Imap_Login IMAP Benutzername (Login):
+Imap_Password Password für IMAP Konto:
+Imap_Expunge Gelöschte Nachrichten aus den überwachten Ordnern endgültig löschen.
+Imap_Interval Update Intervall in Sekunden:
+Imap_NoConnectionMessage Bitte konfigurieren Sie erst die Verbindung zum Server. Nachdem Sie das getan haben, werden Sie an dieser Stelle mehr Konfigurationsmöglichkeiten finden.
+Imap_Use_SSL SSL-gesicherte Verbindung
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 NavCorpus Korpus
@@ -102,23 +89,23 @@ Imap_SaveAnyway Trotzdem speichern
 Imap_SaveConnection Verbindung speichern
 Imap_SaveFolders Ordner speichern
 Imap_Saving Speichere...
-Imap_Advanced                           Erweitert
-Imap_Wizard                             Einrichtungs-Assistent
-Imap_WizardDesc                         Ordner auswählen, für die Buckets und Zuordnungen erstellt werden sollen.
-Imap_WizardEmpty                        Keine weiteren Ordner auf dem Server gefunden.
-Imap_WizardApply                        Erstellen & zuordnen
-Imap_WizardSelectAll                    Alle auswählen
-Imap_WizardDeselectAll                  Alle abwählen
-Imap_WizardDone                         {count} Bucket(s) erstellt und zugeordnet.
-Imap_WizardTrain                        Jetzt trainieren
-Imap_WizardClose                        Schließen
-Imap_Cancel                             Abbrechen
+Imap_Advanced Erweitert
+Imap_Wizard Einrichtungs-Assistent
+Imap_WizardDesc Ordner auswählen, für die Buckets und Zuordnungen erstellt werden sollen.
+Imap_WizardEmpty Keine weiteren Ordner auf dem Server gefunden.
+Imap_WizardApply Erstellen & zuordnen
+Imap_WizardSelectAll Alle auswählen
+Imap_WizardDeselectAll Alle abwählen
+Imap_WizardDone {count} Bucket(s) erstellt und zugeordnet.
+Imap_WizardTrain Jetzt trainieren
+Imap_WizardClose Schließen
+Imap_Cancel Abbrechen
 Imap_TestConnection Verbindung testen
 Imap_Testing Teste...
 Imap_TrainingHint Der Trainingsmodus durchsucht vorhandene Archivordner und trainiert den Klassifizierer anhand ihrer Inhalte. Das Flag wird automatisch zurückgesetzt, wenn das Training abgeschlossen ist.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingLimit Nachrichten pro Ordner (0 = unbegrenzt)
 Imap_TrainingMode Trainingsmodus
 Imap_WatchedFolders Überwachte Ordner
@@ -159,17 +146,17 @@ Settings_DescLogSQLToStdout SQL-Anweisungen mit gebundenen Werten in die Log-Aus
 Settings_DescLogToStdout Log-Ausgabe zusätzlich zur Log-Datei auf stdout spiegeln.
 Settings_DescOpenBrowser Standardbrowser öffnen, wenn die Web-Oberfläche bereit ist.
 Settings_DescMessageCutoff Maximale analysierte Wörter pro Nachricht (0 = unbegrenzt).
-Settings_DescNNTP                        NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
-Settings_DescNNTP                        NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
-Settings_DescNNTP                        NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
+Settings_DescNNTP NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
+Settings_DescNNTP NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
+Settings_DescNNTP NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
 Settings_DescEnableProxy Diesen Proxy-Listener beim Start von POPFile starten.
-Settings_DescPOP3                        POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
-Settings_DescPOP3                        POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
-Settings_DescPOP3                        POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
+Settings_DescPOP3 POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
+Settings_DescPOP3 POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
+Settings_DescPOP3 POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
 Settings_DescRetentionDays Wie viele Tage der Nachrichtenverlauf aufbewahrt wird.
 Settings_DescSessionDividers Trennlinien zwischen Browsersitzungen im Verlauf anzeigen.
-Settings_DescSMTP                        SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
-Settings_DescSMTP                        SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
+Settings_DescSMTP SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
+Settings_DescSMTP SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
 Settings_DescSQLiteJournal SQLite Journal / WAL-Modus.
 Settings_DescSQLiteBackup Datenbank stündlich als .backup-Datei sichern.
 Settings_DescSQLiteFastWrites SQLite-Schreib-Sync deaktivieren für schnellere Einfügeoperationen. Geringes Datenverlustrisiko bei Absturz.
@@ -217,13 +204,13 @@ Settings_SectionClassifier Klassifizierer
 Settings_SectionHistory Verlauf
 Settings_SectionLogging Protokollierung
 Settings_SectionNNTP NNTP
-Settings_DescNNTP                        NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
+Settings_DescNNTP NNTP-Proxy — sitzt zwischen Newsreader und NNTP-Server, klassifiziert Artikel und fügt Klassifikations-Header ein. Trage in deinem Newsreader den Host und Port ein, auf dem POPFile läuft (Standard 119).
 Settings_SectionPOP3 POP3
-Settings_DescPOP3                        POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
-Settings_SectionIMAP                    IMAP
+Settings_DescPOP3 POP3-Proxy — sitzt zwischen Mail-Client und POP3-Server, klassifiziert Nachrichten und fügt einen X-Text-Classification-Header ein. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 1110), statt des echten POP3-Servers.
+Settings_SectionIMAP IMAP
 Settings_SectionSecurity Sicherheit
 Settings_SectionSMTP SMTP
-Settings_DescSMTP                        SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
+Settings_DescSMTP SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
 Settings_SectionUI Benutzeroberfläche
 Settings_ServerSeparator Server-Trennzeichen
 Settings_SessionDividers Sitzungstrennlinien
@@ -243,13 +230,12 @@ Status_Checking Überprüfe...
 Status_Description Systemprüfungen für POPFile-Dienste.
 Status_LoadError Status konnte nicht geladen werden
 Status_NoChecks Keine Prüfungen verfügbar.
-
-Language_Name                           Deutsch
-Wizard_Next                             Weiter
-Wizard_Manual                           Manuelle Einrichtung
-Wizard_ManualDesc                       Gib die Zugangsdaten deines Mail-Servers ein.
-Wizard_Encryption                       Verschlüsselung
-Wizard_None                             Keine
-Wizard_Done                             Fertig!
-Wizard_Welcome                          Willkommen bei POPFile. POPFile hilft dir, Ordnung in deine Inbox zu bringen. Gib zuerst deinen Benutzernamen ein — meistens deine E-Mail-Adresse.
-Wizard_Username                         Benutzername
+Language_Name Deutsch
+Wizard_Next Weiter
+Wizard_Manual Manuelle Einrichtung
+Wizard_ManualDesc Gib die Zugangsdaten deines Mail-Servers ein.
+Wizard_Encryption Verschlüsselung
+Wizard_None Keine
+Wizard_Done Fertig!
+Wizard_Welcome Willkommen bei POPFile. POPFile hilft dir, Ordnung in deine Inbox zu bringen. Gib zuerst deinen Benutzernamen ein — meistens deine E-Mail-Adresse.
+Wizard_Username Benutzername

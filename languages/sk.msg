@@ -1,47 +1,34 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         windows-1250
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          en
-
-# Common words that are used on their own all over the interface
-Apply                                   Použiť
-Add                                     Pridať
-Remove                                  Odstrániť
-Previous                                Predchádzajúci
-Next                                    Nasledujúci
-From                                    Odosielateľ
-Subject                                 Subjekt
-Reclassify                              Preklasifikovanie
-Undo                                    Vrátiť
-Close                                   Zatvoriť
-Bucket                                  Kôš
-Magnet                                  Magnet
-Delete                                  Zmazať
-Create                                  Vytvoriť
-Total                                   Celkom
-Rename                                  Premenovať
-
-# The header and footer that appear on every UI page
-
-Configuration_Separator                 Znak oddelovača
-Configuration_SepUpdate                 Oddelovač zmenený na %s
-Configuration_Language                  Jazyk
-
-History_SearchMessage                   Hľadaj odosielateľa/subjekt
-
-Magnet_CurrentMagnets                   Aktuálne magnety
-Magnet_CreateNew                        Vytvoriť nový magnet
-
-Bucket_CreateBucket                     Vytvor kôš s názvom
-Bucket_RenameBucket                     Premenuj kôš s názvom
-
-# New keys added (translations batch 4)
+LanguageCharset windows-1250
+LanguageDirection ltr
+ManualLanguage en
+Apply Použiť
+Add Pridať
+Remove Odstrániť
+Previous Predchádzajúci
+Next Nasledujúci
+From Odosielateľ
+Subject Subjekt
+Reclassify Preklasifikovanie
+Undo Vrátiť
+Close Zatvoriť
+Bucket Kôš
+Magnet Magnet
+Delete Zmazať
+Create Vytvoriť
+Total Celkom
+Rename Premenovať
+Configuration_Separator Znak oddelovača
+Configuration_SepUpdate Oddelovač zmenený na %s
+Configuration_Language Jazyk
+History_SearchMessage Hľadaj odosielateľa/subjekt
+Magnet_CurrentMagnets Aktuálne magnety
+Magnet_CreateNew Vytvoriť nový magnet
+Bucket_CreateBucket Vytvor kôš s názvom
+Bucket_RenameBucket Premenuj kôš s názvom
 NavCorpus Korpus
 NavHistory História
 NavIMAP IMAP
@@ -100,15 +87,14 @@ Imap_Server Názov hostiteľa servera IMAP:
 Imap_TestConnection Testovať pripojenie
 Imap_Testing Testujem...
 Imap_TrainingHint Tréningový režim prehľadáva existujúce archívne priečinky a trénuje klasifikátor na ich obsahu. Príznak sa automaticky resetuje po dokončení tréningu.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Tréningový režim
 Imap_TrainingLimit Správ na priečinok (0 = neobmedzene)
 Imap_Use_SSL Použiť SSL
 Imap_WatchedFolders Sledované priečinky
 Imap_WatchedHint POPFile sleduje tieto priečinky IMAP kvôli novým správam na klasifikáciu.
-
 WordView_Title Presnosť slov
 WordView_SelectBucket vybrať kategóriu
 WordView_Words slová
@@ -234,42 +220,41 @@ Status_Description Kontroly stavu služieb POPFile.
 Status_LoadError Nepodarilo sa načítať stav
 Status_NoChecks Nie sú dostupné žiadne kontroly.
 Update Aktualizovať
-
-Language_Name                           Slovenčina
-History_PerPage                          Záznamov na stranu
-Imap_Advanced                            Pokročilé
-Imap_Cancel                              Zrušiť
-Imap_Wizard                              Sprievodca nastavením
-Imap_WizardApply                         Vytvoriť a mapovať
-Imap_WizardClose                         Zatvoriť
-Imap_WizardDesc                          Vyberte priečinky na vytvorenie priečinkov a mapovaní.
-Imap_WizardDeselectAll                   Zrušiť výber
-Imap_WizardDone                          {count} kategórií vytvorených a namapovaných.
-Imap_WizardEmpty                         Na serveri neboli nájdené žiadne ďalšie priečinky.
-Imap_WizardSelectAll                     Vybrať všetko
-Imap_WizardTrain                         Trénovať teraz
-NavWordSearch                            Hľadanie slov
-Settings_DescEnableProxy                 Spustiť toto proxy pri štarte POPFile.
-Settings_DescLogFormat                   Formát výstupu logu (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Automaticky otvoriť prehliadač pri spustení.
-Settings_DescSQLiteBackup                Automaticky zálohovať databázu pred zmenami schémy.
-Settings_DescSQLiteFastWrites            Vypnúť synchronizáciu databázy (rýchlejšie, menej bezpečné).
-Settings_EnableService                   Povoliť službu
-Settings_LogFormat                       Formát logu
-Settings_OpenBrowser                     Otvoriť prehliadač
-Settings_SQLiteBackup                    Záloha SQLite
-Settings_SQLiteFastWrites                Rýchly zápis SQLite
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Pridať stop slovo
-WordSearch_ColumnBuckets                 Kategórie
-WordSearch_ColumnWord                    Slovo
-WordSearch_IsStopword                    Stop slovo
-WordSearch_Loading                       Načítavanie...
-WordSearch_NoResults                     Žiadne výsledky.
-WordSearch_NoStopwords                   Žiadne stop slová.
-WordSearch_Placeholder                   Zadajte slovo...
-WordSearch_RemoveStopword                Odstrániť stop slovo
-WordSearch_Search                        Hľadať
-WordSearch_StopwordList                  Zoznam stop slov
-WordSearch_Title                         Hľadanie slov
-WordSearch_Total                         Celkom
+Language_Name Slovenčina
+History_PerPage Záznamov na stranu
+Imap_Advanced Pokročilé
+Imap_Cancel Zrušiť
+Imap_Wizard Sprievodca nastavením
+Imap_WizardApply Vytvoriť a mapovať
+Imap_WizardClose Zatvoriť
+Imap_WizardDesc Vyberte priečinky na vytvorenie priečinkov a mapovaní.
+Imap_WizardDeselectAll Zrušiť výber
+Imap_WizardDone {count} kategórií vytvorených a namapovaných.
+Imap_WizardEmpty Na serveri neboli nájdené žiadne ďalšie priečinky.
+Imap_WizardSelectAll Vybrať všetko
+Imap_WizardTrain Trénovať teraz
+NavWordSearch Hľadanie slov
+Settings_DescEnableProxy Spustiť toto proxy pri štarte POPFile.
+Settings_DescLogFormat Formát výstupu logu (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Automaticky otvoriť prehliadač pri spustení.
+Settings_DescSQLiteBackup Automaticky zálohovať databázu pred zmenami schémy.
+Settings_DescSQLiteFastWrites Vypnúť synchronizáciu databázy (rýchlejšie, menej bezpečné).
+Settings_EnableService Povoliť službu
+Settings_LogFormat Formát logu
+Settings_OpenBrowser Otvoriť prehliadač
+Settings_SQLiteBackup Záloha SQLite
+Settings_SQLiteFastWrites Rýchly zápis SQLite
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Pridať stop slovo
+WordSearch_ColumnBuckets Kategórie
+WordSearch_ColumnWord Slovo
+WordSearch_IsStopword Stop slovo
+WordSearch_Loading Načítavanie...
+WordSearch_NoResults Žiadne výsledky.
+WordSearch_NoStopwords Žiadne stop slová.
+WordSearch_Placeholder Zadajte slovo...
+WordSearch_RemoveStopword Odstrániť stop slovo
+WordSearch_Search Hľadať
+WordSearch_StopwordList Zoznam stop slov
+WordSearch_Title Hľadanie slov
+WordSearch_Total Celkom

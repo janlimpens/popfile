@@ -1,48 +1,35 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-1
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          br
- 
-# Common words that are used on their own all over the interface
-Apply                                   Aplicar
-Add                                     Adicionar
-Remove                                  Remover
-Previous                                Anterior
-Next                                    Seguinte
-From                                    Originador
-Subject                                 Assunto
-Reclassify                              Reclassificar
-Undo                                    Desfazer
-Close                                   Fechar
-Bucket                                  Receptáculo
-Magnet                                  Íman
-Delete                                  Apagar
-Create                                  Criar
-Total                                   Total
-Rename                                  Renomear
-Refresh                                 Refrescar
-Update                                  Actualizar
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  Língua
-
-History_SearchMessage                   Procurar Assunto
-History_ShowNoMagnet                    Não magnetizadas
-
-Magnet_CurrentMagnets                   Ímans Actuais
-Magnet_CreateNew                        Criar Novo Íman
-
-Bucket_CreateBucket                     Criar um receptáculo com o nome
-Bucket_RenameBucket                     Renomear o receptáculo chamado
-
-# New keys added (translations batch 1)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+ManualLanguage br
+Apply Aplicar
+Add Adicionar
+Remove Remover
+Previous Anterior
+Next Seguinte
+From Originador
+Subject Assunto
+Reclassify Reclassificar
+Undo Desfazer
+Close Fechar
+Bucket Receptáculo
+Magnet Íman
+Delete Apagar
+Create Criar
+Total Total
+Rename Renomear
+Refresh Refrescar
+Update Actualizar
+Configuration_Language Língua
+History_SearchMessage Procurar Assunto
+History_ShowNoMagnet Não magnetizadas
+Magnet_CurrentMagnets Ímans Actuais
+Magnet_CreateNew Criar Novo Íman
+Bucket_CreateBucket Criar um receptáculo com o nome
+Bucket_RenameBucket Renomear o receptáculo chamado
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 NavCorpus Corpus
@@ -97,23 +84,23 @@ Imap_SaveAnyway Guardar mesmo assim
 Imap_SaveConnection Guardar ligação
 Imap_SaveFolders Guardar pastas
 Imap_Saving A guardar...
-Imap_Advanced                           Avançado
-Imap_Wizard                             Einrichtungs-Assistent
-Imap_WizardDesc                         Ordner auswählen, für die Buckets und Zuordnungen erstellt werden sollen.
-Imap_WizardEmpty                        Keine weiteren Ordner auf dem Server gefunden.
-Imap_WizardApply                        Erstellen & zuordnen
-Imap_WizardSelectAll                    Alle auswählen
-Imap_WizardDeselectAll                  Alle abwählen
-Imap_WizardDone                         {count} Bucket(s) erstellt und zugeordnet.
-Imap_WizardTrain                        Jetzt trainieren
-Imap_WizardClose                        Schließen
-Imap_Cancel                             Abbrechen
+Imap_Advanced Avançado
+Imap_Wizard Einrichtungs-Assistent
+Imap_WizardDesc Ordner auswählen, für die Buckets und Zuordnungen erstellt werden sollen.
+Imap_WizardEmpty Keine weiteren Ordner auf dem Server gefunden.
+Imap_WizardApply Erstellen & zuordnen
+Imap_WizardSelectAll Alle auswählen
+Imap_WizardDeselectAll Alle abwählen
+Imap_WizardDone {count} Bucket(s) erstellt und zugeordnet.
+Imap_WizardTrain Jetzt trainieren
+Imap_WizardClose Schließen
+Imap_Cancel Abbrechen
 Imap_TestConnection Testar ligação
 Imap_Testing A testar...
 Imap_TrainingHint O modo de treino analisa as pastas de arquivo existentes e treina o classificador com o seu conteúdo. O indicador é reposto automaticamente quando o treino termina.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Modo de treino
 Imap_TrainingLimit Mensagens por pasta (0 = ilimitado)
 Imap_WatchedFolders Pastas monitorizadas
@@ -154,17 +141,17 @@ Settings_DescLogSQLToStdout Incluir instruções SQL com valores vinculados na s
 Settings_DescLogToStdout Espelhar a saída de registo no stdout além do ficheiro de registo.
 Settings_DescOpenBrowser Abrir o navegador predefinido quando a interface web estiver pronta.
 Settings_DescMessageCutoff Número máximo de palavras analisadas por mensagem (0 = ilimitado).
-Settings_DescNNTP                        Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
-Settings_DescNNTP                        Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
-Settings_DescNNTP                        Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
+Settings_DescNNTP Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
+Settings_DescNNTP Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
+Settings_DescNNTP Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
 Settings_DescEnableProxy Iniciar este proxy quando o POPFile iniciar.
-Settings_DescPOP3                        Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
-Settings_DescPOP3                        Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
-Settings_DescPOP3                        Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
+Settings_DescPOP3 Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
+Settings_DescPOP3 Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
+Settings_DescPOP3 Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
 Settings_DescRetentionDays Quantos dias manter o histórico de mensagens.
 Settings_DescSessionDividers Mostrar divisores entre sessões de navegação no Histórico.
-Settings_DescSMTP                        Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
-Settings_DescSMTP                        Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
+Settings_DescSMTP Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
+Settings_DescSMTP Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
 Settings_DescSQLiteJournal Modo de diário SQLite / WAL.
 Settings_DescSQLiteBackup Copiar a base de dados para um ficheiro .backup a cada hora.
 Settings_DescSQLiteFastWrites Desactivar a sincronização de escrita SQLite para inserções mais rápidas. Risco mínimo de perda de dados em caso de falha.
@@ -212,13 +199,13 @@ Settings_SectionClassifier Classificador
 Settings_SectionHistory Histórico
 Settings_SectionLogging Registo
 Settings_SectionNNTP NNTP
-Settings_DescNNTP                        Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
+Settings_DescNNTP Proxy NNTP — fica entre seu leitor de notícias e o servidor NNTP. Classifica artigos e adiciona cabeçalhos. Aponte seu leitor de notícias para o host e porta onde o POPFile está rodando (padrão 119).
 Settings_SectionPOP3 POP3
-Settings_DescPOP3                        Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
-Settings_SectionIMAP                    IMAP
+Settings_DescPOP3 Proxy POP3 — fica entre seu cliente de email e o servidor POP3. Classifica cada mensagem e adiciona um cabeçalho X-Text-Classification. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 1110) em vez do servidor POP3 real.
+Settings_SectionIMAP IMAP
 Settings_SectionSecurity Segurança
 Settings_SectionSMTP SMTP
-Settings_DescSMTP                        Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
+Settings_DescSMTP Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
 Settings_SectionUI Interface do utilizador
 Settings_ServerSeparator Separador de servidor
 Settings_SessionDividers Divisores de sessão
@@ -238,7 +225,6 @@ Status_Checking A verificar...
 Status_Description Verificações de estado para os serviços do POPFile.
 Status_LoadError Falha ao carregar o estado
 Status_NoChecks Nenhuma verificação disponível.
-
 Date Data
 Imap_Expunge Eliminar mensagens apagadas das pastas monitorizadas.
 Imap_Interval Intervalo de atualização em segundos:
@@ -248,13 +234,12 @@ Imap_Password Palavra-passe para a conta IMAP:
 Imap_Port Porto do servidor IMAP:
 Imap_Server Nome de host do servidor IMAP:
 Imap_Use_SSL Usar SSL
-
-Language_Name                           Português
-Wizard_Next                             Próximo
-Wizard_Manual                           Configuração manual
-Wizard_ManualDesc                       Insira os dados do seu servidor de email.
-Wizard_Encryption                       Encriptação
-Wizard_None                             Nenhuma
-Wizard_Done                             Pronto!
-Wizard_Welcome                          Bem-vindo ao POPFile. POPFile ajuda a organizar a sua caixa de entrada. Comece por indicar o seu nome de utilizador — normalmente o seu email.
-Wizard_Username                         Utilizador
+Language_Name Português
+Wizard_Next Próximo
+Wizard_Manual Configuração manual
+Wizard_ManualDesc Insira os dados do seu servidor de email.
+Wizard_Encryption Encriptação
+Wizard_None Nenhuma
+Wizard_Done Pronto!
+Wizard_Welcome Bem-vindo ao POPFile. POPFile ajuda a organizar a sua caixa de entrada. Comece por indicar o seu nome de utilizador — normalmente o seu email.
+Wizard_Username Utilizador

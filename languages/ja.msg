@@ -1,274 +1,258 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         EUC-JP
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          jp
-
-# Common words that are used on their own all over the interface
-Apply                                   適用
-Add                                     追加
-Remove                                  削除
-Previous                                前へ
-Next                                    次へ
-From                                    差出人
-Subject                                 件名
-Reclassify                              再分類
-Undo                                    やり直し
-Close                                   閉じる
-Bucket                                  バケツ
-Magnet                                  マグネット
-Delete                                  削除
-Create                                  作成
-Total                                   合計
-Rename                                  名前変更
-Update                                  更新
-Refresh                                 最新の状態に更新
-Date                                    日時
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  言語
-
-History_SearchMessage                   差出人/件名 を検索
-
-Magnet_CurrentMagnets                   現在のマグネット
-Magnet_CreateNew                        新規マグネット作成
-
-Bucket_CreateBucket                     バケツ作成
-Bucket_RenameBucket                     バケツの名前変更
-
-Imap_Server                             IMAP サーバー ホスト名:
-Imap_Port                               IMAP サーバー ポート番号:
-Imap_Login                              IMAP アカウント ユーザー名:
-Imap_Password                           IMAP アカウントのパスワード:
-Imap_Expunge                            監視フォルダから移動されたメッセージを削除する。
-Imap_Interval                           更新の間隔（秒）:
-Imap_NoConnectionMessage                サーバーに接続するための情報を先に設定してください。そうすると、さらに多くのオプションが設定できるようになります。
-Imap_Use_SSL                            SSL を使用する
-
-# New UI keys added — batch 5
-BucketSelect_AddNew	新規カテゴリ
-BucketSelect_AlreadyExists	そのカテゴリ名は既に存在します。
-BucketSelect_CreateError	カテゴリの作成に失敗しました。
-BucketSelect_InvalidName	無効なカテゴリ名です。
-BucketSelect_NameRequired	カテゴリ名を入力してください。
-Corpus_Actions	操作
-Corpus_AddStopword	ストップワードを追加
-Corpus_BucketList	カテゴリ一覧
-Corpus_Clear	クリア
-Corpus_Color	色
-Corpus_LoadCandidates	候補を読み込む
-Corpus_NoCandidates	候補が見つかりませんでした。
-Corpus_RemoveStopword	ストップワードを削除
-Corpus_StopwordCandidates	ストップワード候補
-Corpus_StopwordCandidatesDesc	分類に影響を与える可能性のある高頻度語です。
-Corpus_StopwordRatio	頻度しきい値
-Corpus_StopwordsDesc	POPFile が分類時に無視する語です。
-Corpus_StopwordsTitle	ストップワード
-History_AllBuckets	すべてのカテゴリ
-History_HighlightWords	単語をハイライト
-History_Loading	読み込み中...
-History_MoveTo	移動先
-History_Moving	移動中...
-History_Reclassifying	再分類中...
-History_ReclassifyUnclassified	未分類を再分類
-History_Selected	選択済み
-Imap_BucketFolderMappings	カテゴリとフォルダの対応
-Imap_Connected	接続済み
-Imap_Connection	接続
-Imap_ConnectionFailed	接続に失敗しました。
-Imap_Description	POPFile は IMAP を通じて直接メールを分類できます。
-Imap_FetchFolders	フォルダを取得
-Imap_Fetching	取得中...
-Imap_IMAFFolder	IMAP フォルダ
-Imap_MappingsHint	各カテゴリに対応する IMAP フォルダを指定してください。
-Imap_NoFoldersWatched	監視中のフォルダがありません。
-Imap_NoMappings	対応が設定されていません。
-Imap_SaveAnyway	このまま保存
-Imap_SaveConnection	接続設定を保存
-Imap_SaveFolders	フォルダを保存
-Imap_Saving	保存中...
-Imap_TestConnection	接続をテスト
-Imap_Testing	テスト中...
-Imap_TrainingHint	学習させるにはメールを適切なフォルダに移動してください。
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
-Imap_TrainingMode	学習モード
-Imap_TrainingLimit	フォルダあたりのメッセージ数（0 = 無制限）
-Imap_WatchedFolders	監視中のフォルダ
-Imap_WatchedHint	監視するフォルダを追加してください。
-
-WordView_Title	単語の精度
-WordView_SelectBucket	カテゴリを選択
-WordView_Words	単語
-WordView_Loading	読み込み中...
-WordView_Empty	このカテゴリに単語がありません。
-WordView_ColWord	単語
-WordView_ColCount	件数
-WordView_ColTotal	合計
-WordView_ColAccuracy	精度
-WordView_ColActions	操作
-WordView_Remove	削除
-WordView_MoveTo	移動先
-WordView_Move	移動
-Magnet_Created	マグネットを作成しました。
-Magnet_Deleted	マグネットを削除しました。
-NavCorpus	コーパス
-NavHistory	履歴
-NavIMAP	IMAP
-NavMagnets	マグネット
-NavStatus	ステータス
-NavWordView	単語
-Reconnect_Connecting	接続中...
-Reconnect_Message	POPFile が接続を失いました。再接続中です。
-Reconnect_Now	今すぐ接続
-Reconnect_RetryIn	再試行まで
-Reconnect_Title	接続切断
-Settings_AdminPassword	管理者パスワード
-Settings_ArchiveDirectory	アーカイブディレクトリ
-Settings_ArchiveMessages	メッセージをアーカイブ
-Settings_ArchiveSubdirs	アーカイブのサブディレクトリ
-Settings_AutoDetect	自動検出
-Settings_AutoDetectLanguage	言語の自動検出
-Settings_ChainPort	チェーンポート
-Settings_ChainServer	チェーンサーバー
-Settings_DateFormat	日付形式
-Settings_DescAdminPassword	管理インターフェースへのログインパスワード。
-Settings_DescArchiveDir	アーカイブメッセージのディレクトリ。空白の場合はアーカイブしません。
-Settings_DescArchiveMessages	分類済みメッセージのコピーを保存します。
-Settings_DescArchiveSubdirs	カテゴリ別にサブディレクトリへアーカイブを分配します。
-Settings_DescAutoDetectLang	インターフェースの言語を自動検出します。
-Settings_DescChainPort	チェーン用上流 POP3 サーバーのポート。
-Settings_DescChainServer	上流 POP3 サーバーのホスト名。
-Settings_DescDateFormat	日付の表示形式。
-Settings_DescForceFork	プロセスのフォーク使用を強制します。
-Settings_DescHEADFetchesBody	HEAD コマンドでメッセージ本文を取得します。
-Settings_DescHTTPPort	POPFile ウェブインターフェースのポート。
-Settings_DescItemsPerPage	履歴の1ページあたりのアイテム数。
-Settings_DescLanguage	インターフェースの言語。
-Settings_DescListenAddress	POPFile が接続を待ち受けるアドレス。
-Settings_DescLocalOnly_UI	ウェブインターフェースをローカル接続のみに制限します。
-Settings_DescLogDirectory	ログファイルのディレクトリ。空白の場合は POPFile のルート。
-Settings_DescLogLevel	ログ出力の詳細レベル。
-Settings_DescLogSQLToStdout	各 SQL 文をバインド値とともに stdout に出力します。
-Settings_DescLogToStdout	ログ出力をファイルに加えて stdout にも複製します。
-Settings_DescMessageCutoff	1メッセージあたりの最大解析語数（0は無制限）。
-Settings_DescNNTPLocalOnly	ローカルホストからの NNTP 接続のみ受け入れます。
-Settings_DescNNTPPort	POPFile が NNTP を待ち受けるポート（デフォルト 119）。
-Settings_DescNNTPSeparator	ユーザーとサーバーを区切る文字。
-Settings_DescPOP3LocalOnly	ローカルホストからの POP3 接続のみ受け入れます。
-Settings_DescPOP3Port	POPFile が POP3 を待ち受けるポート（デフォルト 1110）。
-Settings_DescPOP3Separator	ユーザーとサーバーを区切る文字（例 ユーザー:メールサーバー）。
-Settings_DescRetentionDays	メッセージ履歴の保存日数。
-Settings_DescSessionDividers	履歴でセッション間の区切りを表示します。
-Settings_DescSMTPLocalOnly	ローカルホストからの SMTP 接続のみ受け入れます。
-Settings_DescSMTPPort	POPFile が SMTP を待ち受けるポート（デフォルト 25）。
-Settings_DescSQLiteJournal	SQLite ジャーナル / WAL モード。
-Settings_DescSQLiteTweaks	ビットマスク: 1=高速書き込み（安全性低下）, 2=定期バックアップ。
-Settings_DescSSLChainPort	上流 SSL POP3 サーバーのポート。
-Settings_DescSSLChainServer	SSL チェーン用上流 SSL POP3 サーバーのホスト名。
-Settings_DescSubjectTagLeft	件名ヘッダーに挿入するプレフィックス（例 [スパム]）。
-Settings_DescSubjectTagRight	件名ヘッダーに付加するサフィックス。
-Settings_DescTagPosition	件名タグの配置位置。
-Settings_DescTOPFetchesBody	TOP コマンドでメッセージ本文を取得します。
-Settings_DescUnclassifiedWeight	この確率以下のメールを「未分類」とみなすしきい値。
-Settings_DescWordStemming	分類前に語をステミングします。形態論的に豊かな言語の再現率を改善します。
-Settings_DescWordTable	単語確率テーブルに表示する内容。
-Settings_ErrorSaving	保存エラー
-Settings_ForceFork	フォーク強制
-Settings_HEADFetchesBody	HEAD で本文を取得
-Settings_HTTPPort	HTTP ポート
-Settings_ItemsPerPage	1ページのアイテム数
-Settings_ListenAddress	待ち受けアドレス
-Settings_ListenPort	待ち受けポート
-Settings_LocalOnly	ローカルのみ
-Settings_LogDirectory	ログディレクトリ
-Settings_LogLevel	ログレベル
-Settings_LogSQLToStdout	SQL を stdout に出力
-Settings_LogToStdout	stdout に出力
-Settings_MessageCutoff	メッセージ上限
-Settings_OptDebug	デバッグ
-Settings_OptEnd	末尾
-Settings_OptErrorsOnly	エラーのみ
-Settings_OptFrequencies	頻度
-Settings_OptFront	先頭
-Settings_OptHidden	非表示
-Settings_OptInfo	情報
-Settings_OptLogScores	スコアを記録
-Settings_OptProbabilities	確率
-Settings_OptWarnings	警告
-Settings_RetentionDays	保存期間（日）
-Settings_SaveChanges	変更を保存
-Settings_Saved	保存しました
-Settings_Saving	保存中...
-Settings_Search	設定を検索...
-Settings_SectionClassifier	分類器
-Settings_SectionHistory	履歴
-Settings_SectionLogging	ログ
-Settings_SectionNNTP	NNTP プロキシ
-Settings_SectionPOP3	POP3 プロキシ
-Settings_SectionSecurity	セキュリティ
-Settings_SectionSMTP	SMTP プロキシ
-Settings_SectionUI	インターフェース
-Settings_ServerSeparator	サーバー区切り文字
-Settings_SessionDividers	セッション区切り
-Settings_SQLiteJournalMode	SQLite ジャーナルモード
-Settings_SQLiteTweaks	SQLite チューニング
-Settings_SSLChainPort	SSL チェーンポート
-Settings_SSLChainServer	SSL チェーンサーバー
-Settings_SubjectTagLeft	件名タグ（左）
-Settings_SubjectTagRight	件名タグ（右）
-Settings_TagPosition	タグ位置
-Settings_TOPFetchesBody	TOP で本文を取得
-Settings_UnclassifiedWeight	未分類の重み
-Settings_WordStemming	単語ステミング
-Settings_WordTable	単語テーブル
-Status_Checking	確認中...
-Status_Description	POPFile のステータスと統計。
-Status_LoadError	ステータスデータの読み込みに失敗しました。
-Status_NoChecks	確認項目なし。
-
-Language_Name                           日本語
-History_PerPage                          ページごとのエントリ
-Imap_Advanced                            詳細設定
-Imap_Cancel                              キャンセル
-Imap_Wizard                              セットアップウィザード
-Imap_WizardApply                         作成してマッピング
-Imap_WizardClose                         閉じる
-Imap_WizardDesc                          バケットとマッピングを作成するフォルダを選択してください。
-Imap_WizardDeselectAll                   すべて解除
-Imap_WizardDone                          {count} 個のカテゴリが作成され、マッピングされました。
-Imap_WizardEmpty                         サーバーに追加のフォルダが見つかりませんでした。
-Imap_WizardSelectAll                     すべて選択
-Imap_WizardTrain                         今すぐトレーニング
-NavWordSearch                            単語検索
-Settings_DescEnableProxy                 POPFile起動時にこのプロキシを開始する。
-Settings_DescLogFormat                   ログ出力形式（default, tabbed, csv, plain）。
-Settings_DescOpenBrowser                 起動時にブラウザを自動的に開く。
-Settings_DescSQLiteBackup                スキーマ変更前にデータベースを自動バックアップ。
-Settings_DescSQLiteFastWrites            データベース同期を無効にする（高速、安全性は低下）。
-Settings_EnableService                   サービスを有効にする
-Settings_LogFormat                       ログ形式
-Settings_OpenBrowser                     ブラウザを開く
-Settings_SQLiteBackup                    SQLite バックアップ
-Settings_SQLiteFastWrites                SQLite 高速書き込み
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   ストップワードを追加
-WordSearch_ColumnBuckets                 カテゴリ
-WordSearch_ColumnWord                    単語
-WordSearch_IsStopword                    ストップワード
-WordSearch_Loading                       読み込み中...
-WordSearch_NoResults                     結果なし。
-WordSearch_NoStopwords                   ストップワードなし。
-WordSearch_Placeholder                   単語を入力...
-WordSearch_RemoveStopword                ストップワードを削除
-WordSearch_Search                        検索
-WordSearch_StopwordList                  ストップワードリスト
-WordSearch_Title                         単語検索
-WordSearch_Total                         合計
+LanguageCharset EUC-JP
+LanguageDirection ltr
+ManualLanguage jp
+Apply 適用
+Add 追加
+Remove 削除
+Previous 前へ
+Next 次へ
+From 差出人
+Subject 件名
+Reclassify 再分類
+Undo やり直し
+Close 閉じる
+Bucket バケツ
+Magnet マグネット
+Delete 削除
+Create 作成
+Total 合計
+Rename 名前変更
+Update 更新
+Refresh 最新の状態に更新
+Date 日時
+Configuration_Language 言語
+History_SearchMessage 差出人/件名 を検索
+Magnet_CurrentMagnets 現在のマグネット
+Magnet_CreateNew 新規マグネット作成
+Bucket_CreateBucket バケツ作成
+Bucket_RenameBucket バケツの名前変更
+Imap_Server IMAP サーバー ホスト名:
+Imap_Port IMAP サーバー ポート番号:
+Imap_Login IMAP アカウント ユーザー名:
+Imap_Password IMAP アカウントのパスワード:
+Imap_Expunge 監視フォルダから移動されたメッセージを削除する。
+Imap_Interval 更新の間隔（秒）:
+Imap_NoConnectionMessage サーバーに接続するための情報を先に設定してください。そうすると、さらに多くのオプションが設定できるようになります。
+Imap_Use_SSL SSL を使用する
+BucketSelect_AddNew 新規カテゴリ
+BucketSelect_AlreadyExists そのカテゴリ名は既に存在します。
+BucketSelect_CreateError カテゴリの作成に失敗しました。
+BucketSelect_InvalidName 無効なカテゴリ名です。
+BucketSelect_NameRequired カテゴリ名を入力してください。
+Corpus_Actions 操作
+Corpus_AddStopword ストップワードを追加
+Corpus_BucketList カテゴリ一覧
+Corpus_Clear クリア
+Corpus_Color 色
+Corpus_LoadCandidates 候補を読み込む
+Corpus_NoCandidates 候補が見つかりませんでした。
+Corpus_RemoveStopword ストップワードを削除
+Corpus_StopwordCandidates ストップワード候補
+Corpus_StopwordCandidatesDesc 分類に影響を与える可能性のある高頻度語です。
+Corpus_StopwordRatio 頻度しきい値
+Corpus_StopwordsDesc POPFile が分類時に無視する語です。
+Corpus_StopwordsTitle ストップワード
+History_AllBuckets すべてのカテゴリ
+History_HighlightWords 単語をハイライト
+History_Loading 読み込み中...
+History_MoveTo 移動先
+History_Moving 移動中...
+History_Reclassifying 再分類中...
+History_ReclassifyUnclassified 未分類を再分類
+History_Selected 選択済み
+Imap_BucketFolderMappings カテゴリとフォルダの対応
+Imap_Connected 接続済み
+Imap_Connection 接続
+Imap_ConnectionFailed 接続に失敗しました。
+Imap_Description POPFile は IMAP を通じて直接メールを分類できます。
+Imap_FetchFolders フォルダを取得
+Imap_Fetching 取得中...
+Imap_IMAFFolder IMAP フォルダ
+Imap_MappingsHint 各カテゴリに対応する IMAP フォルダを指定してください。
+Imap_NoFoldersWatched 監視中のフォルダがありません。
+Imap_NoMappings 対応が設定されていません。
+Imap_SaveAnyway このまま保存
+Imap_SaveConnection 接続設定を保存
+Imap_SaveFolders フォルダを保存
+Imap_Saving 保存中...
+Imap_TestConnection 接続をテスト
+Imap_Testing テスト中...
+Imap_TrainingHint 学習させるにはメールを適切なフォルダに移動してください。
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
+Imap_TrainingMode 学習モード
+Imap_TrainingLimit フォルダあたりのメッセージ数（0 = 無制限）
+Imap_WatchedFolders 監視中のフォルダ
+Imap_WatchedHint 監視するフォルダを追加してください。
+WordView_Title 単語の精度
+WordView_SelectBucket カテゴリを選択
+WordView_Words 単語
+WordView_Loading 読み込み中...
+WordView_Empty このカテゴリに単語がありません。
+WordView_ColWord 単語
+WordView_ColCount 件数
+WordView_ColTotal 合計
+WordView_ColAccuracy 精度
+WordView_ColActions 操作
+WordView_Remove 削除
+WordView_MoveTo 移動先
+WordView_Move 移動
+Magnet_Created マグネットを作成しました。
+Magnet_Deleted マグネットを削除しました。
+NavCorpus コーパス
+NavHistory 履歴
+NavIMAP IMAP
+NavMagnets マグネット
+NavStatus ステータス
+NavWordView 単語
+Reconnect_Connecting 接続中...
+Reconnect_Message POPFile が接続を失いました。再接続中です。
+Reconnect_Now 今すぐ接続
+Reconnect_RetryIn 再試行まで
+Reconnect_Title 接続切断
+Settings_AdminPassword 管理者パスワード
+Settings_ArchiveDirectory アーカイブディレクトリ
+Settings_ArchiveMessages メッセージをアーカイブ
+Settings_ArchiveSubdirs アーカイブのサブディレクトリ
+Settings_AutoDetect 自動検出
+Settings_AutoDetectLanguage 言語の自動検出
+Settings_ChainPort チェーンポート
+Settings_ChainServer チェーンサーバー
+Settings_DateFormat 日付形式
+Settings_DescAdminPassword 管理インターフェースへのログインパスワード。
+Settings_DescArchiveDir アーカイブメッセージのディレクトリ。空白の場合はアーカイブしません。
+Settings_DescArchiveMessages 分類済みメッセージのコピーを保存します。
+Settings_DescArchiveSubdirs カテゴリ別にサブディレクトリへアーカイブを分配します。
+Settings_DescAutoDetectLang インターフェースの言語を自動検出します。
+Settings_DescChainPort チェーン用上流 POP3 サーバーのポート。
+Settings_DescChainServer 上流 POP3 サーバーのホスト名。
+Settings_DescDateFormat 日付の表示形式。
+Settings_DescForceFork プロセスのフォーク使用を強制します。
+Settings_DescHEADFetchesBody HEAD コマンドでメッセージ本文を取得します。
+Settings_DescHTTPPort POPFile ウェブインターフェースのポート。
+Settings_DescItemsPerPage 履歴の1ページあたりのアイテム数。
+Settings_DescLanguage インターフェースの言語。
+Settings_DescListenAddress POPFile が接続を待ち受けるアドレス。
+Settings_DescLocalOnly_UI ウェブインターフェースをローカル接続のみに制限します。
+Settings_DescLogDirectory ログファイルのディレクトリ。空白の場合は POPFile のルート。
+Settings_DescLogLevel ログ出力の詳細レベル。
+Settings_DescLogSQLToStdout 各 SQL 文をバインド値とともに stdout に出力します。
+Settings_DescLogToStdout ログ出力をファイルに加えて stdout にも複製します。
+Settings_DescMessageCutoff 1メッセージあたりの最大解析語数（0は無制限）。
+Settings_DescNNTPLocalOnly ローカルホストからの NNTP 接続のみ受け入れます。
+Settings_DescNNTPPort POPFile が NNTP を待ち受けるポート（デフォルト 119）。
+Settings_DescNNTPSeparator ユーザーとサーバーを区切る文字。
+Settings_DescPOP3LocalOnly ローカルホストからの POP3 接続のみ受け入れます。
+Settings_DescPOP3Port POPFile が POP3 を待ち受けるポート（デフォルト 1110）。
+Settings_DescPOP3Separator ユーザーとサーバーを区切る文字（例 ユーザー:メールサーバー）。
+Settings_DescRetentionDays メッセージ履歴の保存日数。
+Settings_DescSessionDividers 履歴でセッション間の区切りを表示します。
+Settings_DescSMTPLocalOnly ローカルホストからの SMTP 接続のみ受け入れます。
+Settings_DescSMTPPort POPFile が SMTP を待ち受けるポート（デフォルト 25）。
+Settings_DescSQLiteJournal SQLite ジャーナル / WAL モード。
+Settings_DescSQLiteTweaks ビットマスク: 1=高速書き込み（安全性低下）, 2=定期バックアップ。
+Settings_DescSSLChainPort 上流 SSL POP3 サーバーのポート。
+Settings_DescSSLChainServer SSL チェーン用上流 SSL POP3 サーバーのホスト名。
+Settings_DescSubjectTagLeft 件名ヘッダーに挿入するプレフィックス（例 [スパム]）。
+Settings_DescSubjectTagRight 件名ヘッダーに付加するサフィックス。
+Settings_DescTagPosition 件名タグの配置位置。
+Settings_DescTOPFetchesBody TOP コマンドでメッセージ本文を取得します。
+Settings_DescUnclassifiedWeight この確率以下のメールを「未分類」とみなすしきい値。
+Settings_DescWordStemming 分類前に語をステミングします。形態論的に豊かな言語の再現率を改善します。
+Settings_DescWordTable 単語確率テーブルに表示する内容。
+Settings_ErrorSaving 保存エラー
+Settings_ForceFork フォーク強制
+Settings_HEADFetchesBody HEAD で本文を取得
+Settings_HTTPPort HTTP ポート
+Settings_ItemsPerPage 1ページのアイテム数
+Settings_ListenAddress 待ち受けアドレス
+Settings_ListenPort 待ち受けポート
+Settings_LocalOnly ローカルのみ
+Settings_LogDirectory ログディレクトリ
+Settings_LogLevel ログレベル
+Settings_LogSQLToStdout SQL を stdout に出力
+Settings_LogToStdout stdout に出力
+Settings_MessageCutoff メッセージ上限
+Settings_OptDebug デバッグ
+Settings_OptEnd 末尾
+Settings_OptErrorsOnly エラーのみ
+Settings_OptFrequencies 頻度
+Settings_OptFront 先頭
+Settings_OptHidden 非表示
+Settings_OptInfo 情報
+Settings_OptLogScores スコアを記録
+Settings_OptProbabilities 確率
+Settings_OptWarnings 警告
+Settings_RetentionDays 保存期間（日）
+Settings_SaveChanges 変更を保存
+Settings_Saved 保存しました
+Settings_Saving 保存中...
+Settings_Search 設定を検索...
+Settings_SectionClassifier 分類器
+Settings_SectionHistory 履歴
+Settings_SectionLogging ログ
+Settings_SectionNNTP NNTP プロキシ
+Settings_SectionPOP3 POP3 プロキシ
+Settings_SectionSecurity セキュリティ
+Settings_SectionSMTP SMTP プロキシ
+Settings_SectionUI インターフェース
+Settings_ServerSeparator サーバー区切り文字
+Settings_SessionDividers セッション区切り
+Settings_SQLiteJournalMode SQLite ジャーナルモード
+Settings_SQLiteTweaks SQLite チューニング
+Settings_SSLChainPort SSL チェーンポート
+Settings_SSLChainServer SSL チェーンサーバー
+Settings_SubjectTagLeft 件名タグ（左）
+Settings_SubjectTagRight 件名タグ（右）
+Settings_TagPosition タグ位置
+Settings_TOPFetchesBody TOP で本文を取得
+Settings_UnclassifiedWeight 未分類の重み
+Settings_WordStemming 単語ステミング
+Settings_WordTable 単語テーブル
+Status_Checking 確認中...
+Status_Description POPFile のステータスと統計。
+Status_LoadError ステータスデータの読み込みに失敗しました。
+Status_NoChecks 確認項目なし。
+Language_Name 日本語
+History_PerPage ページごとのエントリ
+Imap_Advanced 詳細設定
+Imap_Cancel キャンセル
+Imap_Wizard セットアップウィザード
+Imap_WizardApply 作成してマッピング
+Imap_WizardClose 閉じる
+Imap_WizardDesc バケットとマッピングを作成するフォルダを選択してください。
+Imap_WizardDeselectAll すべて解除
+Imap_WizardDone {count} 個のカテゴリが作成され、マッピングされました。
+Imap_WizardEmpty サーバーに追加のフォルダが見つかりませんでした。
+Imap_WizardSelectAll すべて選択
+Imap_WizardTrain 今すぐトレーニング
+NavWordSearch 単語検索
+Settings_DescEnableProxy POPFile起動時にこのプロキシを開始する。
+Settings_DescLogFormat ログ出力形式（default, tabbed, csv, plain）。
+Settings_DescOpenBrowser 起動時にブラウザを自動的に開く。
+Settings_DescSQLiteBackup スキーマ変更前にデータベースを自動バックアップ。
+Settings_DescSQLiteFastWrites データベース同期を無効にする（高速、安全性は低下）。
+Settings_EnableService サービスを有効にする
+Settings_LogFormat ログ形式
+Settings_OpenBrowser ブラウザを開く
+Settings_SQLiteBackup SQLite バックアップ
+Settings_SQLiteFastWrites SQLite 高速書き込み
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword ストップワードを追加
+WordSearch_ColumnBuckets カテゴリ
+WordSearch_ColumnWord 単語
+WordSearch_IsStopword ストップワード
+WordSearch_Loading 読み込み中...
+WordSearch_NoResults 結果なし。
+WordSearch_NoStopwords ストップワードなし。
+WordSearch_Placeholder 単語を入力...
+WordSearch_RemoveStopword ストップワードを削除
+WordSearch_Search 検索
+WordSearch_StopwordList ストップワードリスト
+WordSearch_Title 単語検索
+WordSearch_Total 合計

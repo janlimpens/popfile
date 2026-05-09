@@ -1,45 +1,32 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-1
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          da
-
-# Common words that are used on their own all over the interface
-Apply                                   Anvend
-Add                                     Tilføj
-Remove                                  Fjern
-Previous                                Forrige
-Next                                    Næste
-From                                    Fra
-Subject                                 Emne
-Reclassify                              Genklassificering
-Undo                                    Fortryd
-Close                                   Luk
-Bucket                                  Spand
-Magnet                                  Magnet
-Delete                                  Slet
-Create                                  Tilføj
-Total                                   Total
-Rename                                  Omdøb
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  Sprog
-
-History_SearchMessage                   Søg i Fra/Emne
-
-Magnet_CurrentMagnets                   Magneter i brug
-Magnet_CreateNew                        Tilføj nye magneter
-
-Bucket_CreateBucket                     Opret spanden med navnet
-Bucket_RenameBucket                     Omdøb spanden med navnet
-
-# New keys added (translations batch 2)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+ManualLanguage da
+Apply Anvend
+Add Tilføj
+Remove Fjern
+Previous Forrige
+Next Næste
+From Fra
+Subject Emne
+Reclassify Genklassificering
+Undo Fortryd
+Close Luk
+Bucket Spand
+Magnet Magnet
+Delete Slet
+Create Tilføj
+Total Total
+Rename Omdøb
+Configuration_Language Sprog
+History_SearchMessage Søg i Fra/Emne
+Magnet_CurrentMagnets Magneter i brug
+Magnet_CreateNew Tilføj nye magneter
+Bucket_CreateBucket Opret spanden med navnet
+Bucket_RenameBucket Omdøb spanden med navnet
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 NavCorpus Korpus
@@ -102,15 +89,14 @@ Imap_Server IMAP-server værtsnavn:
 Imap_TestConnection Test forbindelse
 Imap_Testing Tester...
 Imap_TrainingHint Træningstilstand gennemgår eksisterende arkivmapper og træner klassificereren på deres indhold. Flaget nulstilles automatisk, når træningen er færdig.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Træningstilstand
 Imap_TrainingLimit Beskeder pr. mappe (0 = ubegrænset)
 Imap_Use_SSL Brug SSL
 Imap_WatchedFolders Overvågede mapper
 Imap_WatchedHint POPFile overvåger disse IMAP-mapper for nye beskeder at klassificere.
-
 WordView_Title Ordnøjagtighed
 WordView_SelectBucket vælg kategori
 WordView_Words ord
@@ -234,42 +220,41 @@ Status_Checking Kontrollerer...
 Status_Description Statuskontroller for POPFile-tjenester.
 Status_LoadError Kunne ikke indlæse status
 Status_NoChecks Ingen kontroller tilgængelige.
-
-Language_Name                           Dansk
-History_PerPage                          Poster pr. side
-Imap_Advanced                            Avanceret
-Imap_Cancel                              Annuller
-Imap_Wizard                              Opsætningsguide
-Imap_WizardApply                         Opret og map
-Imap_WizardClose                         Luk
-Imap_WizardDesc                          Vælg mapper at oprette buckets og mappings for.
-Imap_WizardDeselectAll                   Fravælg alle
-Imap_WizardDone                          {count} bucket(s) oprettet og mappet.
-Imap_WizardEmpty                         Ingen yderligere mapper fundet på serveren.
-Imap_WizardSelectAll                     Vælg alle
-Imap_WizardTrain                         Træn nu
-NavWordSearch                            Ordsøgning
-Settings_DescEnableProxy                 Start denne proxy når POPFile starter.
-Settings_DescLogFormat                   Format for logoutput (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Åbn automatisk browser ved opstart.
-Settings_DescSQLiteBackup                Tag automatisk backup af database før schemaændringer.
-Settings_DescSQLiteFastWrites            Deaktiver databasesynkronisering (hurtigere, mindre sikkert).
-Settings_EnableService                   Aktivér tjeneste
-Settings_LogFormat                       Logformat
-Settings_OpenBrowser                     Åbn browser
-Settings_SQLiteBackup                    SQLite backup
-Settings_SQLiteFastWrites                SQLite hurtig skrivning
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Tilføj stopord
-WordSearch_ColumnBuckets                 Buckets
-WordSearch_ColumnWord                    Ord
-WordSearch_IsStopword                    Stopord
-WordSearch_Loading                       Indlæser...
-WordSearch_NoResults                     Ingen resultater.
-WordSearch_NoStopwords                   Ingen stopord.
-WordSearch_Placeholder                   Indtast et ord...
-WordSearch_RemoveStopword                Fjern stopord
-WordSearch_Search                        Søg
-WordSearch_StopwordList                  Stopordsliste
-WordSearch_Title                         Ordsøgning
-WordSearch_Total                         I alt
+Language_Name Dansk
+History_PerPage Poster pr. side
+Imap_Advanced Avanceret
+Imap_Cancel Annuller
+Imap_Wizard Opsætningsguide
+Imap_WizardApply Opret og map
+Imap_WizardClose Luk
+Imap_WizardDesc Vælg mapper at oprette buckets og mappings for.
+Imap_WizardDeselectAll Fravælg alle
+Imap_WizardDone {count} bucket(s) oprettet og mappet.
+Imap_WizardEmpty Ingen yderligere mapper fundet på serveren.
+Imap_WizardSelectAll Vælg alle
+Imap_WizardTrain Træn nu
+NavWordSearch Ordsøgning
+Settings_DescEnableProxy Start denne proxy når POPFile starter.
+Settings_DescLogFormat Format for logoutput (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Åbn automatisk browser ved opstart.
+Settings_DescSQLiteBackup Tag automatisk backup af database før schemaændringer.
+Settings_DescSQLiteFastWrites Deaktiver databasesynkronisering (hurtigere, mindre sikkert).
+Settings_EnableService Aktivér tjeneste
+Settings_LogFormat Logformat
+Settings_OpenBrowser Åbn browser
+Settings_SQLiteBackup SQLite backup
+Settings_SQLiteFastWrites SQLite hurtig skrivning
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Tilføj stopord
+WordSearch_ColumnBuckets Buckets
+WordSearch_ColumnWord Ord
+WordSearch_IsStopword Stopord
+WordSearch_Loading Indlæser...
+WordSearch_NoResults Ingen resultater.
+WordSearch_NoStopwords Ingen stopord.
+WordSearch_Placeholder Indtast et ord...
+WordSearch_RemoveStopword Fjern stopord
+WordSearch_Search Søg
+WordSearch_StopwordList Stopordsliste
+WordSearch_Title Ordsøgning
+WordSearch_Total I alt

@@ -1,47 +1,34 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         koi8-r
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          en
-
-# Common words that are used on their own all over the interface
-Apply                                   Запомнить
-Add                                     Добавить
-Remove                                  Удалить
-Previous                                Предыдущий
-Next                                    Следующий
-From                                    Отправитель
-Subject                                 Тема
-Reclassify                              Переклассифицировать
-Undo                                    Отменить
-Close                                   Закрыть
-Bucket                                  Ведро
-Magnet                                  Магнит
-Delete                                  Удалить
-Create                                  Создать
-Total                                   Всего
-Rename                                  Переименовать
-
-# The header and footer that appear on every UI page
-
-Configuration_Separator                 Разделитель
-Configuration_SepUpdate                 Разделитель изменён на %s
-Configuration_Language                  Язык
-
-History_SearchMessage                   Искать в поле <em>Тема</em>
- 
-Magnet_CurrentMagnets                   Существующие магниты
-Magnet_CreateNew                        Создать новый магнит
-
-Bucket_CreateBucket                     Создать ведро
-Bucket_RenameBucket                     Переименовать ведро
-
-# New keys added (translations batch 4)
+LanguageCharset koi8-r
+LanguageDirection ltr
+ManualLanguage en
+Apply Запомнить
+Add Добавить
+Remove Удалить
+Previous Предыдущий
+Next Следующий
+From Отправитель
+Subject Тема
+Reclassify Переклассифицировать
+Undo Отменить
+Close Закрыть
+Bucket Ведро
+Magnet Магнит
+Delete Удалить
+Create Создать
+Total Всего
+Rename Переименовать
+Configuration_Separator Разделитель
+Configuration_SepUpdate Разделитель изменён на %s
+Configuration_Language Язык
+History_SearchMessage Искать в поле <em>Тема</em>
+Magnet_CurrentMagnets Существующие магниты
+Magnet_CreateNew Создать новый магнит
+Bucket_CreateBucket Создать ведро
+Bucket_RenameBucket Переименовать ведро
 NavCorpus Корпус
 NavHistory История
 NavIMAP IMAP
@@ -100,15 +87,14 @@ Imap_Server Имя хоста сервера IMAP:
 Imap_TestConnection Проверить подключение
 Imap_Testing Тестирование...
 Imap_TrainingHint Режим обучения сканирует существующие архивные папки и обучает классификатор на их содержимом. Флаг автоматически сбрасывается по завершении обучения.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Режим обучения
 Imap_TrainingLimit Сообщений на папку (0 = без ограничений)
 Imap_Use_SSL Использовать SSL
 Imap_WatchedFolders Отслеживаемые папки
 Imap_WatchedHint POPFile отслеживает эти папки IMAP для новых сообщений для классификации.
-
 WordView_Title Точность слов
 WordView_SelectBucket выбрать категорию
 WordView_Words слова
@@ -234,42 +220,41 @@ Status_Description Проверки состояния сервисов POPFile.
 Status_LoadError Не удалось загрузить статус
 Status_NoChecks Проверки недоступны.
 Update Обновить
-
-Language_Name                           Русский
-History_PerPage                          Записей на странице
-Imap_Advanced                            Расширенные
-Imap_Cancel                              Отмена
-Imap_Wizard                              Мастер настройки
-Imap_WizardApply                         Создать и сопоставить
-Imap_WizardClose                         Закрыть
-Imap_WizardDesc                          Выберите папки для создания категорий и сопоставлений.
-Imap_WizardDeselectAll                   Снять выделение
-Imap_WizardDone                          Создано и сопоставлено категорий: {count}.
-Imap_WizardEmpty                         Дополнительные папки на сервере не найдены.
-Imap_WizardSelectAll                     Выбрать все
-Imap_WizardTrain                         Обучить сейчас
-NavWordSearch                            Поиск слов
-Settings_DescEnableProxy                 Запускать этот прокси при старте POPFile.
-Settings_DescLogFormat                   Формат вывода журнала (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Автоматически открывать браузер при запуске.
-Settings_DescSQLiteBackup                Автоматически создавать резервную копию БД перед изменениями схемы.
-Settings_DescSQLiteFastWrites            Отключить синхронизацию БД (быстрее, менее безопасно).
-Settings_EnableService                   Включить службу
-Settings_LogFormat                       Формат журнала
-Settings_OpenBrowser                     Открыть браузер
-Settings_SQLiteBackup                    Резервная копия SQLite
-Settings_SQLiteFastWrites                Быстрая запись SQLite
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Добавить стоп-слово
-WordSearch_ColumnBuckets                 Категории
-WordSearch_ColumnWord                    Слово
-WordSearch_IsStopword                    Стоп-слово
-WordSearch_Loading                       Загрузка...
-WordSearch_NoResults                     Нет результатов.
-WordSearch_NoStopwords                   Нет стоп-слов.
-WordSearch_Placeholder                   Введите слово...
-WordSearch_RemoveStopword                Удалить стоп-слово
-WordSearch_Search                        Искать
-WordSearch_StopwordList                  Список стоп-слов
-WordSearch_Title                         Поиск слов
-WordSearch_Total                         Всего
+Language_Name Русский
+History_PerPage Записей на странице
+Imap_Advanced Расширенные
+Imap_Cancel Отмена
+Imap_Wizard Мастер настройки
+Imap_WizardApply Создать и сопоставить
+Imap_WizardClose Закрыть
+Imap_WizardDesc Выберите папки для создания категорий и сопоставлений.
+Imap_WizardDeselectAll Снять выделение
+Imap_WizardDone Создано и сопоставлено категорий: {count}.
+Imap_WizardEmpty Дополнительные папки на сервере не найдены.
+Imap_WizardSelectAll Выбрать все
+Imap_WizardTrain Обучить сейчас
+NavWordSearch Поиск слов
+Settings_DescEnableProxy Запускать этот прокси при старте POPFile.
+Settings_DescLogFormat Формат вывода журнала (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Автоматически открывать браузер при запуске.
+Settings_DescSQLiteBackup Автоматически создавать резервную копию БД перед изменениями схемы.
+Settings_DescSQLiteFastWrites Отключить синхронизацию БД (быстрее, менее безопасно).
+Settings_EnableService Включить службу
+Settings_LogFormat Формат журнала
+Settings_OpenBrowser Открыть браузер
+Settings_SQLiteBackup Резервная копия SQLite
+Settings_SQLiteFastWrites Быстрая запись SQLite
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Добавить стоп-слово
+WordSearch_ColumnBuckets Категории
+WordSearch_ColumnWord Слово
+WordSearch_IsStopword Стоп-слово
+WordSearch_Loading Загрузка...
+WordSearch_NoResults Нет результатов.
+WordSearch_NoStopwords Нет стоп-слов.
+WordSearch_Placeholder Введите слово...
+WordSearch_RemoveStopword Удалить стоп-слово
+WordSearch_Search Искать
+WordSearch_StopwordList Список стоп-слов
+WordSearch_Title Поиск слов
+WordSearch_Total Всего

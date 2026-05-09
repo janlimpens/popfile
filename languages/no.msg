@@ -1,47 +1,34 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-1
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          no
-
-# Common words that are used on their own all over the interface
-Apply                                   Bruk
-Add                                     Legg til
-Remove                                  Fjern
-Previous                                Forrige
-Next                                    Neste
-From                                    Fra
-Subject                                 Emne
-Reclassify                              Re-klassifisering
-Undo                                    Angre
-Close                                   Lukk
-Bucket                                  Bøtte
-Magnet                                  Magnet
-Delete                                  Slett
-Create                                  Opprett
-Total                                   Total
-Rename                                  Omdøp
-
-# The header and footer that appear on every UI page
-
-Configuration_Separator                 Skilletegn
-Configuration_SepUpdate                 Oppdaterte skilletegnet til %s
-Configuration_Language                  Språk
-
-History_SearchMessage                   Søk Emne
-
-Magnet_CurrentMagnets                   Nåværende Magneter
-Magnet_CreateNew                        Opprett Ny Magnet
-
-Bucket_CreateBucket                     Oppret bøtten med navnet
-Bucket_RenameBucket                     Omdøp bøtten med navnet
-
-# New keys added (translations batch 2)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+ManualLanguage no
+Apply Bruk
+Add Legg til
+Remove Fjern
+Previous Forrige
+Next Neste
+From Fra
+Subject Emne
+Reclassify Re-klassifisering
+Undo Angre
+Close Lukk
+Bucket Bøtte
+Magnet Magnet
+Delete Slett
+Create Opprett
+Total Total
+Rename Omdøp
+Configuration_Separator Skilletegn
+Configuration_SepUpdate Oppdaterte skilletegnet til %s
+Configuration_Language Språk
+History_SearchMessage Søk Emne
+Magnet_CurrentMagnets Nåværende Magneter
+Magnet_CreateNew Opprett Ny Magnet
+Bucket_CreateBucket Oppret bøtten med navnet
+Bucket_RenameBucket Omdøp bøtten med navnet
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 NavCorpus Korpus
@@ -104,15 +91,14 @@ Imap_Server IMAP-server vertsnavn:
 Imap_TestConnection Test tilkobling
 Imap_Testing Tester...
 Imap_TrainingHint Opplæringsmodus gjennomgår eksisterende arkivmapper og trener klassifikatoren på innholdet. Flagget tilbakestilles automatisk når opplæringen er fullført.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Opplæringsmodus
 Imap_TrainingLimit Meldinger per mappe (0 = ubegrenset)
 Imap_Use_SSL Bruk SSL
 Imap_WatchedFolders Overvåkede mapper
 Imap_WatchedHint POPFile overvåker disse IMAP-mappene for nye meldinger å klassifisere.
-
 WordView_Title Ordnøyaktighet
 WordView_SelectBucket velg kategori
 WordView_Words ord
@@ -236,42 +222,41 @@ Status_Checking Kontrollerer...
 Status_Description Statuskontroller for POPFile-tjenester.
 Status_LoadError Kunne ikke laste status
 Status_NoChecks Ingen kontroller tilgjengelige.
-
-Language_Name                           Norsk
-History_PerPage                          Oppføringer per side
-Imap_Advanced                            Avansert
-Imap_Cancel                              Avbryt
-Imap_Wizard                              Oppsettveiviser
-Imap_WizardApply                         Opprett og tilordne
-Imap_WizardClose                         Lukk
-Imap_WizardDesc                          Velg mapper å opprette bøtter og tilordninger for.
-Imap_WizardDeselectAll                   Fjern alle valg
-Imap_WizardDone                          {count} kategori(er) opprettet og tilordnet.
-Imap_WizardEmpty                         Ingen flere mapper funnet på serveren.
-Imap_WizardSelectAll                     Velg alle
-Imap_WizardTrain                         Tren nå
-NavWordSearch                            Ordsøk
-Settings_DescEnableProxy                 Start denne proxyen når POPFile starter.
-Settings_DescLogFormat                   Format for loggutdata (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Åpne nettleser automatisk ved oppstart.
-Settings_DescSQLiteBackup                Ta automatisk sikkerhetskopi av database før skjemaendringer.
-Settings_DescSQLiteFastWrites            Deaktiver databasesynkronisering (raskere, mindre sikkert).
-Settings_EnableService                   Aktiver tjeneste
-Settings_LogFormat                       Loggformat
-Settings_OpenBrowser                     Åpne nettleser
-Settings_SQLiteBackup                    SQLite sikkerhetskopi
-Settings_SQLiteFastWrites                SQLite rask skriving
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Legg til stoppord
-WordSearch_ColumnBuckets                 Kategorier
-WordSearch_ColumnWord                    Ord
-WordSearch_IsStopword                    Stoppord
-WordSearch_Loading                       Laster...
-WordSearch_NoResults                     Ingen resultater.
-WordSearch_NoStopwords                   Ingen stoppord.
-WordSearch_Placeholder                   Skriv inn et ord...
-WordSearch_RemoveStopword                Fjern stoppord
-WordSearch_Search                        Søk
-WordSearch_StopwordList                  Stoppordliste
-WordSearch_Title                         Ordsøk
-WordSearch_Total                         Totalt
+Language_Name Norsk
+History_PerPage Oppføringer per side
+Imap_Advanced Avansert
+Imap_Cancel Avbryt
+Imap_Wizard Oppsettveiviser
+Imap_WizardApply Opprett og tilordne
+Imap_WizardClose Lukk
+Imap_WizardDesc Velg mapper å opprette bøtter og tilordninger for.
+Imap_WizardDeselectAll Fjern alle valg
+Imap_WizardDone {count} kategori(er) opprettet og tilordnet.
+Imap_WizardEmpty Ingen flere mapper funnet på serveren.
+Imap_WizardSelectAll Velg alle
+Imap_WizardTrain Tren nå
+NavWordSearch Ordsøk
+Settings_DescEnableProxy Start denne proxyen når POPFile starter.
+Settings_DescLogFormat Format for loggutdata (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Åpne nettleser automatisk ved oppstart.
+Settings_DescSQLiteBackup Ta automatisk sikkerhetskopi av database før skjemaendringer.
+Settings_DescSQLiteFastWrites Deaktiver databasesynkronisering (raskere, mindre sikkert).
+Settings_EnableService Aktiver tjeneste
+Settings_LogFormat Loggformat
+Settings_OpenBrowser Åpne nettleser
+Settings_SQLiteBackup SQLite sikkerhetskopi
+Settings_SQLiteFastWrites SQLite rask skriving
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Legg til stoppord
+WordSearch_ColumnBuckets Kategorier
+WordSearch_ColumnWord Ord
+WordSearch_IsStopword Stoppord
+WordSearch_Loading Laster...
+WordSearch_NoResults Ingen resultater.
+WordSearch_NoStopwords Ingen stoppord.
+WordSearch_Placeholder Skriv inn et ord...
+WordSearch_RemoveStopword Fjern stoppord
+WordSearch_Search Søk
+WordSearch_StopwordList Stoppordliste
+WordSearch_Title Ordsøk
+WordSearch_Total Totalt

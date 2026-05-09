@@ -1,57 +1,43 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-1
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          en
-
-# Common words that are used on their own all over the interface
-Apply                                   Apply
-Add                                     Add
-Remove                                  Remove
-Previous                                Previous
-Next                                    Next
-From                                    From
-Subject                                 Subject
-Reclassify                              Reclassify
-Undo                                    Undo
-Close                                   Close
-Bucket                                  Bucket
-Magnet                                  Magnet
-Delete                                  Delete
-Create                                  Create
-Total                                   Total
-Rename                                  Rename
-Update                                  Update
-Refresh                                 Refresh
-Date                                    Date
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  Language
-
-History_SearchMessage                   Search From/Subject
-
-Magnet_CurrentMagnets                   Current Magnets
-Magnet_CreateNew                        Create New Magnet
-
-Bucket_CreateBucket                     Create bucket with name
-Bucket_RenameBucket                     Rename bucket named
-
-Imap_Server                             IMAP server hostname:
-Imap_Port                               IMAP Server port:
-Imap_Login                              IMAP account login:
-Imap_Password                           Password for IMAP account:
-Imap_Expunge                            Expunge deleted messages from watched folders.
-Imap_Interval                           Update interval in seconds:
-Imap_NoConnectionMessage                Please configure the connection details first. After you have done that, more options will be available on this page.
-Imap_Use_SSL							Use SSL
-
-# New keys added (translations batch 2)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+ManualLanguage en
+Apply Apply
+Add Add
+Remove Remove
+Previous Previous
+Next Next
+From From
+Subject Subject
+Reclassify Reclassify
+Undo Undo
+Close Close
+Bucket Bucket
+Magnet Magnet
+Delete Delete
+Create Create
+Total Total
+Rename Rename
+Update Update
+Refresh Refresh
+Date Date
+Configuration_Language Language
+History_SearchMessage Search From/Subject
+Magnet_CurrentMagnets Current Magnets
+Magnet_CreateNew Create New Magnet
+Bucket_CreateBucket Create bucket with name
+Bucket_RenameBucket Rename bucket named
+Imap_Server IMAP server hostname:
+Imap_Port IMAP Server port:
+Imap_Login IMAP account login:
+Imap_Password Password for IMAP account:
+Imap_Expunge Expunge deleted messages from watched folders.
+Imap_Interval Update interval in seconds:
+Imap_NoConnectionMessage Please configure the connection details first. After you have done that, more options will be available on this page.
+Imap_Use_SSL Use SSL
 BucketSelect_AddNew Add new...
 BucketSelect_AlreadyExists Already exists
 BucketSelect_CreateError Error creating bucket
@@ -96,9 +82,9 @@ Imap_Saving Saving...
 Imap_TestConnection Test Connection
 Imap_Testing Testing...
 Imap_TrainingHint Training mode scans existing archive folders and trains the classifier on their contents. The flag resets automatically when training completes.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Training mode
 Imap_WatchedFolders Watched Folders
 Imap_WatchedHint POPFile monitors these IMAP folders for new messages to classify.
@@ -219,5 +205,4 @@ Status_Checking Checking...
 Status_Description Health checks for POPFile services.
 Status_LoadError Failed to load status
 Status_NoChecks No checks available.
-
-Language_Name                           English (UK)
+Language_Name English (UK)

@@ -1,48 +1,35 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-1
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          es
-
-# Common words that are used on their own all over the interface
-Apply                                   Aplicar
-Add                                     Añadir
-Remove                                  Quitar
-Previous                                Previa
-Next                                    Seguir
-From                                    De
-Subject                                 Asunto
-Reclassify                              Reclasificar
-Undo                                    Deshacer
-Close                                   Cerrar
-Bucket                                  Categoría
-Magnet                                  Imán
-Delete                                  Borrar
-Create                                  Crear
-Total                                   Total
-Rename                                  Renombrar
-Update                                  Actualizar
-Refresh                                 Refrescar
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  Lenguaje
-
-History_SearchMessage                   Buscar De/Asunto
-History_ShowNoMagnet                    desmagnetizado
-
-Magnet_CurrentMagnets                   Imanes Actuales
-Magnet_CreateNew                        Crear Imán Nuevo
-
-Bucket_CreateBucket                     Nombre de categoría
-Bucket_RenameBucket                     Renombrar categoría
-
-# New keys added (translations batch 1)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+ManualLanguage es
+Apply Aplicar
+Add Añadir
+Remove Quitar
+Previous Previa
+Next Seguir
+From De
+Subject Asunto
+Reclassify Reclasificar
+Undo Deshacer
+Close Cerrar
+Bucket Categoría
+Magnet Imán
+Delete Borrar
+Create Crear
+Total Total
+Rename Renombrar
+Update Actualizar
+Refresh Refrescar
+Configuration_Language Lenguaje
+History_SearchMessage Buscar De/Asunto
+History_ShowNoMagnet desmagnetizado
+Magnet_CurrentMagnets Imanes Actuales
+Magnet_CreateNew Crear Imán Nuevo
+Bucket_CreateBucket Nombre de categoría
+Bucket_RenameBucket Renombrar categoría
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 NavCorpus Corpus
@@ -95,9 +82,9 @@ Imap_Saving Guardando...
 Imap_TestConnection Probar conexión
 Imap_Testing Probando...
 Imap_TrainingHint El modo de entrenamiento analiza las carpetas de archivo existentes y entrena al clasificador con su contenido. El indicador se restablece automáticamente cuando finaliza el entrenamiento.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Modo de entrenamiento
 Imap_TrainingLimit Mensajes por carpeta (0 = ilimitado)
 Imap_WatchedFolders Carpetas supervisadas
@@ -212,7 +199,6 @@ Status_Checking Comprobando...
 Status_Description Comprobaciones de estado para los servicios de POPFile.
 Status_LoadError Error al cargar el estado
 Status_NoChecks No hay comprobaciones disponibles.
-
 Date Fecha
 Imap_Expunge Eliminar mensajes borrados de las carpetas supervisadas.
 Imap_Interval Intervalo de actualización en segundos:
@@ -222,7 +208,6 @@ Imap_Password Contraseña para la cuenta IMAP:
 Imap_Port Puerto del servidor IMAP:
 Imap_Server Nombre de host del servidor IMAP:
 Imap_Use_SSL Usar SSL
-
 WordView_Title Precisión de palabras
 WordView_SelectBucket seleccionar categoría
 WordView_Words palabras
@@ -236,42 +221,41 @@ WordView_ColActions Acciones
 WordView_Remove Eliminar
 WordView_MoveTo mover a
 WordView_Move Mover
-
-Language_Name                           Español
-History_PerPage                          Entradas por página
-Imap_Advanced                            Avanzado
-Imap_Cancel                              Cancelar
-Imap_Wizard                              Asistente de configuración
-Imap_WizardApply                         Crear y mapear
-Imap_WizardClose                         Cerrar
-Imap_WizardDesc                          Seleccione carpetas para crear buckets y mapeos.
-Imap_WizardDeselectAll                   Deseleccionar todo
-Imap_WizardDone                          {count} bucket(s) creados y mapeados.
-Imap_WizardEmpty                         No se encontraron carpetas adicionales en el servidor.
-Imap_WizardSelectAll                     Seleccionar todo
-Imap_WizardTrain                         Entrenar ahora
-NavWordSearch                            Búsqueda de palabras
-Settings_DescEnableProxy                 Iniciar este proxy al arrancar POPFile.
-Settings_DescLogFormat                   Formato de salida del registro (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Abrir automáticamente el navegador al iniciar.
-Settings_DescSQLiteBackup                Respaldar automáticamente la base de datos antes de cambios de esquema.
-Settings_DescSQLiteFastWrites            Desactivar sincronización de base de datos (más rápido, menos seguro).
-Settings_EnableService                   Activar servicio
-Settings_LogFormat                       Formato de registro
-Settings_OpenBrowser                     Abrir navegador
-Settings_SQLiteBackup                    Copia de seguridad SQLite
-Settings_SQLiteFastWrites                Escritura rápida SQLite
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Añadir palabra vacía
-WordSearch_ColumnBuckets                 Buckets
-WordSearch_ColumnWord                    Palabra
-WordSearch_IsStopword                    Palabra vacía
-WordSearch_Loading                       Cargando...
-WordSearch_NoResults                     Sin resultados.
-WordSearch_NoStopwords                   Sin palabras vacías.
-WordSearch_Placeholder                   Introduzca una palabra...
-WordSearch_RemoveStopword                Eliminar palabra vacía
-WordSearch_Search                        Buscar
-WordSearch_StopwordList                  Lista de palabras vacías
-WordSearch_Title                         Búsqueda de palabras
-WordSearch_Total                         Total
+Language_Name Español
+History_PerPage Entradas por página
+Imap_Advanced Avanzado
+Imap_Cancel Cancelar
+Imap_Wizard Asistente de configuración
+Imap_WizardApply Crear y mapear
+Imap_WizardClose Cerrar
+Imap_WizardDesc Seleccione carpetas para crear buckets y mapeos.
+Imap_WizardDeselectAll Deseleccionar todo
+Imap_WizardDone {count} bucket(s) creados y mapeados.
+Imap_WizardEmpty No se encontraron carpetas adicionales en el servidor.
+Imap_WizardSelectAll Seleccionar todo
+Imap_WizardTrain Entrenar ahora
+NavWordSearch Búsqueda de palabras
+Settings_DescEnableProxy Iniciar este proxy al arrancar POPFile.
+Settings_DescLogFormat Formato de salida del registro (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Abrir automáticamente el navegador al iniciar.
+Settings_DescSQLiteBackup Respaldar automáticamente la base de datos antes de cambios de esquema.
+Settings_DescSQLiteFastWrites Desactivar sincronización de base de datos (más rápido, menos seguro).
+Settings_EnableService Activar servicio
+Settings_LogFormat Formato de registro
+Settings_OpenBrowser Abrir navegador
+Settings_SQLiteBackup Copia de seguridad SQLite
+Settings_SQLiteFastWrites Escritura rápida SQLite
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Añadir palabra vacía
+WordSearch_ColumnBuckets Buckets
+WordSearch_ColumnWord Palabra
+WordSearch_IsStopword Palabra vacía
+WordSearch_Loading Cargando...
+WordSearch_NoResults Sin resultados.
+WordSearch_NoStopwords Sin palabras vacías.
+WordSearch_Placeholder Introduzca una palabra...
+WordSearch_RemoveStopword Eliminar palabra vacía
+WordSearch_Search Buscar
+WordSearch_StopwordList Lista de palabras vacías
+WordSearch_Title Búsqueda de palabras
+WordSearch_Total Total

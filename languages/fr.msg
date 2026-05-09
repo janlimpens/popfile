@@ -1,56 +1,42 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-1
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          fr
-
-# Common words that are used on their own all over the interface
-Apply                                   Appliquer
-Add                                     Ajouter
-Remove                                  Retirer
-Previous                                Précédent
-Next                                    Suivant
-From                                    De
-Subject                                 Sujet
-Reclassify                              Reclassifier
-Undo                                    Annuler
-Close                                   Fermer
-Bucket                                  Catégorie
-Magnet                                  Aimant
-Delete                                  Supprimer
-Create                                  Créer
-Total                                   Total
-Rename                                  Renommer
-Update                                  Mettre à jour
-Refresh                                 Actualiser
-Date                                    Date
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  Langue
-
-History_SearchMessage                   Chercher De/Sujet
-
-Magnet_CurrentMagnets                   Aimants actuels
-Magnet_CreateNew                        Créer un nouvel aimant
-
-Bucket_CreateBucket                     Créer une catégorie nommée
-Bucket_RenameBucket                     Renommer la catégorie nommée
-
-Imap_Server                             Nom du serveur IMAP :
-Imap_Port                               Port du serveur IMAP
-Imap_Login                              Nom de compte IMAP :
-Imap_Password                           Mot de passe du compte IMAP :
-Imap_Expunge                            Effacer les messages supprimés des dossiers surveillés
-Imap_Interval                           Période de rafraîchissement en secondes :
-Imap_NoConnectionMessage                Veuillez configurer préalablement les détails de la connexion. Une fois cela fait, d'avantage d'options seront disponibles sur cette page.
-
-# New keys added (translations batch 1)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+ManualLanguage fr
+Apply Appliquer
+Add Ajouter
+Remove Retirer
+Previous Précédent
+Next Suivant
+From De
+Subject Sujet
+Reclassify Reclassifier
+Undo Annuler
+Close Fermer
+Bucket Catégorie
+Magnet Aimant
+Delete Supprimer
+Create Créer
+Total Total
+Rename Renommer
+Update Mettre à jour
+Refresh Actualiser
+Date Date
+Configuration_Language Langue
+History_SearchMessage Chercher De/Sujet
+Magnet_CurrentMagnets Aimants actuels
+Magnet_CreateNew Créer un nouvel aimant
+Bucket_CreateBucket Créer une catégorie nommée
+Bucket_RenameBucket Renommer la catégorie nommée
+Imap_Server Nom du serveur IMAP :
+Imap_Port Port du serveur IMAP
+Imap_Login Nom de compte IMAP :
+Imap_Password Mot de passe du compte IMAP :
+Imap_Expunge Effacer les messages supprimés des dossiers surveillés
+Imap_Interval Période de rafraîchissement en secondes :
+Imap_NoConnectionMessage Veuillez configurer préalablement les détails de la connexion. Une fois cela fait, d'avantage d'options seront disponibles sur cette page.
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 NavCorpus Corpus
@@ -103,9 +89,9 @@ Imap_Saving Enregistrement...
 Imap_TestConnection Tester la connexion
 Imap_Testing Test en cours...
 Imap_TrainingHint Le mode entraînement analyse les dossiers d'archives existants et entraîne le classifieur sur leur contenu. L'indicateur se réinitialise automatiquement à la fin de l'entraînement.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Mode entraînement
 Imap_TrainingLimit Messages par dossier (0 = illimité)
 Imap_WatchedFolders Dossiers surveillés
@@ -220,9 +206,7 @@ Status_Checking Vérification...
 Status_Description Vérifications de l'état des services POPFile.
 Status_LoadError Échec du chargement du statut
 Status_NoChecks Aucune vérification disponible.
-
 Imap_Use_SSL Utiliser SSL
-
 WordView_Title Précision des mots
 WordView_SelectBucket sélectionner la catégorie
 WordView_Words mots
@@ -236,42 +220,41 @@ WordView_ColActions Actions
 WordView_Remove Supprimer
 WordView_MoveTo déplacer vers
 WordView_Move Déplacer
-
-Language_Name                           Français
-History_PerPage                          Entrées par page
-Imap_Advanced                            Avancé
-Imap_Cancel                              Annuler
-Imap_Wizard                              Assistant de configuration
-Imap_WizardApply                         Créer et mapper
-Imap_WizardClose                         Fermer
-Imap_WizardDesc                          Sélectionnez les dossiers pour créer des buckets et des mappings.
-Imap_WizardDeselectAll                   Tout désélectionner
-Imap_WizardDone                          {count} bucket(s) créé(s) et mappé(s).
-Imap_WizardEmpty                         Aucun dossier supplémentaire trouvé sur le serveur.
-Imap_WizardSelectAll                     Tout sélectionner
-Imap_WizardTrain                         Entraîner maintenant
-NavWordSearch                            Recherche de mots
-Settings_DescEnableProxy                 Démarrer ce proxy au lancement de POPFile.
-Settings_DescLogFormat                   Format de sortie du journal (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Ouvrir automatiquement le navigateur au démarrage.
-Settings_DescSQLiteBackup                Sauvegarder automatiquement la base avant les changements de schéma.
-Settings_DescSQLiteFastWrites            Désactiver la synchronisation de la base (plus rapide, moins sûr).
-Settings_EnableService                   Activer le service
-Settings_LogFormat                       Format du journal
-Settings_OpenBrowser                     Ouvrir le navigateur
-Settings_SQLiteBackup                    Sauvegarde SQLite
-Settings_SQLiteFastWrites                Écriture rapide SQLite
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Ajouter mot vide
-WordSearch_ColumnBuckets                 Buckets
-WordSearch_ColumnWord                    Mot
-WordSearch_IsStopword                    Mot vide
-WordSearch_Loading                       Chargement...
-WordSearch_NoResults                     Aucun résultat.
-WordSearch_NoStopwords                   Aucun mot vide.
-WordSearch_Placeholder                   Saisissez un mot...
-WordSearch_RemoveStopword                Supprimer mot vide
-WordSearch_Search                        Rechercher
-WordSearch_StopwordList                  Liste de mots vides
-WordSearch_Title                         Recherche de mots
-WordSearch_Total                         Total
+Language_Name Français
+History_PerPage Entrées par page
+Imap_Advanced Avancé
+Imap_Cancel Annuler
+Imap_Wizard Assistant de configuration
+Imap_WizardApply Créer et mapper
+Imap_WizardClose Fermer
+Imap_WizardDesc Sélectionnez les dossiers pour créer des buckets et des mappings.
+Imap_WizardDeselectAll Tout désélectionner
+Imap_WizardDone {count} bucket(s) créé(s) et mappé(s).
+Imap_WizardEmpty Aucun dossier supplémentaire trouvé sur le serveur.
+Imap_WizardSelectAll Tout sélectionner
+Imap_WizardTrain Entraîner maintenant
+NavWordSearch Recherche de mots
+Settings_DescEnableProxy Démarrer ce proxy au lancement de POPFile.
+Settings_DescLogFormat Format de sortie du journal (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Ouvrir automatiquement le navigateur au démarrage.
+Settings_DescSQLiteBackup Sauvegarder automatiquement la base avant les changements de schéma.
+Settings_DescSQLiteFastWrites Désactiver la synchronisation de la base (plus rapide, moins sûr).
+Settings_EnableService Activer le service
+Settings_LogFormat Format du journal
+Settings_OpenBrowser Ouvrir le navigateur
+Settings_SQLiteBackup Sauvegarde SQLite
+Settings_SQLiteFastWrites Écriture rapide SQLite
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Ajouter mot vide
+WordSearch_ColumnBuckets Buckets
+WordSearch_ColumnWord Mot
+WordSearch_IsStopword Mot vide
+WordSearch_Loading Chargement...
+WordSearch_NoResults Aucun résultat.
+WordSearch_NoStopwords Aucun mot vide.
+WordSearch_Placeholder Saisissez un mot...
+WordSearch_RemoveStopword Supprimer mot vide
+WordSearch_Search Rechercher
+WordSearch_StopwordList Liste de mots vides
+WordSearch_Title Recherche de mots
+WordSearch_Total Total

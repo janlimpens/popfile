@@ -1,56 +1,42 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-1
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          en
-
-# Common words that are used on their own all over the interface
-Apply                                   Applica
-Add                                     Aggiungi
-Remove                                  Rimuovi
-Previous                                Precedente
-Next                                    Successivo
-From                                    Mittente
-Subject                                 Oggetto
-Reclassify                              Riclassifica
-Undo                                    Annulla
-Close                                   Chiudi
-Bucket                                  Cesto
-Magnet                                  Magnete
-Delete                                  Cancella
-Create                                  Crea
-Total                                   Totale
-Rename                                  Rinomina
-Update                                  Aggiorna
-Refresh                                 Ricarica
-Date                                    Data
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  Lingua
-
-History_SearchMessage                   cerca Mittente/Oggetto
-
-Magnet_CurrentMagnets                   Magneti correnti
-Magnet_CreateNew                        Crea un nuovo magnete
-
-Bucket_CreateBucket                     Crea un cesto di nome
-Bucket_RenameBucket                     Rinomina il cesto chiamato
-
-Imap_Server                             hostname del server IMAP:
-Imap_Port                               Porta del server IMAP:
-Imap_Login                              Login dell'account IMAP:
-Imap_Password                           Password per l'account IMAP:
-Imap_Expunge                            Elimina messaggi contrassegnati per la cancellazione dalle cartelle sotto controllo.
-Imap_Interval                           Intervallo di aggiornamento in secondi:
-Imap_NoConnectionMessage                Configura prima i dettagli di connessione. Fatto ci&ograve;, questa pagina mostrerÓ altre opzioni.
-
-# New keys added (translations batch 1)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+ManualLanguage en
+Apply Applica
+Add Aggiungi
+Remove Rimuovi
+Previous Precedente
+Next Successivo
+From Mittente
+Subject Oggetto
+Reclassify Riclassifica
+Undo Annulla
+Close Chiudi
+Bucket Cesto
+Magnet Magnete
+Delete Cancella
+Create Crea
+Total Totale
+Rename Rinomina
+Update Aggiorna
+Refresh Ricarica
+Date Data
+Configuration_Language Lingua
+History_SearchMessage cerca Mittente/Oggetto
+Magnet_CurrentMagnets Magneti correnti
+Magnet_CreateNew Crea un nuovo magnete
+Bucket_CreateBucket Crea un cesto di nome
+Bucket_RenameBucket Rinomina il cesto chiamato
+Imap_Server hostname del server IMAP:
+Imap_Port Porta del server IMAP:
+Imap_Login Login dell'account IMAP:
+Imap_Password Password per l'account IMAP:
+Imap_Expunge Elimina messaggi contrassegnati per la cancellazione dalle cartelle sotto controllo.
+Imap_Interval Intervallo di aggiornamento in secondi:
+Imap_NoConnectionMessage Configura prima i dettagli di connessione. Fatto ci&ograve;, questa pagina mostrerÓ altre opzioni.
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 NavCorpus Corpus
@@ -103,9 +89,9 @@ Imap_Saving Salvataggio...
 Imap_TestConnection Testa connessione
 Imap_Testing Test in corso...
 Imap_TrainingHint La modalità addestramento analizza le cartelle di archivio esistenti e addestra il classificatore sul loro contenuto. Il flag si ripristina automaticamente al termine dell'addestramento.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Modalità addestramento
 Imap_TrainingLimit Messaggi per cartella (0 = illimitato)
 Imap_WatchedFolders Cartelle monitorate
@@ -220,9 +206,7 @@ Status_Checking Verifica...
 Status_Description Controlli dello stato per i servizi POPFile.
 Status_LoadError Impossibile caricare lo stato
 Status_NoChecks Nessun controllo disponibile.
-
 Imap_Use_SSL Usa SSL
-
 WordView_Title Accuratezza parole
 WordView_SelectBucket seleziona categoria
 WordView_Words parole
@@ -236,42 +220,41 @@ WordView_ColActions Azioni
 WordView_Remove Rimuovi
 WordView_MoveTo sposta in
 WordView_Move Sposta
-
-Language_Name                           Italiano
-History_PerPage                          Voci per pagina
-Imap_Advanced                            Avanzate
-Imap_Cancel                              Annulla
-Imap_Wizard                              Configurazione guidata
-Imap_WizardApply                         Crea e mappa
-Imap_WizardClose                         Chiudi
-Imap_WizardDesc                          Seleziona le cartelle per cui creare bucket e mappature.
-Imap_WizardDeselectAll                   Deseleziona tutto
-Imap_WizardDone                          {count} bucket creati e mappati.
-Imap_WizardEmpty                         Nessuna cartella aggiuntiva trovata sul server.
-Imap_WizardSelectAll                     Seleziona tutto
-Imap_WizardTrain                         Addestra ora
-NavWordSearch                            Ricerca parole
-Settings_DescEnableProxy                 Avvia questo proxy all avvio di POPFile.
-Settings_DescLogFormat                   Formato di output del log (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Apri automaticamente il browser all avvio.
-Settings_DescSQLiteBackup                Backup automatico del database prima di modifiche allo schema.
-Settings_DescSQLiteFastWrites            Disabilita sincronizzazione database (più veloce, meno sicuro).
-Settings_EnableService                   Abilita servizio
-Settings_LogFormat                       Formato log
-Settings_OpenBrowser                     Apri browser
-Settings_SQLiteBackup                    Backup SQLite
-Settings_SQLiteFastWrites                Scrittura veloce SQLite
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Aggiungi stopword
-WordSearch_ColumnBuckets                 Bucket
-WordSearch_ColumnWord                    Parola
-WordSearch_IsStopword                    Stopword
-WordSearch_Loading                       Caricamento...
-WordSearch_NoResults                     Nessun risultato.
-WordSearch_NoStopwords                   Nessuna stopword.
-WordSearch_Placeholder                   Inserisci una parola...
-WordSearch_RemoveStopword                Rimuovi stopword
-WordSearch_Search                        Cerca
-WordSearch_StopwordList                  Elenco stopword
-WordSearch_Title                         Ricerca parole
-WordSearch_Total                         Totale
+Language_Name Italiano
+History_PerPage Voci per pagina
+Imap_Advanced Avanzate
+Imap_Cancel Annulla
+Imap_Wizard Configurazione guidata
+Imap_WizardApply Crea e mappa
+Imap_WizardClose Chiudi
+Imap_WizardDesc Seleziona le cartelle per cui creare bucket e mappature.
+Imap_WizardDeselectAll Deseleziona tutto
+Imap_WizardDone {count} bucket creati e mappati.
+Imap_WizardEmpty Nessuna cartella aggiuntiva trovata sul server.
+Imap_WizardSelectAll Seleziona tutto
+Imap_WizardTrain Addestra ora
+NavWordSearch Ricerca parole
+Settings_DescEnableProxy Avvia questo proxy all avvio di POPFile.
+Settings_DescLogFormat Formato di output del log (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Apri automaticamente il browser all avvio.
+Settings_DescSQLiteBackup Backup automatico del database prima di modifiche allo schema.
+Settings_DescSQLiteFastWrites Disabilita sincronizzazione database (più veloce, meno sicuro).
+Settings_EnableService Abilita servizio
+Settings_LogFormat Formato log
+Settings_OpenBrowser Apri browser
+Settings_SQLiteBackup Backup SQLite
+Settings_SQLiteFastWrites Scrittura veloce SQLite
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Aggiungi stopword
+WordSearch_ColumnBuckets Bucket
+WordSearch_ColumnWord Parola
+WordSearch_IsStopword Stopword
+WordSearch_Loading Caricamento...
+WordSearch_NoResults Nessun risultato.
+WordSearch_NoStopwords Nessuna stopword.
+WordSearch_Placeholder Inserisci una parola...
+WordSearch_RemoveStopword Rimuovi stopword
+WordSearch_Search Cerca
+WordSearch_StopwordList Elenco stopword
+WordSearch_Title Ricerca parole
+WordSearch_Total Totale

@@ -1,50 +1,35 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-2
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-
-ManualLanguage                          en
-
-# Common words that are used on their own all over the interface
-
-Apply                                   Zatwierdź
-Add                                     Dodaj
-Remove                                  Usuń
-Previous                                Poprzedni
-Next                                    Następny
-From                                    Od
-Subject                                 Temat
-Reclassify                              Klasyfikuj
-Undo                                    Cofnij
-Close                                   Zamknij
-Bucket                                  Folder
-Magnet                                  Musik
-Delete                                  Skasuj
-Create                                  Utwórz
-Total                                   Całkowity
-Rename                                  Zmień
-Update                                  Aktualizuj
-Refresh                                 Odśwież
-
-# The header and footer that appear on every UI page
-
-Configuration_Language                  Język
-
-History_SearchMessage                   Szukaj wg pól Od/Temat
-History_ShowNoMagnet                    odmusikowane
-
-Magnet_CurrentMagnets                   Aktualne musiki
-Magnet_CreateNew                        Utwórz nowy musik
-
-Bucket_CreateBucket                     Utwórz folder o nazwie
-Bucket_RenameBucket                     Zmień nazwę folderu
-
-# New keys added (translations batch 4)
+LanguageCharset ISO-8859-2
+LanguageDirection ltr
+ManualLanguage en
+Apply Zatwierdź
+Add Dodaj
+Remove Usuń
+Previous Poprzedni
+Next Następny
+From Od
+Subject Temat
+Reclassify Klasyfikuj
+Undo Cofnij
+Close Zamknij
+Bucket Folder
+Magnet Musik
+Delete Skasuj
+Create Utwórz
+Total Całkowity
+Rename Zmień
+Update Aktualizuj
+Refresh Odśwież
+Configuration_Language Język
+History_SearchMessage Szukaj wg pól Od/Temat
+History_ShowNoMagnet odmusikowane
+Magnet_CurrentMagnets Aktualne musiki
+Magnet_CreateNew Utwórz nowy musik
+Bucket_CreateBucket Utwórz folder o nazwie
+Bucket_RenameBucket Zmień nazwę folderu
 NavCorpus Korpus
 NavHistory Historia
 NavIMAP IMAP
@@ -103,15 +88,14 @@ Imap_Server Nazwa hosta serwera IMAP:
 Imap_TestConnection Testuj połączenie
 Imap_Testing Testowanie...
 Imap_TrainingHint Tryb treningowy skanuje istniejące foldery archiwum i trenuje klasyfikator na ich zawartości. Flaga resetuje się automatycznie po zakończeniu treningu.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Tryb treningowy
 Imap_TrainingLimit Wiadomości na folder (0 = bez limitu)
 Imap_Use_SSL Użyj SSL
 Imap_WatchedFolders Monitorowane foldery
 Imap_WatchedHint POPFile monitoruje te foldery IMAP w poszukiwaniu nowych wiadomości do sklasyfikowania.
-
 WordView_Title Dokładność słów
 WordView_SelectBucket wybierz kategorię
 WordView_Words słowa
@@ -235,42 +219,41 @@ Status_Checking Sprawdzanie...
 Status_Description Kontrole stanu usług POPFile.
 Status_LoadError Nie udało się załadować statusu
 Status_NoChecks Brak dostępnych kontroli.
-
-Language_Name                           Polski
-History_PerPage                          Wpisów na stronę
-Imap_Advanced                            Zaawansowane
-Imap_Cancel                              Anuluj
-Imap_Wizard                              Kreator konfiguracji
-Imap_WizardApply                         Utwórz i mapuj
-Imap_WizardClose                         Zamknij
-Imap_WizardDesc                          Wybierz foldery, dla których utworzyć zasobniki i mapowania.
-Imap_WizardDeselectAll                   Odznacz wszystkie
-Imap_WizardDone                          Utworzono i zmapowano {count} kategorii.
-Imap_WizardEmpty                         Nie znaleziono dodatkowych folderów na serwerze.
-Imap_WizardSelectAll                     Zaznacz wszystkie
-Imap_WizardTrain                         Trenuj teraz
-NavWordSearch                            Szukanie słów
-Settings_DescEnableProxy                 Uruchom to proxy przy starcie POPFile.
-Settings_DescLogFormat                   Format wyjścia dziennika (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Automatycznie otwórz przeglądarkę przy starcie.
-Settings_DescSQLiteBackup                Automatycznie twórz kopię zapasową bazy przed zmianami schematu.
-Settings_DescSQLiteFastWrites            Wyłącz synchronizację bazy danych (szybciej, mniej bezpiecznie).
-Settings_EnableService                   Włącz usługę
-Settings_LogFormat                       Format dziennika
-Settings_OpenBrowser                     Otwórz przeglądarkę
-Settings_SQLiteBackup                    Kopia zapasowa SQLite
-Settings_SQLiteFastWrites                Szybki zapis SQLite
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Dodaj stop słowo
-WordSearch_ColumnBuckets                 Kategorie
-WordSearch_ColumnWord                    Słowo
-WordSearch_IsStopword                    Stop słowo
-WordSearch_Loading                       Ładowanie...
-WordSearch_NoResults                     Brak wyników.
-WordSearch_NoStopwords                   Brak stop słów.
-WordSearch_Placeholder                   Wpisz słowo...
-WordSearch_RemoveStopword                Usuń stop słowo
-WordSearch_Search                        Szukaj
-WordSearch_StopwordList                  Lista stop słów
-WordSearch_Title                         Szukanie słów
-WordSearch_Total                         Razem
+Language_Name Polski
+History_PerPage Wpisów na stronę
+Imap_Advanced Zaawansowane
+Imap_Cancel Anuluj
+Imap_Wizard Kreator konfiguracji
+Imap_WizardApply Utwórz i mapuj
+Imap_WizardClose Zamknij
+Imap_WizardDesc Wybierz foldery, dla których utworzyć zasobniki i mapowania.
+Imap_WizardDeselectAll Odznacz wszystkie
+Imap_WizardDone Utworzono i zmapowano {count} kategorii.
+Imap_WizardEmpty Nie znaleziono dodatkowych folderów na serwerze.
+Imap_WizardSelectAll Zaznacz wszystkie
+Imap_WizardTrain Trenuj teraz
+NavWordSearch Szukanie słów
+Settings_DescEnableProxy Uruchom to proxy przy starcie POPFile.
+Settings_DescLogFormat Format wyjścia dziennika (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Automatycznie otwórz przeglądarkę przy starcie.
+Settings_DescSQLiteBackup Automatycznie twórz kopię zapasową bazy przed zmianami schematu.
+Settings_DescSQLiteFastWrites Wyłącz synchronizację bazy danych (szybciej, mniej bezpiecznie).
+Settings_EnableService Włącz usługę
+Settings_LogFormat Format dziennika
+Settings_OpenBrowser Otwórz przeglądarkę
+Settings_SQLiteBackup Kopia zapasowa SQLite
+Settings_SQLiteFastWrites Szybki zapis SQLite
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Dodaj stop słowo
+WordSearch_ColumnBuckets Kategorie
+WordSearch_ColumnWord Słowo
+WordSearch_IsStopword Stop słowo
+WordSearch_Loading Ładowanie...
+WordSearch_NoResults Brak wyników.
+WordSearch_NoStopwords Brak stop słów.
+WordSearch_Placeholder Wpisz słowo...
+WordSearch_RemoveStopword Usuń stop słowo
+WordSearch_Search Szukaj
+WordSearch_StopwordList Lista stop słów
+WordSearch_Title Szukanie słów
+WordSearch_Total Razem

@@ -1,47 +1,34 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-
 # Identify the language and character set used for the interface
-LanguageCharset                         ISO-8859-1
-LanguageDirection                       ltr
-
-# This is used to get the appropriate subdirectory for the manual
-ManualLanguage                          en
- 
-# Common words that are used on their own all over the interface
-Apply                                   Doorvoeren
-Add                                     Voeg toe
-Remove                                  Verwijder
-Previous                                Vorige
-Next                                    Volgende
-From                                    Van
-Subject                                 Onderwerp
-Reclassify                              Herclasseren
-Undo                                    Maak ongedaan
-Close                                   Sluiten
-Bucket                                  Bak
-Magnet                                  Magneet
-Delete                                  Verwijder
-Create                                  Maak aan
-Total                                   Totaal
-Rename                                  Hernoemen
-
-# The header and footer that appear on every UI page
-
-Configuration_Separator                 Scheidingsteken
-Configuration_SepUpdate                 Scheidingsteken veranderd naar %s
-Configuration_Language                  Taal
-
-History_SearchMessage                   Zoek onderwerp
-
-Magnet_CurrentMagnets                   Huidige magneten
-Magnet_CreateNew                        Maak Nieuwe Magneet
-
-Bucket_CreateBucket                     Maak bak aan met naam
-Bucket_RenameBucket                     Hernoem bak met naam
-
-# New keys added (translations batch 2)
+LanguageCharset ISO-8859-1
+LanguageDirection ltr
+ManualLanguage en
+Apply Doorvoeren
+Add Voeg toe
+Remove Verwijder
+Previous Vorige
+Next Volgende
+From Van
+Subject Onderwerp
+Reclassify Herclasseren
+Undo Maak ongedaan
+Close Sluiten
+Bucket Bak
+Magnet Magneet
+Delete Verwijder
+Create Maak aan
+Total Totaal
+Rename Hernoemen
+Configuration_Separator Scheidingsteken
+Configuration_SepUpdate Scheidingsteken veranderd naar %s
+Configuration_Language Taal
+History_SearchMessage Zoek onderwerp
+Magnet_CurrentMagnets Huidige magneten
+Magnet_CreateNew Maak Nieuwe Magneet
+Bucket_CreateBucket Maak bak aan met naam
+Bucket_RenameBucket Hernoem bak met naam
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 NavCorpus Corpus
@@ -104,15 +91,14 @@ Imap_Server IMAP-servernaam:
 Imap_TestConnection Verbinding testen
 Imap_Testing Testen...
 Imap_TrainingHint De trainingsmodus doorzoekt bestaande archiefmappen en traint de classificator op hun inhoud. De vlag wordt automatisch gereset wanneer de training is voltooid.
-Imap_Train                              Train
-Imap_TrainAll                           Train all buckets
-Imap_TrainQueued                        Training queued
+Imap_Train Train
+Imap_TrainAll Train all buckets
+Imap_TrainQueued Training queued
 Imap_TrainingMode Trainingsmodus
 Imap_TrainingLimit Berichten per map (0 = onbeperkt)
 Imap_Use_SSL SSL gebruiken
 Imap_WatchedFolders Bewaakte mappen
 Imap_WatchedHint POPFile bewaakt deze IMAP-mappen op nieuwe berichten om te classificeren.
-
 WordView_Title Woordnauwkeurigheid
 WordView_SelectBucket selecteer categorie
 WordView_Words woorden
@@ -236,42 +222,41 @@ Status_Checking Controleren...
 Status_Description Statuscontroles voor POPFile-services.
 Status_LoadError Status laden mislukt
 Status_NoChecks Geen controles beschikbaar.
-
-Language_Name                           Nederlands
-History_PerPage                          Items per pagina
-Imap_Advanced                            Geavanceerd
-Imap_Cancel                              Annuleren
-Imap_Wizard                              Installatiewizard
-Imap_WizardApply                         Aanmaken en koppelen
-Imap_WizardClose                         Sluiten
-Imap_WizardDesc                          Selecteer mappen om buckets en koppelingen voor aan te maken.
-Imap_WizardDeselectAll                   Alles deselecteren
-Imap_WizardDone                          {count} bucket(s) aangemaakt en gekoppeld.
-Imap_WizardEmpty                         Geen extra mappen gevonden op de server.
-Imap_WizardSelectAll                     Alles selecteren
-Imap_WizardTrain                         Nu trainen
-NavWordSearch                            Woorden zoeken
-Settings_DescEnableProxy                 Start deze proxy wanneer POPFile opstart.
-Settings_DescLogFormat                   Formaat van loguitvoer (default, tabbed, csv, plain).
-Settings_DescOpenBrowser                 Browser automatisch openen bij opstarten.
-Settings_DescSQLiteBackup                Automatisch back-up maken van database voor schema-wijzigingen.
-Settings_DescSQLiteFastWrites            Database synchronisatie uitschakelen (sneller, minder veilig).
-Settings_EnableService                   Service inschakelen
-Settings_LogFormat                       Logformaat
-Settings_OpenBrowser                     Browser openen
-Settings_SQLiteBackup                    SQLite back-up
-Settings_SQLiteFastWrites                SQLite snel schrijven
-Settings_SectionIMAP                     IMAP
-WordSearch_AddStopword                   Stopwoord toevoegen
-WordSearch_ColumnBuckets                 Buckets
-WordSearch_ColumnWord                    Woord
-WordSearch_IsStopword                    Stopwoord
-WordSearch_Loading                       Laden...
-WordSearch_NoResults                     Geen resultaten.
-WordSearch_NoStopwords                   Geen stopwoorden.
-WordSearch_Placeholder                   Voer een woord in...
-WordSearch_RemoveStopword                Stopwoord verwijderen
-WordSearch_Search                        Zoeken
-WordSearch_StopwordList                  Stopwoordenlijst
-WordSearch_Title                         Woorden zoeken
-WordSearch_Total                         Totaal
+Language_Name Nederlands
+History_PerPage Items per pagina
+Imap_Advanced Geavanceerd
+Imap_Cancel Annuleren
+Imap_Wizard Installatiewizard
+Imap_WizardApply Aanmaken en koppelen
+Imap_WizardClose Sluiten
+Imap_WizardDesc Selecteer mappen om buckets en koppelingen voor aan te maken.
+Imap_WizardDeselectAll Alles deselecteren
+Imap_WizardDone {count} bucket(s) aangemaakt en gekoppeld.
+Imap_WizardEmpty Geen extra mappen gevonden op de server.
+Imap_WizardSelectAll Alles selecteren
+Imap_WizardTrain Nu trainen
+NavWordSearch Woorden zoeken
+Settings_DescEnableProxy Start deze proxy wanneer POPFile opstart.
+Settings_DescLogFormat Formaat van loguitvoer (default, tabbed, csv, plain).
+Settings_DescOpenBrowser Browser automatisch openen bij opstarten.
+Settings_DescSQLiteBackup Automatisch back-up maken van database voor schema-wijzigingen.
+Settings_DescSQLiteFastWrites Database synchronisatie uitschakelen (sneller, minder veilig).
+Settings_EnableService Service inschakelen
+Settings_LogFormat Logformaat
+Settings_OpenBrowser Browser openen
+Settings_SQLiteBackup SQLite back-up
+Settings_SQLiteFastWrites SQLite snel schrijven
+Settings_SectionIMAP IMAP
+WordSearch_AddStopword Stopwoord toevoegen
+WordSearch_ColumnBuckets Buckets
+WordSearch_ColumnWord Woord
+WordSearch_IsStopword Stopwoord
+WordSearch_Loading Laden...
+WordSearch_NoResults Geen resultaten.
+WordSearch_NoStopwords Geen stopwoorden.
+WordSearch_Placeholder Voer een woord in...
+WordSearch_RemoveStopword Stopwoord verwijderen
+WordSearch_Search Zoeken
+WordSearch_StopwordList Stopwoordenlijst
+WordSearch_Title Woorden zoeken
+WordSearch_Total Totaal
