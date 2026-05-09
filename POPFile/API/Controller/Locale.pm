@@ -21,15 +21,16 @@ sub list_locales($self) {
     my $dir = $self->_lang_dir();
     my @locales;
     for my $file (sort glob "$dir/*.msg") {
-        my $name = $file;
-        $name =~ s|.*/||;
-        $name =~ s|\.msg$||;
+        my $code = $file;
+        $code =~ s|.*/||;
+        $code =~ s|\.msg$||;
         my %data = $self->_read_msg_file($file);
         push @locales, {
-            name => $name,
-            code => $data{LanguageCode} // 'en',
+            name => $code,
+            code => $code,
             direction => $data{LanguageDirection} // 'ltr' };
     }
+    @locales = sort { $a->{name} cmp $b->{name} } @locales;
     $self->render(json => \@locales)
 }
 
@@ -46,7 +47,7 @@ sub get_locale($self) {
 sub list_languages($self) {
     my $dir = $self->_lang_dir();
     my @languages;
-    for my $file (sort glob "$dir/*.msg") {
+    for my $file (glob "$dir/*.msg") {
         my $code = $file;
         $code =~ s|.*/||;
         $code =~ s|\.msg$||;

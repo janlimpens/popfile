@@ -20,8 +20,8 @@ sub parse_keys {
     return %keys
 }
 
-my %en = parse_keys("$lang_dir/English.msg");
-my @enforced = ('Deutsch.msg', 'Portugues.msg', 'Portugues-do-Brasil.msg');
+my %en = parse_keys("$lang_dir/en.msg");
+my @enforced = ('de.msg', 'pt.msg', 'pt-BR.msg');
 
 for my $file (@enforced) {
     my %lang = parse_keys("$lang_dir/$file");

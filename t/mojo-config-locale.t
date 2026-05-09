@@ -51,12 +51,12 @@ subtest 'api_locale config key is registered and returned' => sub {
 };
 
 subtest 'PUT /api/v1/config persists api_locale' => sub {
-    $t->put_ok('/api/v1/config', json => { api_locale => 'Deutsch' })
+    $t->put_ok('/api/v1/config', json => { api_locale => 'de' })
       ->status_is(200)
       ->json_is('/ok', 1);
     $t->get_ok('/api/v1/config')
       ->status_is(200)
-      ->json_is('/api_locale', 'Deutsch', 'locale persisted across GET');
+      ->json_is('/api_locale', 'de', 'locale persisted across GET');
 };
 
 subtest 'GET /api/v1/i18n returns locale list' => sub {
@@ -64,13 +64,13 @@ subtest 'GET /api/v1/i18n returns locale list' => sub {
       ->status_is(200);
     my $locales = $t->tx->res->json;
     ok(ref $locales eq 'ARRAY', 'returns array');
-    my ($english) = grep { $_->{name} eq 'English' } @$locales;
+    my ($english) = grep { $_->{name} eq 'en' } @$locales;
     ok(defined $english, 'English locale present');
     is($english->{code}, 'en', 'English code is en');
 };
 
 subtest 'GET /api/v1/i18n/:locale returns strings for English' => sub {
-    $t->get_ok('/api/v1/i18n/English')
+    $t->get_ok('/api/v1/i18n/en')
       ->status_is(200);
     my $strings = $t->tx->res->json;
     ok(ref $strings eq 'HASH', 'returns hash of strings');
@@ -78,7 +78,7 @@ subtest 'GET /api/v1/i18n/:locale returns strings for English' => sub {
 };
 
 subtest 'GET /api/v1/i18n/:locale response is valid UTF-8' => sub {
-    $t->get_ok('/api/v1/i18n/Deutsch')
+    $t->get_ok('/api/v1/i18n/de')
       ->status_is(200);
     my $body = $t->tx->res->body;
     my $error;

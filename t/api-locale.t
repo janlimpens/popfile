@@ -41,7 +41,7 @@ my $file_count = scalar @msg_files;
 subtest 'GET /api/v1/i18n returns locale list' => sub {
     $t->get_ok('/api/v1/i18n')
         ->status_is(200)
-        ->json_is('/0/name', 'Arabic');
+        ->json_is('/0/name', 'ar');
     my $body = $t->tx->res->json;
     is(scalar @$body, $file_count, 'one entry per .msg file');
     ok(exists $body->[0]{name}, 'has name');
@@ -53,17 +53,16 @@ subtest 'GET /api/v1/i18n English entry' => sub {
     $t->get_ok('/api/v1/i18n')
         ->status_is(200);
     my $body = $t->tx->res->json;
-    my ($en) = grep { $_->{name} eq 'English' } @$body;
+    my ($en) = grep { $_->{name} eq 'en' } @$body;
     ok(defined $en, 'English locale present');
     is($en->{code}, 'en', 'English code is en');
     is($en->{direction}, 'ltr', 'English direction is ltr');
 };
 
 subtest 'GET /api/v1/i18n/:locale English' => sub {
-    $t->get_ok('/api/v1/i18n/English')
+    $t->get_ok('/api/v1/i18n/en')
         ->status_is(200)
-        ->json_has('/LanguageCode')
-        ->json_is('/LanguageCode', 'en')
+        ->json_has('/Language_Name')
         ->json_is('/Language_Name', 'English');
 };
 
@@ -94,7 +93,7 @@ subtest 'GET /api/v1/languages English entry' => sub {
     $t->get_ok('/api/v1/languages')
         ->status_is(200);
     my $body = $t->tx->res->json;
-    my ($en) = grep { $_->{code} eq 'English' } @$body;
+    my ($en) = grep { $_->{code} eq 'en' } @$body;
     ok(defined $en, 'English entry present');
     is($en->{name}, 'English', 'native name is English');
 };

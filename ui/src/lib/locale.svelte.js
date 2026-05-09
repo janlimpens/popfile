@@ -25,9 +25,11 @@ export async function initLocale(override) {
     const target = override && available.find(l => l.name === override)
         ? override
         : (() => {
-            const lang = (navigator.language || 'en').split('-')[0].toLowerCase();
-            return (available.find(l => l.code.toLowerCase() === lang)
-                ?? available.find(l => l.name === 'English'))?.name ?? 'English';
+            const full = (navigator.language || 'en').toLowerCase();
+            const base = full.split('-')[0];
+            return (available.find(l => l.name.toLowerCase() === full)
+                ?? available.find(l => l.name.toLowerCase() === base)
+                ?? available.find(l => l.name === 'en'))?.name ?? 'en';
         })();
     await loadLocale(target);
     return available;
