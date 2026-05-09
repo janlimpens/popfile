@@ -29,24 +29,15 @@ Rename                                  Omdøb
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Language                  Sprog
 
-
 History_SearchMessage                   Søg i Fra/Emne
-
-
 
 Magnet_CurrentMagnets                   Magneter i brug
 Magnet_CreateNew                        Tilføj nye magneter
 
 Bucket_CreateBucket                     Opret spanden med navnet
 Bucket_RenameBucket                     Omdøb spanden med navnet
-
-
-
-
-
 
 # New keys added (translations batch 2)
 LanguageCharset ISO-8859-1
@@ -243,7 +234,6 @@ Status_Checking Kontrollerer...
 Status_Description Statuskontroller for POPFile-tjenester.
 Status_LoadError Kunne ikke indlæse status
 Status_NoChecks Ingen kontroller tilgængelige.
-
 
 Language_Name                           Dansk
 History_PerPage                          Poster pr. side

@@ -31,24 +31,16 @@ Refresh                                 Φρεσκάρισμα
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Language                  Γλώσσα
-
 
 History_SearchMessage                   Αναξήτηση Αποστολέα/Θέμα
 History_ShowNoMagnet                    μη μαγνητισμένο
-
-
 
 Magnet_CurrentMagnets                   Υπάρχοντες Μαγνήτες
 Magnet_CreateNew                        Δημιουργία νέου μαγνήτη
 
 Bucket_CreateBucket                     Δημιουργία αρχείου με όνομα
 Bucket_RenameBucket                     Μετονομασία αρχείου με όνομα
-
-
-
-
 
 BucketSelect_AddNew                     Προσθήκη νέας...
 BucketSelect_AlreadyExists              Υπάρχει ήδη

@@ -9,8 +9,6 @@ LanguageDirection                       ltr
 # This is used to get the appropriate subdirectory for the manual
 ManualLanguage                          en
 
-# This is where to find the FAQ on the Wiki
-
 # Common words that are used on their own all over the interface
 Apply                                   K&auml;yt&auml;
 Add                                     Lis&auml;&auml;
@@ -32,40 +30,17 @@ Update                                  P&auml;ivit&auml;
 Refresh                                 Virkist&auml; t&auml;m&auml; sivu
 Date                                    P&auml;iv&auml;ys
 
-# This is a regular expression pattern that is used to convert
-# a number into a friendly looking number (for the US and UK this
-# means comma separated at the thousands)
-
-
-# The Locale_Date uses the format strings in Perl's Date::Format
-# module to set the date format for the UI.  There are two possible
-# ways to specify it.
-#
-# <format>            Just one simple format used for all dates
-# <<format> | <format> The first format is used for dates less than
-#                     7 days from now, the second for all other dates
-
-
 # The header and footer that appear on every UI page
-
 
 Configuration_Language                  Kieliasetukset
 
-
 History_SearchMessage                   Etsi l&auml;hett&auml;jien ja aiheiden joukosta
-
-
 
 Magnet_CurrentMagnets                   T&auml;m&auml;nhetkiset magneetit
 Magnet_CreateNew                        Luo uusi magneetti
 
 Bucket_CreateBucket                     Luo sanko nimelt&auml;
 Bucket_RenameBucket                     Muuta sangon
-
-
-
-
-
 
 Imap_Server                             IMAP-palvelimen osoite:
 Imap_Port                               IMAP-palvelimen portti:
@@ -74,8 +49,6 @@ Imap_Password                           IMAP-tilin salasana:
 Imap_Expunge                            Poista viestit vahdituista kansioista.
 Imap_Interval                           P&auml;ivitysv&auml;li sekunneissa.
 Imap_NoConnectionMessage                T&auml;yt&auml; ensin yhteydenmuodostusasetukset. Sivulle ilmestyy  sen j&auml;lkeen lis&auml;asetuksia.
-
-
 
 # New keys added (translations batch 3)
 NavCorpus Korpus

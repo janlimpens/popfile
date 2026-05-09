@@ -9,8 +9,6 @@ LanguageDirection                       rtl
 # This is used to get the appropriate subdirectory for the manual
 ManualLanguage                          ar
 
-# This is where to find the FAQ on the Wiki
-
 # Common words that are used on their own all over the interface
 Apply                                   تطبيق
 Add                                     أضف
@@ -32,40 +30,17 @@ Update                                  تحديث
 Refresh                                 تحديث
 Date                                    تاريخ
 
-# This is a regular expression pattern that is used to convert
-# a number into a friendly looking number (for the US and UK this
-# means comma separated at the thousands)
-
-
-# The Locale_Date uses the format strings in Perl's Date::Format
-# module to set the date format for the UI.  There are two possible
-# ways to specify it.
-#
-# <format>            Just one simple format used for all dates
-# <<format> | <format> The first format is used for dates less than
-#                     7 days from now, the second for all other dates
-
-
 # The header and footer that appear on every UI page
-
 
 Configuration_Language                  لغة
 
-
 History_SearchMessage                   إبحث مرسل/موضوع
-
-
 
 Magnet_CurrentMagnets                   مغناطيسات حالية
 Magnet_CreateNew                        صنع مغناطيس جديد
 
 Bucket_CreateBucket                     إصنع دلو بإسم
 Bucket_RenameBucket                     إعادة تسمية الدلو المسمى
-
-
-
-
-
 
 Imap_Server                             خادم IMAP:
 Imap_Port                               بوابة إتصال IMAP:
@@ -74,7 +49,6 @@ Imap_Password                           كلمة المرور لحساب IMAP:
 Imap_Expunge                            مسح الرسائل المحذوفه من المجلدات المراقبة.
 Imap_Interval                           فترة التحديث بالثواني:
 Imap_NoConnectionMessage                الرجاء إعداد تفاصيل الإتصال أولاً. بعد الإنتهاء منه، سوف تظهر في هذه الصفحة المزيد من الخيارات.
-
 
 BucketSelect_AddNew                     إضافة جديد...
 BucketSelect_AlreadyExists              موجود مسبقاً

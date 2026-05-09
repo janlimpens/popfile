@@ -29,24 +29,17 @@ Rename                                  Omdøp
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Separator                 Skilletegn
 Configuration_SepUpdate                 Oppdaterte skilletegnet til %s
 Configuration_Language                  Språk
 
-
 History_SearchMessage                   Søk Emne
-
-
 
 Magnet_CurrentMagnets                   Nåværende Magneter
 Magnet_CreateNew                        Opprett Ny Magnet
 
 Bucket_CreateBucket                     Oppret bøtten med navnet
 Bucket_RenameBucket                     Omdøp bøtten med navnet
-
-
-
 
 # New keys added (translations batch 2)
 LanguageCharset ISO-8859-1
@@ -243,7 +236,6 @@ Status_Checking Kontrollerer...
 Status_Description Statuskontroller for POPFile-tjenester.
 Status_LoadError Kunne ikke laste status
 Status_NoChecks Ingen kontroller tilgjengelige.
-
 
 Language_Name                           Norsk
 History_PerPage                          Oppføringer per side

@@ -29,28 +29,18 @@ Rename                                  Renomear
 Refresh                                 Refrescar
 Update                                  Actualizar
 
-
-
 # The header and footer that appear on every UI page
-
 
 Configuration_Language                  Língua
 
-
 History_SearchMessage                   Procurar Assunto
 History_ShowNoMagnet                    Não magnetizadas
-
-
 
 Magnet_CurrentMagnets                   Ímans Actuais
 Magnet_CreateNew                        Criar Novo Íman
 
 Bucket_CreateBucket                     Criar um receptáculo com o nome
 Bucket_RenameBucket                     Renomear o receptáculo chamado
-
-
-
-
 
 # New keys added (translations batch 1)
 LanguageCharset ISO-8859-1
@@ -258,7 +248,6 @@ Imap_Password Palavra-passe para a conta IMAP:
 Imap_Port Porto do servidor IMAP:
 Imap_Server Nome de host do servidor IMAP:
 Imap_Use_SSL Usar SSL
-
 
 Language_Name                           Português
 Wizard_Next                             Próximo

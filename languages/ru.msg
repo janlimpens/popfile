@@ -2,15 +2,6 @@
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
 
-# При переводе на русский язык всплыли самые разные ошибки и недочёты
-# самого веб-интерфейса -- слишком многое намертво зашито в код.
-# Если я и дальше буду пользоваться POPFile, я постараюсь найти время
-# отделить интерфейс от кода, и адаптировать интерфейс к русскому
-# языку.
-#
-# Предложения и замечания с благодарностью принимаются по электронной
-# почте: alexander saltanov <asdgray.at.yandex.ru>
-
 # Identify the language and character set used for the interface
 LanguageCharset                         koi8-r
 LanguageDirection                       ltr
@@ -38,25 +29,17 @@ Rename                                  Переименовать
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Separator                 Разделитель
 Configuration_SepUpdate                 Разделитель изменён на %s
 Configuration_Language                  Язык
 
-
 History_SearchMessage                   Искать в поле <em>Тема</em>
  
-
-
 Magnet_CurrentMagnets                   Существующие магниты
 Magnet_CreateNew                        Создать новый магнит
 
 Bucket_CreateBucket                     Создать ведро
 Bucket_RenameBucket                     Переименовать ведро
-
-
-
-
 
 # New keys added (translations batch 4)
 NavCorpus Корпус

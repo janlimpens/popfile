@@ -2,8 +2,6 @@
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
 
-# Identify the language and character set used for the interface
-
 # This is used to get the appropriate subdirectory for the manual
 ManualLanguage                          de
 
@@ -28,40 +26,17 @@ Update                                  Ändern
 Refresh                                 Aktualisieren
 Date                                    Datum
 
-# This is a regular expression pattern that is used to convert
-# a number into a friendly looking number (for the US and UK this
-# means comma separated at the thousands)
-
-
-# The Locale_Date uses the format strings in Perl's Date::Format
-# module to set the date format for the UI.  There are two possible
-# ways to specify it.
-#
-# <format>            Just one simple format used for all dates
-# <format> | <format> The first format is used for dates less than
-#                     7 days from now, the second for all other dates
-
-
 # The header and footer that appear on every UI page
-
 
 Configuration_Language                  Sprache
 
-
 History_SearchMessage                   Nach Absender/Betreff suchen
-
-
 
 Magnet_CurrentMagnets                   Aktuelle Magnete
 Magnet_CreateNew                        Neuen Magnet erstellen
 
 Bucket_CreateBucket                     Erstelle Kategorie
 Bucket_RenameBucket                     Benenne Kategorie um
-
-
-
-
-
 
 Imap_Server                             IMAP Server Hostname:
 Imap_Port                               IMAP Server Port:
@@ -71,8 +46,6 @@ Imap_Expunge                            Gelöschte Nachrichten aus den überwach
 Imap_Interval                           Update Intervall in Sekunden:
 Imap_NoConnectionMessage                Bitte konfigurieren Sie erst die Verbindung zum Server. Nachdem Sie das getan haben, werden Sie an dieser Stelle mehr Konfigurationsmöglichkeiten finden.
 Imap_Use_SSL							SSL-gesicherte Verbindung
-
-
 
 # New keys added (translations batch 1)
 LanguageCharset ISO-8859-1

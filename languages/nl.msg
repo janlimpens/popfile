@@ -29,24 +29,17 @@ Rename                                  Hernoemen
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Separator                 Scheidingsteken
 Configuration_SepUpdate                 Scheidingsteken veranderd naar %s
 Configuration_Language                  Taal
 
-
 History_SearchMessage                   Zoek onderwerp
-
-
 
 Magnet_CurrentMagnets                   Huidige magneten
 Magnet_CreateNew                        Maak Nieuwe Magneet
 
 Bucket_CreateBucket                     Maak bak aan met naam
 Bucket_RenameBucket                     Hernoem bak met naam
-
-
-
 
 # New keys added (translations batch 2)
 LanguageCharset ISO-8859-1
@@ -243,7 +236,6 @@ Status_Checking Controleren...
 Status_Description Statuscontroles voor POPFile-services.
 Status_LoadError Status laden mislukt
 Status_NoChecks Geen controles beschikbaar.
-
 
 Language_Name                           Nederlands
 History_PerPage                          Items per pagina

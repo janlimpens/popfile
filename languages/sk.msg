@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-# Translation Martin Minka (support@k2s.sk)
 
 # Identify the language and character set used for the interface
 LanguageCharset                         windows-1250
@@ -30,27 +29,17 @@ Rename                                  Premenovať
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Separator                 Znak oddelovača
 Configuration_SepUpdate                 Oddelovač zmenený na %s
 Configuration_Language                  Jazyk
 
-
 History_SearchMessage                   Hľadaj odosielateľa/subjekt
-
-
 
 Magnet_CurrentMagnets                   Aktuálne magnety
 Magnet_CreateNew                        Vytvoriť nový magnet
 
 Bucket_CreateBucket                     Vytvor kôš s názvom
 Bucket_RenameBucket                     Premenuj kôš s názvom
-
-
-
-
-
-
 
 # New keys added (translations batch 4)
 NavCorpus Korpus

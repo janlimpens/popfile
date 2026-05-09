@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-# Translated by / Çeviri:
-# Zeynel Abidin Öztürk <ozturk@gmx.net>
-# POPFile 0.22.0 Turkish Translation
 
 # Identify the language and character set used for the interface
 LanguageCharset                         ISO-8859-9
@@ -11,8 +8,6 @@ LanguageDirection                       ltr
 
 # This is used to get the appropriate subdirectory for the manual
 ManualLanguage                          en
-
-# This is where to find the FAQ on the Wiki
 
 # Common words that are used on their own all over the interface
 Apply                                   Uygula
@@ -35,40 +30,17 @@ Update                                  Güncelle
 Refresh                                 Yenile
 Date                                    Tarih
 
-# This is a regular expression pattern that is used to convert
-# a number into a friendly looking number (for the US and UK this
-# means comma separated at the thousands)
-
-
-# The Locale_Date uses the format strings in Perl's Date::Format
-# module to set the date format for the UI.  There are two possible
-# ways to specify it.
-#
-# <format>            Just one simple format used for all dates
-# <<format> | <format> The first format is used for dates less than
-#                     7 days from now, the second for all other dates
-
-
 # The header and footer that appear on every UI page
-
 
 Configuration_Language                  Dil
 
-
 History_SearchMessage                   Kimden/Konu Ara
-
-
 
 Magnet_CurrentMagnets                   Şu Anki Mıknatıslar
 Magnet_CreateNew                        Yeni Mıknatıs Oluştur
 
 Bucket_CreateBucket                     Bu isimde kategori oluştur
 Bucket_RenameBucket                     Bu isimdeki kategorinin adını değiştir
-
-
-
-
-
 
 Imap_Server                             IMAP sunucusu:
 Imap_Port                               IMAP Sunucu portu:
@@ -77,7 +49,6 @@ Imap_Password                           IMAP hesabı parolası:
 Imap_Expunge                            Silinen mesajları izlenen klasörlerden kaldır.
 Imap_Interval                           Güncelleme aralığı, saniye:
 Imap_NoConnectionMessage                Lütfen önce bağlantı detaylarını ayarlayın. Bunu yaptıktan sonra, bu sayfada daha fazla seçenek belirecektir.
-
 
 BucketSelect_AddNew                     Yeni ekle...
 BucketSelect_AlreadyExists              Zaten mevcut

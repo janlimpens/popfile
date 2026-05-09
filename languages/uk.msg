@@ -1,13 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-# Translation by          Myroslav Opyr <myroslav@zope.net.ua>
-
-# Переклад зд╕йснювався зг╕дно терм╕нолог╕╖, що опрацьову╓ться 
-# ╕н╕ц╕ативно групою перекладач╕в з http://linux.org.ua/
-# Сей переклад виконав Мирослав Опир <myroslav@zope.net.ua>.
-# Зауваження та побажання прошу подавати на мою адресу, або
-# тут: http://zope.net.ua/POPFile
 
 # Identify the language and character set used for the interface
 LanguageCharset                         koi8-u
@@ -38,25 +31,16 @@ Refresh                                 Поновити
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Language                  Мова
-
 
 History_SearchMessage                   Пошук по В╕д/Тема
 History_ShowNoMagnet                    Ненамагн╕чен╕
-
-
 
 Magnet_CurrentMagnets                   Наявн╕ магн╕ти
 Magnet_CreateNew                        Створити новий магн╕т
 
 Bucket_CreateBucket                     Створити категор╕ю з ╕менем
 Bucket_RenameBucket                     Перейменувати категор╕ю ╕меновану
-
-
-
-
-
 
 # New UI keys added — batch 4
 Date	Дата

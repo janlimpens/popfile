@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-# Translation Jan Chochola (jchochola@volny.cz)
 
 # Identify the language and character set used for the interface
 LanguageCharset                         windows-1250
@@ -32,39 +31,16 @@ Refresh                                 Obnovit
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Language                  Jazyk
-
 
 History_SearchMessage                   Hledat Odesílatele/Předmět
 History_ShowNoMagnet                    nezmagnetováno
-
-
 
 Magnet_CurrentMagnets                   Platné magnety
 Magnet_CreateNew                        Založit nový magnet
 
 Bucket_CreateBucket                     Založit koš s názvem
 Bucket_RenameBucket                     Přejmenovat koš s názvem
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # New keys added (translations batch 4)
 NavCorpus Korpus
@@ -257,7 +233,6 @@ Status_Checking Kontroluji...
 Status_Description Kontroly stavu služeb POPFile.
 Status_LoadError Nepodařilo se načíst stav
 Status_NoChecks Nejsou dostupné žádné kontroly.
-
 
 Language_Name                           Čeština
 History_PerPage                          Položek na stránku

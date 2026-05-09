@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 # Copyright (C) 2001-2011 John Graham-Cumming and contributors
 # Copyright (C) 2026 Jan Limpens
-#   POPFile 1.0.0 Traditional Chinese Translation
-#   Created By Jedi Lin, 2004/09/19
-#   Modified By Jedi Lin, 2007/12/25
 
 # Identify the language and character set used for the interface
 LanguageCharset                         UTF8
@@ -11,8 +8,6 @@ LanguageDirection                       ltr
 
 # This is used to get the appropriate subdirectory for the manual
 ManualLanguage                          zh-tw
-
-# This is where to find the FAQ on the Wiki
 
 # Common words that are used on their own all over the interface
 Apply                                   套用
@@ -35,40 +30,17 @@ Update                                  更新
 Refresh                                 重新整理
 Date                                    日期
 
-# This is a regular expression pattern that is used to convert
-# a number into a friendly looking number (for the US and UK this
-# means comma separated at the thousands)
-
-
-# The Locale_Date uses the format strings in Perl's Date::Format
-# module to set the date format for the UI.  There are two possible
-# ways to specify it.
-#
-# <format>            Just one simple format used for all dates
-# <<format> | <format> The first format is used for dates less than
-#                     7 days from now, the second for all other dates
-
-
 # The header and footer that appear on every UI page
-
 
 Configuration_Language                  語言
 
-
 History_SearchMessage                   搜尋寄件者/主旨
-
-
 
 Magnet_CurrentMagnets                   現用的吸鐵
 Magnet_CreateNew                        建立新的吸鐵
 
 Bucket_CreateBucket                     用這個名字建立郵筒
 Bucket_RenameBucket                     更改此名稱的郵筒
-
-
-
-
-
 
 Imap_Server                             IMAP 伺服器主機名稱:
 Imap_Port                               IMAP 伺服器連接埠:
@@ -78,8 +50,6 @@ Imap_Expunge                            從被監視的信件匣裏清除已被�
 Imap_Interval                           更新間隔秒數:
 Imap_NoConnectionMessage                請先組態連線細節. 當妳完成後, 這一頁裏就會出現更多可用的選項.
 Imap_Use_SSL                            使用 SSL
-
-
 
 # New UI keys added — batch 6
 BucketSelect_AddNew	新增類別

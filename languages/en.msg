@@ -9,8 +9,6 @@ LanguageDirection                       ltr
 # This is used to get the appropriate subdirectory for the manual
 ManualLanguage                          en
 
-# These are where to find the documents on the Wiki
-
 # Common words that are used on their own all over the interface
 Apply                                   Apply
 Add                                     Add
@@ -32,40 +30,17 @@ Update                                  Update
 Refresh                                 Refresh
 Date                                    Date
 
-# This is a regular expression pattern that is used to convert
-# a number into a friendly looking number (for the US and UK this
-# means comma separated at the thousands)
-
-
-# The Locale_Date uses the format strings in Perl's Date::Format
-# module to set the date format for the UI.  There are two possible
-# ways to specify it.
-#
-# <format>            Just one simple format used for all dates
-# <<format> | <format> The first format is used for dates less than
-#                     7 days from now, the second for all other dates
-
-
 # The header and footer that appear on every UI page
-
 
 Configuration_Language                  Language
 
-
 History_SearchMessage                   Search From/Subject
-
-
 
 Magnet_CurrentMagnets                   Current Magnets
 Magnet_CreateNew                        Create New Magnet
 
 Bucket_CreateBucket                     Create bucket with name
 Bucket_RenameBucket                     Rename bucket named
-
-
-
-
-
 
 Imap_Server                             IMAP server hostname:
 Imap_Port                               IMAP Server port:
@@ -75,8 +50,6 @@ Imap_Expunge                            Expunge deleted messages from watched fo
 Imap_Interval                           Update interval in seconds:
 Imap_NoConnectionMessage                Please configure the connection details first. After you have done that, more options will be available on this page.
 Imap_Use_SSL							Use SSL
-
-
 
 NavHistory                              History
 NavCorpus                               Corpus

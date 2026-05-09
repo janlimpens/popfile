@@ -31,25 +31,16 @@ Update                                  עידכון
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Language                  שפה
-
-
 
 History_SearchMessage                   חיפוש ב 'נשלח מ' ושורת הנושא
 History_ShowNoMagnet                    בלתי ממוגנטים
-
-
 
 Magnet_CurrentMagnets                   מגנעים קיימים
 Magnet_CreateNew                        קבע מגנט חדש
 
 Bucket_CreateBucket                     הוסף מצבור בשם
 Bucket_RenameBucket                     שנה שם מצבור בשם 
-
-
-
-
 
 BucketSelect_AddNew                     הוסף חדש...
 BucketSelect_AlreadyExists              כבר קיים

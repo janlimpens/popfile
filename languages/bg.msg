@@ -29,25 +29,17 @@ Rename                                  Преименувай
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Separator                 Разделител
 Configuration_SepUpdate                 Разделителят променен на %s
 Configuration_Language                  Език
 
-
 History_SearchMessage                   Търси по подател и заглавие
-
-
 
 Magnet_CurrentMagnets                   Магнити
 Magnet_CreateNew                        Създай нов магнит
 
 Bucket_CreateBucket                     Създай кош с име
 Bucket_RenameBucket                     Преименувай кош с име
-
-
-
-
 
 # New UI keys added — batch 4
 Date	Дата

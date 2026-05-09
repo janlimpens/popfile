@@ -30,40 +30,17 @@ Update                                  Mettre à jour
 Refresh                                 Actualiser
 Date                                    Date
 
-# This is a regular expression pattern that is used to convert
-# a number into a friendly looking number (for the US and UK this
-# means comma separated at the thousands)
-
-
-# The Locale_Date uses the format strings in Perl's Date::Format
-# module to set the date format for the UI.  There are two possible
-# ways to specify it.
-#
-# <format>            Just one simple format used for all dates
-# <<format> | <format> The first format is used for dates less than
-#                     7 days from now, the second for all other dates
-
-
 # The header and footer that appear on every UI page
-
 
 Configuration_Language                  Langue
 
-
 History_SearchMessage                   Chercher De/Sujet
-
-
 
 Magnet_CurrentMagnets                   Aimants actuels
 Magnet_CreateNew                        Créer un nouvel aimant
 
 Bucket_CreateBucket                     Créer une catégorie nommée
 Bucket_RenameBucket                     Renommer la catégorie nommée
-
-
-
-
-
 
 Imap_Server                             Nom du serveur IMAP :
 Imap_Port                               Port du serveur IMAP
@@ -72,8 +49,6 @@ Imap_Password                           Mot de passe du compte IMAP :
 Imap_Expunge                            Effacer les messages supprimés des dossiers surveillés
 Imap_Interval                           Période de rafraîchissement en secondes :
 Imap_NoConnectionMessage                Veuillez configurer préalablement les détails de la connexion. Une fois cela fait, d'avantage d'options seront disponibles sur cette page.
-
-
 
 # New keys added (translations batch 1)
 LanguageCharset ISO-8859-1

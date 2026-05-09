@@ -29,23 +29,17 @@ Rename                                  Átnevez
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Separator                 Elválasztó karakter
 Configuration_SepUpdate                 Az új elválasztó karakter: %s
 Configuration_Language                  Nyelv
 
-
 History_SearchMessage                   Keress feladó/téma alapján
-
-
 
 Magnet_CurrentMagnets                   Mágnesek
 Magnet_CreateNew                        Hozz létre új mágnest
 
 Bucket_CreateBucket                     Konténer létrehozása:
 Bucket_RenameBucket                     Konténer átnevezése:
-
-
 
 # New keys added (translations batch 3)
 NavCorpus Korpusz

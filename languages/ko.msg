@@ -31,27 +31,16 @@ Refresh                                 경신
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Language                  언어
-
 
 History_SearchMessage                   발신/제목으로부터 검색
 History_ShowNoMagnet                    자석으로 분류되지 않음
-
-
 
 Magnet_CurrentMagnets                   현재 자석
 Magnet_CreateNew                        새 자석 생성
 
 Bucket_CreateBucket                     다음 이름의 버킷 생성
 Bucket_RenameBucket                     다음 이름의 버킷 이름 변경
-
-
-
-
-
-
-
 
 # New UI keys added — batch 5
 Date	날짜

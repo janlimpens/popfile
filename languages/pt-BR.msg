@@ -1,22 +1,4 @@
 # Copyright (c) 2001-2011 John Graham-Cumming
-# Translated by Adriano Rafael Gomes <adrianorg@users.sourceforge.net>
-# Updated by Fernando de Alcantara Correia <facorreia@users.sourceforge.net> to v0.19.1
-#
-#   This file is part of POPFile
-#
-#   POPFile is free software; you can redistribute it and/or modify it
-#   under the terms of version 2 of the GNU General Public License as
-#   published by the Free Software Foundation.
-#
-#   POPFile is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with POPFile; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-#
 
 # Identify the language and character set used for the interface
 LanguageCharset                         ISO-8859-1
@@ -24,8 +6,6 @@ LanguageDirection                       ltr
 
 # This is used to get the appropriate subdirectory for the manual
 ManualLanguage                          br
-
-# This is where to find the FAQ on the Wiki
 
 # Common words that are used on their own all over the interface
 Apply                                   Aplicar
@@ -48,40 +28,17 @@ Update                                  Alterar
 Refresh                                 Atualizar
 Date                                    Data
 
-# This is a regular expression pattern that is used to convert
-# a number into a friendly looking number (for the US and UK this
-# means comma separated at the thousands)
-
-
-# The Locale_Date uses the format strings in Perl's Date::Format
-# module to set the date format for the UI.  There are two possible
-# ways to specify it.
-#
-# <format>            Just one simple format used for all dates
-# <format> | <format> The first format is used for dates less than
-#                     7 days from now, the second for all other dates
-
-
 # The header and footer that appear on every UI page
-
 
 Configuration_Language                  Linguagem
 
-
 History_SearchMessage                   Procurar Remetente/Assunto
-
-
 
 Magnet_CurrentMagnets                   Ímãs Atuais
 Magnet_CreateNew                        Criar Novo Ímã
 
 Bucket_CreateBucket                     Criar categoria com o nome
 Bucket_RenameBucket                     Renomear a categoria chamado
-
-
-
-
-
 
 Imap_Server                             Nome do servidor IMAP:
 Imap_Port                               Porta do servidor IMAP:
@@ -90,8 +47,6 @@ Imap_Password                           Senha para a conta IMAP:
 Imap_Expunge                            Expurgar mensagens deletadas de pastas em observação.
 Imap_Interval                           Intervalo de atualização em segundos:
 Imap_NoConnectionMessage                Por favor configure os detalhes da conexão primeiro. Depois disto, mais opções estarão disponíveis nesta página.
-
-
 
 # New keys added (translations batch 1)
 LanguageCharset ISO-8859-1
@@ -291,7 +246,6 @@ Status_LoadError Falha ao carregar o status
 Status_NoChecks Nenhuma verificação disponível.
 
 Imap_Use_SSL Usar SSL
-
 
 Language_Name                           Português (Brasil)
 Wizard_Next                             Próximo

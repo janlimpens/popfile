@@ -1,20 +1,4 @@
 # Copyright (c) 2003-2011 John Graham-Cumming
-#
-#   This file is part of POPFile
-#
-#   POPFile is free software; you can redistribute it and/or modify it
-#   under the terms of version 2 of the GNU General Public License as
-#   published by the Free Software Foundation.
-#
-#   POPFile is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details.
-#
-#   You should have received a copy of the GNU General Public License
-#   along with POPFile; if not, write to the Free Software
-#   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-#
 
 # This is used to get the appropriate subdirectory for the manual
 
@@ -41,22 +25,17 @@ Rename                                  Döp om
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Separator                 Avskiljare
 Configuration_SepUpdate                 Uppdaterade det avskiljande tecknet till %s
 Configuration_Language                  Språk
 
-
 History_SearchMessage                   Sök ämne
-
-
 
 Magnet_CurrentMagnets                   Aktuella magneter
 Magnet_CreateNew                        Skapa ny magnet
 
 Bucket_CreateBucket                     Skapa hink med namnet
 Bucket_RenameBucket                     Döp om hink
-
 
 # New keys added (translations batch 2)
 LanguageCharset ISO-8859-1
@@ -254,7 +233,6 @@ Status_Checking Kontrollerar...
 Status_Description Statuskontroller för POPFile-tjänster.
 Status_LoadError Det gick inte att läsa in status
 Status_NoChecks Inga kontroller tillgängliga.
-
 
 Language_Name                           Svenska
 History_PerPage                          Poster per sida

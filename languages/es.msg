@@ -31,26 +31,16 @@ Refresh                                 Refrescar
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Language                  Lenguaje
-
 
 History_SearchMessage                   Buscar De/Asunto
 History_ShowNoMagnet                    desmagnetizado
-
-
 
 Magnet_CurrentMagnets                   Imanes Actuales
 Magnet_CreateNew                        Crear Imán Nuevo
 
 Bucket_CreateBucket                     Nombre de categoría
 Bucket_RenameBucket                     Renombrar categoría
-
-
-
-
-
-
 
 # New keys added (translations batch 1)
 LanguageCharset ISO-8859-1

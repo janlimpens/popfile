@@ -33,25 +33,16 @@ Refresh                                 Odśwież
 
 # The header and footer that appear on every UI page
 
-
 Configuration_Language                  Język
-
 
 History_SearchMessage                   Szukaj wg pól Od/Temat
 History_ShowNoMagnet                    odmusikowane
-
-
 
 Magnet_CurrentMagnets                   Aktualne musiki
 Magnet_CreateNew                        Utwórz nowy musik
 
 Bucket_CreateBucket                     Utwórz folder o nazwie
 Bucket_RenameBucket                     Zmień nazwę folderu
-
-
-
-
-
 
 # New keys added (translations batch 4)
 NavCorpus Korpus
