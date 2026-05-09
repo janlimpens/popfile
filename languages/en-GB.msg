@@ -5,101 +5,99 @@
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 ManualLanguage en
-Apply Apply
+
 Add Add
-Remove Remove
-Previous Previous
-Next Next
-From From
-Subject Subject
-Reclassify Reclassify
-Undo Undo
-Close Close
+Apply Apply
 Bucket Bucket
-Magnet Magnet
-Delete Delete
-Create Create
-Total Total
-Rename Rename
-Update Update
-Refresh Refresh
-Date Date
-Configuration_Language Language
-History_SearchMessage Search From/Subject
-Magnet_CurrentMagnets Current Magnets
-Magnet_CreateNew Create New Magnet
-Bucket_CreateBucket Create bucket with name
-Bucket_RenameBucket Rename bucket named
-Imap_Server IMAP server hostname:
-Imap_Port IMAP Server port:
-Imap_Login IMAP account login:
-Imap_Password Password for IMAP account:
-Imap_Expunge Expunge deleted messages from watched folders.
-Imap_Interval Update interval in seconds:
-Imap_NoConnectionMessage Please configure the connection details first. After you have done that, more options will be available on this page.
-Imap_Use_SSL Use SSL
 BucketSelect_AddNew Add new...
 BucketSelect_AlreadyExists Already exists
 BucketSelect_CreateError Error creating bucket
 BucketSelect_InvalidName Only a-z, 0-9, - and _
 BucketSelect_NameRequired Name required
-Corpus_BucketList Buckets
-Corpus_Color Colour
+Bucket_CreateBucket Create bucket with name
+Bucket_RenameBucket Rename bucket named
+Close Close
+Configuration_Language Language
 Corpus_Actions Actions
+Corpus_AddStopword Add to stop-words
+Corpus_BucketList Buckets
 Corpus_Clear Clear
-Corpus_StopwordsTitle Stop-words
-Corpus_StopwordsDesc Words in this list are never used for classification.
+Corpus_Color Colour
+Corpus_LoadCandidates Find candidates
+Corpus_NoCandidates No candidates found at this threshold.
 Corpus_RemoveStopword Remove
 Corpus_StopwordCandidates Stop-word candidates
 Corpus_StopwordCandidatesDesc Words appearing evenly across all buckets — little discriminative power.
 Corpus_StopwordRatio Max/min ratio threshold
-Corpus_LoadCandidates Find candidates
-Corpus_NoCandidates No candidates found at this threshold.
-Corpus_AddStopword Add to stop-words
+Corpus_StopwordsDesc Words in this list are never used for classification.
+Corpus_StopwordsTitle Stop-words
+Create Create
+Date Date
+Delete Delete
+From From
 History_AllBuckets All buckets
 History_HighlightWords Highlight words by bucket
 History_Loading Loading...
 History_MoveTo — move to —
 History_Moving Moving...
-History_Reclassifying Reclassifying...
 History_ReclassifyUnclassified Reclassify unclassified
+History_Reclassifying Reclassifying...
+History_SearchMessage Search From/Subject
 History_Selected selected
 Imap_BucketFolderMappings Bucket -> Folder Mappings
 Imap_Connected Connected
 Imap_Connection Connection
 Imap_ConnectionFailed Connection failed
 Imap_Description Monitor IMAP folders and automatically classify incoming messages.
+Imap_Expunge Expunge deleted messages from watched folders.
 Imap_FetchFolders Fetch Folders
 Imap_Fetching Fetching...
 Imap_IMAFFolder IMAP Folder
+Imap_Interval Update interval in seconds:
+Imap_Login IMAP account login:
 Imap_MappingsHint Classified messages are moved to the specified IMAP folder. Leave unmapped buckets empty to skip moving.
+Imap_NoConnectionMessage Please configure the connection details first. After you have done that, more options will be available on this page.
 Imap_NoFoldersWatched No folders watched yet.
 Imap_NoMappings No mappings defined.
+Imap_Password Password for IMAP account:
+Imap_Port IMAP Server port:
 Imap_SaveAnyway Save anyway
 Imap_SaveConnection Save Connection
 Imap_SaveFolders Save Folders
 Imap_Saving Saving...
+Imap_Server IMAP server hostname:
 Imap_TestConnection Test Connection
 Imap_Testing Testing...
-Imap_TrainingHint Training mode scans existing archive folders and trains the classifier on their contents. The flag resets automatically when training completes.
 Imap_Train Train
 Imap_TrainAll Train all buckets
 Imap_TrainQueued Training queued
+Imap_TrainingHint Training mode scans existing archive folders and trains the classifier on their contents. The flag resets automatically when training completes.
 Imap_TrainingMode Training mode
+Imap_Use_SSL Use SSL
 Imap_WatchedFolders Watched Folders
 Imap_WatchedHint POPFile monitors these IMAP folders for new messages to classify.
+Language_Name English (UK)
+Magnet Magnet
+Magnet_CreateNew Create New Magnet
 Magnet_Created Magnet created
+Magnet_CurrentMagnets Current Magnets
 Magnet_Deleted Magnet deleted
 NavCorpus Corpus
 NavHistory History
 NavIMAP IMAP
 NavMagnets Magnets
 NavStatus Status
+Next Next
+Previous Previous
+Reclassify Reclassify
 Reconnect_Connecting Connecting...
 Reconnect_Message The backend is not reachable. Trying to reconnect...
 Reconnect_Now Reconnect now
 Reconnect_RetryIn Retrying in
 Reconnect_Title Connection lost
+Refresh Refresh
+Remove Remove
+Rename Rename
 Settings_AdminPassword Admin Password
 Settings_ArchiveDirectory Archive Directory
 Settings_ArchiveMessages Archive Messages
@@ -132,21 +130,22 @@ Settings_DescMessageCutoff Maximum words analysed per message (0 = unlimited).
 Settings_DescNNTPLocalOnly Only accept NNTP connections from localhost.
 Settings_DescNNTPPort Port POPFile listens on for NNTP (default 119).
 Settings_DescNNTPSeparator Character separating user from server.
+Settings_DescOpenBrowser Open the default browser when the web UI is ready.
 Settings_DescPOP3LocalOnly Only accept POP3 connections from localhost.
 Settings_DescPOP3Port Port POPFile listens on for POP3 (default 1110).
 Settings_DescPOP3Separator Character that separates user from server (e.g. user:mailhost).
 Settings_DescRetentionDays How many days to keep message history.
-Settings_DescSessionDividers Show dividers between browsing sessions in History.
 Settings_DescSMTPLocalOnly Only accept SMTP connections from localhost.
 Settings_DescSMTPPort Port POPFile listens on for SMTP (default 25).
 Settings_DescSQLiteJournal SQLite journal / WAL mode.
 Settings_DescSQLiteTweaks Bitmask: 1 = faster writes (less safe), 2 = periodic backup.
 Settings_DescSSLChainPort Upstream SSL POP3 server port.
 Settings_DescSSLChainServer Upstream SSL POP3 server hostname for SSL chaining.
+Settings_DescSessionDividers Show dividers between browsing sessions in History.
 Settings_DescSubjectTagLeft Prefix inserted into Subject header, e.g. [SPAM].
 Settings_DescSubjectTagRight Suffix appended to Subject header.
-Settings_DescTagPosition Where to place the subject tag.
 Settings_DescTOPFetchesBody Also retrieve message body with the TOP command.
+Settings_DescTagPosition Where to place the subject tag.
 Settings_DescUnclassifiedWeight Probability threshold below which mail is "unclassified".
 Settings_DescWordStemming Reduce words to their stem before classification (e.g. "running" to "run"). Improves recall for morphologically rich languages at ~10% latency cost.
 Settings_DescWordTable What to display in the word probability table.
@@ -162,9 +161,8 @@ Settings_LogDirectory Log Directory
 Settings_LogLevel Log Level
 Settings_LogSQLToStdout Log SQL to stdout
 Settings_LogToStdout Log to stdout
-Settings_OpenBrowser Open browser on start
-Settings_DescOpenBrowser Open the default browser when the web UI is ready.
 Settings_MessageCutoff Message Cutoff
+Settings_OpenBrowser Open browser on start
 Settings_OptDebug Debug
 Settings_OptEnd End
 Settings_OptErrorsOnly Errors only
@@ -176,6 +174,10 @@ Settings_OptLogScores Log Scores
 Settings_OptProbabilities Probabilities
 Settings_OptWarnings Warnings
 Settings_RetentionDays Retention (days)
+Settings_SQLiteJournalMode SQLite Journal Mode
+Settings_SQLiteTweaks SQLite Tweaks
+Settings_SSLChainPort SSL Chain Port
+Settings_SSLChainServer SSL Chain Server
 Settings_SaveChanges Save Changes
 Settings_Saved Saved
 Settings_Saving Saving...
@@ -185,19 +187,15 @@ Settings_SectionHistory History
 Settings_SectionLogging Logging
 Settings_SectionNNTP NNTP Proxy
 Settings_SectionPOP3 POP3 Proxy
-Settings_SectionSecurity Security
 Settings_SectionSMTP SMTP Proxy
+Settings_SectionSecurity Security
 Settings_SectionUI User Interface
 Settings_ServerSeparator Server Separator
 Settings_SessionDividers Session Dividers
-Settings_SQLiteJournalMode SQLite Journal Mode
-Settings_SQLiteTweaks SQLite Tweaks
-Settings_SSLChainPort SSL Chain Port
-Settings_SSLChainServer SSL Chain Server
 Settings_SubjectTagLeft Subject Tag Left
 Settings_SubjectTagRight Subject Tag Right
-Settings_TagPosition Tag Position
 Settings_TOPFetchesBody TOP Fetches Body
+Settings_TagPosition Tag Position
 Settings_UnclassifiedWeight Unclassified Weight
 Settings_WordStemming Word Stemming
 Settings_WordTable Word Table
@@ -205,4 +203,7 @@ Status_Checking Checking...
 Status_Description Health checks for POPFile services.
 Status_LoadError Failed to load status
 Status_NoChecks No checks available.
-Language_Name English (UK)
+Subject Subject
+Total Total
+Undo Undo
+Update Update
