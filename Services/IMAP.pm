@@ -7,6 +7,8 @@ no warnings 'experimental::try';
 use Mojo::IOLoop;
 use Services::IMAP::Client;
 
+use constant REAPPEARED_UNKNOWN_BUCKET => 'unknown';
+
 class Services::IMAP :isa(POPFile::Module);
 
 =head1 NAME
@@ -759,6 +761,21 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
             $moved_message++ if $result ne '';
             $hash_values{$hash} = $result ne '' ? $result : $folder;
             $emit->('info', 'Classified', "UID $msg → " . ($result || $folder));
+            next;
+        }
+        if ($is_watched && ref $history && $history->can('get_slot_from_hash')) {
+            my $slot = $history->get_slot_from_hash($hash);
+            if ($slot ne '') {
+                my $old_bucket = REAPPEARED_UNKNOWN_BUCKET;
+                if ($history->can('get_history_item')) {
+                    my $info = $history->get_history_item($slot);
+                    $old_bucket = $info->{bucket} // REAPPEARED_UNKNOWN_BUCKET;
+                }
+                if ($history->can('touch_slot')) {
+                    $history->touch_slot($slot);
+                }
+                $emit->('info', 'Reappeared', "UID $msg was previously $old_bucket, re-added to history");
+            }
             next;
         }
         if (my $bucket = $is_output) {

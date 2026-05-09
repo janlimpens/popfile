@@ -23,6 +23,8 @@ require Services::IMAP;
     package StubHistory;
     sub new { bless {}, shift }
     sub get_slot_from_hash { 'slot1' }
+    sub get_history_item   { { bucket => 'work' } }
+    sub touch_slot         {}
     sub get_slot_fields    { (undef) x 8, 'work' }
     sub get_message_hash   { 'deadbeef' }
     sub commit_history     {}
