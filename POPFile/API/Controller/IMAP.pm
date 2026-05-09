@@ -45,33 +45,45 @@ sub _make_test_client($self, $body) {
 
 sub get_folders ($self) {
     my $api = $self->popfile_api;
-    my $watched_raw = $api->module_config('imap', 'watched_folders') // '';
-    my $mapping_raw = $api->module_config('imap', 'bucket_folder_mappings') // '';
-    my $sep = $self->_imap_sep();
-    my @watched = grep { $_ ne '' } split /\Q$sep\E/, $watched_raw;
-    my %map_hash = split /\Q$sep\E/, $mapping_raw;
-    my @mappings = map { { bucket => $_, folder => $map_hash{$_} } }
-                    grep { $_ ne '' } keys %map_hash;
+    my $imap = $api->popfile_imap;
+    my @watched = ();
+    my @mappings = ();
+    if (defined $imap) {
+        try {
+            @watched = $imap->watched_folders();
+            my $classifier = $imap->classifier();
+            if ($classifier) {
+                my $session = $imap->api_session();
+                for my $bucket ($classifier->get_all_buckets($session)) {
+                    my $folder = $imap->folder_for_bucket($bucket);
+                    push @mappings, { bucket => $bucket, folder => $folder // '' }
+                        if defined $folder;
+                }
+            }
+        }
+        catch ($e) {
+            $self->app->log->error("get_folders: $e");
+        }
+    }
     $self->render(json => { watched => \@watched, mappings => \@mappings });
 }
 
 sub update_folders ($self) {
     my $api = $self->popfile_api;
+    my $imap = $api->popfile_imap;
+    return $self->render(status => 503, json => { error => 'IMAP not available' })
+        unless defined $imap;
     my $body = $self->req->json // {};
-    my $sep = $self->_imap_sep();
     if (defined $body->{watched}) {
         my @w = grep { defined $_ && $_ ne '' } $body->{watched}->@*;
-        my $raw = join($sep, @w) . (@w ? $sep : '');
-        $api->module_config('imap', 'watched_folders', $raw);
+        $imap->watched_folders(@w);
     }
     if (defined $body->{mappings}) {
-        my $raw = '';
         for my $m ($body->{mappings}->@*) {
             next unless defined $m->{bucket} && $m->{bucket} ne ''
                         && defined $m->{folder} && $m->{folder} ne '';
-            $raw .= "$m->{bucket}$sep$m->{folder}$sep";
+            $imap->folder_for_bucket($m->{bucket}, $m->{folder});
         }
-        $api->module_config('imap', 'bucket_folder_mappings', $raw);
     }
     $api->configuration()->save_configuration();
     $self->render(json => { ok => \1 });

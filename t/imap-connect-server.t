@@ -18,6 +18,8 @@ require Services::IMAP;
     sub create_folder     {}
     sub uid_validity      { my ($self, $f, $v) = @_; $self->{uid_validity}{$f} = $v if defined $v; $self->{uid_validity}{$f} }
     sub uid_next          { my ($self, $f, $v) = @_; $self->{uid_next}{$f} = $v if defined $v; $self->{uid_next}{$f} }
+    sub uid_nexts         { \%{shift->{uid_next}} }
+    sub uid_validities    { \%{shift->{uid_validity}} }
     sub check_uidvalidity { 1 }
     sub logout            {}
     sub noop              {}
@@ -33,9 +35,11 @@ require Services::IMAP;
 
 sub make_imap {
     my ($config, $mq) = TestHelper::setup();
+    TestHelper::configure_db($config);
     my $imap = Services::IMAP->new();
     TestHelper::wire($imap, $config, $mq);
     $imap->initialize();
+    $imap->start();
     $imap->set_classifier(StubClassifier->new());
     $config->parameter('imap_enabled', 1);
     $config->parameter('imap_training_mode', 0);
@@ -44,7 +48,7 @@ sub make_imap {
 
 subtest 'all watched folders are scanned in a single poll cycle' => sub {
     my ($imap, $config) = make_imap();
-    $config->parameter('imap_watched_folders', 'INBOX-->Spam-->Ham-->');
+    $imap->watched_folders('INBOX', 'Spam', 'Ham');
 
     my $stub = StubIMAPClient->new();
     my @scanned;
@@ -64,7 +68,7 @@ subtest 'all watched folders are scanned in a single poll cycle' => sub {
 
 subtest 'one shared IMAP connection is used for all folders' => sub {
     my ($imap, $config) = make_imap();
-    $config->parameter('imap_watched_folders', 'INBOX-->Spam-->Ham-->');
+    $imap->watched_folders('INBOX', 'Spam', 'Ham');
 
     my $client_calls = 0;
     my $stub = StubIMAPClient->new();
@@ -79,7 +83,7 @@ subtest 'one shared IMAP connection is used for all folders' => sub {
 
 subtest 'two consecutive polls reuse the existing connection' => sub {
     my ($imap, $config) = make_imap();
-    $config->parameter('imap_watched_folders', 'INBOX-->Spam-->');
+    $imap->watched_folders('INBOX', 'Spam');
 
     my $client_calls = 0;
     my $stub = StubIMAPClient->new();

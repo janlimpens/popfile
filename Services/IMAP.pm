@@ -78,8 +78,6 @@ method initialize() {
     $self->config('update_interval', 20);
     $self->config('expunge', 0);
     $self->config('use_ssl', 0);
-    $self->config('watched_folders', 'INBOX');
-    $self->config('bucket_folder_mappings', '');
     $self->config('enabled', 0);
     $self->config('training_mode', 0);
     $self->config('training_error', '');
@@ -88,7 +86,7 @@ method initialize() {
     return 1
 }
 
-=head2 start()
+=head2 start() (first - old POD)
 
 =head2 folders()
 
@@ -123,6 +121,14 @@ C<update_interval> seconds.  Returns 1.
 =cut
 
 method start() {
+    try {
+        $self->_ensure_folder_tables();
+        $self->_migrate_folder_config();
+    }
+    catch ($e) {
+        $self->log_msg(WARN => "IMAP folder table setup skipped: $e")
+            unless $e =~ /unable to open/i;
+    }
     my $interval = $self->config('update_interval');
     $timer_id = Mojo::IOLoop->recurring($interval => sub { $self->poll() });
     if ($self->config('enabled') && defined $activity) {
@@ -322,10 +328,15 @@ method _run_poll_work($subprocess = undef) {
                 : ({}, {});
             $result->{consumed_uid_overrides} = [keys %_uid_next_override];
             if (defined $dbh) {
-                my $rows = $dbh->selectall_arrayref(
-                    'SELECT hash, mid FROM history WHERE mid IS NOT NULL',
-                    { Slice => {} });
-                $hash_to_mid{$_->{hash}} = $_->{mid} for $rows->@*;
+                try {
+                    my $rows = $dbh->selectall_arrayref(
+                        'SELECT hash, mid FROM history WHERE mid IS NOT NULL',
+                        { Slice => {} });
+                    $hash_to_mid{$_->{hash}} = $_->{mid} for $rows->@*;
+                }
+                catch ($e) {
+                    $self->log_msg(DEBUG => "history preload skipped: $e");
+                }
             }
             if (!%folders || $folder_change_flag == 1) {
                 $self->build_folder_list();
@@ -399,7 +410,11 @@ Returns the full filesystem path of the POPFile SQLite database.
 =cut
 
 method _db_path() {
-    $self->get_user_path($self->module_config('bayes', 'database'))
+    my $dbconnect = $self->module_config('bayes', 'dbconnect');
+    if (defined $dbconnect && $dbconnect =~ /dbname=([^;]+)/) {
+        return $1
+    }
+    return $self->get_user_path($self->module_config('bayes', 'database'))
 }
 
 =head2 _open_uid_db()
@@ -415,6 +430,91 @@ method _open_uid_db() {
     return DBI->connect(
         'dbi:SQLite:dbname=' . $self->_db_path(), '', '',
         { RaiseError => 1, PrintError => 0, AutoCommit => 1 })
+}
+
+=head2 _open_db()
+
+Opens a fresh DBI connection for folder mapping operations.
+
+=cut
+
+method _open_db() {
+    require DBI;
+    return DBI->connect(
+        'dbi:SQLite:dbname=' . $self->_db_path(), '', '',
+        { RaiseError => 1, PrintError => 0, AutoCommit => 1 })
+}
+
+=head2 _ensure_folder_tables()
+
+Creates the C<imap_watched_folders> and C<imap_folder_mappings> tables
+if they do not exist yet.
+
+=cut
+
+method _ensure_folder_tables() {
+    my $dbh = $self->_open_db();
+    $dbh->do('CREATE TABLE IF NOT EXISTS imap_folder_state (
+        id integer primary key,
+        folder varchar(255) unique not null,
+        uid_next integer,
+        uid_validity integer)');
+    $dbh->do('CREATE TABLE IF NOT EXISTS imap_watched_folders (
+        id integer primary key,
+        userid integer not null,
+        folder_name varchar(255) not null,
+        unique(userid, folder_name))');
+    $dbh->do('CREATE TABLE IF NOT EXISTS imap_folder_mappings (
+        id integer primary key,
+        userid integer not null,
+        bucket_name varchar(255) not null,
+        folder_name varchar(255) not null,
+        unique(userid, bucket_name))');
+    $dbh->disconnect();
+}
+
+=head2 _migrate_folder_config()
+
+Migrates legacy C<watched_folders> and C<bucket_folder_mappings> config
+strings to the new database tables.  Idempotent: does nothing if the
+DB tables already contain data or the config keys are not present.
+
+=cut
+
+method _migrate_folder_config() {
+    my $dbh = $self->_open_db();
+    my $userid = 1;
+    my $existing = $dbh->selectrow_array(
+        'SELECT count(*) FROM imap_watched_folders WHERE userid = ?',
+        undef, $userid);
+    return $dbh->disconnect()
+        if $existing;
+    
+    my $sep = '-->';
+    my $watched_raw = $self->config('watched_folders');
+    if (defined $watched_raw && $watched_raw ne '') {
+        my @folders = grep { $_ ne '' } split /$sep/, $watched_raw;
+        if (@folders) {
+            my $sth = $dbh->prepare(
+                'INSERT INTO imap_watched_folders (userid, folder_name) VALUES (?, ?)');
+            $sth->execute($userid, $_) for @folders;
+        }
+    }
+    
+    my $mapping_raw = $self->config('bucket_folder_mappings');
+    if (defined $mapping_raw && $mapping_raw ne '') {
+        my %mapping = split /$sep/, $mapping_raw;
+        if (%mapping) {
+            my $sth = $dbh->prepare(
+                'INSERT INTO imap_folder_mappings (userid, bucket_name, folder_name)
+                 VALUES (?, ?, ?)');
+            $sth->execute($userid, $_, $mapping{$_}) for keys %mapping;
+        }
+    }
+    
+    $self->config('watched_folders', undef);
+    $self->config('bucket_folder_mappings', undef);
+    $dbh->disconnect();
 }
 
 =head2 _load_uid_state($dbh)
@@ -1030,39 +1130,52 @@ method can_reclassify ($hash, $new_bucket) {
 
 Get/set the IMAP folder mapped to C<$bucket>.  With only C<$bucket>, returns
 the mapped folder name or C<undef>.  With both arguments, stores the new
-mapping in the C<bucket_folder_mappings> config key and returns nothing.
+mapping in the C<imap_folder_mappings> database table.
 
 =cut
 
 method folder_for_bucket ($bucket, $folder = undef) {
-    my $all = $self->config('bucket_folder_mappings');
-    my %mapping = split /$cfg_separator/, $all;
+    my $dbh = $self->_open_db();
+    my $userid = 1;
     if (defined $folder) {
-        $mapping{$bucket} = $folder;
-        my $new = '';
-        $new .= "$_$cfg_separator$mapping{$_}$cfg_separator" for keys %mapping;
-        $self->log_msg(DEBUG => $new);
-        $self->config('bucket_folder_mappings', $new);
+        $dbh->do(
+            'INSERT INTO imap_folder_mappings (userid, bucket_name, folder_name)
+             VALUES (?, ?, ?)
+             ON CONFLICT(userid, bucket_name) DO UPDATE SET folder_name = excluded.folder_name',
+            undef, $userid, $bucket, $folder);
         return
     }
-    return exists $mapping{$bucket} ? $mapping{$bucket} : undef
+    my ($result) = $dbh->selectrow_array(
+        'SELECT folder_name FROM imap_folder_mappings WHERE userid = ? AND bucket_name = ?',
+        undef, $userid, $bucket);
+    $dbh->disconnect();
+    return $result
 }
 
 =head2 watched_folders(@new_folders)
 
 Get/set the list of watched IMAP folders.  With no arguments, returns the
-current list.  With a list of folder names, replaces the stored
-C<watched_folders> config value and returns nothing.
+current list.  With a list of folder names, replaces the stored list in
+the C<imap_watched_folders> database table.
 
 =cut
 
 method watched_folders (@new_folders) {
-    my $all = $self->config('watched_folders');
+    my $dbh = $self->_open_db();
+    my $userid = 1;
     if (@new_folders) {
-        $self->config('watched_folders', join($cfg_separator, @new_folders) . $cfg_separator);
+        $dbh->do('DELETE FROM imap_watched_folders WHERE userid = ?', undef, $userid);
+        my $sth = $dbh->prepare(
+            'INSERT INTO imap_watched_folders (userid, folder_name) VALUES (?, ?)');
+        $sth->execute($userid, $_) for @new_folders;
+        $dbh->disconnect();
         return
     }
-    return split /$cfg_separator/, $all
+    my $rows = $dbh->selectcol_arrayref(
+        'SELECT folder_name FROM imap_watched_folders WHERE userid = ? ORDER BY id',
+        undef, $userid);
+    $dbh->disconnect();
+    return @$rows
 }
 
 =head2 train_on_archive()

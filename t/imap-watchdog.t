@@ -37,9 +37,11 @@ require Services::IMAP;
 
 sub make_imap {
     my ($config, $mq) = TestHelper::setup();
+    TestHelper::configure_db($config);
     my $imap = Services::IMAP->new();
     TestHelper::wire($imap, $config, $mq);
     $imap->initialize();
+    $imap->start();
     $imap->set_classifier(StubClassifier->new());
     $config->parameter('imap_enabled', 1);
     $config->parameter('imap_training_mode', 0);
@@ -84,7 +86,7 @@ subtest 'watchdog resets guard when age exceeds 3x interval' => sub {
 
 subtest 'classify_message failure is logged in scan_folder' => sub {
     my ($imap, $config) = make_imap();
-    $config->parameter('imap_watched_folders', 'INBOX-->');
+    $imap->watched_folders('INBOX');
 
     my $stub = StubIMAPClient->new();
     $log->clear();

@@ -110,9 +110,6 @@ sub get_status($self) {
     my $login = $api->module_config('imap', 'login') // '';
     my $password = $api->module_config('imap', 'password') // '';
     my $use_ssl = $api->module_config('imap', 'use_ssl') // 0;
-    my $imap_sep = '-->';
-    my $watched_raw = $api->module_config('imap', 'watched_folders') // '';
-    my $mapping_raw = $api->module_config('imap', 'bucket_folder_mappings') // '';
     my $flag_pattern = $api->get_user_path('popfile.train*', 0);
     my @train_flags = defined $flag_pattern ? glob($flag_pattern) : ();
     my @train_pending = map { /popfile\.train\.(.+)$/ ? $1 : '*' } @train_flags;
@@ -157,14 +154,32 @@ sub get_status($self) {
             my @server_folders = $client->get_mailbox_list();
             $client->logout();
             my %on_server = map { $_ => 1 } @server_folders;
-            my @watched = grep { $_ ne '' } split /\Q$imap_sep\E/, $watched_raw;
+            
+            # Read watched folders and mappings from DB
+            my $db_path = $cfg_obj->get_user_path($cfg_obj->module_config('bayes', 'database'));
+            my $dbconnect = $cfg_obj->module_config('bayes', 'dbconnect');
+            if (defined $dbconnect && $dbconnect =~ /dbname=([^;]+)/) {
+                $db_path = $1;
+            }
+            require DBI;
+            my $dbh = DBI->connect("dbi:SQLite:dbname=$db_path", '', '',
+                { RaiseError => 1, PrintError => 0 });
+            my @watched = @{
+                $dbh->selectcol_arrayref(
+                    'SELECT folder_name FROM imap_watched_folders WHERE userid = 1 ORDER BY id')
+                    // [] };
+            my $mapping_rows = $dbh->selectall_arrayref(
+                'SELECT bucket_name, folder_name FROM imap_folder_mappings WHERE userid = 1',
+                { Slice => {} }) // [];
+            my %map_hash = map { $_->{bucket_name} => $_->{folder_name} } $mapping_rows->@*;
+            $dbh->disconnect();
+            
             my @missing_w = grep { !$on_server{$_} } @watched;
             push @c, { id => 'watched_folders', label => 'Watched Folders',
                 status => @missing_w ? 'warn' : 'ok',
                 detail => @missing_w
                     ? 'Missing on server: ' . join(', ', @missing_w)
                     : 'All ' . scalar(@watched) . ' watched folder(s) exist' };
-            my %map_hash = split /\Q$imap_sep\E/, $mapping_raw;
             my @missing_m = grep { $_ ne '' && !$on_server{$map_hash{$_}} } keys %map_hash;
             push @c, { id => 'bucket_mappings', label => 'Bucket → Folder Mappings',
                 status => @missing_m ? 'warn' : 'ok',

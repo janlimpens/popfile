@@ -413,6 +413,21 @@ create table imap_folder_state (
     uid_validity integer
 );
 
+create table imap_watched_folders (
+    id integer primary key,
+    userid integer not null references users(id),
+    folder_name varchar(255) not null,
+    unique(userid, folder_name)
+);
+
+create table imap_folder_mappings (
+    id integer primary key,
+    userid integer not null references users(id),
+    bucket_name varchar(255) not null,
+    folder_name varchar(255) not null,
+    unique(userid, bucket_name)
+);
+
 -- INDICES
 --
 -- matrix: the UNIQUE(wordid, bucketid) constraint covers wordid-leading
