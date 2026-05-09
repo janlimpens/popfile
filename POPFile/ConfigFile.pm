@@ -22,8 +22,8 @@ use Cpanel::JSON::XS;
 use Fcntl qw(:flock :seek :mode);
 use Path::Tiny qw(path);
 
-field $json_encoder;
-field $json_decoder;
+field $json_encoder :reader;
+field $json_decoder :reader;
 
 ADJUST {
     $json_encoder = Cpanel::JSON::XS->new->utf8->pretty->canonical;
@@ -46,13 +46,17 @@ method save ($path, $data) {
     print $fh $json_encoder->encode($data);
     $fh->close();
     
-    my $dest_fh = path($path)->openrw();
-    flock($dest_fh, LOCK_EX) or die "Cannot lock $path: $!";
+    # Lock and rename atomically
+    my $dest_path = path($path);
+    # Create file if it doesn't exist
+    $dest_path->touch();
+    my $lock_fh = $dest_path->openrw();
+    flock($lock_fh, LOCK_EX) or die "Cannot lock $path: $!";
     
     rename($tmp_path, $path) or die "Cannot rename $tmp_path to $path: $!";
-    chmod(MODE(0600), $path);
+    chmod(0600, $path);
     
-    $dest_fh->close();
+    $lock_fh->close();
 }
 
 1;

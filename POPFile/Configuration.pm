@@ -37,10 +37,11 @@ field $started :reader :writer = 0;
 field $popfile_root :reader :writer = $ENV{POPFILE_ROOT} || './';
 field $popfile_user :reader :writer = $ENV{POPFILE_USER} || './';
 field %deprecated_parameters;
+field $config_format :reader :writer = "legacy";  # "legacy" or "json"
 
 BUILD {
     $pid_check = time;
-    $self->set_name('config');
+    $self->set_name("config");
 }
 
 =head2 initialize
@@ -310,35 +311,24 @@ deprecated-parameters store so they are not silently lost on the next save.
 
 method load_configuration() {
     $started = 1;
-    my $config_file = $self->get_user_path('popfile.cfg');
-    my $sample_file = $self->get_root_path('popfile.cfg.sample');
-    if (!-e $config_file && -e $sample_file) {
-        copy($sample_file, $config_file);
+    
+    # Migration: if only legacy config exists, convert to JSON
+    my $legacy_config = $self->get_user_path('popfile.cfg');
+    my $json_config = $self->get_user_path('popfile.json');
+    if (!-e $json_config && -e $legacy_config) {
+        $self->_migrate_legacy_to_json();
     }
-    if (open my $config, '<', $config_file) {
-        while (<$config>) {
-            s/(\015|\012)//g;
-            if (/(\S+) (.+)?/) {
-                my $parameter = $1;
-                my $value = $2;
-                $value = '' if !defined($value);
-                $parameter = $self->upgrade_parameter($parameter);
-                if (defined($configuration_parameters{$parameter})) {
-                    $value = $self->_decrypt_config($value)
-                        if $self->_is_sensitive_key($parameter);
-                    $configuration_parameters{$parameter}{value} = $value;
-                } else {
-                    $deprecated_parameters{$parameter} = $value;
-                }
-            }
-        }
-        close $config;
-    } else {
-        if (-e $config_file && !-r _) {
-            $self->log_msg(WARN => "Couldn't load from the configuration file $config_file");
-        }
+    
+    # Load from JSON if it exists
+    if (-e $json_config) {
+        $config_format = 'json';
+        $self->_load_json();
+        return;
     }
-    $save_needed = 0;
+    
+    # Fallback to legacy format
+    $config_format = 'legacy';
+    $self->_load_legacy();
 }
 
 =head2 save_configuration
@@ -351,31 +341,12 @@ save (C<save_needed> is 0).
 
 method save_configuration() {
     return if $save_needed == 0;
-    my $config_file = $self->get_user_path('popfile.cfg');
-    my $config_temp = $self->get_user_path('popfile.cfg.tmp');
-    if (-e $config_file && !-w _) {
-        $self->log_msg(WARN => "Can't write to the configuration file " . basename($config_file));
-        return
-    }
-    if (open my $tmp, '>', $config_temp) {
-        for my $key (sort keys %configuration_parameters) {
-            my $value = $configuration_parameters{$key}{value};
-            $value = $self->_encrypt_config($value)
-                if $self->_is_sensitive_key($key);
-            print $tmp "$key $value\n";
-        }
-        close $tmp;
-        if (copy($config_temp, $config_file)) {
-            unlink $config_temp;
-            $save_needed = 0;
-        } else {
-            $self->log_msg(WARN => "Couldn't write configuration to $config_file: $!");
-        }
+    
+    if ($config_format eq 'json') {
+        $self->_save_json();
     } else {
-        $self->log_msg(WARN => "Couldn't open a temporary configuration file $config_temp");
+        $self->_save_legacy();
     }
-    chmod 0600, $config_file
-        if -e $config_file;
 }
 
 =head2 get_user_path
@@ -567,6 +538,124 @@ method _crypto_key() {
     require Digest::SHA;
     my $seed = $popfile_root . ':popfile-config-key';
     return Digest::SHA::sha256($seed)
+}
+
+method _load_json() {
+    require POPFile::ConfigFile;
+    my $cf = POPFile::ConfigFile->new();
+    my $data = $cf->load($self->get_user_path("popfile.json"));
+    
+    # Flatten nested structure into %configuration_parameters
+    for my $section (keys %$data) {
+        next if $section eq "version";
+        my $nested = $data->{$section};
+        next unless ref $nested eq "HASH";
+        for my $key (keys %$nested) {
+            my $full_name = $section . "_" . $key;
+            my $value = $nested->{$key};
+            $value = $self->_decrypt_config($value)
+                if $self->_is_sensitive_key($full_name);
+            $configuration_parameters{$full_name}{value} = $value;
+        }
+    }
+    $save_needed = 0;
+}
+
+method _save_json() {
+    require POPFile::ConfigFile;
+    
+    # Build nested structure from %configuration_parameters
+    my %data = (version => 2);
+    for my $key (sort keys %configuration_parameters) {
+        my $value = $configuration_parameters{$key}{value};
+        $value = $self->_encrypt_config($value)
+            if $self->_is_sensitive_key($key);
+        
+        # Split "section_key" into section and key
+        if ($key =~ /^(.+?)_(.+)$/) {
+            my $section = $1;
+            my $param = $2;
+            $data{$section}{$param} = $value;
+        }
+    }
+    
+    my $cf = POPFile::ConfigFile->new();
+    $cf->save($self->get_user_path("popfile.json"), \%data);
+    $save_needed = 0;
+}
+
+method _load_legacy() {
+    my $config_file = $self->get_user_path('popfile.cfg');
+    my $sample_file = $self->get_root_path('popfile.cfg.sample');
+    if (!-e $config_file && -e $sample_file) {
+        copy($sample_file, $config_file);
+    }
+    if (open my $config, '<', $config_file) {
+        while (<$config>) {
+            s/(\015|\012)//g;
+            if (/(\S+) (.+)?/) {
+                my $parameter = $1;
+                my $value = $2;
+                $value = '' if !defined($value);
+                $parameter = $self->upgrade_parameter($parameter);
+                if (defined($configuration_parameters{$parameter})) {
+                    $value = $self->_decrypt_config($value)
+                        if $self->_is_sensitive_key($parameter);
+                    $configuration_parameters{$parameter}{value} = $value;
+                } else {
+                    $deprecated_parameters{$parameter} = $value;
+                }
+            }
+        }
+        close $config;
+    } else {
+        if (-e $config_file && !-r _) {
+            $self->log_msg(WARN => "Couldn't load from the configuration file $config_file");
+        }
+    }
+    $save_needed = 0;
+}
+
+method _save_legacy() {
+    my $config_file = $self->get_user_path('popfile.cfg');
+    my $config_temp = $self->get_user_path('popfile.cfg.tmp');
+    if (-e $config_file && !-w _) {
+        $self->log_msg(WARN => "Can't write to the configuration file " . basename($config_file));
+        return
+    }
+    if (open my $tmp, '>', $config_temp) {
+        for my $key (sort keys %configuration_parameters) {
+            my $value = $configuration_parameters{$key}{value};
+            $value = $self->_encrypt_config($value)
+                if $self->_is_sensitive_key($key);
+            print $tmp "$key $value\n";
+        }
+        close $tmp;
+        if (copy($config_temp, $config_file)) {
+            unlink $config_temp;
+            $save_needed = 0;
+        } else {
+            $self->log_msg(WARN => "Couldn't write configuration to $config_file: $!");
+        }
+    } else {
+        $self->log_msg(WARN => "Couldn't open a temporary configuration file $config_temp");
+    }
+    chmod 0600, $config_file
+        if -e $config_file;
+}
+
+method _migrate_legacy_to_json() {
+    # Load legacy format
+    $self->_load_legacy();
+    
+    # Save as JSON
+    $config_format = 'json';
+    $self->_save_json();
+    
+    # Backup legacy file
+    my $legacy_config = $self->get_user_path('popfile.cfg');
+    my $backup = $self->get_user_path('popfile.cfg.bak');
+    rename($legacy_config, $backup) or die "Cannot backup $legacy_config: $!";
 }
 
 1;
