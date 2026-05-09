@@ -72,15 +72,15 @@ Imap_TrainingMode Modo de treino
 Imap_Use_SSL Usar SSL
 Imap_WatchedFolders Pastas monitorizadas
 Imap_WatchedHint O POPFile monitoriza estas pastas IMAP para novas mensagens a classificar.
-Imap_Wizard Einrichtungs-Assistent
-Imap_WizardApply Erstellen & zuordnen
-Imap_WizardClose Schließen
-Imap_WizardDesc Ordner auswählen, für die Buckets und Zuordnungen erstellt werden sollen.
-Imap_WizardDeselectAll Alle abwählen
-Imap_WizardDone {count} Bucket(s) erstellt und zugeordnet.
-Imap_WizardEmpty Keine weiteren Ordner auf dem Server gefunden.
-Imap_WizardSelectAll Alle auswählen
-Imap_WizardTrain Jetzt trainieren
+Imap_Wizard Assistente de Configuração
+Imap_WizardApply Criar & mapear
+Imap_WizardClose Fechar
+Imap_WizardDesc Selecione pastas para criar buckets e mapeamentos.
+Imap_WizardDeselectAll Desmarcar todos
+Imap_WizardDone {count} bucket(s) criado(s) e mapeado(s).
+Imap_WizardEmpty Nenhuma pasta adicional encontrada no servidor.
+Imap_WizardSelectAll Selecionar todos
+Imap_WizardTrain Treinar agora
 LanguageCharset ISO-8859-1
 LanguageDirection ltr
 Language_Name Português
@@ -236,7 +236,7 @@ WordSearch_ColumnBuckets Buckets
 WordSearch_ColumnWord Word
 WordSearch_IsStopword stopword
 WordSearch_Loading Loading...
-WordSearch_NoResults No words found.
+WordSearch_NoResults Nenhuma palavra encontrada.
 WordSearch_NoStopwords No stopwords defined.
 WordSearch_Placeholder prefix...
 WordSearch_RemoveStopword Stopword

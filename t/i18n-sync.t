@@ -25,7 +25,6 @@ my %en = parse_keys("$lang_dir/en.msg");
 # Full files must have all keys, override files inherit from their base
 my @full = ('de.msg', 'pt.msg');
 my @overrides = (
-    ['en-GB.msg', 'en.msg'],
     ['pt-BR.msg', 'pt.msg'],
 );
 
