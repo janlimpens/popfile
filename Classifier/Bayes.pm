@@ -3046,11 +3046,12 @@ method get_bucket_objects ($session) {
         unless defined $userid;
     my @result;
     for my $name ($self->get_buckets($session)) {
-        my $b = Classifier::Bucket->new();
-        $b->set_property('name', $name);
-        $b->set_property('color', $self->get_bucket_parameter($session, $name, 'color'));
-        $b->set_property('count', $db_bucketcount->{$userid}{$name} // 0);
-        $b->set_prior($bucket_start->{$userid}{$name} // 0);
+        my $b = Classifier::Bucket->new(
+            name   => $name,
+            color  => $self->get_bucket_parameter($session, $name, 'color'),
+            count  => $db_bucketcount->{$userid}{$name} // 0,
+            prior  => $bucket_start->{$userid}{$name} // 0,
+        );
         push @result, $b;
     }
     return @result
