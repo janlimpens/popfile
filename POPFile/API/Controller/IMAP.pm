@@ -44,8 +44,7 @@ sub _make_test_client($self, $body) {
 }
 
 sub get_folders ($self) {
-    my $api = $self->popfile_api;
-    my $imap = $api->popfile_imap;
+    my $imap = $self->popfile_imap;
     my @watched = ();
     my @mappings = ();
     if (defined $imap) {
@@ -69,8 +68,7 @@ sub get_folders ($self) {
 }
 
 sub update_folders ($self) {
-    my $api = $self->popfile_api;
-    my $imap = $api->popfile_imap;
+    my $imap = $self->popfile_imap;
     return $self->render(status => 503, json => { error => 'IMAP not available' })
         unless defined $imap;
     my $body = $self->req->json // {};
@@ -85,6 +83,7 @@ sub update_folders ($self) {
             $imap->folder_for_bucket($m->{bucket}, $m->{folder});
         }
     }
+    my $api = $self->popfile_api;
     $api->configuration()->save_configuration();
     $self->render(json => { ok => \1 });
 }
