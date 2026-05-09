@@ -44,11 +44,21 @@ field %_uid_validity;
 
 my $eol = "\015\012";
 
-method _imap_utf7_decode($chunk) {
+method _imap_utf7_decode_chunk ($chunk) {
     return '&'
         if $chunk eq '';
-    (my $b = $chunk) =~ tr/+/\//;
+    (my $b = $chunk) =~ tr|+|/|;
     return decode('UTF-16BE', decode_base64($b))
+}
+
+method _decode_folder ($encoded) {
+    $encoded =~ s/&([^-]*)-/$self->_imap_utf7_decode_chunk($1)/ge;
+    return $encoded
+}
+
+method _encode_folder ($utf8) {
+    require Services::IMAP::Folder;
+    return Services::IMAP::Folder->new(name => $utf8)->to_imap_name()
 }
 
 =head2 connect()
@@ -161,7 +171,7 @@ C<undef> if the server did not supply them).
 
 method status ($folder_name) {
     my $ret = { UIDNEXT => undef, UIDVALIDITY => undef };
-    $self->say("STATUS \"$folder_name\" (UIDNEXT UIDVALIDITY)");
+    $self->say("STATUS \"" . $self->_encode_folder($folder_name) . "\" (UIDNEXT UIDVALIDITY)");
     if ($self->get_response() == 1) {
         my @lines = split /$eol/, $last_response;
         for (@lines) {
@@ -187,7 +197,7 @@ folder name on success.  Returns the IMAP response code.
 =cut
 
 method select ($folder_name) {
-    $self->say("SELECT \"$folder_name\"");
+    $self->say("SELECT \"" . $self->_encode_folder($folder_name) . "\"");
     my $result = $self->get_response();
     $folder = $folder_name if $result == 1;
     return $result
@@ -200,7 +210,7 @@ Sends C<CREATE> for C<$folder_name>.  Returns the IMAP response code.
 =cut
 
 method create_folder ($folder_name) {
-    $self->say("CREATE \"$folder_name\"");
+    $self->say("CREATE \"" . $self->_encode_folder($folder_name) . "\"");
     return $self->get_response()
 }
 
@@ -305,7 +315,7 @@ original C<\Deleted>.  Returns 1 on success, 0 on failure.
 
 method move_message ($msg, $destination) {
     $self->log_msg(INFO => "Moving message $msg to $destination");
-    $self->say("UID COPY $msg \"$destination\"");
+    $self->say("UID COPY $msg \"" . $self->_encode_folder($destination) . "\"");
     my $ok = $self->get_response();
     if ($ok == 1) {
         $self->say("UID STORE $msg +FLAGS (\\Deleted)");
@@ -338,7 +348,7 @@ method get_mailbox_list() {
     for my $name ( grep { /^\*/ } @lines) {
         $name =~ s/^\* LIST \(.*\) .+? (.+)$/$1/;
         $name =~ s/"(.*?)"/$1/;
-        $name =~ s/&([^-]*)-/$self->_imap_utf7_decode($1)/ge;
+        $name = $self->_decode_folder($name);
         push @mailboxes, $name;
     }
     return sort @mailboxes
