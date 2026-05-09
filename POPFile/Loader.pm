@@ -404,6 +404,14 @@ method CORE_start() {
                 if $url;
         }
     }
+    if (defined $components{core}{activity}) {
+        $components{core}{activity}->add_event({
+            level => 'info',
+            module => 'core',
+            task => 'Startup',
+            message => 'POPFile started',
+        });
+    }
     STDOUT->flush();
 }
 

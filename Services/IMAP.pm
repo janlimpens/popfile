@@ -123,6 +123,17 @@ C<update_interval> seconds.  Returns 1.
 method start() {
     my $interval = $self->config('update_interval');
     $timer_id = Mojo::IOLoop->recurring($interval => sub { $self->poll() });
+    if ($self->config('enabled') && defined $activity) {
+        my $host = $self->config('hostname') || 'not configured';
+        my $port = $self->config('port') || 143;
+        my $ssl = $self->config('use_ssl') ? ' (SSL)' : '';
+        $activity->add_event({
+            level => 'info',
+            module => 'imap',
+            task => 'IMAP Service',
+            message => "Service started, polling $host:$port$ssl every ${interval}s",
+        });
+    }
     return 1
 }
 
