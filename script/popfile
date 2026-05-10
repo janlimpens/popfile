@@ -20,6 +20,7 @@ BEGIN {
 
 use strict;
 use warnings;
+use builtin qw(true false);
 use File::Spec;
 use Getopt::Long qw(:config pass_through no_auto_abbrev);
 use feature 'try';
@@ -261,7 +262,7 @@ sub do_config {
             my $value = $config{$key};
             if (defined $value && $value ne '') {
                 if ($bool_keys{$key}) {
-                    $value = $value ? Cpanel::JSON::XS::true : Cpanel::JSON::XS::false;
+                    $value = $value ? true : false;
                 } elsif ($int_keys{$key} && $value =~ /^-?\d+$/) {
                     $value = 0 + $value;
                 }

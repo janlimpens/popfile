@@ -17,6 +17,8 @@ sub import {
     no strict 'refs';
     my $caller = caller;
     *{"${caller}::trim"} = \&builtin::trim;
+    *{"${caller}::true"} = \&builtin::true;
+    *{"${caller}::false"} = \&builtin::false;
 }
 
 1;

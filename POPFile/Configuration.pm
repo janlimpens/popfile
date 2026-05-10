@@ -20,6 +20,7 @@ parameter names from earlier POPFile releases.
 =cut
 
 use Object::Pad;
+use builtin qw(true false);
 use locale;
 
 use File::Copy qw(copy);
@@ -572,7 +573,7 @@ method _config_to_json ($key, $value) {
         unless defined $value;
     my $type = $_CONFIG_TYPES{$key};
     if ($type && $type eq 'bool') {
-        return $value ? Cpanel::JSON::XS::true : Cpanel::JSON::XS::false
+        return $value ? true : false
     }
     if ($type && $type eq 'int') {
         return 0 + $value
