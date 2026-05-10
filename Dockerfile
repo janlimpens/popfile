@@ -5,7 +5,7 @@ WORKDIR /app
 RUN cpanm Carton
 
 COPY cpanfile cpanfile.snapshot ./
-RUN carton install --deployment
+RUN carton install --deployment --notest
 
 COPY . .
 

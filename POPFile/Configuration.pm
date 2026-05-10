@@ -657,22 +657,28 @@ method _save_json() {
 method _load_legacy() {
     my $config_file = $self->get_user_path('popfile.cfg');
     if (open my $config, '<', $config_file) {
+        my $loaded = 0;
         while (<$config>) {
             s/(\015|\012)//g;
-            if (/(\S+) (.+)?/) {
+            next
+                if /^\s*#/;
+            if (/^\s*(\S+)\s+(.+)/) {
                 my $parameter = $1;
-                my $value = $2 // '';
+                my $value = $2;
+                $value =~ s/\s+$//;
                 $parameter = $self->upgrade_parameter($parameter);
                 if (defined($configuration_parameters{$parameter})) {
                     $value = $self->_decrypt_config($value)
                         if $self->_is_sensitive_key($parameter);
                     $configuration_parameters{$parameter}{value} = $value;
+                    $loaded++;
                 } else {
                     $deprecated_parameters{$parameter} = $value;
                 }
             }
         }
         close $config;
+        $self->log_msg(INFO => "Loaded $loaded parameters from legacy popfile.cfg");
     } else {
         if (-e $config_file && !-r _) {
             $self->log_msg(WARN => "Couldn't load from the configuration file $config_file");
@@ -710,12 +716,14 @@ method _save_legacy() {
 }
 
 method _migrate_legacy_to_json() {
+    $self->log_msg(INFO => 'Migrating legacy popfile.cfg to config.json');
     $self->_load_legacy();
     $config_format = 'json';
     $self->_save_json();
     my $legacy_config = $self->get_user_path('popfile.cfg');
     my $backup = $self->get_user_path('popfile.cfg.bak');
     rename($legacy_config, $backup) or die "Cannot backup $legacy_config: $!";
+    $self->log_msg(INFO => 'Migration complete — popfile.cfg backed up to popfile.cfg.bak');
 }
 
 1;
