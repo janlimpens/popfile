@@ -317,6 +317,11 @@ method load_configuration() {
     my $json_config = $self->get_user_path('popfile.json');
     $self->_migrate_legacy_to_json()
         if !-e $json_config && -e $legacy_config;
+    if (!-e $json_config && !-e $legacy_config) {
+        my $sample = $self->get_root_path('popfile.json.sample');
+        copy($sample, $json_config)
+            if -e $sample;
+    }
     if (-e $json_config) {
         $config_format = 'json';
         $self->_load_json();
@@ -651,10 +656,6 @@ method _save_json() {
 
 method _load_legacy() {
     my $config_file = $self->get_user_path('popfile.cfg');
-    my $sample_file = $self->get_root_path('popfile.cfg.sample');
-    if (!-e $config_file && -e $sample_file) {
-        copy($sample_file, $config_file);
-    }
     if (open my $config, '<', $config_file) {
         while (<$config>) {
             s/(\015|\012)//g;

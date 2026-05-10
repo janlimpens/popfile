@@ -1,97 +1,82 @@
-# POPFile sample configuration — copy to popfile.cfg to use.
-# Format: one parameter per line: key value
-# Override any key at startup: popfile --set key=value
-
-# ── Web UI ──────────────────────────────────────────────────────────────────
-api_port 0
-api_local 1
-api_password
-api_page_size 25
-api_date_format
-api_locale
-api_session_dividers 1
-api_wordtable_format
-api_open_browser 0
-api_static_dir public
-
-# ── Classifier (Bayes) ───────────────────────────────────────────────────────
-bayes_database popfile.db
-bayes_corpus corpus
-bayes_hostname 127.0.0.1
-bayes_dbconnect dbi:SQLite:dbname=$dbname
-bayes_dbuser
-bayes_dbauth
-bayes_unclassified_weight 100
-bayes_stopword_ratio 0
-bayes_subject_mod_left [
-bayes_subject_mod_right ]
-bayes_subject_mod_pos 1
-bayes_xpl_angle 0
-bayes_nihongo_parser kakasi
-bayes_sqlite_journal_mode delete
-bayes_sqlite_tweaks 4294967295
-
-# ── Logging ──────────────────────────────────────────────────────────────────
-logger_level 0
-logger_logdir
-logger_format default
-logger_log_to_stdout 0
-logger_log_sql 0
-
-# ── History ──────────────────────────────────────────────────────────────────
-history_history_days 2
-history_archive 0
-history_archive_classes
-history_archive_dir archive
-
-# ── IMAP ─────────────────────────────────────────────────────────────────────
-imap_enabled 0
-imap_hostname
-imap_port 143
-imap_use_ssl 0
-imap_login
-imap_password
-imap_watched_folders INBOX
-imap_bucket_folder_mappings
-imap_training_mode 0
-imap_training_limit 0
-imap_update_interval 20
-imap_expunge 0
-
-# ── POP3 proxy ───────────────────────────────────────────────────────────────
-pop3_local 1
-pop3_port 110
-pop3_separator :
-pop3_toptoo 0
-pop3_force_fork 0
-pop3_secure_server
-pop3_secure_port 995
-pop3_socks_server
-pop3_socks_port 1080
-
-# ── SMTP proxy ───────────────────────────────────────────────────────────────
-smtp_local 1
-smtp_port 25
-smtp_chain_server
-smtp_chain_port 25
-smtp_force_fork 0
-
-# ── NNTP proxy ───────────────────────────────────────────────────────────────
-nntp_local 1
-nntp_port 119
-nntp_separator :
-nntp_headtoo 0
-nntp_force_fork 0
-
-# ── Word processing ──────────────────────────────────────────────────────────
-wordmangle_stemming 0
-wordmangle_auto_detect_language 0
-
-# ── Global ───────────────────────────────────────────────────────────────────
-GLOBAL_message_cutoff 100000
-GLOBAL_msgdir messages/
-GLOBAL_timeout 60
-
-# ── Process ──────────────────────────────────────────────────────────────────
-config_piddir
-config_pidcheck_interval 5
+{
+  "version": 2,
+  "api": {
+    "port": 0,
+    "local": true,
+    "password": "",
+    "page_size": 25,
+    "locale": "",
+    "session_dividers": true,
+    "wordtable_format": "",
+    "open_browser": false
+  },
+  "bayes": {
+    "database": "popfile.db",
+    "dbconnect": "dbi:SQLite:dbname=$dbname",
+    "dbuser": "",
+    "dbauth": "",
+    "unclassified_weight": 100,
+    "stopword_ratio": 0,
+    "subject_mod_left": "[",
+    "subject_mod_right": "]",
+    "subject_mod_pos": true,
+    "xpl_angle": false,
+    "nihongo_parser": "kakasi",
+    "sqlite_journal_mode": "delete"
+  },
+  "config": {
+    "piddir": "",
+    "pidcheck_interval": 5
+  },
+  "GLOBAL": {
+    "message_cutoff": 100000,
+    "msgdir": "messages/",
+    "timeout": 60
+  },
+  "history": {
+    "history_days": 2,
+    "archive": false,
+    "archive_classes": 0,
+    "archive_dir": "archive"
+  },
+  "imap": {
+    "enabled": false,
+    "hostname": "",
+    "port": 143,
+    "use_ssl": false,
+    "login": "",
+    "password": "",
+    "training_mode": false,
+    "training_limit": 0,
+    "update_interval": 20,
+    "expunge": false
+  },
+  "logger": {
+    "level": 0,
+    "format": "default",
+    "log_to_stdout": false,
+    "log_sql": false
+  },
+  "pop3": {
+    "local": true,
+    "port": 110,
+    "separator": ":",
+    "toptoo": false,
+    "secure_port": 995
+  },
+  "smtp": {
+    "local": true,
+    "port": 25,
+    "chain_port": 25
+  },
+  "nntp": {
+    "local": true,
+    "port": 119,
+    "separator": ":",
+    "headtoo": false
+  },
+  "wordmangle": {
+    "stemming": false,
+    "auto_detect_language": false
+  }
+}
