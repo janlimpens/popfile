@@ -515,8 +515,6 @@ method _migrate_folder_config() {
             $sth->execute($userid, $_, $mapping{$_}) for keys %mapping;
         }
     }
-    $self->config('watched_folders', undef);
-    $self->config('bucket_folder_mappings', undef);
     $dbh->disconnect();
 }
 
