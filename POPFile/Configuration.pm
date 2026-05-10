@@ -545,7 +545,7 @@ my %_CONFIG_TYPES = (
     bayes_sqlite_backup => 'bool',
     bayes_sqlite_fast_writes => 'bool',
     bayes_unclassified_weight => 'int',
-    bayes_subject_mod_pos => 'int',
+    bayes_subject_mod_pos => 'bool',
     bayes_xpl_angle => 'bool',
     bayes_stopword_ratio => 'int',
     config_pidcheck_interval => 'int',
@@ -580,7 +580,7 @@ my %_CONFIG_TYPES = (
     pop3_enabled => 'bool',
     smtp_enabled => 'bool',
     wordmangle_stemming => 'bool',
-    wordmangle_auto_detect_language => 'int' );
+    wordmangle_auto_detect_language => 'bool' );
 
 method _config_to_json ($key, $value) {
     return $value
