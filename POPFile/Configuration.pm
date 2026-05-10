@@ -314,11 +314,11 @@ deprecated-parameters store so they are not silently lost on the next save.
 method load_configuration() {
     $started = 1;
     my $legacy_config = $self->get_user_path('popfile.cfg');
-    my $json_config = $self->get_user_path('popfile.json');
+    my $json_config = $self->get_user_path('config.json');
     $self->_migrate_legacy_to_json()
         if !-e $json_config && -e $legacy_config;
     if (!-e $json_config && !-e $legacy_config) {
-        my $sample = $self->get_root_path('popfile.json.sample');
+        my $sample = $self->get_root_path('config.json.sample');
         copy($sample, $json_config)
             if -e $sample;
     }
@@ -616,7 +616,7 @@ method _json_to_config ($key, $value) {
 method _load_json() {
     require POPFile::ConfigFile;
     my $cf = POPFile::ConfigFile->new();
-    my $data = $cf->load($self->get_user_path("popfile.json"));
+    my $data = $cf->load($self->get_user_path("config.json"));
     for my $section (keys %$data) {
         next
             if $section eq "version";
@@ -650,7 +650,7 @@ method _save_json() {
         }
     }
     my $cf = POPFile::ConfigFile->new();
-    $cf->save($self->get_user_path("popfile.json"), \%data);
+    $cf->save($self->get_user_path("config.json"), \%data);
     $save_needed = 0;
 }
 

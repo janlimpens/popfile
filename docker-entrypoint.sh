@@ -3,8 +3,8 @@
 POPFILE_USER="${POPFILE_USER:-/data}"
 POPFILE_ROOT="${POPFILE_ROOT:-/app}"
 mkdir -p "$POPFILE_USER/messages"
-if [ ! -f "$POPFILE_USER/popfile.json" ]; then
-    cat > "$POPFILE_USER/popfile.json" <<EOF
+if [ ! -f "$POPFILE_USER/config.json" ]; then
+    cat > "$POPFILE_USER/config.json" <<EOF
 {
   "version": 2,
   "api": {
@@ -37,7 +37,7 @@ EOF
             print $fh $json->encode($data);
             close $fh;
         ' "$tmp" "$POPFILE_PASSWORD"
-        mv "$tmp" "$POPFILE_USER/popfile.json"
+        mv "$tmp" "$POPFILE_USER/config.json"
         unlink "$tmp" 2>/dev/null || true
     fi
 fi

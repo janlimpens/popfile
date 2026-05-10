@@ -4,7 +4,7 @@ cache/
 *.log
 popfile.cfg
 popfile.cfg.bak
-popfile.json
+config.json
 popfile.db
 *.tmp
 messages/*

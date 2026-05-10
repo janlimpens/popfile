@@ -8,7 +8,7 @@ use Test2::V0;
 use TestHelper;
 use File::Temp qw(tempdir);
 
-subtest 'legacy popfile.cfg is migrated to popfile.json' => sub {
+subtest 'legacy popfile.cfg is migrated to config.json' => sub {
     my ($config, $mq, $tmpdir) = TestHelper::setup();
     $config->set_started(0);
     $config->parameter('api_port', 7070);
@@ -20,13 +20,13 @@ subtest 'legacy popfile.cfg is migrated to popfile.json' => sub {
     $config->_save_legacy();
 
     ok(-e "$tmpdir/popfile.cfg", 'legacy cfg file written');
-    ok(!-e "$tmpdir/popfile.json", 'no json yet');
+    ok(!-e "$tmpdir/config.json", 'no json yet');
 
     $config->load_configuration();
 
     ok(!-e "$tmpdir/popfile.cfg", 'legacy cfg moved aside');
     ok(-e "$tmpdir/popfile.cfg.bak", 'backup exists');
-    ok(-e "$tmpdir/popfile.json", 'json created');
+    ok(-e "$tmpdir/config.json", 'json created');
     is($config->parameter('api_port'), 7070, 'api_port restored from migration');
     is($config->parameter('imap_hostname'), 'mail.example.com', 'hostname restored');
 };
@@ -48,7 +48,7 @@ subtest 'encrypted values survive legacy → JSON migration' => sub {
     is($config->parameter('imap_password'), 's3cret', 'password decrypted after migration');
 };
 
-subtest 'existing popfile.json is loaded directly (no migration)' => sub {
+subtest 'existing config.json is loaded directly (no migration)' => sub {
     my ($config, $mq, $tmpdir) = TestHelper::setup();
     $config->set_started(0);
     $config->parameter('api_port', 8080);

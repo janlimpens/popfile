@@ -95,7 +95,7 @@ unless ($noserver) {
     my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
     $user =~ s{[\\/]+$}{};
     print "\nPOPFile " . $POPFile->CORE_version() . "\n";
-    print "Config: " . File::Spec->rel2abs("$user/popfile.json") . "\n";
+    print "Config: " . File::Spec->rel2abs("$user/config.json") . "\n";
 }
 $POPFile->CORE_load($noserver);
 $POPFile->CORE_link_components();
@@ -119,7 +119,7 @@ sub _cfg_value {
     my ($key) = @_;
     my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
     $user =~ s{[\\/]+$}{};
-    my $json_path = "$user/popfile.json";
+    my $json_path = "$user/config.json";
     if (-e $json_path) {
         require POPFile::ConfigFile;
         my $cf = POPFile::ConfigFile->new();
@@ -192,7 +192,7 @@ sub do_config {
     
     # Read existing config (JSON preferred, legacy fallback)
     my %config;
-    my $json_path = "$user/popfile.json";
+    my $json_path = "$user/config.json";
     my $legacy_path = "$user/popfile.cfg";
     if (-e $json_path) {
         require POPFile::ConfigFile;
