@@ -6,6 +6,7 @@ use feature 'try';
 no warnings 'experimental::try';
 use Mojo::IOLoop;
 use Services::IMAP::Client;
+use Services::IMAP::Folder;
 
 class Services::IMAP :isa(POPFile::Module);
 
@@ -490,8 +491,10 @@ method _migrate_folder_config() {
     return $dbh->disconnect()
         if $existing;
     
+    my $cfg = $self->configuration();
     my $sep = '-->';
-    my $watched_raw = $self->config('watched_folders');
+    my $watched_raw = $self->config('watched_folders')
+        // $cfg->deprecated_parameter('imap_watched_folders');
     if (defined $watched_raw && $watched_raw ne '') {
         my @folders = grep { $_ ne '' } split /$sep/, $watched_raw;
         if (@folders) {
@@ -501,7 +504,8 @@ method _migrate_folder_config() {
         }
     }
     
-    my $mapping_raw = $self->config('bucket_folder_mappings');
+    my $mapping_raw = $self->config('bucket_folder_mappings')
+        // $cfg->deprecated_parameter('imap_bucket_folder_mappings');
     if (defined $mapping_raw && $mapping_raw ne '') {
         my %mapping = split /$sep/, $mapping_raw;
         if (%mapping) {
@@ -647,11 +651,15 @@ method build_folder_list() {
     %folders = ();
     for my $folder ($self->watched_folders()) {
         $folders{$folder}{watched} = 1;
+        $folders{$folder}{_folder} = Services::IMAP::Folder->new(
+            name => $folder, watched => 1);
     }
     for my $bucket ($classifier->get_all_buckets($self->api_session())) {
         my $folder = $self->folder_for_bucket($bucket);
         if (defined $folder) {
             $folders{$folder}{output} = $bucket;
+            $folders{$folder}{_folder} //= Services::IMAP::Folder->new(name => $folder);
+            $folders{$folder}{_folder}->set_output_bucket($bucket);
         }
     }
     $folder_change_flag = 0;

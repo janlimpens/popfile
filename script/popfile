@@ -179,31 +179,6 @@ sub _port_in_use {
     return 1;
 }
 
-sub _crypto_key {
-    require Digest::SHA;
-    my $root = $ENV{POPFILE_ROOT} // '.';
-    return Digest::SHA::sha256($root . ':popfile-config-key')
-}
-
-sub _is_sensitive {
-    my ($key) = @_;
-    return $key eq 'imap_password' || $key eq 'api_password'
-}
-
-sub _encrypt_value {
-    my ($plain) = @_;
-    return $plain if $plain eq '' || $plain =~ /^ENC:/;
-    require Crypt::Cipher::AES;
-    require Crypt::Mode::CBC;
-    require MIME::Base64;
-    my $key = _crypto_key();
-    my $iv = Crypt::Cipher::AES->new($key)->encrypt('0' x 16);
-    my $padded = $plain . chr(16 - (length($plain) % 16)) x (16 - (length($plain) % 16));
-    my $cbc = Crypt::Mode::CBC->new('AES', 0);
-    my $cipher = $cbc->encrypt($padded, $key, $iv);
-    return 'ENC:' . MIME::Base64::encode_base64($iv . $cipher, '')
-}
-
 sub do_config {
     my @args = @_;
     my $from_stdin = @args && $args[0] eq '--stdin' ? shift(@args) && 1 : 0;
@@ -252,7 +227,13 @@ sub do_config {
     for my $pair (@pairs) {
         if ($pair =~ /^([^=]+)=(.*)/) {
             my ($k, $v) = ($1, $2);
-            $v = _encrypt_value($v) if _is_sensitive($k);
+            my @sensitive = qw(api_password imap_password);
+            if (grep { $_ eq $k } @sensitive) {
+                require POPFile::Configuration;
+                my $cfg = POPFile::Configuration->new();
+                $cfg->set_popfile_root($ENV{POPFILE_ROOT} // '.');
+                $v = $cfg->_encrypt_config($v);
+            }
             $config{$k} = $v;
             print "$k set\n";
         }

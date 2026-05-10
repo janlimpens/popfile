@@ -88,8 +88,11 @@ sub _imap_utf7_to_utf8 {
     return $str
 }
 
+# Universal entry point for decoding an IMAP Modified UTF-7 folder name.
+# Works both as a class method (Services::IMAP::Folder->from_imap_name($enc))
+# and as a plain function call (Services::IMAP::Folder::from_imap_name($enc)).
 sub from_imap_name {
-    my ($encoded) = @_;
+    my $encoded = @_ == 2 ? $_[1] : $_[0];  # skip class name if called as method
     my $decoded = _imap_utf7_to_utf8($encoded);
     return Services::IMAP::Folder->new(
         name      => $decoded,

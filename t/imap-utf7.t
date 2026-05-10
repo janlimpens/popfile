@@ -42,15 +42,15 @@ subtest 'Ampersand in folder name is escaped' => sub {
 };
 
 subtest 'from_imap_name decodes encoded names back to UTF-8' => sub {
-    my $f = Services::IMAP::Folder::from_imap_name('Entw&APw-rfe');
+    my $f = Services::IMAP::Folder->from_imap_name('Entw&APw-rfe');
     is($f->name(), "Entw\x{fc}rfe", 'Entwürfe decoded');
     is($f->imap_name(), 'Entw&APw-rfe', 'original IMAP name preserved');
     
-    my $f2 = Services::IMAP::Folder::from_imap_name('INBOX');
+    my $f2 = Services::IMAP::Folder->from_imap_name('INBOX');
     is($f2->name(), 'INBOX', 'INBOX decoded');
     is($f2->imap_name(), 'INBOX', 'original preserved');
     
-    my $f3 = Services::IMAP::Folder::from_imap_name('A&-B');
+    my $f3 = Services::IMAP::Folder->from_imap_name('A&-B');
     is($f3->name(), 'A&B', 'ampersand decoded');
 };
 
@@ -68,7 +68,7 @@ subtest 'Round trip: encode then decode' => sub {
     for my $name (@names) {
         my $f = Services::IMAP::Folder->new(name => $name);
         my $encoded = $f->to_imap_name();
-        my $f2 = Services::IMAP::Folder::from_imap_name($encoded);
+        my $f2 = Services::IMAP::Folder->from_imap_name($encoded);
         is($f2->name(), $name, "round-trip: $name");
     }
 };
@@ -76,7 +76,7 @@ subtest 'Round trip: encode then decode' => sub {
 subtest 'CJK characters encoded correctly' => sub {
     my $f = Services::IMAP::Folder->new(name => "\x{65e5}\x{672c}\x{8a9e}");
     my $encoded = $f->to_imap_name();
-    my $f2 = Services::IMAP::Folder::from_imap_name($encoded);
+    my $f2 = Services::IMAP::Folder->from_imap_name($encoded);
     is($f2->name(), "\x{65e5}\x{672c}\x{8a9e}", 'CJK round-trip');
 };
 
@@ -84,7 +84,7 @@ subtest 'Mixed ASCII and non-ASCII' => sub {
     my $f = Services::IMAP::Folder->new(name => "INBOX.Entw\x{fc}rfe.2024");
     is($f->to_imap_name(), 'INBOX.Entw&APw-rfe.2024', 'mixed section encoding');
     
-    my $f2 = Services::IMAP::Folder::from_imap_name('INBOX.Entw&APw-rfe.2024');
+    my $f2 = Services::IMAP::Folder->from_imap_name('INBOX.Entw&APw-rfe.2024');
     is($f2->name(), "INBOX.Entw\x{fc}rfe.2024", 'mixed section decoded');
 };
 
