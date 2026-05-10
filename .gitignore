@@ -3,6 +3,8 @@ cache/
 *.pid
 *.log
 popfile.cfg
+popfile.cfg.bak
+popfile.json
 popfile.db
 *.tmp
 messages/*
