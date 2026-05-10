@@ -89,9 +89,10 @@ subtest 'Mixed ASCII and non-ASCII' => sub {
 };
 
 subtest '_imap_utf7_to_utf8 handles edge cases' => sub {
-    is(Services::IMAP::Folder::_imap_utf7_to_utf8(''), '', 'empty string');
-    is(Services::IMAP::Folder::_imap_utf7_to_utf8(undef), '', 'undef returns empty');
-    is(Services::IMAP::Folder::_imap_utf7_to_utf8('&-'), '&', 'escaped ampersand');
+    my $f = Services::IMAP::Folder->new(name => 'test');
+    is($f->_imap_utf7_to_utf8(''), '', 'empty string');
+    is($f->_imap_utf7_to_utf8(undef), '', 'undef returns empty');
+    is($f->_imap_utf7_to_utf8('&-'), '&', 'escaped ampersand');
 };
 
 done_testing;

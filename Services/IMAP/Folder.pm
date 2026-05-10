@@ -24,13 +24,12 @@ class Services::IMAP::Folder;
 use Encode qw(decode encode);
 use MIME::Base64 qw(encode_base64 decode_base64);
 
-field $name :param :reader;         # Internal name (UTF-8)
-field $imap_name :param :reader = undef;    # IMAP Modified UTF-7 Name
+field $name :param :reader;
+field $imap_name :param :reader = undef;
 field $watched :param :reader :writer = 0;
 field $output_bucket :param :reader :writer = undef;
 
-sub _imap_utf7_encode_chunk {
-    my ($chunk) = @_;
+method _encode_chunk ($chunk) {
     return ''
         if $chunk eq '';
     my $encoded = encode('UTF-16BE', $chunk);
@@ -40,8 +39,7 @@ sub _imap_utf7_encode_chunk {
     return '&' . $encoded . '-'
 }
 
-sub _utf8_to_imap_utf7 {
-    my ($str) = @_;
+method _utf8_to_imap_utf7 ($str) {
     return ''
         unless defined $str;
     my $result = '';
@@ -51,7 +49,7 @@ sub _utf8_to_imap_utf7 {
         my $char = substr($str, $i, 1);
         my $ord = ord($char);
         if ($ord == 0x26) {
-            $result .= '&-';  # ampersand is escaped as &-
+            $result .= '&-';
             $i++;
         } elsif ($ord >= 0x20 && $ord <= 0x7e) {
             $result .= $char;
@@ -61,47 +59,43 @@ sub _utf8_to_imap_utf7 {
             while ($j < $len) {
                 my $c = substr($str, $j, 1);
                 my $o = ord($c);
-                last if ($o >= 0x20 && $o <= 0x7e);
+                last
+                    if $o >= 0x20 && $o <= 0x7e;
                 $j++;
             }
             my $chunk = substr($str, $i, $j - $i);
-            $result .= _imap_utf7_encode_chunk($chunk);
+            $result .= $self->_encode_chunk($chunk);
             $i = $j;
         }
     }
     return $result
 }
 
-sub _imap_utf7_decode_chunk {
-    my ($chunk) = @_;
+method _decode_chunk ($chunk) {
     return '&'
         if $chunk eq '';
     (my $b = $chunk) =~ tr|+|/|;
     return decode('UTF-16BE', decode_base64($b))
 }
 
-sub _imap_utf7_to_utf8 {
-    my ($str) = @_;
+method _imap_utf7_to_utf8 ($str) {
     return ''
         unless defined $str;
-    $str =~ s/&([^-]*)-/_imap_utf7_decode_chunk($1)/ge;
+    $str =~ s/&([^-]*)-/$self->_decode_chunk($1)/ge;
     return $str
 }
 
-# Universal entry point for decoding an IMAP Modified UTF-7 folder name.
-# Works both as a class method (Services::IMAP::Folder->from_imap_name($enc))
-# and as a plain function call (Services::IMAP::Folder::from_imap_name($enc)).
-sub from_imap_name {
-    my $encoded = @_ == 2 ? $_[1] : $_[0];  # skip class name if called as method
-    my $decoded = _imap_utf7_to_utf8($encoded);
-    return Services::IMAP::Folder->new(
-        name      => $decoded,
+sub from_imap_name ($class, $encoded) {
+    my $tmp = $class->new(name => '');
+    my $decoded = $tmp->_imap_utf7_to_utf8($encoded);
+    return $class->new(
+        name => $decoded,
         imap_name => $encoded,
     )
 }
 
 method to_imap_name () {
-    return $imap_name // _utf8_to_imap_utf7($name)
+    return $imap_name // $self->_utf8_to_imap_utf7($name)
 }
 
 1;
