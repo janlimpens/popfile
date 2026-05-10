@@ -3,7 +3,7 @@
 POPFILE_USER="${POPFILE_USER:-/data}"
 POPFILE_ROOT="${POPFILE_ROOT:-/app}"
 mkdir -p "$POPFILE_USER/messages"
-if [ ! -f "$POPFILE_USER/config.json" ]; then
+if [ ! -f "$POPFILE_USER/config.json" ] && [ ! -f "$POPFILE_USER/popfile.cfg" ]; then
     cat > "$POPFILE_USER/config.json" <<EOF
 {
   "version": 2,
