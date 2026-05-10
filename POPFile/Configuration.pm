@@ -25,6 +25,7 @@ use locale;
 use File::Copy qw(copy);
 use File::Basename qw(basename);
 use Getopt::Long;
+use Cpanel::JSON::XS ();
 
 class POPFile::Configuration
     :isa(POPFile::Module);
@@ -311,22 +312,15 @@ deprecated-parameters store so they are not silently lost on the next save.
 
 method load_configuration() {
     $started = 1;
-    
-    # Migration: if only legacy config exists, convert to JSON
     my $legacy_config = $self->get_user_path('popfile.cfg');
     my $json_config = $self->get_user_path('popfile.json');
-    if (!-e $json_config && -e $legacy_config) {
-        $self->_migrate_legacy_to_json();
-    }
-    
-    # Load from JSON if it exists
+    $self->_migrate_legacy_to_json()
+        if !-e $json_config && -e $legacy_config;
     if (-e $json_config) {
         $config_format = 'json';
         $self->_load_json();
-        return;
+        return
     }
-    
-    # Fallback to legacy format
     $config_format = 'legacy';
     $self->_load_legacy();
 }
@@ -341,7 +335,7 @@ save (C<save_needed> is 0).
 
 method save_configuration() {
     return if $save_needed == 0;
-    
+
     if ($config_format eq 'json') {
         $self->_save_json();
     } else {
@@ -540,19 +534,79 @@ method _crypto_key() {
     return Digest::SHA::sha256($seed)
 }
 
+my %_CONFIG_TYPES = (
+    api_port => 'int',
+    api_local => 'bool',
+    api_open_browser => 'bool',
+    imap_port => 'int',
+    imap_use_ssl => 'bool',
+    imap_enabled => 'bool',
+    imap_training_mode => 'bool',
+    imap_expunge => 'bool',
+    imap_update_interval => 'int',
+    imap_training_limit => 'int',
+    config_pidcheck_interval => 'int',
+    GLOBAL_timeout => 'int',
+    GLOBAL_message_cutoff => 'int',
+    GLOBAL_debug => 'int',
+    history_history_days => 'int',
+    history_archive => 'bool',
+    history_archive_classes => 'int',
+    logger_level => 'int',
+    logger_log_to_stdout => 'bool',
+    logger_log_sql => 'bool',
+    bayes_sqlite_backup => 'bool',
+    bayes_sqlite_fast_writes => 'bool',
+    bayes_unclassified_weight => 'int',
+    bayes_corpus => 'int',
+    pop3_port => 'int',
+    pop3_secure_port => 'int',
+    pop3_local => 'bool',
+    pop3_secure_server => 'bool',
+    pop3_toptoo => 'bool',
+    smtp_port => 'int',
+    nntp_port => 'int' );
+
+method _config_to_json ($key, $value) {
+    return $value
+        unless defined $value;
+    my $type = $_CONFIG_TYPES{$key};
+    if ($type && $type eq 'bool') {
+        return $value ? Cpanel::JSON::XS::true : Cpanel::JSON::XS::false
+    }
+    if ($type && $type eq 'int') {
+        return 0 + $value
+    }
+    return $value
+}
+
+method _json_to_config ($key, $value) {
+    return $value
+        unless defined $value;
+    my $type = $_CONFIG_TYPES{$key};
+    if ($type && $type eq 'bool') {
+        return $value ? '1' : '0'
+    }
+    if ($type && $type eq 'int') {
+        return "$value"
+    }
+    return "$value"
+}
+
 method _load_json() {
     require POPFile::ConfigFile;
     my $cf = POPFile::ConfigFile->new();
     my $data = $cf->load($self->get_user_path("popfile.json"));
-    
-    # Flatten nested structure into %configuration_parameters
     for my $section (keys %$data) {
-        next if $section eq "version";
+        next
+            if $section eq "version";
         my $nested = $data->{$section};
-        next unless ref $nested eq "HASH";
+        next
+            unless ref $nested eq "HASH";
         for my $key (keys %$nested) {
             my $full_name = $section . "_" . $key;
             my $value = $nested->{$key};
+            $value = $self->_json_to_config($full_name, $value);
             $value = $self->_decrypt_config($value)
                 if $self->_is_sensitive_key($full_name);
             $configuration_parameters{$full_name}{value} = $value;
@@ -563,22 +617,18 @@ method _load_json() {
 
 method _save_json() {
     require POPFile::ConfigFile;
-    
-    # Build nested structure from %configuration_parameters
     my %data = (version => 2);
     for my $key (sort keys %configuration_parameters) {
         my $value = $configuration_parameters{$key}{value};
         $value = $self->_encrypt_config($value)
             if $self->_is_sensitive_key($key);
-        
-        # Split "section_key" into section and key
+        $value = $self->_config_to_json($key, $value);
         if ($key =~ /^(.+?)_(.+)$/) {
             my $section = $1;
             my $param = $2;
             $data{$section}{$param} = $value;
         }
     }
-    
     my $cf = POPFile::ConfigFile->new();
     $cf->save($self->get_user_path("popfile.json"), \%data);
     $save_needed = 0;
@@ -595,8 +645,7 @@ method _load_legacy() {
             s/(\015|\012)//g;
             if (/(\S+) (.+)?/) {
                 my $parameter = $1;
-                my $value = $2;
-                $value = '' if !defined($value);
+                my $value = $2 // '';
                 $parameter = $self->upgrade_parameter($parameter);
                 if (defined($configuration_parameters{$parameter})) {
                     $value = $self->_decrypt_config($value)
@@ -645,14 +694,9 @@ method _save_legacy() {
 }
 
 method _migrate_legacy_to_json() {
-    # Load legacy format
     $self->_load_legacy();
-    
-    # Save as JSON
     $config_format = 'json';
     $self->_save_json();
-    
-    # Backup legacy file
     my $legacy_config = $self->get_user_path('popfile.cfg');
     my $backup = $self->get_user_path('popfile.cfg.bak');
     rename($legacy_config, $backup) or die "Cannot backup $legacy_config: $!";

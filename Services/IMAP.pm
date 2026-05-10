@@ -488,9 +488,10 @@ method _migrate_folder_config() {
     my $existing = $dbh->selectrow_array(
         'SELECT count(*) FROM imap_watched_folders WHERE userid = ?',
         undef, $userid);
-    return $dbh->disconnect()
-        if $existing;
-    
+    if ($existing) {
+        $dbh->disconnect();
+        return
+    }
     my $cfg = $self->configuration();
     my $sep = '-->';
     my $watched_raw = $self->config('watched_folders')
@@ -503,7 +504,6 @@ method _migrate_folder_config() {
             $sth->execute($userid, $_) for @folders;
         }
     }
-    
     my $mapping_raw = $self->config('bucket_folder_mappings')
         // $cfg->deprecated_parameter('imap_bucket_folder_mappings');
     if (defined $mapping_raw && $mapping_raw ne '') {
@@ -515,7 +515,6 @@ method _migrate_folder_config() {
             $sth->execute($userid, $_, $mapping{$_}) for keys %mapping;
         }
     }
-    
     $self->config('watched_folders', undef);
     $self->config('bucket_folder_mappings', undef);
     $dbh->disconnect();

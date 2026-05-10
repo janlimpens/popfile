@@ -242,22 +242,39 @@ sub do_config {
             return 1;
         }
     }
-    
-    # Write as JSON (with version marker)
     require POPFile::ConfigFile;
     my %data = (version => 2);
+    my %bool_keys = map { $_ => 1 } qw(
+        api_local api_open_browser imap_use_ssl imap_enabled
+        imap_training_mode imap_expunge history_archive
+        logger_log_to_stdout logger_log_sql
+        bayes_sqlite_backup bayes_sqlite_fast_writes
+        pop3_local pop3_secure_server pop3_toptoo);
+    my %int_keys = map { $_ => 1 } qw(
+        api_port imap_port imap_update_interval imap_training_limit
+        config_pidcheck_interval GLOBAL_timeout GLOBAL_message_cutoff
+        GLOBAL_debug history_history_days history_archive_classes
+        logger_level pop3_port pop3_secure_port smtp_port nntp_port);
     for my $key (sort keys %config) {
         if ($key =~ /^(.+?)_(.+)$/) {
-            $data{$1}{$2} = $config{$key};
+            my ($section, $param) = ($1, $2);
+            my $value = $config{$key};
+            if (defined $value && $value ne '') {
+                if ($bool_keys{$key}) {
+                    $value = $value ? Cpanel::JSON::XS::true : Cpanel::JSON::XS::false;
+                } elsif ($int_keys{$key} && $value =~ /^-?\d+$/) {
+                    $value = 0 + $value;
+                }
+            }
+            $data{$section}{$param} = $value;
         }
     }
     my $cf = POPFile::ConfigFile->new();
     $cf->save($json_path, \%data);
     chmod 0600, $json_path;
-    
-    # Remove legacy file if it exists
-    unlink $legacy_path if -e $legacy_path;
-    return 0;
+    unlink $legacy_path
+        if -e $legacy_path;
+    return 0
 }
 
 sub do_train {
