@@ -80,6 +80,46 @@ method word_list_for_bucket($dbh, $bucketid, $prefix) {
     return $rows->@*
 }
 
+# ── word-count cache refresh (mutates hashes passed by reference) ──
+
+method refresh_counts($dbh, $bcount, $bunique, $id_cache, $userid,
+                       $updated_bucket, $deleted_bucket) {
+    if (defined $updated_bucket
+            && defined $id_cache->{$userid}{$updated_bucket}) {
+        my $bid = $id_cache->{$userid}{$updated_bucket}{id};
+        my $row = $dbh->selectrow_arrayref(
+            'SELECT sum(times), count(*) FROM matrix WHERE bucketid = ?',
+            undef, $bid);
+        $bcount->{$userid}{$updated_bucket} =
+            (defined $row->[0] ? $row->[0] : 0);
+        $bunique->{$userid}{$updated_bucket} = $row->[1];
+        return 1
+    }
+    if (defined $deleted_bucket) {
+        delete $bcount->{$userid}{$deleted_bucket};
+        delete $bunique->{$userid}{$deleted_bucket};
+        return 1
+    }
+    delete $bcount->{$userid};
+    delete $bunique->{$userid};
+    my $sth = $dbh->prepare(
+        'SELECT sum(matrix.times), count(matrix.id), buckets.name
+         FROM matrix, buckets
+         WHERE matrix.bucketid = buckets.id
+            AND buckets.userid = ?
+         GROUP BY buckets.name');
+    $sth->execute($userid);
+    for my $b (sort keys $id_cache->{$userid}->%*) {
+        $bcount->{$userid}{$b} = 0;
+        $bunique->{$userid}{$b} = 0;
+    }
+    while (my $row = $sth->fetchrow_arrayref) {
+        $bcount->{$userid}{$row->[2]} = $row->[0];
+        $bunique->{$userid}{$row->[2]} = $row->[1];
+    }
+    0
+}
+
 method raw_word_prefixes($dbh, $bucketid) {
     return $dbh->selectcol_arrayref("
         SELECT words.word FROM matrix, words

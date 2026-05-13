@@ -120,6 +120,19 @@ method parameter_set($dbh, $userid, $bucket, $bucketid, $param_name, $value) {
     return 1
 }
 
+# ── cache refresh ──
+
+method refresh_id_cache($dbh, $cache, $userid) {
+    delete $cache->{$userid};
+    my $sth = $dbh->prepare(
+        'SELECT name, id, pseudo FROM buckets WHERE userid = ?');
+    $sth->execute($userid);
+    while (my $row = $sth->fetchrow_arrayref) {
+        $cache->{$userid}{$row->[0]}{id} = $row->[1];
+        $cache->{$userid}{$row->[0]}{pseudo} = $row->[2];
+    }
+}
+
 # ── bucket CRUD (DB writes only; Bayes handles cache + history) ──
 
 method name_is_valid($name) {

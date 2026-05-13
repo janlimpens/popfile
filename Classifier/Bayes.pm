@@ -69,17 +69,11 @@ field $hostname = '';
 field $history = 0;
 
 # Cached prepared SQL statements (set in db_connect, released in db_disconnect)
-field $db_get_buckets = 0;
 field $db_get_wordid = 0;
 field $db_get_word_count = 0;
 field $db_put_word_count = 0;
 field $db_get_unique_word_count = 0;
-field $db_get_bucket_word_counts = 0;
-field $db_get_bucket_word_count = 0;
 field $db_get_full_total = 0;
-field $db_get_bucket_parameter = 0;
-field $db_set_bucket_parameter = 0;
-field $db_get_bucket_parameter_default = 0;
 field $db_delete_zero_words = 0;
 
 # Temporary per-call prepared statements (undef'd after use)
@@ -771,9 +765,6 @@ method db_connect() {
     # word
     # parameter
 
-    $db_get_buckets = $db->prepare($self->normalize_sql(
-        'SELECT name, id, pseudo FROM buckets
-         WHERE buckets.userid = ?'));
     $db_get_wordid = $db->prepare($self->normalize_sql(
         'SELECT id FROM words
          WHERE words.word = ? LIMIT 1'));
@@ -783,14 +774,6 @@ method db_connect() {
             matrix.wordid = ? LIMIT 1'));
     $db_put_word_count = $db->prepare($self->normalize_sql(
         'REPLACE INTO matrix (bucketid, wordid, times, lastseen) VALUES (?, ?, ?, date(\'now\'))'));
-    $db_get_bucket_word_counts = $db->prepare($self->normalize_sql(
-        'SELECT sum(matrix.times), count(matrix.id), buckets.name FROM matrix, buckets
-         WHERE matrix.bucketid = buckets.id
-            AND buckets.userid = ?
-         GROUP BY buckets.name'));
-    $db_get_bucket_word_count = $db->prepare($self->normalize_sql(
-        'SELECT sum(times), count(*) FROM matrix
-         WHERE bucketid = ?'));
     $db_get_unique_word_count = $db->prepare($self->normalize_sql(
         'SELECT count(*) FROM matrix
          WHERE matrix.bucketid IN (
@@ -801,15 +784,6 @@ method db_connect() {
          WHERE matrix.bucketid IN (
              SELECT buckets.id FROM buckets
              WHERE buckets.userid = ?)'));
-    $db_get_bucket_parameter = $db->prepare($self->normalize_sql(
-        'SELECT bucket_params.val FROM bucket_params
-         WHERE bucket_params.bucketid = ? AND
-            bucket_params.btid = ?'));
-    $db_set_bucket_parameter = $db->prepare($self->normalize_sql(
-        'REPLACE INTO bucket_params (bucketid, btid, val) VALUES (?, ?, ?)'));
-    $db_get_bucket_parameter_default = $db->prepare($self->normalize_sql(
-        'SELECT bucket_template.def FROM bucket_template
-         WHERE bucket_template.id = ?'));
     $db_delete_zero_words = $db->prepare($self->normalize_sql(
         'DELETE FROM matrix
          WHERE (matrix.times <= 0 OR matrix.times IS NULL)
@@ -988,25 +962,19 @@ Disconnect from the POPFile database
 
 method db_disconnect() {
     return
-        unless ref $db_get_buckets;
-    $db_get_buckets->finish();
+        unless ref $db_get_wordid;
     $db_get_wordid->finish();
     $db_get_word_count->finish();
     $db_put_word_count->finish();
-    $db_get_bucket_word_counts->finish();
-    $db_get_bucket_word_count->finish();
     $db_get_unique_word_count->finish();
     $db_get_full_total->finish();
     $db_delete_zero_words->finish();
 
     # Avoid DBD::SQLite 'closing dbh with active statement handles' bug
 
-    undef $db_get_buckets;
     undef $db_get_wordid;
     undef $db_get_word_count;
     undef $db_put_word_count;
-    undef $db_get_bucket_word_counts;
-    undef $db_get_bucket_word_count;
     undef $db_get_unique_word_count;
     undef $db_get_full_total;
     undef $db_delete_zero_words;
@@ -1029,58 +997,9 @@ method db_update_cache ($session, $updated_bucket = undef, $deleted_bucket = und
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    delete $db_bucketid->{$userid};
-
-    $self->validate_sql_prepare_and_execute($db_get_buckets, $userid);
-    while (my $row = $db_get_buckets->fetchrow_arrayref) {
-        $db_bucketid->{$userid}{$row->[0]}{id} = $row->[1];
-        $db_bucketid->{$userid}{$row->[0]}{pseudo} = $row->[2];
-    }
-
-    my $updated = 0;
-
-    if (defined($updated_bucket) &&
-         defined($db_bucketid->{$userid}{$updated_bucket})) {
-        my $bucketid = $db_bucketid->{$userid}{$updated_bucket}{id};
-        $self->validate_sql_prepare_and_execute(
-            $db_get_bucket_word_count, $bucketid);
-        my $row = $db_get_bucket_word_count->fetchrow_arrayref;
-
-        $db_bucketcount->{$userid}{$updated_bucket} =
-            (defined($row->[0]) ? $row->[0] : 0);
-        $db_bucketunique->{$userid}{$updated_bucket} = $row->[1];
-
-        $updated = 1;
-    }
-
-    if (defined($deleted_bucket) &&
-         !defined($db_bucketid->{$userid}{$deleted_bucket})) {
-        # Delete cache for specified bucket.
-
-        delete $db_bucketcount->{$userid}{$deleted_bucket};
-        delete $db_bucketunique->{$userid}{$deleted_bucket};
-
-        $updated = 1;
-    }
-
-    if (!$updated) {
-        delete $db_bucketcount->{$userid};
-        delete $db_bucketunique->{$userid};
-
-        $self->validate_sql_prepare_and_execute(
-            $db_get_bucket_word_counts, $userid);
-        for my $b (sort keys $db_bucketid->{$userid}->%*) {
-            $db_bucketcount->{$userid}{$b} = 0;
-            $db_bucketunique->{$userid}{$b} = 0;
-        }
-
-        while (my $row = $db_get_bucket_word_counts->fetchrow_arrayref) {
-            $db_bucketcount->{$userid}{$row->[2]} = $row->[0];
-            $db_bucketunique->{$userid}{$row->[2]} = $row->[1];
-        }
-    }
-
+    $buckets->refresh_id_cache($self->db(), $db_bucketid, $userid);
+    $corpus->refresh_counts($self->db(), $db_bucketcount, $db_bucketunique,
+        $db_bucketid, $userid, $updated_bucket, $deleted_bucket);
     $self->update_constants($session);
 }
 
