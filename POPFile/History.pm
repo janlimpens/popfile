@@ -44,6 +44,7 @@ my $fields_slot = join ', ', @fields;
 
 use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
+use POPFile::HistoryQueries;
 class POPFile::History
     :isa(POPFile::Module) :does(POPFile::Role::DBConnect) :does(POPFile::Role::SQL);
 
@@ -53,7 +54,7 @@ class POPFile::History
 
     field $commit_list = [];
 
-    field %queries;
+    field $queries :reader;
 
     field $firsttime = 1;
 
@@ -122,6 +123,7 @@ method stop() {
 }
 
 method start () {
+    $queries = POPFile::HistoryQueries->new();
     my $dbconnect = $self->module_config('bayes', 'dbconnect') // '';
     my $dbname;
     if ($dbconnect =~ /:memory:/i) {
@@ -771,214 +773,37 @@ rows with C<get_query_rows()>.
 =cut
 
 method start_query() {
-    # Think of a large random number, make sure that it hasn't
-    # been used and then return it
-
-    while (1) {
-        my $id = sprintf('%8.8x', int(rand(4294967295)));
-
-        unless (defined $queries{$id}) {
-            $queries{$id}{query} = 0;
-            $queries{$id}{count} = 0;
-            $queries{$id}{cache} = ();
-            return $id
-        }
-    }
+    return $queries->start()
 }
 
 =head2 stop_query($id)
 
-Releases the query session identified by C<$id>, freeing its database
-statement handle and cached rows.
+Releases the query session identified by C<$id>.
 
 =cut
 
 method stop_query ($id) {
-    # If the cache size hasn't grown to the row
-    # count then we didn't fetch everything and so
-    # we fill call finish to clean up
-
-    my $q = $queries{$id}{query};
-
-    if ((defined $q) && ($q != 0)) {
-        if ($#{$queries{$id}{cache}} !=
-             $queries{$id}{count}) {
-        $q->finish;
-            undef $queries{$id}{query};
-        }
-    }
-
-    delete $queries{$id};
+    $queries->stop($id)
 }
 
 =head2 set_query($id, $filter, $search, $sort, $not)
 
-Configures the query session C<$id> with optional filter, full-text search,
-and sort criteria.
-
-=over 4
-
-=item C<$filter>
-
-Bucket name to restrict results to, or one of the special values
-C<__filter__magnet> (magnet-classified only) or C<__filter__reclassified>
-(reclassified messages only).  Empty string means no filter.
-
-=item C<$search>
-
-String to match against C<hdr_from> and C<hdr_subject> (SQL LIKE).  Empty
-string means no search.
-
-=item C<$sort>
-
-Field to sort on: one of C<inserted>, C<from>, C<to>, C<cc>, C<subject>,
-C<bucket>, C<date>, or C<size>.  Prefix with C<-> for descending order.
-Defaults to C<inserted desc>.
-
-=item C<$not>
-
-When 1, negates both the search and the filter.
-
-=back
-
-Results are not fetched immediately; call C<get_query_size()> and
-C<get_query_rows()> to retrieve them.
+Delegates to L<POPFile::HistoryQueries/set>.
 
 =cut
 
 method set_query ($id, $filter, $search, $sort, $not) {
-    $search =~ s/\0//g;
-    $sort = '' if ($sort !~ /^(\-)?(inserted|from|to|cc|subject|bucket|date|size)$/);
-
-    # If this query has already been done and is in the cache
-    # then do no work here
-
-    if (defined($queries{$id}{fields}) &&
-         ($queries{$id}{fields} eq "$filter:$search:$sort:$not")) {
-        return;
-    }
-
-    $queries{$id}{fields} = "$filter:$search:$sort:$not";
-
-    # We do two queries, the first to get the total number of rows that
-    # would be returned and then we start the real query.  This is done
-    # so that we know the size of the resulting data without having
-    # to retrieve it all
-
-    $queries{$id}{base} =
-        'select XXX from history, buckets
-                left join magnets on magnets.id = history.magnetid
-                where history.userid = 1 and committed = 1';
-    $queries{$id}{base} .= ' and history.bucketid = buckets.id';
-    $queries{$id}{params} = [];
-
-    my $not_equal = $not ? '!='  : '=';
-    my $equal = $not ? '='   : '!=';
-
-    if ($search ne '') {
-        my $qb = $self->qb();
-        my $pat = '%' . $search . '%';
-        my $like_expr = $qb->combine_or(
-            $qb->like('hdr_from', $pat),
-            $qb->like('hdr_subject', $pat));
-        my $expr = $not ? $qb->negate($like_expr) : $like_expr;
-        $queries{$id}{base} .= ' and ' . $expr->as_sql();
-        push $queries{$id}{params}->@*, $expr->params();
-    }
-
-    if ($filter ne '') {
-        if ($filter eq '__filter__magnet') {
-            $queries{$id}{base} .= " and history.magnetid $equal 0";
-        } else {
-            if ($filter eq '__filter__reclassified') {
-                $queries{$id}{base} .= " and history.usedtobe $equal 0";
-            } else {
-                my $qb = $self->qb();
-                my $expr = $qb->compare('buckets.name', $filter,
-                    comparator => $not_equal);
-                $queries{$id}{base} .= ' and ' . $expr->as_sql();
-                push $queries{$id}{params}->@*, $expr->params();
-            }
-        }
-    }
-
-    # Add the sort option (if there is one)
-
-    if ($sort ne '') {
-        $sort =~ s/^(\-)//;
-        my $direction = defined($1)?'desc':'asc';
-        if ($sort eq 'bucket') {
-            $sort = 'buckets.name';
-        } else {
-            if ($sort =~ /from|to|cc/) {
-                $sort = "sort_$sort";
-            } else {
-                if ($sort ne 'inserted' && $sort ne 'size') {
-                    $sort = "hdr_$sort";
-                }
-            }
-        }
-        $queries{$id}{base} .= " order by $sort $direction;";
-    } else {
-        $queries{$id}{base} .= ' order by inserted desc;';
-    }
-
-    my $count = $queries{$id}{base};
-    $self->log_msg(DEBUG => "Base query is $count");
-    $count =~ s/XXX/COUNT(*)/;
-
-    my $sth = $self->db()->prepare_cached($count);
-    $sth->execute($queries{$id}{params}->@*);
-    $queries{$id}{count} = $sth->fetchrow_arrayref->[0];
-    $sth->finish;
-
-    my $select = $queries{$id}{base};
-    $select =~ s/XXX/$fields_slot/;
-    $queries{$id}{query} = $self->db()->prepare($select);
-    $queries{$id}{cache} = ();
+    $queries->set($id, $filter, $search, $sort, $not, $self->db())
 }
 
+=head2 get_search_queries(%args)
+
+Delegates to L<POPFile::HistoryQueries/search>.
+
+=cut
+
 method get_search_queries(%args) {
-    my $qb = $self->qb();
-    my $where = $qb->combine(AND =>
-        $qb->compare('history.userid', \1),
-        $qb->compare('committed', \1),
-        $qb->compare('history.bucketid' => \'buckets.id'));
-    my $base_query = $qb
-        ->select()
-        ->from(qw(history buckets))
-        ->joins( $qb->join('magnets')->on($qb->compare('magnets.id', \'history.magnetid')) )
-        ->where($where);
-    if (my $search = $args{search}) {
-        $search =~ s/\0//g;
-        $search =~ s/^\s+|\s+$//g;
-        my $pat = "%$search%";
-        my $like_expr = $qb->combine(OR =>
-            $qb->like('hdr_from', $pat),
-            $qb->like('hdr_subject', $pat));
-        $where->add_expression($like_expr);
-    }
-    if (my $bucket = $args{bucket}) {
-        $where->add_expression($qb->compare('buckets.name', $bucket));
-    }
-    my $count_q = $base_query->clone(columns => ['COUNT(*)']);
-    my ($total) = $self->db()->selectcol_arrayref($count_q->as_sql(), undef, $count_q->params())->@*;
-    my $pagination = Data::Page->new();
-    $pagination->total_entries($total);
-    $pagination->entries_per_page($args{per_page}//25);
-    $pagination->current_page($args{page}//1);
-    my @columns = split /\s?,\s?/, $fields_slot;
-    my $rows_q = $base_query->clone(columns => \@columns);
-    if (my $sort = $args{sort}) {
-        ($sort, my $direction) = split / /, $sort;
-        if ($sort =~ /^-?(inserted|from|to|cc|subject|bucket|date|size)$/i) {
-            $rows_q->order_by($qb->order_by($1, $direction//'ASC'));
-        }
-    }
-    $rows_q->limit($pagination->entries_per_page());
-    $rows_q->offset($pagination->skipped());
-    my $rows = $self->db()->selectall_arrayref($rows_q->as_sql(), { Slice => {} }, $rows_q->params());
-    return ($total+0, $rows)
+    return $queries->search($self->db(), %args)
 }
 
 =head2 delete_query($id)
@@ -991,64 +816,32 @@ C<start_deleting>/C<stop_deleting> transaction.
 
 method delete_query ($id) {
     $self->start_deleting();
-
-    my $delete = $queries{$id}{base};
-    $delete =~ s/XXX/history.id/;
-    my $sth = $self->db()->prepare_cached($delete);
-    $sth->execute($queries{$id}{params}->@*);
-    my @ids = map { $_->[0] } $sth->fetchall_arrayref->@*;
-    $sth->finish;
-    for my $slot_id (@ids) {
-        $self->delete_slot($slot_id, 1);
+    my $ids = $queries->delete_ids($id, $self->db());
+    for my $slot_id ($ids->@*) {
+        $self->delete_slot($slot_id, 1)
     }
-
-    $self->stop_deleting();
+    $self->stop_deleting()
 }
 
 =head2 get_query_size($id)
 
-Returns the total number of rows matched by the query C<$id>.  Must be called
-after C<set_query()>.
+Returns the total number of rows matched by the query C<$id>.
 
 =cut
 
 method get_query_size ($id) {
-    return $queries{$id}{count};
+    return $queries->session_count($id)
 }
 
 =head2 get_query_rows($id, $start, $count)
 
 Returns C<$count> rows starting at 1-based position C<$start> from the result
-set of query C<$id>.  Rows are fetched lazily and cached.  Each row is an
-array ref with the columns: C<id(0)>, C<from(1)>, C<to(2)>, C<cc(3)>,
-C<subject(4)>, C<date(5)>, C<hash(6)>, C<inserted(7)>, C<bucket(8)>,
-C<usedtobe(9)>, C<bucketid(10)>, C<magnet(11)>, C<size(12)>.
+set of query C<$id>.
 
 =cut
 
 method get_query_rows ($id, $start, $count) {
-    # First see if we have already retrieved these rows from the query
-    # if we have then we can just return them from the cache.  Otherwise
-    # fetch the rows from the database and then return them
-
-    my $size = $#{$queries{$id}{cache}}+1;
-
-    $self->log_msg(DEBUG => "Request for rows $start ($count), current size $size");
-
-    if (($size < ($start + $count - 1))) {
-        my $rows = $start + $count - $size;
-        $self->log_msg(DEBUG => "Getting $rows rows from database");
-        $queries{$id}{query}->execute($queries{$id}{params}->@*);
-        $queries{$id}{cache} = $queries{$id}{query}->fetchall_arrayref(
-            undef, $start + $count - 1);
-        $queries{$id}{query}->finish;
-    }
-
-    my ($from, $to) = ($start-1, $start+$count-2);
-
-    $self->log_msg(DEBUG => "Returning $from..$to");
-
-    return $queries{$id}{cache}->@[$from..$to];
+    return $queries->rows($id, $start, $count)
 }
 
 # ---------------------------------------------------------------------------
@@ -1251,11 +1044,7 @@ automatically after any write operation.
 =cut
 
 method force_requery() {
-    # Force requery since the messages have changed
-
-    for my $id (keys %queries) {
-        $queries{$id}{fields} = '';
-    }
+    $queries->invalidate_all()
 }
 
 1;
