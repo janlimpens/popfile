@@ -120,4 +120,40 @@ method parameter_set($dbh, $userid, $bucket, $bucketid, $param_name, $value) {
     return 1
 }
 
+# ── bucket CRUD (DB writes only; Bayes handles cache + history) ──
+
+method name_is_valid($name) {
+    return 0
+        if $name =~ /[^\p{L}\p{N}\s\-_]/;
+    return 0
+        if $name =~ m{[/\\]|\.\.};
+    return 0
+        if $name =~ /^\s|\s$/;
+    return 1
+}
+
+method create_in_db($dbh, $userid, $name) {
+    $dbh->do(
+        'INSERT INTO buckets (name, pseudo, userid) VALUES (?, 0, ?)',
+        undef, $name, $userid);
+}
+
+method delete_from_db($dbh, $userid, $name) {
+    $dbh->do(
+        'DELETE FROM buckets WHERE buckets.userid = ? AND buckets.name = ? AND buckets.pseudo = 0',
+        undef, $userid, $name);
+}
+
+method rename_in_db($dbh, $id, $new_name) {
+    $dbh->do(
+        'UPDATE buckets SET name = ? WHERE id = ?',
+        undef, $new_name, $id);
+}
+
+method clear_bucket_words($dbh, $bucketid) {
+    $dbh->do(
+        'DELETE FROM matrix WHERE matrix.bucketid = ?',
+        undef, $bucketid);
+}
+
 1;

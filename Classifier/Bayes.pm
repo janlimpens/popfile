@@ -3182,22 +3182,14 @@ method create_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    if ($self->is_bucket($session, $bucket) ||
-    $self->is_pseudo_bucket($session, $bucket)) {
-        return 0;
-    }
-
-    return 0 if $bucket =~ /[^\p{L}\p{N}\s\-_]/;
-    return 0 if $bucket =~ m{[/\\]|\.\.};
-    return 0 if $bucket =~ /^\s|\s$/;
-
-    $self->validate_sql_prepare_and_execute('
-        INSERT INTO buckets (name, pseudo, userid)
-        VALUES (?, 0, ?)',
-        $bucket, $userid);
-        $self->db_update_cache($session, $bucket);
-    return 1;
+    return 0
+        if $self->is_bucket($session, $bucket)
+        || $self->is_pseudo_bucket($session, $bucket);
+    return 0
+        unless $buckets->name_is_valid($bucket);
+    $buckets->create_in_db($self->db(), $userid, $bucket);
+    $self->db_update_cache($session, $bucket);
+    return 1
 }
 
 =head2 delete_bucket
@@ -3213,22 +3205,12 @@ method delete_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    # Make sure that the bucket passed in actually exists
-    unless (defined($db_bucketid->{$userid}{$bucket})) {
-        return 0;
-    }
-
-    $self->validate_sql_prepare_and_execute(
-        'DELETE FROM buckets
-         WHERE buckets.userid = ?
-            AND buckets.name = ?
-            AND buckets.pseudo = 0',
-        $userid, $bucket);
-        $self->db_update_cache($session, undef, $bucket);
+    return 0
+        unless defined $db_bucketid->{$userid}{$bucket};
+    $buckets->delete_from_db($self->db(), $userid, $bucket);
+    $self->db_update_cache($session, undef, $bucket);
     $history->force_requery();
-
-    return 1;
+    return 1
 }
 
 =head2 rename_bucket
@@ -3245,41 +3227,22 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    # Make sure that the bucket passed in actually exists
-
-    unless (defined($db_bucketid->{$userid}{$old_bucket})) {
+    unless (defined $db_bucketid->{$userid}{$old_bucket}) {
         $self->log_msg(WARN => "Bad bucket name $old_bucket to rename_bucket");
-        return 0;
+        return 0
     }
-
-    if (defined($db_bucketid->{$userid}{$new_bucket})) {
+    if (defined $db_bucketid->{$userid}{$new_bucket}) {
         $self->log_msg(WARN => "Bucket named $new_bucket already exists");
-        return 0;
+        return 0
     }
-
     return 0
-        if $new_bucket =~ /[^\p{L}\p{N}\s\-_]/;
-    return 0
-        if $new_bucket =~ m{[/\\]|\.\.};
-    return 0
-        if $new_bucket =~ /^\s|\s$/;
-
-    my $id = $db_bucketid->{$userid}{$old_bucket}{id};
-
+        unless $buckets->name_is_valid($new_bucket);
     $self->log_msg(INFO => "Rename bucket $old_bucket to $new_bucket");
-
-    my $result = $self->validate_sql_prepare_and_execute(
-        'UPDATE buckets SET name = ? WHERE id = ?',
-        $new_bucket, $id);
-    unless (defined($result) || ($result == -1)) {
-        return 0;
-    } else {
-        $self->db_update_cache($session, $new_bucket, $old_bucket);
-        $history->force_requery();
-
-        return 1;
-    }
+    $buckets->rename_in_db($self->db(),
+        $db_bucketid->{$userid}{$old_bucket}{id}, $new_bucket);
+    $self->db_update_cache($session, $new_bucket, $old_bucket);
+    $history->force_requery();
+    return 1
 }
 
 =head2 add_messages_to_bucket
@@ -3445,19 +3408,12 @@ method clear_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    unless (defined($db_bucketid->{$userid}{$bucket})) {
-        return;
-    }
-
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-
-    $self->validate_sql_prepare_and_execute(
-        'DELETE FROM matrix WHERE matrix.bucketid = ?',
-        $bucketid);
+    return
+        unless defined $db_bucketid->{$userid}{$bucket};
+    $buckets->clear_bucket_words($self->db(),
+        $db_bucketid->{$userid}{$bucket}{id});
     $self->db_update_cache($session, $bucket);
-
-    return 1;
+    return 1
 }
 
 =head2 clear_magnets
