@@ -96,6 +96,18 @@ method stop() {
     $self->_disconnect();
 }
 
+method _txn($coderef) {
+    my $dbh = $self->db();
+    $dbh->begin_work();
+    try {
+        $coderef->();
+        $dbh->commit();
+    } catch ($e) {
+        $dbh->rollback();
+        die $e;
+    }
+}
+
 method start () {
     $queries = POPFile::HistoryQueries->new();
     my $dbconnect = $self->module_config('bayes', 'dbconnect') // '';
@@ -342,68 +354,68 @@ method commit_history() {
              committed = ?, bucketid = ?, usedtobe = ?, magnetid = ?,
              hash = ?, size = ?
          WHERE id = ?'));
-    $self->db()->begin_work();
-    for my $entry ($commit_list->@*) {
-        my ($session, $slot, $bucket, $magnet) = $entry->@*;
-        my $file = $self->get_slot_file($slot);
-        my %header;
-        if (open my $file_fh, '<', $file) {
-            my $last;
-            while (<$file_fh>) {
-                s/[\r\n]//g;
-                if (/^$/) {
-                    last;
+    $self->_txn(sub {
+        for my $entry ($commit_list->@*) {
+            my ($session, $slot, $bucket, $magnet) = $entry->@*;
+            my $file = $self->get_slot_file($slot);
+            my %header;
+            if (open my $file_fh, '<', $file) {
+                my $last;
+                while (<$file_fh>) {
+                    s/[\r\n]//g;
+                    if (/^$/) {
+                        last;
+                    }
+                    if (/^([^ \t]+):[ \t]*(.*)$/) {
+                        $last = lc $1;
+                        push $header{$last}->@*, $2;
+                    } elsif (defined $last) {
+                        $header{$last}->[-1] .= $_;
+                    }
                 }
-                if (/^([^ \t]+):[ \t]*(.*)$/) {
-                    $last = lc $1;
-                    push $header{$last}->@*, $2;
-                } elsif (defined $last) {
-                    $header{$last}->[-1] .= $_;
+                close $file_fh;
+            } else {
+                $self->log_msg(WARN => "Could not open history message file $file for reading.");
+            }
+            my $hash = $self->get_message_hash(
+                $header{'message-id'}->[0],
+                $header{'date'}->[0],
+                $header{'subject'}->[0],
+                $header{'received'}->[0]);
+            my %sort_headers;
+            for my $header_name (qw(from to cc)) {
+                $sort_headers{$header_name} = $classifier->parser()->decode_string(
+                    $header{$header_name}->[0]);
+                $sort_headers{$header_name} = lc($sort_headers{$header_name} || '');
+                $sort_headers{$header_name} =~ s/[\"<>]//g;
+                $sort_headers{$header_name} =~ s/^[ \t]+//g;
+                $sort_headers{$header_name} =~ s/\0//g;
+            }
+            for my $header_name (qw(from to cc subject)) {
+                if (!defined $header{$header_name}->[0]
+                    || $header{$header_name}->[0] =~ /^\s*$/) {
+                    $header{$header_name}->[0] = $header_name eq 'cc'
+                        ? '' : "<$header_name header missing>";
                 }
+                $header{$header_name}->[0] =~ s/\0//g;
             }
-            close $file_fh;
-        } else {
-            $self->log_msg(WARN => "Could not open history message file $file for reading.");
-        }
-        my $hash = $self->get_message_hash(
-            $header{'message-id'}->[0],
-            $header{'date'}->[0],
-            $header{'subject'}->[0],
-            $header{'received'}->[0]);
-        my %sort_headers;
-        for my $header_name (qw(from to cc)) {
-            $sort_headers{$header_name} = $classifier->parser()->decode_string(
-                $header{$header_name}->[0]);
-            $sort_headers{$header_name} = lc($sort_headers{$header_name} || '');
-            $sort_headers{$header_name} =~ s/[\"<>]//g;
-            $sort_headers{$header_name} =~ s/^[ \t]+//g;
-            $sort_headers{$header_name} =~ s/\0//g;
-        }
-        for my $header_name (qw(from to cc subject)) {
-            if (!defined $header{$header_name}->[0]
-                || $header{$header_name}->[0] =~ /^\s*$/) {
-                $header{$header_name}->[0] = $header_name eq 'cc'
-                    ? '' : "<$header_name header missing>";
+            $header{date}->[0] = defined $header{date}->[0]
+                ? str2time($header{date}->[0]) || 0
+                : 0;
+            my $bucketid = $classifier->get_bucket_id($session, $bucket);
+            my $msg_size = -s $file;
+            if (defined($bucketid)) {
+                $update_history->execute(
+                    $header{from}->[0], $header{to}->[0], $header{date}->[0],
+                    $header{cc}->[0], $header{subject}->[0],
+                    $sort_headers{from}, $sort_headers{to}, $sort_headers{cc},
+                    1, $bucketid, 0, $magnet, $hash, $msg_size, $slot);
+            } else {
+                $self->log_msg(WARN => "Couldn't find bucket ID for bucket $bucket when committing $slot");
+                $self->release_slot($slot);
             }
-            $header{$header_name}->[0] =~ s/\0//g;
         }
-        $header{date}->[0] = defined $header{date}->[0]
-            ? str2time($header{date}->[0]) || 0
-            : 0;
-        my $bucketid = $classifier->get_bucket_id($session, $bucket);
-        my $msg_size = -s $file;
-        if (defined($bucketid)) {
-            $update_history->execute(
-                $header{from}->[0], $header{to}->[0], $header{date}->[0],
-                $header{cc}->[0], $header{subject}->[0],
-                $sort_headers{from}, $sort_headers{to}, $sort_headers{cc},
-                1, $bucketid, 0, $magnet, $hash, $msg_size, $slot);
-        } else {
-            $self->log_msg(WARN => "Couldn't find bucket ID for bucket $bucket when committing $slot");
-            $self->release_slot($slot);
-        }
-    }
-    $self->db()->commit();
+    });
     $update_history->finish();
     $commit_list = [];
     $self->force_requery();
@@ -452,26 +464,17 @@ method delete_slot ($slot, $archive) {
     $self->force_requery();
 }
 
-=head2 start_deleting()
+=head2 delete_in_transaction($coderef)
 
-Opens a database transaction before a batch of C<delete_slot> calls so that
-the deletions are applied as a single atomic write.  Call C<stop_deleting()>
-when done.
-
-=cut
-
-method start_deleting() {
-    $self->db()->begin_work();
-}
-
-=head2 stop_deleting()
-
-Commits the transaction opened by C<start_deleting()>.
+Wraps the given coderef in a database transaction via C<< $dbh->txn >>.
+Automatically commits on success or rolls back on failure.
 
 =cut
 
-method stop_deleting() {
-    $self->db()->commit();
+method delete_in_transaction($coderef) {
+    $self->_txn(sub {
+        $coderef->();
+    });
 }
 
 =head2 get_slot_file($slot)
@@ -577,18 +580,18 @@ method get_search_queries(%args) {
 =head2 delete_query($id)
 
 Deletes every history entry matched by the current query C<$id> from both the
-database and disk (with archiving if configured).  Wraps the deletions in a
-C<start_deleting>/C<stop_deleting> transaction.
+database and disk (with archiving if configured).  Wrapped in a
+C<delete_in_transaction> for atomicity.
 
 =cut
 
 method delete_query ($id) {
-    $self->start_deleting();
-    my $ids = $queries->delete_ids($id, $self->db());
-    for my $slot_id ($ids->@*) {
-        $self->delete_slot($slot_id, 1)
-    }
-    $self->stop_deleting()
+    $self->delete_in_transaction(sub {
+        my $ids = $queries->delete_ids($id, $self->db());
+        for my $slot_id ($ids->@*) {
+            $self->delete_slot($slot_id, 1)
+        }
+    });
 }
 
 =head2 get_query_size($id)
@@ -649,20 +652,20 @@ method upgrade_history_files() {
     my $session = $classifier->get_session_key('admin', '');
     print "\nFound old history files, moving them into database\n    ";
     my $i = 0;
-    $self->db()->begin_work();
-    for my $msg (@msgs) {
-        if ((++$i % 100) == 0) {
-            print "[$i]";
-            STDOUT->flush();
+    $self->_txn(sub {
+        for my $msg (@msgs) {
+            if ((++$i % 100) == 0) {
+                print "[$i]";
+                STDOUT->flush();
+            }
+            my ($reclassified, $bucket) = $self->history_read_class($msg);
+            if ($bucket ne 'unknown_class') {
+                my ($slot, $file) = $self->reserve_slot();
+                rename $msg, $file;
+                push $commit_list->@*, [$session, $slot, $bucket, 0];
+            }
         }
-        my ($reclassified, $bucket) = $self->history_read_class($msg);
-        if ($bucket ne 'unknown_class') {
-            my ($slot, $file) = $self->reserve_slot();
-            rename $msg, $file;
-            push $commit_list->@*, [$session, $slot, $bucket, 0];
-        }
-    }
-    $self->db()->commit();
+    });
     print "\nDone upgrading history\n";
     $self->commit_history();
     $classifier->release_session_key($session);
