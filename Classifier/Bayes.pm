@@ -10,6 +10,7 @@ use locale;
 use Classifier::Bucket;
 use Classifier::MailParse;
 use Classifier::Sessions;
+use Classifier::Stopwords;
 use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
 use IO::Handle;
@@ -119,6 +120,7 @@ field $magnet_used = 0;
 field $magnet_detail = 0;
 
 field $sessions :reader = undef;
+field $stopwords :reader = undef;
 
 field $db_is_sqlite = 0;
 field $db_name = '';
@@ -282,8 +284,8 @@ method start() {
 
     return 0
         unless $self->db_connect();
-    $sessions = Classifier::Sessions->new(
-        dbh => $self->db());
+    $sessions = Classifier::Sessions->new();
+    $stopwords = Classifier::Stopwords->new();
 
     if ($language eq 'Nihongo') {
         # Setup Nihongo (Japanese) parser.
@@ -306,8 +308,6 @@ Called when POPFile is terminating
 =cut
 
 method stop() {
-    $sessions->finish()
-        if $sessions;
     $self->db_disconnect();
     $db_bucketid = {};
     $db_parameters = {};
@@ -1546,7 +1546,7 @@ C<$pwd> The user's password
 =cut
 
 method get_session_key ($user, $pwd) {
-    my ($session, $userid) = $sessions->create_session($user, $pwd);
+    my ($session, $userid) = $sessions->create_session($self->db(), $user, $pwd);
     return
         unless defined $session;
     $self->db_update_cache($session);
@@ -3831,8 +3831,7 @@ method get_stopword_list ($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    return $parser->mangle()->stopwords();
+    return $stopwords->get_list($parser->mangle(), $userid)
 }
 
 =head2 get_stopword_candidates
@@ -3851,42 +3850,7 @@ method get_stopword_candidates ($session, $ratio = 2.0, $limit = 50) {
     my $userid = $self->valid_session_key($session);
     return ()
         unless defined $userid;
-
-    my $bucket_count_row = $self->validate_sql_prepare_and_execute(
-        'SELECT COUNT(*) FROM buckets WHERE userid = ? AND pseudo = 0',
-        $userid)->fetchrow_arrayref;
-    my $n_buckets = $bucket_count_row ? $bucket_count_row->[0] : 0;
-    return ()
-        if $n_buckets < 2;
-
-    my $sth = $self->validate_sql_prepare_and_execute(
-        'SELECT w.word,
-                MIN(m.times) AS min_count,
-                MAX(m.times) AS max_count,
-                CAST(MAX(m.times) AS FLOAT) / MIN(m.times) AS ratio
-         FROM words w
-         JOIN matrix m ON m.wordid = w.id
-         JOIN buckets b ON b.id = m.bucketid
-         WHERE b.userid = ?
-           AND b.pseudo = 0
-         GROUP BY w.id, w.word
-         HAVING COUNT(DISTINCT m.bucketid) = ?
-            AND MIN(m.times) > 0
-            AND CAST(MAX(m.times) AS FLOAT) / MIN(m.times) < ?
-         ORDER BY CAST(MAX(m.times) AS FLOAT) / MIN(m.times) ASC
-         LIMIT ?',
-        $userid, $n_buckets, $ratio, $limit);
-
-    my @candidates;
-    while (my $row = $sth->fetchrow_hashref()) {
-        push @candidates, {
-            word => $row->{word},
-            min_count => $row->{min_count} + 0,
-            max_count => $row->{max_count} + 0,
-            ratio => $row->{ratio} + 0,
-        };
-    }
-    return @candidates
+    return $stopwords->get_candidates($self->db(), $userid, $ratio, $limit)
 }
 
 =head2 magnet_count

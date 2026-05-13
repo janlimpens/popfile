@@ -3,7 +3,7 @@
 package Classifier::Sessions;
 
 use Object::Pad;
-use feature qw(try);
+use feature qw(state try);
 use Digest::MD5 qw(md5_hex);
 
 class Classifier::Sessions :does(POPFile::Role::Logging);
@@ -17,21 +17,13 @@ Classifier::Sessions — session-key repository for Bayes classifier access
 Manages the collection of active session keys that map random string tokens
 to internal user IDs.  Provides creation, validation, and removal primitives.
 
-The caller guard in C<validate_session> ensures only C<Classifier::Bayes> may
-validate sessions — external callers must go through the Bayes public API.
+All dependencies are passed in method signatures rather than stored as fields.
 
 =cut
 
 field $api_sessions = {};
-field $dbh :param = undef;
-field $db_get_userid;
 
-ADJUST {
-    $db_get_userid = $dbh->prepare(
-        'SELECT id FROM users WHERE name = ? AND password = ? LIMIT 1');
-}
-
-=head2 create_session($user, $pwd)
+=head2 create_session($dbh, $user, $pwd)
 
 Validates C<$user> / C<$pwd> against the C<users> table.  On success returns
 C<(session_key, userid)>.  On failure returns an empty list after a one-second
@@ -39,10 +31,13 @@ delay to thwart brute-force attacks.
 
 =cut
 
-method create_session($user, $pwd) {
+method create_session($dbh, $user, $pwd) {
+    state $sth;
+    $sth //= $dbh->prepare(
+        'SELECT id FROM users WHERE name = ? AND password = ? LIMIT 1');
     my $hash = md5_hex($user . '__popfile__' . $pwd);
-    $db_get_userid->execute($user, $hash);
-    my $result = $db_get_userid->fetchrow_arrayref;
+    $sth->execute($user, $hash);
+    my $result = $sth->fetchrow_arrayref;
     unless (defined($result)) {
         $self->log_msg(WARN => "Attempt to login with incorrect credentials for user $user");
         select(undef, undef, undef, 1);
@@ -84,18 +79,6 @@ method remove_session($session) {
         $self->log_msg(INFO => "release_session_key releasing key $session for user $api_sessions->{$session}");
         delete $api_sessions->{$session};
     }
-}
-
-=head2 finish
-
-Finishes the prepared statement handle held by this object.
-
-=cut
-
-method finish() {
-    $db_get_userid->finish()
-        if ref $db_get_userid;
-    undef $db_get_userid;
 }
 
 #----------------------------------------------------------------------------
