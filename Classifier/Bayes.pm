@@ -90,12 +90,6 @@ field $get_wordids;
 # Caches the name of each bucket — subkeys: id, pseudo
 field $db_bucketid = {};
 
-# Caches the IDs that map to parameter types
-field $db_parameterid = {};
-
-# Caches looked up parameter values on a per bucket basis
-field $db_parameters = {};
-
 # Per-userid word-count caches
 field $db_bucketcount = {};
 field $db_bucketunique = {};
@@ -287,11 +281,11 @@ method start() {
     $parser->mangle()->set_ui_language($language);
     $unclassified = log($self->config('unclassified_weight'));
 
+    $buckets = Classifier::Buckets->new();
     return 0
         unless $self->db_connect();
     $sessions = Classifier::Sessions->new();
     $magnets = Classifier::Magnets->new();
-    $buckets = Classifier::Buckets->new();
     $corpus = Classifier::Corpus->new();
     $stopwords = Classifier::Stopwords->new();
 
@@ -318,8 +312,7 @@ Called when POPFile is terminating
 method stop() {
     $self->db_disconnect();
     $db_bucketid = {};
-    $db_parameters = {};
-    $db_parameterid = {};
+    $buckets->reset_parameters();
     $db_bucketcount = {};
     $db_bucketunique = {};
     $parser = Classifier::MailParse->new();
@@ -821,14 +814,7 @@ method db_connect() {
         'DELETE FROM matrix
          WHERE (matrix.times <= 0 OR matrix.times IS NULL)
             AND matrix.bucketid = ?'));
-    # Get the mapping from parameter names to ids into a local hash
-
-    my $h = $self->validate_sql_prepare_and_execute(
-        'SELECT name, id FROM bucket_template');
-        while (my $row = $h->fetchrow_arrayref) {
-        $db_parameterid->{$row->[0]} = $row->[1];
-    }
-    $h->finish();
+    $buckets->load_parameter_ids($db);
     return 1
 }
 
@@ -1010,9 +996,6 @@ method db_disconnect() {
     $db_get_bucket_word_count->finish();
     $db_get_unique_word_count->finish();
     $db_get_full_total->finish();
-    $db_get_bucket_parameter->finish();
-    $db_set_bucket_parameter->finish();
-    $db_get_bucket_parameter_default->finish();
     $db_delete_zero_words->finish();
 
     # Avoid DBD::SQLite 'closing dbh with active statement handles' bug
@@ -1025,9 +1008,6 @@ method db_disconnect() {
     undef $db_get_bucket_word_count;
     undef $db_get_unique_word_count;
     undef $db_get_full_total;
-    undef $db_get_bucket_parameter;
-    undef $db_set_bucket_parameter;
-    undef $db_get_bucket_parameter_default;
     undef $db_delete_zero_words;
 
     $self->_disconnect();
@@ -3167,59 +3147,15 @@ method get_bucket_parameter ($session, $bucket, $parameter) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    # See if there's a cached value
-
-    if (defined($db_parameters->{$userid}{$bucket}{$parameter})) {
-        return $db_parameters->{$userid}{$bucket}{$parameter};
-    }
-
-    # Make sure that the bucket passed in actually exists
-
-    unless (defined($db_bucketid->{$userid}{$bucket})) {
-        return;
-    }
-
-    # Make sure that the parameter is valid
-
-    unless (defined($db_parameterid->{$parameter})) {
-        return;
-    }
-
-    # If there is a non-default value for this parameter then return it.
-
-    $self->validate_sql_prepare_and_execute(
-        $db_get_bucket_parameter,
-        $db_bucketid->{$userid}{$bucket}{id},
-        $db_parameterid->{$parameter});
-    my $result = $db_get_bucket_parameter->fetchrow_arrayref;
-
-    # If this parameter has not been defined for this specific bucket then
-    # get the default value
-
-    unless (defined($result)) {
-        $self->validate_sql_prepare_and_execute(
-            $db_get_bucket_parameter_default,
-            $db_parameterid->{$parameter});
-        $result = $db_get_bucket_parameter_default->fetchrow_arrayref;
-    }
-
-    if (defined($result)) {
-        $db_parameters->{$userid}{$bucket}{$parameter} = $result->[0];
-        return $result->[0];
-    } else {
-        return;
-    }
+    return
+        unless defined $db_bucketid->{$userid}{$bucket};
+    return $buckets->parameter_get($self->db(), $userid, $bucket,
+        $db_bucketid->{$userid}{$bucket}{id}, $parameter)
 }
 
 =head2 set_bucket_parameter
 
 Sets the value associated with a bucket specific parameter
-
-C<$session> A valid session key returned by a call to get_session_key
-C<$bucket> The name of the bucket
-C<$parameter> The name of the parameter
-C<$value> The new value
 
 =cut
 
@@ -3227,31 +3163,10 @@ method set_bucket_parameter ($session, $bucket, $parameter, $value) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    # Make sure that the bucket passed in actually exists
-
-    unless (defined($db_bucketid->{$userid}{$bucket})) {
-        return;
-    }
-
-    # Make sure that the parameter is valid
-
-    unless (defined($db_parameterid->{$parameter})) {
-        return;
-    }
-
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $btid = $db_parameterid->{$parameter};
-
-    # Exactly one row should be affected by this statement
-
-    $self->validate_sql_prepare_and_execute($db_set_bucket_parameter,
-        $bucketid, $btid, $value);
-    if (defined($db_parameters->{$userid}{$bucket}{$parameter})) {
-        $db_parameters->{$userid}{$bucket}{$parameter} = $value;
-    }
-
-    return 1;
+    return
+        unless defined $db_bucketid->{$userid}{$bucket};
+    return $buckets->parameter_set($self->db(), $userid, $bucket,
+        $db_bucketid->{$userid}{$bucket}{id}, $parameter, $value)
 }
 
 =head2 create_bucket

@@ -9,17 +9,34 @@ class Classifier::Buckets;
 
 =head1 NAME
 
-Classifier::Buckets — bucket-name queries backed by Bayes' in-memory caches
+Classifier::Buckets — bucket-name queries and per-bucket parameters
 
 =head1 DESCRIPTION
 
-Stateless query methods for the bucket-name cache maintained by Bayes.
-All cache hashes are passed as parameters.
+Query methods for the bucket-name cache maintained by Bayes, plus
+per-bucket parameter read/write with an in-memory value cache.
 
-The cache is still populated by Bayes' C<db_update_cache>.  In a future step
-the cache fields may be moved here.
+The bucket-name cache (C<$db_bucketid>) is passed as a parameter.
+The parameter ID lookup and value cache are owned here.
 
 =cut
+
+field %param_ids;
+field %param_cache;
+
+method load_parameter_ids($dbh) {
+    my $sth = $dbh->prepare('SELECT name, id FROM bucket_template');
+    $sth->execute();
+    while (my $row = $sth->fetchrow_arrayref()) {
+        $param_ids{$row->[0]} = $row->[1];
+    }
+}
+
+method reset_parameters() {
+    %param_cache = ();
+}
+
+# ── name queries (cache passed from Bayes) ──
 
 method names($cache, $userid) {
     my @buckets;
@@ -65,6 +82,42 @@ method is_pseudo($cache, $userid, $name) {
 method is_real($cache, $userid, $name) {
     return defined $cache->{$userid}{$name}
         && !$cache->{$userid}{$name}{pseudo}
+}
+
+# ── parameter access ──
+
+method parameter_get($dbh, $userid, $bucket, $bucketid, $param_name) {
+    return $param_cache{$userid}{$bucket}{$param_name}
+        if defined $param_cache{$userid}{$bucket}{$param_name};
+    my $pid = $param_ids{$param_name};
+    return
+        unless defined $pid;
+    my $row = $dbh->selectrow_arrayref(
+        'SELECT bucket_params.val FROM bucket_params
+         WHERE bucket_params.bucketid = ? AND bucket_params.btid = ?',
+        undef, $bucketid, $pid);
+    unless (defined $row) {
+        $row = $dbh->selectrow_arrayref(
+            'SELECT bucket_template.def FROM bucket_template
+             WHERE bucket_template.id = ?',
+            undef, $pid);
+    }
+    my $val = $row ? $row->[0] : undef;
+    $param_cache{$userid}{$bucket}{$param_name} = $val
+        if defined $val;
+    return $val
+}
+
+method parameter_set($dbh, $userid, $bucket, $bucketid, $param_name, $value) {
+    my $pid = $param_ids{$param_name};
+    return
+        unless defined $pid;
+    $dbh->do(
+        'REPLACE INTO bucket_params (bucketid, btid, val) VALUES (?, ?, ?)',
+        undef, $bucketid, $pid, $value);
+    $param_cache{$userid}{$bucket}{$param_name} = $value
+        if defined $param_cache{$userid}{$bucket}{$param_name};
+    return 1
 }
 
 1;
