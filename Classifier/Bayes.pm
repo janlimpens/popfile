@@ -8,6 +8,7 @@ use feature qw(state try);
 no warnings 'experimental::try';
 use locale;
 use Classifier::Bucket;
+use Classifier::Buckets;
 use Classifier::MailParse;
 use Classifier::Sessions;
 use Classifier::Magnets;
@@ -121,6 +122,7 @@ field $magnet_detail = 0;
 
 field $sessions :reader = undef;
 field $magnets :reader = undef;
+field $buckets :reader = undef;
 field $stopwords :reader = undef;
 
 field $db_is_sqlite = 0;
@@ -287,6 +289,7 @@ method start() {
         unless $self->db_connect();
     $sessions = Classifier::Sessions->new();
     $magnets = Classifier::Magnets->new();
+    $buckets = Classifier::Buckets->new();
     $stopwords = Classifier::Stopwords->new();
 
     if ($language eq 'Nihongo') {
