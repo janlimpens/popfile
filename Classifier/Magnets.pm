@@ -235,4 +235,28 @@ method word_match($magnet, $match, $type) {
     return $matched
 }
 
+method find_match($dbh, $bucketid, $type, $match) {
+    my $sth = $dbh->prepare(
+        'SELECT magnets.val, magnets.id
+         FROM magnets
+         JOIN buckets ON buckets.id = magnets.bucketid
+         JOIN magnet_types ON magnet_types.id = magnets.mtid
+         WHERE buckets.id = ?
+            AND magnets.id != 0
+            AND magnet_types.mtype = ?
+         ORDER BY magnets.val');
+    $sth->execute($bucketid, $type);
+    my @magnets;
+    while (my $row = $sth->fetchrow_arrayref) {
+        push @magnets, [$row->[0], $row->[1]];
+    }
+    for my $m (@magnets) {
+        my ($magnet, $id) = $m->@*;
+        if ($self->word_match($magnet, $match, $type)) {
+            return $id
+        }
+    }
+    return 0
+}
+
 1;

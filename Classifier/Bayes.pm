@@ -987,49 +987,18 @@ C<$type> The magnet type to check
 
 method magnet_match_helper ($session, $match, $bucket, $type) {
     my $userid = $self->valid_session_key($session);
-    return
-        unless defined $userid;
-
-    my @magnets;
-
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $h = $self->validate_sql_prepare_and_execute(
-        'SELECT magnets.val, magnets.id FROM magnets, users, buckets, magnet_types
-         WHERE buckets.id = ?
-            AND magnets.id != 0
-            AND users.id = buckets.userid
-            AND magnets.bucketid = buckets.id
-            AND magnet_types.mtype = ?
-            AND magnets.mtid = magnet_types.id
-         ORDER BY magnets.val',
-        $bucketid, $type);
-        my ($val, $id);
-        $h->bind_columns(\$val, \$id);
-        while (my $row = $h->fetchrow_arrayref) {
-        push @magnets, [ $val, $id ];
+    return 0
+        unless defined $userid
+            && exists $db_bucketid->{$userid}{$bucket};
+    my $id = $magnets->find_match($self->db(),
+        $db_bucketid->{$userid}{$bucket}{id}, $type, $match);
+    if ($id) {
+        $magnet_used = 1;
+        $magnet_detail = $id;
+        return 1
     }
-    $h->finish();
-
-    for my $m (@magnets) {
-        my ($magnet, $id) = $m->@*;
-        if ($self->single_magnet_match($magnet, $match, $type)) {
-            $magnet_used = 1;
-            $magnet_detail = $id;
-            return 1;
-        }
-    }
-    return 0;
+    return 0
 }
-
-=head2 single_magnet_match
-
-Helper the determines if a specific string matches a specific magnet
-
-C<$magnet> The magnet string
-C<$match> The string to match
-C<$type> The magnet type to check
-
-=cut
 
 method single_magnet_match ($magnet, $match, $type) {
     return $magnets->word_match($magnet, $match, $type)
