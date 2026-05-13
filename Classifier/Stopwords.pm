@@ -3,7 +3,7 @@
 package Classifier::Stopwords;
 
 use Object::Pad;
-use feature qw(try);
+use POPFile::Features;
 
 class Classifier::Stopwords;
 

@@ -3,7 +3,7 @@
 package Classifier::Sessions;
 
 use Object::Pad;
-use feature qw(state try);
+use POPFile::Features;
 use Digest::MD5 qw(md5_hex);
 
 class Classifier::Sessions :does(POPFile::Role::Logging);
