@@ -71,10 +71,6 @@ field $history = 0;
 # Cached prepared SQL statements (set in db_connect, released in db_disconnect)
 field $db_delete_zero_words = 0;
 
-# Temporary per-call prepared statements (undef'd after use)
-field $db_classify;
-field $get_wordids;
-
 # Caches the name of each bucket — subkeys: id, pseudo
 field $db_bucketid = {};
 
@@ -1421,63 +1417,22 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     # winning bucket is.
 
     my @words = sort keys $parser->words()->%*;
-    my $qb = $self->qb();
-    my @id_list;
-    my %temp_idmap;
 
-    unless (defined($idmap)) {
-        $idmap = \%temp_idmap;
+    my ($id_list_ref, $idmap_ref) = $corpus->resolve_word_ids(
+        $self->db(), \@words);
+    if (defined $idmap) {
+        %$idmap = (%$idmap, %$idmap_ref);
+    } else {
+        $idmap = $idmap_ref;
     }
-
-    my $word_chunk_size = 500;
-    my @word_chunks = @words;
-    while (@word_chunks) {
-        my @chunk = splice @word_chunks, 0, $word_chunk_size;
-        my $words_expr = $qb->compare('word', \@chunk);
-        my $select = $qb->select('id', 'word')
-            ->from('words')
-            ->where($words_expr)
-            ->order_by($qb->order_by('id'));
-        $get_wordids = $self->validate_sql_prepare_and_execute(
-            $select->as_sql(), $select->params());
-        next unless $get_wordids;
-        my ($wordid, $word);
-        $get_wordids->bind_columns(\$wordid, \$word);
-        while ($get_wordids->fetchrow_arrayref()) {
-            push @id_list, $wordid;
-            $idmap->{$wordid} = $word;
-        }
-        $get_wordids->finish();
-        undef $get_wordids;
+    my $matrix_ref = $corpus->fetch_matrix(
+        $self->db(), $id_list_ref, $userid);
+    if (defined $matrix) {
+        %$matrix = (%$matrix, %$matrix_ref);
+    } else {
+        $matrix = $matrix_ref;
     }
-
-    my %temp_matrix;
-    my ($count, $wordid, $bucketname);
-
-    unless (defined($matrix)) {
-        $matrix = \%temp_matrix;
-    }
-
-    my @id_chunks = @id_list;
-    while (@id_chunks) {
-        my @chunk = splice @id_chunks, 0, $word_chunk_size;
-        my $ids_expr = $self->qb()->compare('matrix.wordid', \@chunk);
-        $db_classify = $self->validate_sql_prepare_and_execute(
-            "SELECT matrix.times, matrix.wordid, buckets.name
-             FROM matrix, buckets
-             WHERE " . $ids_expr->as_sql() . "
-               AND matrix.bucketid = buckets.id
-               AND buckets.userid = ?",
-            $ids_expr->params(),
-            $userid);
-        next unless $db_classify;
-        $db_classify->bind_columns(\$count, \$wordid, \$bucketname);
-        while ($db_classify->fetchrow_arrayref) {
-            $$matrix{$wordid}{$bucketname} = $count;
-        }
-        $db_classify->finish;
-        undef $db_classify;
-    }
+    my @id_list = $id_list_ref->@*;
     my $not_likely_for_bucket = $not_likely->{$userid};
     my $display_not_likely = (sort { $a <=> $b } values $not_likely_for_bucket->%*)[0] // 0;
     my $stopword_ratio = $self->config('stopword_ratio') + 0;

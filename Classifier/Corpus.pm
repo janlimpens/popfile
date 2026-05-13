@@ -440,4 +440,46 @@ method search_words_cross($dbh, $qb, $userid, $prefix, $bucket_filter,
     return (\@words, $total, \%data)
 }
 
+method resolve_word_ids($dbh, $words) {
+    my @id_list;
+    my %idmap;
+    my $chunk_size = 500;
+    my @chunks = $words->@*;
+    while (@chunks) {
+        my @chunk = splice @chunks, 0, $chunk_size;
+        my $ph = join(', ', ('?') x @chunk);
+        my $sth = $dbh->prepare(
+            "SELECT id, word FROM words WHERE word IN ($ph) ORDER BY id");
+        $sth->execute(@chunk);
+        while (my $row = $sth->fetchrow_arrayref) {
+            push @id_list, $row->[0];
+            $idmap{$row->[0]} = $row->[1];
+        }
+    }
+    return (\@id_list, \%idmap)
+}
+
+method fetch_matrix($dbh, $ids, $userid) {
+    my %matrix;
+    return \%matrix
+        unless $ids->@*;
+    my $chunk_size = 500;
+    my @chunks = $ids->@*;
+    while (@chunks) {
+        my @chunk = splice @chunks, 0, $chunk_size;
+        my $ph = join(', ', ('?') x @chunk);
+        my $sth = $dbh->prepare(
+            "SELECT matrix.times, matrix.wordid, buckets.name
+             FROM matrix, buckets
+             WHERE matrix.wordid IN ($ph)
+                AND matrix.bucketid = buckets.id
+                AND buckets.userid = ?");
+        $sth->execute(@chunk, $userid);
+        while (my $row = $sth->fetchrow_arrayref) {
+            $matrix{$row->[1]}{$row->[2]} = $row->[0];
+        }
+    }
+    return \%matrix
+}
+
 1;
