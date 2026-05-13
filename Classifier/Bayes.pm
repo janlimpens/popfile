@@ -9,6 +9,7 @@ no warnings 'experimental::try';
 use locale;
 use Classifier::Bucket;
 use Classifier::Buckets;
+use Classifier::Corpus;
 use Classifier::MailParse;
 use Classifier::Sessions;
 use Classifier::Magnets;
@@ -123,6 +124,7 @@ field $magnet_detail = 0;
 field $sessions :reader = undef;
 field $magnets :reader = undef;
 field $buckets :reader = undef;
+field $corpus :reader = undef;
 field $stopwords :reader = undef;
 
 field $db_is_sqlite = 0;
@@ -290,6 +292,7 @@ method start() {
     $sessions = Classifier::Sessions->new();
     $magnets = Classifier::Magnets->new();
     $buckets = Classifier::Buckets->new();
+    $corpus = Classifier::Corpus->new();
     $stopwords = Classifier::Stopwords->new();
 
     if ($language eq 'Nihongo') {
@@ -2725,11 +2728,7 @@ method get_bucket_word_count ($session, $bucket) {
     return
         unless defined $userid;
 
-    my $c = $db_bucketcount->{$userid}{$bucket};
-
-    return defined($c)
-        ? $c
-        : 0;
+    return $corpus->bucket_count($db_bucketcount, $userid, $bucket)
 }
 
 =head2 get_bucket_word_list
@@ -3099,12 +3098,7 @@ method get_word_count ($session) {
     return
         unless defined $userid;
 
-    my $word_count = 0;
-    for my $bucket (keys $db_bucketid->{$userid}->%*) {
-        $word_count += $db_bucketcount->{$userid}{$bucket} // 0;
-    }
-
-    return $word_count;
+    return $corpus->total_count($db_bucketcount, $db_bucketid, $userid)
 }
 
 =head2 get_count_for_word
@@ -3140,11 +3134,7 @@ method get_bucket_unique_count ($session, $bucket) {
     return
         unless defined $userid;
 
-    my $c = $db_bucketunique->{$userid}{$bucket};
-
-    return defined($c)
-        ? $c
-        : 0;
+    return $corpus->bucket_unique($db_bucketunique, $userid, $bucket)
 }
 
 =head2 get_unique_word_count
@@ -3160,12 +3150,7 @@ method get_unique_word_count ($session) {
     return
         unless defined $userid;
 
-    my $unique_word_count = 0;
-    for my $bucket (keys $db_bucketid->{$userid}->%*) {
-        $unique_word_count += $db_bucketunique->{$userid}{$bucket};
-    }
-
-    return $unique_word_count;
+    return $corpus->total_unique($db_bucketunique, $db_bucketid, $userid)
 }
 
 =head2 get_bucket_color
