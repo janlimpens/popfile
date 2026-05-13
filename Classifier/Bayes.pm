@@ -2554,18 +2554,7 @@ method get_buckets($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    # Note that get_buckets does not return pseudo buckets
-
-    my @buckets;
-
-    for my $b (sort keys $db_bucketid->{$userid}->%*) {
-        if ($db_bucketid->{$userid}{$b}{pseudo} == 0) {
-            push @buckets, ($b);
-        }
-    }
-
-    return @buckets;
+    return $buckets->names($db_bucketid, $userid)
 }
 
 =head2 get_bucket_objects
