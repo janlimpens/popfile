@@ -20,7 +20,6 @@ use Object::Pad;
 use POPFile::Features;
 use lib 'vendor/perl-querybuilder/lib';
 use Query::Builder;
-use Scalar::Util qw(looks_like_number);
 use DBI;
 
 class POPFile::HistoryQueries;
@@ -72,10 +71,10 @@ method start() {
 }
 
 method stop($id) {
-    my $q = $sessions{$id}{query};
-    if ((defined $q) && ($q != 0)) {
+    my $query_sth = $sessions{$id}{query};
+    if (defined $query_sth && $query_sth != 0) {
         if ($#{$sessions{$id}{cache}} != $sessions{$id}{count}) {
-            $q->finish;
+            $query_sth->finish;
             undef $sessions{$id}{query};
         }
     }
@@ -84,14 +83,13 @@ method stop($id) {
 
 method set($id, $filter, $search, $sort, $not, $dbh) {
     $search =~ s/\0//g;
-    $sort = '' if ($sort !~ /^(\-)?(inserted|from|to|cc|subject|bucket|date|size)$/);
-
+    $sort = ''
+        if $sort !~ /^(\-)?(inserted|from|to|cc|subject|bucket|date|size)$/;
     if (defined($sessions{$id}{fields})
-         && $sessions{$id}{fields} eq "$filter:$search:$sort:$not") {
+        && $sessions{$id}{fields} eq "$filter:$search:$sort:$not") {
         return;
     }
     $sessions{$id}{fields} = "$filter:$search:$sort:$not";
-
     my $qb = $self->_init_qb($dbh);
     $sessions{$id}{base} =
         'select XXX from history, buckets
@@ -99,10 +97,8 @@ method set($id, $filter, $search, $sort, $not, $dbh) {
                 where history.userid = 1 and committed = 1';
     $sessions{$id}{base} .= ' and history.bucketid = buckets.id';
     $sessions{$id}{params} = [];
-
-    my $not_equal = $not ? '!='  : '=';
-    my $equal = $not ? '='   : '!=';
-
+    my $not_equal = $not ? '!=' : '=';
+    my $equal = $not ? '=' : '!=';
     if ($search ne '') {
         my $pat = '%' . $search . '%';
         my $like_expr = $qb->combine_or(
@@ -112,7 +108,6 @@ method set($id, $filter, $search, $sort, $not, $dbh) {
         $sessions{$id}{base} .= ' and ' . $expr->as_sql();
         push $sessions{$id}{params}->@*, $expr->params();
     }
-
     if ($filter ne '') {
         if ($filter eq '__filter__magnet') {
             $sessions{$id}{base} .= " and history.magnetid $equal 0";
@@ -125,7 +120,6 @@ method set($id, $filter, $search, $sort, $not, $dbh) {
             push $sessions{$id}{params}->@*, $expr->params();
         }
     }
-
     if ($sort ne '') {
         $sort =~ s/^(\-)//;
         my $direction = defined($1) ? 'desc' : 'asc';
@@ -136,14 +130,12 @@ method set($id, $filter, $search, $sort, $not, $dbh) {
     } else {
         $sessions{$id}{base} .= ' order by inserted desc;';
     }
-
     my $count = $sessions{$id}{base};
     $count =~ s/XXX/COUNT(*)/;
     my $sth = $dbh->prepare($count);
     $sth->execute($sessions{$id}{params}->@*);
     $sessions{$id}{count} = $sth->fetchrow_arrayref->[0];
     $sth->finish;
-
     my $select = $sessions{$id}{base};
     $select =~ s/XXX/$fields_slot/;
     $sessions{$id}{query} = $dbh->prepare($select);
