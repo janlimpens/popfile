@@ -4,6 +4,7 @@ package Classifier::Corpus;
 
 use Object::Pad;
 use POPFile::Features;
+use List::Util qw(max);
 
 class Classifier::Corpus;
 
@@ -118,6 +119,81 @@ method refresh_counts($dbh, $bcount, $bunique, $id_cache, $userid,
         $bunique->{$userid}{$row->[2]} = $row->[1];
     }
     0
+}
+
+# ── training ──
+
+method add_words($dbh, $bucketid, $subtract, %words) {
+    my @sorted_words = sort keys %words;
+    my @id_list;
+    my %wordmap;
+    my $chunk_size = 500;
+    my @chunks = @sorted_words;
+    while (@chunks) {
+        my @chunk = splice @chunks, 0, $chunk_size;
+        my $placeholders = join(', ', ('?') x @chunk);
+        my $sth = $dbh->prepare(
+            "SELECT id, word FROM words WHERE word IN ($placeholders)");
+        $sth->execute(@chunk);
+        while (my $row = $sth->fetchrow_arrayref) {
+            push @id_list, $row->[0];
+            $wordmap{$row->[1]} = $row->[0];
+        }
+    }
+    my %counts;
+    if (@id_list) {
+        my @id_chunks = @id_list;
+        while (@id_chunks) {
+            my @chunk = splice @id_chunks, 0, $chunk_size;
+            my $placeholders = join(', ', ('?') x @chunk);
+            my @params = (@chunk, $bucketid);
+            my $sth = $dbh->prepare(
+                "SELECT matrix.times, matrix.wordid FROM matrix
+                 WHERE matrix.wordid IN ($placeholders)
+                    AND matrix.bucketid = ?");
+            $sth->execute(@params);
+            while (my $row = $sth->fetchrow_arrayref) {
+                $counts{$row->[1]} = $row->[0];
+            }
+        }
+    }
+    $dbh->begin_work;
+    for my $word (sort keys %words) {
+        if (defined $wordmap{$word} && defined $counts{$wordmap{$word}}) {
+            my $new = max(0, $counts{$wordmap{$word}}
+                + $subtract * $words{$word});
+            $dbh->do(
+                'REPLACE INTO matrix (bucketid, wordid, times, lastseen)
+                 VALUES (?, ?, ?, date(\'now\'))',
+                undef, $bucketid, $wordmap{$word}, $new);
+        } elsif ($subtract == 1) {
+            my $sth = $dbh->prepare(
+                'SELECT id FROM words WHERE word = ?');
+            $sth->execute($word);
+            my $row = $sth->fetchrow_arrayref;
+            unless (defined $row) {
+                $dbh->do(
+                    'INSERT INTO words (word) VALUES (?)',
+                    undef, $word);
+                $row = $dbh->selectrow_arrayref(
+                    'SELECT id FROM words WHERE word = ?',
+                    undef, $word);
+            }
+            my $wordid = $row->[0];
+            $dbh->do(
+                'REPLACE INTO matrix (bucketid, wordid, times, lastseen)
+                 VALUES (?, ?, ?, date(\'now\'))',
+                undef, $bucketid, $wordid, $words{$word});
+        }
+    }
+    if ($subtract == -1) {
+        $dbh->do(
+            'DELETE FROM matrix
+             WHERE (matrix.times <= 0 OR matrix.times IS NULL)
+                AND matrix.bucketid = ?',
+            undef, $bucketid);
+    }
+    $dbh->commit;
 }
 
 method raw_word_prefixes($dbh, $bucketid) {

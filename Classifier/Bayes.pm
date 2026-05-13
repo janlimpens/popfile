@@ -72,12 +72,9 @@ field $history = 0;
 field $db_get_wordid = 0;
 field $db_get_word_count = 0;
 field $db_put_word_count = 0;
-field $db_get_unique_word_count = 0;
-field $db_get_full_total = 0;
 field $db_delete_zero_words = 0;
 
 # Temporary per-call prepared statements (undef'd after use)
-field $db_getwords;
 field $db_classify;
 field $get_wordids;
 
@@ -774,16 +771,6 @@ method db_connect() {
             matrix.wordid = ? LIMIT 1'));
     $db_put_word_count = $db->prepare($self->normalize_sql(
         'REPLACE INTO matrix (bucketid, wordid, times, lastseen) VALUES (?, ?, ?, date(\'now\'))'));
-    $db_get_unique_word_count = $db->prepare($self->normalize_sql(
-        'SELECT count(*) FROM matrix
-         WHERE matrix.bucketid IN (
-             SELECT buckets.id FROM buckets
-             WHERE buckets.userid = ?)'));
-    $db_get_full_total = $db->prepare($self->normalize_sql(
-        'SELECT sum(matrix.times) FROM matrix
-         WHERE matrix.bucketid IN (
-             SELECT buckets.id FROM buckets
-             WHERE buckets.userid = ?)'));
     $db_delete_zero_words = $db->prepare($self->normalize_sql(
         'DELETE FROM matrix
          WHERE (matrix.times <= 0 OR matrix.times IS NULL)
@@ -966,8 +953,6 @@ method db_disconnect() {
     $db_get_wordid->finish();
     $db_get_word_count->finish();
     $db_put_word_count->finish();
-    $db_get_unique_word_count->finish();
-    $db_get_full_total->finish();
     $db_delete_zero_words->finish();
 
     # Avoid DBD::SQLite 'closing dbh with active statement handles' bug
@@ -975,8 +960,6 @@ method db_disconnect() {
     undef $db_get_wordid;
     undef $db_get_word_count;
     undef $db_put_word_count;
-    undef $db_get_unique_word_count;
-    undef $db_get_full_total;
     undef $db_delete_zero_words;
 
     $self->_disconnect();
@@ -1199,101 +1182,17 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
     unless (defined $bucketid) {
         $self->log_msg(WARN => "add_words_to_bucket: bucketid undef for user=$userid bucket=$bucket; skipping");
-        return;
+        return
     }
-
     unless (keys $parser->words()->%*) {
         $self->log_msg(INFO => "add_words_to_bucket: no words parsed for user=$userid bucket=$bucket; skipping");
-        return;
+        return
     }
     $self->log_msg(5, "add_words_to_bucket: user=$userid bucket=$bucket bucketid=$bucketid words=" . scalar(keys $parser->words()->%*));
-    my @sorted_words = sort keys $parser->words()->%*;
-    my $qb = $self->qb();
-    my @id_list;
-    my %wordmap;
-    my $word_chunk_size = 500;
-    my @word_chunks = @sorted_words;
-    while (@word_chunks) {
-        my @chunk = splice @word_chunks, 0, $word_chunk_size;
-        my $word_expr = $qb->compare('word', \@chunk);
-        my $select = $qb->select('id', 'word')->from('words')->where($word_expr);
-        $get_wordids = $self->validate_sql_prepare_and_execute(
-            $select->as_sql(), $select->params());
-        next unless $get_wordids;
-        my ($wordid, $word);
-        $get_wordids->bind_columns(\$wordid, \$word);
-        while ($get_wordids->fetchrow_arrayref()) {
-            push @id_list, $wordid;
-            $wordmap{$word} = $wordid;
-        }
-        $get_wordids->finish();
-        undef $get_wordids;
-    }
-    my %counts;
-    if (@id_list) {
-        my @id_chunks = @id_list;
-        while (@id_chunks) {
-            my @chunk = splice @id_chunks, 0, $word_chunk_size;
-            my $qb = $self->qb();
-            my $expr = $qb->combine_and(
-                $qb->compare('matrix.wordid', \@chunk),
-                $qb->compare('matrix.bucketid', $db_bucketid->{$userid}{$bucket}{id}));
-            my $select = $qb->select('matrix.times', 'matrix.wordid')->from('matrix')->where($expr);
-            $db_getwords = $self->validate_sql_prepare_and_execute(
-                $select->as_sql(), $select->params());
-            next unless $db_getwords;
-            my $count;
-            my $wid;
-            $db_getwords->bind_columns(\$count, \$wid);
-            while ($db_getwords->fetchrow_arrayref) {
-                $counts{$wid} = $count;
-            }
-            $db_getwords->finish();
-            undef $db_getwords;
-        }
-    }
-
-    $self->db()->begin_work;
-    for my $word (keys $parser->words()->%*) {
-        # If there's already a count then it means that the word is
-        # already in the database and we have its id in
-        # $wordmap{$word} so for speed we execute the
-        # db_put_word_count query here rather than going through
-        # set_value_ which would need to look up the wordid again
-
-        if (defined($wordmap{$word}) && defined($counts{$wordmap{$word}})) {
-            $self->validate_sql_prepare_and_execute(
-                $db_put_word_count,
-                $db_bucketid->{$userid}{$bucket}{id},
-                $wordmap{$word},
-                max(0, $counts{$wordmap{$word}} +
-                    $subtract * $parser->words()->{$word}));
-        } else {
-            # If the word is not in the database and we are trying to
-            # subtract then we do nothing because negative values are
-            # meaningless
-
-            if ($subtract == 1) {
-                $self->db_put_word_count($session, $bucket, $word, $parser->words()->{$word});
-            }
-        }
-    }
-
-    # If we were doing a subtract operation it's possible that some of
-    # the words in the bucket now have a zero count and should be
-    # removed
-
-    if ($subtract == -1) {
-        $self->validate_sql_prepare_and_execute(
-            $db_delete_zero_words,
-            $db_bucketid->{$userid}{$bucket}{id});
-    }
-
-    $self->db()->commit();
+    $corpus->add_words($self->db(), $bucketid, $subtract, $parser->words()->%*)
 }
 
 =head2 echo_to_dot
