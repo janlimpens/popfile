@@ -2757,16 +2757,8 @@ method remove_word_from_bucket ($session, $bucket, $word) {
         unless defined $userid;
     return
         unless exists $db_bucketid->{$userid}{$bucket};
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $wordid_row = $self->validate_sql_prepare_and_execute(
-        'SELECT id FROM words WHERE word = ?',
-        $word)->fetchrow_arrayref;
-    return
-        unless defined $wordid_row;
-    my $wordid = $wordid_row->[0];
-    $self->validate_sql_prepare_and_execute(
-        'DELETE FROM matrix WHERE bucketid = ? AND wordid = ?',
-        $bucketid, $wordid);
+    $corpus->remove_word($self->db(),
+        $db_bucketid->{$userid}{$bucket}{id}, $word);
     $self->db_update_cache($session, $bucket);
 }
 
@@ -2786,38 +2778,11 @@ method move_word_between_buckets ($session, $from_bucket, $to_bucket, $word) {
     return
         unless defined $userid;
     return
-        unless exists $db_bucketid->{$userid}{$from_bucket};
-    return
-        unless exists $db_bucketid->{$userid}{$to_bucket};
+        unless exists $db_bucketid->{$userid}{$from_bucket}
+            && exists $db_bucketid->{$userid}{$to_bucket};
     my $from_id = $db_bucketid->{$userid}{$from_bucket}{id};
     my $to_id = $db_bucketid->{$userid}{$to_bucket}{id};
-    my $wordid_row = $self->validate_sql_prepare_and_execute(
-        'SELECT id FROM words WHERE word = ?',
-        $word)->fetchrow_arrayref;
-    return
-        unless defined $wordid_row;
-    my $wordid = $wordid_row->[0];
-    my $count_row = $self->validate_sql_prepare_and_execute(
-        'SELECT times FROM matrix WHERE bucketid = ? AND wordid = ?',
-        $from_id, $wordid)->fetchrow_arrayref;
-    return
-        unless defined $count_row;
-    my $count = $count_row->[0];
-    $self->validate_sql_prepare_and_execute(
-        'DELETE FROM matrix WHERE bucketid = ? AND wordid = ?',
-        $from_id, $wordid);
-    my $existing_row = $self->validate_sql_prepare_and_execute(
-        'SELECT times FROM matrix WHERE bucketid = ? AND wordid = ?',
-        $to_id, $wordid)->fetchrow_arrayref;
-    if (defined $existing_row) {
-        $self->validate_sql_prepare_and_execute(
-            'UPDATE matrix SET times = times + ?, lastseen = date(\'now\') WHERE bucketid = ? AND wordid = ?',
-            $count, $to_id, $wordid);
-    } else {
-        $self->validate_sql_prepare_and_execute(
-            'INSERT INTO matrix (bucketid, wordid, times) VALUES (?, ?, ?)',
-            $to_id, $wordid, $count);
-    }
+    $corpus->move_word($self->db(), $from_id, $to_id, $word);
     $self->db_update_cache($session, $from_bucket);
     $self->db_update_cache($session, $to_bucket);
 }

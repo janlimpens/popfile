@@ -196,6 +196,48 @@ method add_words($dbh, $bucketid, $subtract, %words) {
     $dbh->commit;
 }
 
+method remove_word($dbh, $bucketid, $word) {
+    my $row = $dbh->selectrow_arrayref(
+        'SELECT id FROM words WHERE word = ?', undef, $word);
+    return
+        unless defined $row;
+    $dbh->do(
+        'DELETE FROM matrix WHERE bucketid = ? AND wordid = ?',
+        undef, $bucketid, $row->[0]);
+    1
+}
+
+method move_word($dbh, $from_id, $to_id, $word) {
+    my $word_row = $dbh->selectrow_arrayref(
+        'SELECT id FROM words WHERE word = ?', undef, $word);
+    return
+        unless defined $word_row;
+    my $wordid = $word_row->[0];
+    my $count_row = $dbh->selectrow_arrayref(
+        'SELECT times FROM matrix WHERE bucketid = ? AND wordid = ?',
+        undef, $from_id, $wordid);
+    return
+        unless defined $count_row;
+    my $count = $count_row->[0];
+    $dbh->do(
+        'DELETE FROM matrix WHERE bucketid = ? AND wordid = ?',
+        undef, $from_id, $wordid);
+    my $existing = $dbh->selectrow_arrayref(
+        'SELECT times FROM matrix WHERE bucketid = ? AND wordid = ?',
+        undef, $to_id, $wordid);
+    if (defined $existing) {
+        $dbh->do(
+            'UPDATE matrix SET times = times + ?, lastseen = date(\'now\')
+             WHERE bucketid = ? AND wordid = ?',
+            undef, $count, $to_id, $wordid);
+    } else {
+        $dbh->do(
+            'INSERT INTO matrix (bucketid, wordid, times) VALUES (?, ?, ?)',
+            undef, $to_id, $wordid, $count);
+    }
+    1
+}
+
 method raw_word_prefixes($dbh, $bucketid) {
     return $dbh->selectcol_arrayref("
         SELECT words.word FROM matrix, words
