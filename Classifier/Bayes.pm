@@ -926,7 +926,8 @@ method db_upgrade() {
                 my $val = $rows->[$i];
                 if ($t->{TYPE}->[$i] !~ /^int/i) {
                     $val = '' unless (defined($val));
-                    $val = $self->db_quote($val);
+                    $val =~ s/\x00//g;
+                    $val = $self->db()->quote($val);
                 } else {
                     $val = 'NULL' unless (defined($val));
                 }
@@ -3552,28 +3553,6 @@ method magnet_count ($session) {
         unless defined $userid;
     return $magnets->count($self->db(), $userid)
 }
-
-=head2 db_quote
-
-Quote a string for use in a sql statement. Before calling DBI::quote on the
-string the string is also checked for any null-bytes.
-
-
-returns the quoted string without any possible null-bytes
-
-C<$string> The string that should be quoted.
-
-=cut
-
-method db_quote ($string) {
-    my $backup = $string;
-    if ($string =~ s/\x00//g) {
-        my ($package, $file, $line) = caller;
-        $self->log_msg(WARN => "Found null-byte in string '$backup'. Called from package '$package' ($file), line $line.");
-    }
-    return $self->db()->quote($string);
-}
-
 
 =head2 set_history
 
