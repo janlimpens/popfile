@@ -2475,53 +2475,17 @@ method get_words_for_bucket ($session, $bucket, %opts) {
         unless defined $userid;
     return { words => [], total => 0 }
         unless exists $db_bucketid->{$userid}{$bucket};
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
     my $page = ($opts{page} // 1) + 0;
     my $per_page = ($opts{per_page} // 50) + 0;
     $page = 1 if $page < 1;
     $per_page = 50 if $per_page < 1 || $per_page > 500;
     my $offset = ($page - 1) * $per_page;
-    my %sort_expr = (
-        relevance => 'CAST(bucket_count AS FLOAT) / (total_count + 10)',
-        count     => 'bucket_count',
-        total     => 'total_count',
-        word      => 'word',
-    );
-    my $sort = $sort_expr{ $opts{sort} // 'relevance' } // $sort_expr{relevance};
     my $dir  = ($opts{dir} // '') eq 'asc' ? 'ASC' : 'DESC';
-    my $count_row = $self->validate_sql_prepare_and_execute(
-        'SELECT COUNT(*) FROM matrix WHERE bucketid = ?',
-        $bucketid)->fetchrow_arrayref;
-    my $total = $count_row ? $count_row->[0] + 0 : 0;
-    my $sth = $self->validate_sql_prepare_and_execute(
-        "WITH wc AS (
-             SELECT w.id, w.word,
-                    m.times AS bucket_count,
-                    (SELECT COALESCE(SUM(m2.times), 0)
-                     FROM matrix m2
-                     WHERE m2.wordid = m.wordid) AS total_count
-             FROM matrix m
-             JOIN words w ON w.id = m.wordid
-             WHERE m.bucketid = ?
-         )
-         SELECT id, word, bucket_count, total_count
-         FROM wc
-         ORDER BY $sort $dir
-         LIMIT ? OFFSET ?",
-        $bucketid, $per_page, $offset);
-    my @words;
-    while (my $row = $sth->fetchrow_hashref()) {
-        my $count = $row->{bucket_count} + 0;
-        my $total_count = $row->{total_count} + 0;
-        my $accuracy = $total_count > 0 ? $count / $total_count : 0;
-        push @words, {
-            id => $row->{id} + 0,
-            word => $row->{word},
-            count => $count,
-            total => $total_count,
-            accuracy => $accuracy };
-    }
-    return { words => \@words, total => $total }
+    my $sort = $opts{sort} // 'relevance';
+    my ($words, $total) = $corpus->bucket_word_page(
+        $self->db(), $db_bucketid->{$userid}{$bucket}{id},
+        $sort, $dir, $per_page, $offset);
+    return { words => $words, total => $total }
 }
 
 =head2 search_words_cross_bucket
@@ -2573,75 +2537,8 @@ method search_words_cross_bucket ($session, $prefix, %opts) {
 }
 
 method _search_words_fetch ($userid, $prefix, $bucket_filter, $sort, $dir, $per_page, $offset) {
-    my $qb = $self->qb();
-    my $pattern = ($prefix // '') . '%';
-    my @joins = (
-        $qb->join('matrix m', on => $qb->compare('m.wordid', \'w.id')),
-        $qb->join('buckets b', on => $qb->compare('b.id', \'m.bucketid')));
-    my $where = $qb->combine_and(
-        $qb->like('w.word', $pattern),
-        $qb->compare('b.userid', $userid),
-        $qb->is_false('b.pseudo'));
-    if ($bucket_filter ne '') {
-        my $exists = $qb->exists(
-            $qb->select('1')
-                ->from('matrix mf')
-                ->joins($qb->join('buckets bf', on => $qb->combine_and(
-                    $qb->compare('bf.id', \'mf.bucketid'),
-                    $qb->compare('bf.name', $bucket_filter))))
-                ->where($qb->compare('mf.wordid', \'w.id')));
-        $where->add_expression($exists);
-    }
-    my %sql_sort = (word => 'w.word', coverage => 'coverage', total => 'total');
-    my (@words, $total);
-    if (exists $sql_sort{$sort}) {
-        my $count_q = $qb->select('COUNT(DISTINCT w.id)')
-            ->from('words w')->joins(@joins)->where($where);
-        my $row = $self->validate_sql_prepare_and_execute(
-            $count_q->as_sql(), $count_q->params())->fetchrow_arrayref;
-        $total = $row ? $row->[0] + 0 : 0;
-        my $q = $qb->select('w.word', 'COUNT(DISTINCT m.bucketid) AS coverage', 'SUM(m.times) AS total')
-            ->from('words w')->joins(@joins)->where($where)
-            ->group_by('w.id', 'w.word')
-            ->order_by($qb->order_by($sql_sort{$sort}, $dir))
-            ->limit($per_page)->offset($offset);
-        @words = map { $_->[0] }
-            $self->validate_sql_prepare_and_execute($q->as_sql(), $q->params())->fetchall_arrayref->@*;
-    } else {
-        my $q = $qb->select('w.word')->from('words w')
-            ->joins(@joins)->where($where)->group_by('w.id', 'w.word');
-        my $all = $self->validate_sql_prepare_and_execute($q->as_sql(), $q->params())->fetchall_arrayref;
-        $total = scalar $all->@*;
-        @words = map { $_->[0] } $all->@*;
-    }
-    return (\@words, $total, {})
-        unless @words;
-    my %data;
-    my $chunk_size = 500;
-    my @remaining = @words;
-    while (@remaining) {
-        my @chunk = splice @remaining, 0, $chunk_size;
-        my $where2 = $qb->combine_and(
-            $qb->compare('w.word', \@chunk),
-            $qb->compare('b.userid', $userid),
-            $qb->is_false('b.pseudo'));
-        my $q2 = $qb->select('w.word', 'b.name', 'm.times')
-            ->from('words w')->joins(@joins)->where($where2);
-        my $sth = $self->validate_sql_prepare_and_execute($q2->as_sql(), $q2->params());
-        next unless $sth;
-        while (my $r = $sth->fetchrow_hashref()) {
-            $data{$r->{word}}{$r->{name}} = $r->{times} + 0;
-        }
-    }
-    if (!exists $sql_sort{$sort}) {
-        @words = map { $_->[0] }
-            sort { ($data{$b->[0]}{$sort} // 0) <=> ($data{$a->[0]}{$sort} // 0) }
-            map { [$_] } @words;
-        @words = reverse @words
-            if $dir eq 'ASC';
-        @words = grep { defined } @words[$offset .. $offset + $per_page - 1];
-    }
-    return (\@words, $total, \%data)
+    return $corpus->search_words_cross($self->db(), $self->qb(),
+        $userid, $prefix, $bucket_filter, $sort, $dir, $per_page, $offset)
 }
 
 =head2 get_word_by_id

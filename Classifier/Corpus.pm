@@ -5,6 +5,7 @@ package Classifier::Corpus;
 use Object::Pad;
 use POPFile::Features;
 use List::Util qw(max);
+use lib 'vendor/perl-querybuilder/lib';
 
 class Classifier::Corpus;
 
@@ -294,6 +295,149 @@ method word_for_id($dbh, $id) {
     my $row = $dbh->selectrow_arrayref(
         'SELECT word FROM words WHERE id = ?', undef, $id);
     return $row ? $row->[0] : undef
+}
+
+# ── word search ──
+
+my %sort_map = (
+    relevance => 'CAST(bucket_count AS FLOAT) / (total_count + 10)',
+    count     => 'bucket_count',
+    total     => 'total_count',
+    word      => 'word',
+);
+
+method bucket_word_page($dbh, $bucketid, $sort, $dir, $per_page, $offset) {
+    my $sort_col = $sort_map{ $sort // 'relevance' } // $sort_map{relevance};
+    my $total = $dbh->selectrow_array(
+        'SELECT COUNT(*) FROM matrix WHERE bucketid = ?',
+        undef, $bucketid) // 0;
+    my $rows = $dbh->selectall_arrayref(
+        "WITH wc AS (
+             SELECT w.id, w.word,
+                    m.times AS bucket_count,
+                    COALESCE((SELECT SUM(m2.times)
+                              FROM matrix m2
+                              WHERE m2.wordid = m.wordid), 0) AS total_count
+             FROM matrix m
+             JOIN words w ON w.id = m.wordid
+             WHERE m.bucketid = ?
+         )
+         SELECT id, word, bucket_count, total_count
+         FROM wc
+         ORDER BY $sort_col $dir
+         LIMIT ? OFFSET ?",
+        { Slice => {} }, $bucketid, $per_page, $offset);
+    return ([], 0)
+        unless $rows && $rows->@*;
+    my @words = map {
+        my $c = $_->{bucket_count} + 0;
+        my $tc = $_->{total_count} + 0;
+        my $acc = $tc > 0 ? $c / $tc : 0;
+        { id => $_->{id} + 0,
+          word => $_->{word},
+          count => $c,
+          total => $tc,
+          accuracy => $acc }
+    } $rows->@*;
+    return (\@words, $total)
+}
+
+method search_words_cross($dbh, $qb, $userid, $prefix, $bucket_filter,
+                           $sort, $dir, $per_page, $offset) {
+    my $pattern = ($prefix // '') . '%';
+    my @joins = (
+        $qb->join('matrix m', on => $qb->compare('m.wordid', \'w.id')),
+        $qb->join('buckets b', on => $qb->compare('b.id', \'m.bucketid')));
+    my $where = $qb->combine_and(
+        $qb->like('w.word', $pattern),
+        $qb->compare('b.userid', $userid),
+        $qb->is_false('b.pseudo'));
+    if ($bucket_filter ne '') {
+        my $exists = $qb->exists(
+            $qb->select('1')
+                ->from('matrix mf')
+                ->joins($qb->join('buckets bf',
+                    on => $qb->combine_and(
+                        $qb->compare('bf.id', \'mf.bucketid'),
+                        $qb->compare('bf.name', $bucket_filter))))
+                ->where($qb->compare('mf.wordid', \'w.id')));
+        $where->add_expression($exists);
+    }
+    my %sql_sort = (word => 'w.word', coverage => 'coverage', total => 'total');
+    my (@words, $total);
+    if (exists $sql_sort{$sort}) {
+        my $count_q = $qb->select('COUNT(DISTINCT w.id)')
+            ->from('words w')->joins(@joins)->where($where);
+        my $row = do {
+            try {
+                $dbh->selectrow_arrayref(
+                    $count_q->as_sql(), undef, $count_q->params())
+            } catch ($e) { undef }
+        };
+        $total = $row ? $row->[0] + 0 : 0;
+        my $q = $qb->select(
+                'w.word',
+                'COUNT(DISTINCT m.bucketid) AS coverage',
+                'SUM(m.times) AS total')
+            ->from('words w')->joins(@joins)->where($where)
+            ->group_by('w.id', 'w.word')
+            ->order_by($qb->order_by($sql_sort{$sort}, $dir))
+            ->limit($per_page)->offset($offset);
+        @words = do {
+            try {
+                map { $_->[0] }
+                    $dbh->selectall_arrayref(
+                        $q->as_sql(), undef, $q->params())->@*
+            } catch ($e) { () }
+        };
+    } else {
+        my $q = $qb->select('w.word')->from('words w')
+            ->joins(@joins)->where($where)->group_by('w.id', 'w.word');
+        my $all = do {
+            try {
+                $dbh->selectall_arrayref(
+                    $q->as_sql(), undef, $q->params())
+            } catch ($e) { undef }
+        };
+        $total = $all ? scalar $all->@* : 0;
+        @words = $all ? map { $_->[0] } $all->@* : ();
+    }
+    return (\@words, $total, {})
+        unless @words;
+    my %data;
+    my $chunk_size = 500;
+    my @remaining = @words;
+    while (@remaining) {
+        my @chunk = splice @remaining, 0, $chunk_size;
+        my $where2 = $qb->combine_and(
+            $qb->compare('w.word', \@chunk),
+            $qb->compare('b.userid', $userid),
+            $qb->is_false('b.pseudo'));
+        my $q2 = $qb->select('w.word', 'b.name', 'm.times')
+            ->from('words w')->joins(@joins)->where($where2);
+        my $sth;
+        try {
+            $sth = $dbh->prepare($q2->as_sql());
+            $sth->execute($q2->params())
+                if $sth
+        } catch ($e) {
+            $sth = undef
+        }
+        next
+            unless $sth;
+        while (my $r = do { try { $sth->fetchrow_hashref() } catch ($e) { undef } }) {
+            $data{$r->{word}}{$r->{name}} = $r->{times} + 0;
+        }
+    }
+    if (!exists $sql_sort{$sort}) {
+        @words = map { $_->[0] }
+            sort { ($data{$b->[0]}{$sort} // 0) <=> ($data{$a->[0]}{$sort} // 0) }
+            map { [$_] } @words;
+        @words = reverse @words
+            if $dir eq 'ASC';
+        @words = grep { defined } @words[$offset .. $offset + $per_page - 1];
+    }
+    return (\@words, $total, \%data)
 }
 
 1;

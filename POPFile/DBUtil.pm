@@ -13,7 +13,7 @@
 package POPFile::DBUtil;
 
 use Exporter qw(import);
-our @EXPORT_OK = qw(normalize_sql scrub);
+our @EXPORT_OK = qw(db_exec normalize_sql scrub);
 
 sub normalize_sql {
     my $sql = shift;
@@ -35,6 +35,18 @@ sub scrub {
         $value =~ s/\x00//g;
     }
     return $value
+}
+
+sub db_exec {
+    my ($dbh, $sql, @params) = @_;
+    $sql = normalize_sql($sql);
+    $sql = scrub($sql);
+    @params = map { scrub($_) } @params;
+    my $sth = $dbh->prepare($sql)
+        or return;
+    $sth->execute(@params)
+        or return;
+    $sth
 }
 
 1;
