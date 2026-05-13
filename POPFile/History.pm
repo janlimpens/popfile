@@ -464,19 +464,6 @@ method delete_slot ($slot, $archive) {
     $self->force_requery();
 }
 
-=head2 delete_in_transaction($coderef)
-
-Wraps the given coderef in a database transaction via C<< $dbh->txn >>.
-Automatically commits on success or rolls back on failure.
-
-=cut
-
-method delete_in_transaction($coderef) {
-    $self->_txn(sub {
-        $coderef->();
-    });
-}
-
 =head2 get_slot_file($slot)
 
 Returns the full filesystem path for the message file associated with
@@ -580,13 +567,12 @@ method get_search_queries(%args) {
 =head2 delete_query($id)
 
 Deletes every history entry matched by the current query C<$id> from both the
-database and disk (with archiving if configured).  Wrapped in a
-C<delete_in_transaction> for atomicity.
+database and disk (with archiving if configured).  Wrapped in C<_txn> for atomicity.
 
 =cut
 
 method delete_query ($id) {
-    $self->delete_in_transaction(sub {
+    $self->_txn(sub {
         my $ids = $queries->delete_ids($id, $self->db());
         for my $slot_id ($ids->@*) {
             $self->delete_slot($slot_id, 1)
