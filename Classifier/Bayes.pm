@@ -10,6 +10,7 @@ use locale;
 use Classifier::Bucket;
 use Classifier::MailParse;
 use Classifier::Sessions;
+use Classifier::Magnets;
 use Classifier::Stopwords;
 use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
@@ -77,7 +78,6 @@ field $db_get_full_total = 0;
 field $db_get_bucket_parameter = 0;
 field $db_set_bucket_parameter = 0;
 field $db_get_bucket_parameter_default = 0;
-field $db_get_buckets_with_magnets = 0;
 field $db_delete_zero_words = 0;
 
 # Temporary per-call prepared statements (undef'd after use)
@@ -120,6 +120,7 @@ field $magnet_used = 0;
 field $magnet_detail = 0;
 
 field $sessions :reader = undef;
+field $magnets :reader = undef;
 field $stopwords :reader = undef;
 
 field $db_is_sqlite = 0;
@@ -285,6 +286,7 @@ method start() {
     return 0
         unless $self->db_connect();
     $sessions = Classifier::Sessions->new();
+    $magnets = Classifier::Magnets->new();
     $stopwords = Classifier::Stopwords->new();
 
     if ($language eq 'Nihongo') {
@@ -809,13 +811,6 @@ method db_connect() {
     $db_get_bucket_parameter_default = $db->prepare($self->normalize_sql(
         'SELECT bucket_template.def FROM bucket_template
          WHERE bucket_template.id = ?'));
-    $db_get_buckets_with_magnets = $db->prepare($self->normalize_sql(
-        'SELECT buckets.name FROM buckets, magnets
-         WHERE buckets.userid = ?
-            AND magnets.id != 0
-            AND magnets.bucketid = buckets.id
-         GROUP BY buckets.name
-         ORDER BY buckets.name'));
     $db_delete_zero_words = $db->prepare($self->normalize_sql(
         'DELETE FROM matrix
          WHERE (matrix.times <= 0 OR matrix.times IS NULL)
@@ -1012,7 +1007,6 @@ method db_disconnect() {
     $db_get_bucket_parameter->finish();
     $db_set_bucket_parameter->finish();
     $db_get_bucket_parameter_default->finish();
-    $db_get_buckets_with_magnets->finish();
     $db_delete_zero_words->finish();
 
     # Avoid DBD::SQLite 'closing dbh with active statement handles' bug
@@ -1028,7 +1022,6 @@ method db_disconnect() {
     undef $db_get_bucket_parameter;
     undef $db_set_bucket_parameter;
     undef $db_get_bucket_parameter_default;
-    undef $db_get_buckets_with_magnets;
     undef $db_delete_zero_words;
 
     $self->_disconnect();
@@ -1239,34 +1232,7 @@ C<$type> The magnet type to check
 =cut
 
 method single_magnet_match ($magnet, $match, $type) {
-    my $matched = 0;
-    if ($type =~ /^(from|to)$/) {
-        # From / To
-        if ($magnet =~ /[\w]+\@[\w]+/) {
-            # e-mail address -> exact match
-            $matched = 1
-                if ($match =~ m/(^|[^\w\-])\Q$magnet\E($|[^\w\.])/i);
-        } elsif ($magnet =~ /\./) {
-            # domain name -> domain match
-            if ($magnet =~ /^[\@\.]/) {
-                $matched = 1
-                    if ($match =~ /\Q$magnet\E($|[^\w\.])/i);
-            } else {
-                $matched = 1
-                    if ($match =~ m/[\@\.]\Q$magnet\E($|[^\w\.])/i);
-            }
-        } else {
-            # name -> word match
-            $matched = 1
-                if ($match =~ m/(^|[^\w])\Q$magnet\E($|[^\w])/i);
-        }
-    } else {
-        # Subject -> word match
-        $matched = 1
-            if ($match =~ m/(^|[^\w])\Q$magnet\E($|[^\w])/i);
-    }
-
-    return $matched;
+    return $magnets->word_match($magnet, $match, $type)
 }
 
 =head2 magnet_match
@@ -3573,16 +3539,7 @@ method get_buckets_with_magnets ($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    my @result;
-
-    $self->validate_sql_prepare_and_execute(
-        $db_get_buckets_with_magnets, $userid);
-        while (my $row = $db_get_buckets_with_magnets->fetchrow_arrayref) {
-        push @result, ($row->[0]);
-    }
-
-    return @result;
+    return $magnets->get_buckets_with($self->db(), $userid)
 }
 
 =head2 get_magnet_types_in_bucket
@@ -3598,28 +3555,9 @@ method get_magnet_types_in_bucket ($session, $bucket) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    my @result;
-
-    unless (defined($db_bucketid->{$userid}{$bucket})) {
-        return;
-    }
-
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $h = $self->validate_sql_prepare_and_execute(
-        'SELECT magnet_types.mtype FROM magnet_types, magnets, buckets
-         WHERE magnet_types.id = magnets.mtid
-            AND magnets.bucketid = buckets.id
-            AND buckets.id = ?
-         GROUP BY magnet_types.mtype
-         ORDER BY magnet_types.mtype',
-        $bucketid);
-        while (my $row = $h->fetchrow_arrayref) {
-        push @result, ($row->[0]);
-    }
-    $h->finish;
-
-    return @result;
+    return
+        unless defined $db_bucketid->{$userid}{$bucket};
+    return $magnets->get_types_in_bucket($self->db(), $db_bucketid->{$userid}{$bucket}{id})
 }
 
 =head2 clear_bucket
@@ -3662,20 +3600,7 @@ method clear_magnets ($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    for my $bucket (keys $db_bucketid->{$userid}->%*) {
-        my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-        $self->validate_sql_prepare_and_execute(
-            'DELETE FROM magnets WHERE magnets.bucketid = ?',
-            $bucketid);
-        $self->validate_sql_prepare_and_execute(
-            'UPDATE history SET magnetid = 0
-             WHERE bucketid = ?
-                AND userid = ?',
-            $bucketid, $userid);
-    }
-
-    return 1;
+    return $magnets->clear($self->db(), $userid)
 }
 
 =head2 get_magnets
@@ -3692,30 +3617,10 @@ method get_magnets ($session, $bucket, $type) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-
-    unless (defined($db_bucketid->{$userid}{$bucket})) {
-        return 0;
-    }
-
-    return 0 unless (defined($type));
-
-    my @result;
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $h = $self->validate_sql_prepare_and_execute(
-        'SELECT magnets.val FROM magnets, magnet_types
-         WHERE magnets.bucketid = ?
-            AND magnets.id != 0
-            AND magnet_types.id = magnets.mtid
-            AND magnet_types.mtype = ?
-         ORDER BY magnets.val',
-        $bucketid, $type);
-    while (my $row = $h->fetchrow_arrayref()) {
-        push @result, ($row->[0]);
-    }
-    $h->finish();
-
-    return @result;
+    return 0
+        unless defined $db_bucketid->{$userid}{$bucket}
+            && defined $type;
+    return $magnets->get($self->db(), $db_bucketid->{$userid}{$bucket}{id}, $type)
 }
 
 =head2 get_magnet_types
@@ -3730,18 +3635,7 @@ method get_magnet_types ($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    my %result;
-
-    my $h = $self->validate_sql_prepare_and_execute(
-        'SELECT magnet_types.mtype, magnet_types.header
-         FROM magnet_types ORDER BY mtype');
-         while (my $row = $h->fetchrow_arrayref()) {
-            $result{$row->[0]} = $row->[1];
-        }
-    $h->finish();
-
-    return %result;
+    return $magnets->get_types($self->db())
 }
 
 =head2 create_magnet
@@ -3761,17 +3655,7 @@ method create_magnet ($session, $bucket, $type, $text) {
         unless defined $userid;
     return 0
         unless defined $db_bucketid->{$userid}{$bucket};
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $result = $self->validate_sql_prepare_and_execute(
-        'SELECT magnet_types.id FROM magnet_types WHERE magnet_types.mtype = ?',
-        $type)->fetchrow_arrayref();
-    my $mtid = $result->[0];
-    return 0
-        unless defined $mtid;
-    $self->validate_sql_prepare_and_execute(
-        'INSERT INTO magnets ( bucketid, mtid, val ) VALUES ( ?, ?, ? )',
-        $bucketid, $mtid, $text);
-    return 1
+    return $magnets->create($self->db(), $db_bucketid->{$userid}{$bucket}{id}, $type, $text)
 }
 
 =head2 delete_magnet
@@ -3786,37 +3670,10 @@ method delete_magnet ($session, $bucket, $type, $text) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-    # todo: avoid autovivification
-    unless (defined($db_bucketid->{$userid}{$bucket})) {
-        return 0;
-    }
-
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-
-    my $result = $self->validate_sql_prepare_and_execute(
-        'SELECT magnets.id FROM magnets, magnet_types
-         WHERE magnets.mtid = magnet_types.id
-            AND magnets.bucketid = ?
-            AND magnets.val = ?
-            AND magnet_types.mtype = ?',
-        $bucketid, $text, $type)->fetchrow_arrayref;
-        return 0 unless (defined($result));
-
-    my $magnetid = $result->[0];
-
-    return 0 unless (defined($magnetid));
-
-    $self->validate_sql_prepare_and_execute(
-        'DELETE FROM magnets WHERE id = ?',
-        $magnetid);
-    $self->validate_sql_prepare_and_execute(
-        'UPDATE history SET magnetid = 0
-         WHERE magnetid = ?
-            AND userid = ?',
-        $magnetid, $userid);
-    $history->force_requery();
-
-    return 1;
+    return 0
+        unless defined $db_bucketid->{$userid}{$bucket};
+    return $magnets->delete($self->db(), $db_bucketid->{$userid}{$bucket}{id}, $type, $text,
+        sub { $history->force_requery() })
 }
 
 =head2 get_stopword_list
@@ -3865,18 +3722,7 @@ method magnet_count ($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
-    my $result = $self->validate_sql_prepare_and_execute(
-        'SELECT count(*) FROM magnets, buckets
-         WHERE buckets.userid = ?
-            AND magnets.id != 0
-            AND magnets.bucketid = buckets.id',
-        $userid)->fetchrow_arrayref;
-        if (defined($result)) {
-        return $result->[0];
-    } else {
-        return 0;
-    }
+    return $magnets->count($self->db(), $userid)
 }
 
 =head2 db_quote
