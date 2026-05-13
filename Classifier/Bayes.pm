@@ -69,9 +69,6 @@ field $hostname = '';
 field $history = 0;
 
 # Cached prepared SQL statements (set in db_connect, released in db_disconnect)
-field $db_get_wordid = 0;
-field $db_get_word_count = 0;
-field $db_put_word_count = 0;
 field $db_delete_zero_words = 0;
 
 # Temporary per-call prepared statements (undef'd after use)
@@ -529,12 +526,11 @@ is not present.  Unlike C<get_value>, no logarithm is applied.
 =cut
 
 method get_base_value ($session, $bucket, $word) {
-    my $value = $self->db_get_word_count($session, $bucket, $word);
-    if (defined($value)) {
-        return $value;
-    } else {
-        return 0;
-    }
+    my $userid = $self->valid_session_key($session);
+    return 0
+        unless defined $userid;
+    return $corpus->word_count_get($self->db(),
+        $db_bucketid->{$userid}{$bucket}{id}, $word) // 0
 }
 
 =head2 set_value_
@@ -545,15 +541,14 @@ counts for the bucket and globally
 =cut
 
 method set_value ($session, $bucket, $word, $value) {
-    if ($self->db_put_word_count($session, $bucket, $word, $value) == 1) {
     my $userid = $self->valid_session_key($session);
-        my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-        $self->validate_sql_prepare_and_execute(
-            $db_delete_zero_words, $bucketid);
-        return 1;
-    } else {
-        return 0;
-    }
+    return 0
+        unless defined $userid;
+    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
+    $corpus->word_count_set($self->db(), $bucketid, $word, $value);
+    $self->validate_sql_prepare_and_execute(
+        $db_delete_zero_words, $bucketid);
+    return 1
 }
 
 =head2 get_sort_value_ behaves the same as get_value_, except that it
@@ -762,15 +757,6 @@ method db_connect() {
     # word
     # parameter
 
-    $db_get_wordid = $db->prepare($self->normalize_sql(
-        'SELECT id FROM words
-         WHERE words.word = ? LIMIT 1'));
-    $db_get_word_count = $db->prepare($self->normalize_sql(
-        'SELECT matrix.times FROM matrix
-         WHERE matrix.bucketid = ? AND
-            matrix.wordid = ? LIMIT 1'));
-    $db_put_word_count = $db->prepare($self->normalize_sql(
-        'REPLACE INTO matrix (bucketid, wordid, times, lastseen) VALUES (?, ?, ?, date(\'now\'))'));
     $db_delete_zero_words = $db->prepare($self->normalize_sql(
         'DELETE FROM matrix
          WHERE (matrix.times <= 0 OR matrix.times IS NULL)
@@ -949,17 +935,11 @@ Disconnect from the POPFile database
 
 method db_disconnect() {
     return
-        unless ref $db_get_wordid;
-    $db_get_wordid->finish();
-    $db_get_word_count->finish();
-    $db_put_word_count->finish();
+        unless ref $db_delete_zero_words;
     $db_delete_zero_words->finish();
 
     # Avoid DBD::SQLite 'closing dbh with active statement handles' bug
 
-    undef $db_get_wordid;
-    undef $db_get_word_count;
-    undef $db_put_word_count;
     undef $db_delete_zero_words;
 
     $self->_disconnect();
@@ -996,71 +976,6 @@ C<$bucket> bucket word is in
 C<$word> word to lookup
 
 =cut
-
-method db_get_word_count ($session, $bucket, $word) {
-    my $userid = $self->valid_session_key($session);
-    return
-        unless defined($userid);
-
-    $self->validate_sql_prepare_and_execute($db_get_wordid, $word);
-    my $result = $db_get_wordid->fetchrow_arrayref;
-    unless (defined($result)) {
-        return;
-    }
-
-    my $wordid = $result->[0];
-
-    $self->validate_sql_prepare_and_execute(
-        $db_get_word_count,
-        $db_bucketid->{$userid}{$bucket}{id}, $wordid);
-    $result = $db_get_word_count->fetchrow_arrayref;
-    if (defined($result)) {
-         return $result->[0];
-    } else {
-         return;
-    }
-}
-
-=head2 db_put_word_count
-
-Update 'count' value for a word in a bucket, if the update fails
-then returns 0 otherwise is returns 1
-
-C<$session> Valid session ID from get_session_key
-C<$bucket> bucket word is in
-C<$word> word to update
-C<$count> new count value
-
-=cut
-
-method db_put_word_count ($session, $bucket, $word, $count) {
-    my $userid = $self->valid_session_key($session);
-    return
-        unless defined $userid;
-
-    return 0 unless defined $count && $count > 0;
-
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    unless (defined $bucketid) {
-        $self->log_msg(WARN => "db_put_word_count: bucketid undef for user=$userid bucket=$bucket word=$word");
-        return 0;
-    }
-
-    my $result = $self->validate_sql_prepare_and_execute(
-        $db_get_wordid, $word)->fetchrow_arrayref;
-    unless (defined($result)) {
-        $self->validate_sql_prepare_and_execute(
-            'insert into words (word) values (?);', $word);
-        $result = $self->validate_sql_prepare_and_execute(
-            $db_get_wordid, $word)->fetchrow_arrayref;
-    }
-
-    my $wordid = $result->[0];
-
-    $self->validate_sql_prepare_and_execute(
-        $db_put_word_count, $bucketid, $wordid, $count);
-    return 1;
-}
 
 =head2 magnet_match_helper
 

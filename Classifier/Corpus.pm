@@ -238,6 +238,51 @@ method move_word($dbh, $from_id, $to_id, $word) {
     1
 }
 
+method word_count_get($dbh, $bucketid, $word) {
+    state $sth_wordid;
+    state $sth_count;
+    unless ($sth_wordid) {
+        $sth_wordid = $dbh->prepare(
+            'SELECT id FROM words WHERE word = ? LIMIT 1');
+        $sth_count = $dbh->prepare(
+            'SELECT matrix.times FROM matrix
+             WHERE matrix.bucketid = ? AND matrix.wordid = ? LIMIT 1');
+    }
+    $sth_wordid->execute($word);
+    my $row = $sth_wordid->fetchrow_arrayref;
+    return
+        unless defined $row;
+    $sth_count->execute($bucketid, $row->[0]);
+    $row = $sth_count->fetchrow_arrayref;
+    return $row->[0]
+        if defined $row;
+    return
+}
+
+method word_count_set($dbh, $bucketid, $word, $count) {
+    state $sth_wordid;
+    state $sth_put;
+    unless ($sth_wordid) {
+        $sth_wordid = $dbh->prepare(
+            'SELECT id FROM words WHERE word = ? LIMIT 1');
+        $sth_put = $dbh->prepare(
+            'REPLACE INTO matrix (bucketid, wordid, times, lastseen)
+             VALUES (?, ?, ?, date(\'now\'))');
+    }
+    $sth_wordid->execute($word);
+    my $row = $sth_wordid->fetchrow_arrayref;
+    unless (defined $row) {
+        $dbh->do('INSERT INTO words (word) VALUES (?)',
+            undef, $word);
+        $sth_wordid->execute($word);
+        $row = $sth_wordid->fetchrow_arrayref;
+    }
+    return
+        unless defined $row;
+    $sth_put->execute($bucketid, $row->[0], $count);
+    1
+}
+
 method raw_word_prefixes($dbh, $bucketid) {
     return $dbh->selectcol_arrayref("
         SELECT words.word FROM matrix, words
