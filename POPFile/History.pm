@@ -181,7 +181,7 @@ method reserve_slot ($inserted_time = undef) {
             $slot = $self->db()->last_insert_id(undef, undef, 'history', 'id');
         }
     }
-    $insert_sth->finish;
+    $insert_sth->finish();
     $self->log_msg(DEBUG => "reserve_slot returning slot id $slot");
     return ($slot, $self->get_slot_file($slot));
 }
@@ -342,7 +342,7 @@ method commit_history() {
              committed = ?, bucketid = ?, usedtobe = ?, magnetid = ?,
              hash = ?, size = ?
          WHERE id = ?'));
-    $self->db()->begin_work;
+    $self->db()->begin_work();
     for my $entry ($commit_list->@*) {
         my ($session, $slot, $bucket, $magnet) = $entry->@*;
         my $file = $self->get_slot_file($slot);
@@ -403,8 +403,8 @@ method commit_history() {
             $self->release_slot($slot);
         }
     }
-    $self->db()->commit;
-    $update_history->finish;
+    $self->db()->commit();
+    $update_history->finish();
     $commit_list = [];
     $self->force_requery();
 }
@@ -461,7 +461,7 @@ when done.
 =cut
 
 method start_deleting() {
-    $self->db()->begin_work;
+    $self->db()->begin_work();
 }
 
 =head2 stop_deleting()
@@ -471,7 +471,7 @@ Commits the transaction opened by C<start_deleting()>.
 =cut
 
 method stop_deleting() {
-    $self->db()->commit;
+    $self->db()->commit();
 }
 
 =head2 get_slot_file($slot)
@@ -649,7 +649,7 @@ method upgrade_history_files() {
     my $session = $classifier->get_session_key('admin', '');
     print "\nFound old history files, moving them into database\n    ";
     my $i = 0;
-    $self->db()->begin_work;
+    $self->db()->begin_work();
     for my $msg (@msgs) {
         if ((++$i % 100) == 0) {
             print "[$i]";
@@ -662,7 +662,7 @@ method upgrade_history_files() {
             push $commit_list->@*, [$session, $slot, $bucket, 0];
         }
     }
-    $self->db()->commit;
+    $self->db()->commit();
     print "\nDone upgrading history\n";
     $self->commit_history();
     $classifier->release_session_key($session);
@@ -715,7 +715,7 @@ method cleanup_history() {
         'SELECT id FROM history WHERE inserted < ?');
     $sth->execute($cutoff_time);
     my @ids = map { $_->[0] } $sth->fetchall_arrayref->@*;
-    $sth->finish;
+    $sth->finish();
     for my $id (@ids) {
         $self->delete_slot($id, 1);
     }

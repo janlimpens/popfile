@@ -74,7 +74,7 @@ method stop($id) {
     my $query_sth = $sessions{$id}{query};
     if (defined $query_sth && $query_sth != 0) {
         if ($#{$sessions{$id}{cache}} != $sessions{$id}{count}) {
-            $query_sth->finish;
+            $query_sth->finish();
             undef $sessions{$id}{query};
         }
     }
@@ -135,7 +135,7 @@ method set($id, $filter, $search, $sort, $not, $dbh) {
     my $sth = $dbh->prepare($count);
     $sth->execute($sessions{$id}{params}->@*);
     $sessions{$id}{count} = $sth->fetchrow_arrayref->[0];
-    $sth->finish;
+    $sth->finish();
     my $select = $sessions{$id}{base};
     $select =~ s/XXX/$fields_slot/;
     $sessions{$id}{query} = $dbh->prepare($select);
@@ -196,7 +196,7 @@ method rows($id, $start, $count) {
         $sessions{$id}{query}->execute($sessions{$id}{params}->@*);
         $sessions{$id}{cache} = $sessions{$id}{query}->fetchall_arrayref(
             undef, $start + $count - 1);
-        $sessions{$id}{query}->finish;
+        $sessions{$id}{query}->finish();
     }
     my ($from, $to) = ($start - 1, $start + $count - 2);
     return $sessions{$id}{cache}->@[$from .. $to]
@@ -212,7 +212,7 @@ method delete_ids($id, $dbh) {
     my $sth = $dbh->prepare($delete);
     $sth->execute($sessions{$id}{params}->@*);
     my @ids = map { $_->[0] } $sth->fetchall_arrayref->@*;
-    $sth->finish;
+    $sth->finish();
     return \@ids
 }
 
