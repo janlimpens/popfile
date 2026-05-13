@@ -68,4 +68,16 @@ method word_count($dbh, $bidcache, $userid, $bucket, $word) {
     return
 }
 
+method word_list_for_bucket($dbh, $bucketid, $prefix) {
+    $prefix = '' unless defined $prefix;
+    $prefix =~ s/\0//g;
+    my $rows = $dbh->selectall_arrayref('
+        SELECT words.id, words.word, matrix.times
+        FROM matrix, words
+        WHERE matrix.wordid = words.id
+            AND matrix.bucketid = ?
+            AND words.word LIKE ?', undef, $bucketid, "$prefix%");
+    return $rows->@*
+}
+
 1;

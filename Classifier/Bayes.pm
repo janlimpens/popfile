@@ -2745,22 +2745,10 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
     return
-        unless exists($db_bucketid->{$userid}{$bucket});
-
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-
-    $prefix = '' unless (defined($prefix));
-    $prefix =~ s/\0//g;
-
-    my $rows = $self->db()->selectall_arrayref('
-        SELECT words.id, words.word, matrix.times
-        FROM matrix, words
-        WHERE matrix.wordid = words.id
-            AND matrix.bucketid = ?
-            AND words.word LIKE ?', undef, $bucketid, "$prefix%");
-    return $rows->@*;
+        unless exists $db_bucketid->{$userid}{$bucket};
+    return $corpus->word_list_for_bucket($self->db(),
+        $db_bucketid->{$userid}{$bucket}{id}, $prefix)
 }
 
 =head2 get_words_for_bucket
