@@ -80,4 +80,11 @@ method word_list_for_bucket($dbh, $bucketid, $prefix) {
     return $rows->@*
 }
 
+method raw_word_prefixes($dbh, $bucketid) {
+    return $dbh->selectcol_arrayref("
+        SELECT words.word FROM matrix, words
+        WHERE matrix.wordid = words.id
+            AND matrix.bucketid = ?", undef, $bucketid)
+}
+
 1;

@@ -3050,14 +3050,9 @@ method get_bucket_word_prefixes($session, $bucket) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-
     my $prev = '';
-
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $result = $self->db()->selectcol_arrayref("
-        SELECT words.word FROM matrix, words
-        WHERE matrix.wordid = words.id
-            AND matrix.bucketid = ?", undef, $bucketid);
+    my $result = $corpus->raw_word_prefixes($self->db(), $bucketid);
     if (($self->module_config('api', 'locale')//'') eq 'Nihongo') {
         return
             grep {$_ ne $prev && ($prev = $_, 1)}
