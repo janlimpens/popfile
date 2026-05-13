@@ -9,11 +9,11 @@ no warnings 'experimental::try';
 use locale;
 use Classifier::Bucket;
 use Classifier::MailParse;
+use Classifier::Sessions;
 use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
 use IO::Handle;
 use DBI;
-use Digest::MD5 qw(md5_hex);
 use List::Util qw(max min);
 use MIME::Base64;
 use File::Copy;
@@ -78,7 +78,6 @@ field $db_set_bucket_parameter = 0;
 field $db_get_bucket_parameter_default = 0;
 field $db_get_buckets_with_magnets = 0;
 field $db_delete_zero_words = 0;
-field $db_get_userid = 0;
 
 # Temporary per-call prepared statements (undef'd after use)
 field $db_getwords;
@@ -119,8 +118,7 @@ field $unclassified = log(100);
 field $magnet_used = 0;
 field $magnet_detail = 0;
 
-# Maps session keys to user ids (see get_session_key / release_session_key)
-field $api_sessions = {};
+field $sessions :reader = undef;
 
 field $db_is_sqlite = 0;
 field $db_name = '';
@@ -242,7 +240,7 @@ method deliver ($type, @message) {
         if ($type eq 'COMIT') {
             $self->classified($message[0], $message[2]);
         } elsif ($type eq 'RELSE') {
-            $self->release_session_key_private($message[0]);
+            $sessions->remove_session($message[0]);
         } elsif ($type eq 'TICKD') {
             $self->backup_database();
         }
@@ -284,6 +282,8 @@ method start() {
 
     return 0
         unless $self->db_connect();
+    $sessions = Classifier::Sessions->new(
+        dbh => $self->db());
 
     if ($language eq 'Nihongo') {
         # Setup Nihongo (Japanese) parser.
@@ -306,6 +306,8 @@ Called when POPFile is terminating
 =cut
 
 method stop() {
+    $sessions->finish()
+        if $sessions;
     $self->db_disconnect();
     $db_bucketid = {};
     $db_parameters = {};
@@ -774,9 +776,6 @@ method db_connect() {
     $db_get_wordid = $db->prepare($self->normalize_sql(
         'SELECT id FROM words
          WHERE words.word = ? LIMIT 1'));
-    $db_get_userid = $db->prepare($self->normalize_sql(
-        'SELECT id FROM users
-         WHERE name = ? AND password = ? LIMIT 1'));
     $db_get_word_count = $db->prepare($self->normalize_sql(
         'SELECT matrix.times FROM matrix
          WHERE matrix.bucketid = ? AND
@@ -1004,7 +1003,6 @@ method db_disconnect() {
         unless ref $db_get_buckets;
     $db_get_buckets->finish();
     $db_get_wordid->finish();
-    $db_get_userid->finish();
     $db_get_word_count->finish();
     $db_put_word_count->finish();
     $db_get_bucket_word_counts->finish();
@@ -1021,7 +1019,6 @@ method db_disconnect() {
 
     undef $db_get_buckets;
     undef $db_get_wordid;
-    undef $db_get_userid;
     undef $db_get_word_count;
     undef $db_put_word_count;
     undef $db_get_bucket_word_counts;
@@ -1519,51 +1516,6 @@ sub substr_euc($str, $pos, $len) {
     return $result_str;
 }
 
-=head2 generate_unique_session_key
-
-Returns a unique string based session key that can be used as a key
-in the api_sessions
-
-=cut
-
-method generate_unique_session_key() {
-    my @chars = ('A'..'Z', 0..9);
-    my $session = '';
-    do {
-        my $length = int(16 + rand(4));
-        for my $i (0 .. $length) {
-            my $random = $chars[int(rand(scalar @chars))];
-            # Just to add spice to things we sometimes lowercase the value
-            if (rand(1) < rand(1)) {
-                $random = lc($random);
-            }
-            $session .= $random;
-        }
-    } while defined $api_sessions->{$session};
-    return $session;
-}
-
-=head2 release_session_key_private
-
-Releases and invalidates the session key. Worker function that does
-the work of release_session_key.
-
-DO NOT CALL DIRECTLY!
-
-unless you want your session key released immediately, possibly
-preventing asynchronous tasks from completing
-
-C<$session> A session key previously returned by get_session_key
-
-=cut
-
-method release_session_key_private ($session) {
-    if (defined $api_sessions->{$session}) {
-        $self->log_msg(INFO => "release_session_key releasing key $session for user $api_sessions->{$session}");
-        delete $api_sessions->{$session};
-    }
-}
-
 =head2 valid_session_key
 
 Returns undef is the session key is not valid, or returns the user
@@ -1575,28 +1527,7 @@ C<$session> Session key returned by call to get_session_key
 =cut
 
 method valid_session_key($session) {
-    # This provides protection against someone using the XML-RPC
-    # interface and calling this API directly to fish for session
-    # keys, this must be called from within this module
-
-    return
-        unless caller eq 'Classifier::Bayes';
-
-    # If the session key is invalid then wait 1 second.  This is done
-    # to prevent people from calling a POPFile API such as
-    # get_bucket_count with random session keys fishing for a valid
-    # key.  The XML-RPC API is single threaded and hence this will
-    # delay all use of that API by one second.  Of course in normal
-    # use when the user knows the username/password or session key
-    # then there is no delay
-
-    unless (defined $api_sessions->{$session}) {
-        my ($package, $filename, $line, $subroutine) = caller;
-        $self->log_msg(WARN => "Invalid session key $session provided in $package @ $line");
-        select(undef, undef, undef, 1);
-    }
-
-    return $api_sessions->{$session};
+    return $sessions->validate_session($session)
 }
 
 
@@ -1615,33 +1546,11 @@ C<$pwd> The user's password
 =cut
 
 method get_session_key ($user, $pwd) {
-    # The password is stored in the database as an MD5 hash of the
-    # username and password concatenated and separated by the string
-    # __popfile__, so compute the hash here
-
-    my $hash = md5_hex($user . '__popfile__' . $pwd);
-
-    $self->validate_sql_prepare_and_execute($db_get_userid, $user, $hash);
-    my $result = $db_get_userid->fetchrow_arrayref;
-    unless (defined($result)) {
-        # The delay of one second here is to prevent people from trying out
-        # username/password combinations at high speed to determine the
-        # credentials of a valid user
-
-        $self->log_msg(WARN => "Attempt to login with incorrect credentials for user $user");
-        select(undef, undef, undef, 1);
-        return;
-    }
-
-    my $session = $self->generate_unique_session_key();
-
-    $api_sessions->{$session} = $result->[0];
-
+    my ($session, $userid) = $sessions->create_session($user, $pwd);
+    return
+        unless defined $session;
     $self->db_update_cache($session);
-
-    $self->log_msg(INFO => "get_session_key returning key $session for user $api_sessions->{$session}");
-
-    return $session;
+    return $session
 }
 
 =head2 release_session_key
