@@ -112,9 +112,6 @@ field $bucket_start = {};
 
 field $not_likely = {};
 
-# DEPRECATED: only used when upgrading old flat-file corpus files
-field $corpus_version = 1;
-
 # Unclassified cutoff: top probability must be this many times greater
 # than the second probability (default 100×)
 field $unclassified = log(100);
@@ -164,13 +161,6 @@ method initialize() {
 
     $self->config(unclassified_weight => 100);
     $self->config(stopword_ratio => 0);
-
-    # The corpus is kept in the 'corpus' subfolder of POPFile
-    #
-    # DEPRECATED This is only used to find an old corpus that might
-    # need to be upgraded
-
-    $self->config(corpus => 'corpus');
 
     # The characters that appear before and after a subject
     # modification
@@ -305,8 +295,6 @@ method start() {
         $self->log_msg(DEBUG => "Use Nihongo (Japanese) parser : $nihongo_parser");
         $self->config(nihongo_parser => $nihongo_parser);
     }
-
-    $self->upgrade_predatabase_data();
 
     return 1;
 }
@@ -677,64 +665,6 @@ method db_connect() {
 
     $dbconnect =~ s/\$dbname/$dbname/g;
     $self->log_msg(INFO => "Attempting to connect to $dbconnect ($dbpresent)");
-    my $need_convert = 0;
-    my $old_dbh;
-
-    if ($sqlite && $dbpresent) {
-        # Check if the database is SQLite2 format
-
-        open my $dbfile, '<', $dbname;
-        my $buffer;
-        my $readed = sysread($dbfile, $buffer, 47);
-        close $dbfile;
-
-        if ($buffer eq '** This file contains an SQLite 2.1 database **') {
-            $self->log_msg(WARN => 'SQLite 2 database found. Try to upgrade');
-
-            # Test DBD::SQLite version
-
-            my $ver = -1;
-            try {
-                require DBD::SQLite;
-                $ver = $DBD::SQLite::VERSION;
-            }
-            catch ($e) {}
-
-            if ($ver ge '1.00') {
-                $self->log_msg(INFO => "DBD::SQLite $ver found");
-
-                # Backup SQLite2 database
-
-                my $old_dbname = $dbname . '-sqlite2';
-                unlink $old_dbname;
-                rename $dbname, $old_dbname;
-
-                # Connect to SQLite2 database
-
-                my $old_dbconnect = $self->config('dbconnect');
-                $old_dbconnect =~ s/SQLite:/SQLite2:/;
-                $old_dbconnect =~ s/\$dbname/$old_dbname/g;
-
-                $old_dbh = DBI->connect($old_dbconnect, $self->config('dbuser'), $self->config('dbauth'));
-                # Update the config file
-
-                $dbconnect = $self->config('dbconnect');
-                $dbconnect =~ s/SQLite2:/SQLite:/;
-                $self->config(dbconnect => $dbconnect);
-                $dbconnect =~ s/\$dbname/$dbname/g;
-
-                $need_convert = 1;
-            }
-        } else {
-            # Update the config file
-
-            $dbconnect = $self->config('dbconnect');
-            $dbconnect =~ s/SQLite2:/SQLite:/;
-            $self->config(dbconnect => $dbconnect);
-            $dbconnect =~ s/\$dbname/$dbname/g;
-        }
-    }
-
 
     my $dsn;
     if ($sqlite) {
@@ -761,15 +691,6 @@ method db_connect() {
 
     if ($sqlite) {
         $self->log_msg(INFO => "Using SQLite library version " . $db->{sqlite_version});
-
-        if ($need_convert) {
-        $self->log_msg(WARN => 'Convert SQLite2 database to SQLite3 database');
-
-        $self->db_upgrade($old_dbh);
-            $old_dbh->disconnect;
-
-            $self->log_msg(WARN => 'Database convert completed');
-        }
 
         # Set the synchronous mode to normal (default of SQLite 2.x).
 
@@ -955,31 +876,19 @@ method insert_schema ($sqlite) {
 
 =head2 db_upgrade
 
-Upgrade the POPFile schema / Convert the database
-
-C<$db_from> Database handle convert from
-                 undef if upgrade POPFile schema
+Upgrade the POPFile schema by dumping, recreating, and restoring data.
 
 =cut
 
-method db_upgrade ($db_from = undef) {
-    my $drop_table;
+method db_upgrade() {
+    my $db = $self->db();
+    my $is_sqlite = ($db->{Driver}->{Name} =~ /SQLite/);
 
-    unless (defined($db_from)) {
-        $drop_table = 1;
-        $db_from = $self->db();
-    }
+    my $sqlquotechar = $db->get_info(29) || '';
+    my @tables = map { s/$sqlquotechar//g; $_ } ($db->tables());
 
-    my $from_sqlite = ($db_from->{Driver}->{Name} =~ /SQLite/);
-    my $to_sqlite = ($self->db()->{Driver}->{Name} =~ /SQLite/);
-
-    my $sqlquotechar = $db_from->get_info(29) || '';
-    my @tables = map { s/$sqlquotechar//g; $_ } ($db_from->tables());
-
-    # We are going to dump out all the data in the database as
-    # INSERT OR IGNORE statements in a temporary file, then DROP all
-    # the tables in the database, then recreate the schema from the
-    # new schema and finally rerun the inserts.
+    # Dump all data as INSERT statements, drop old tables,
+    # recreate schema, then restore data.
 
     my $i = 0;
     my $ins_file = $self->get_user_path('insert.sql');
@@ -987,7 +896,7 @@ method db_upgrade ($db_from = undef) {
 
     for my $table (@tables) {
         next if ($table =~ /\.?popfile$/);
-        if ($from_sqlite && ($table =~ /(?:^|\.)sqlite_/)) {
+        if ($is_sqlite && ($table =~ /(?:^|\.)sqlite_/)) {
             next;
         }
         if ($i > 99) {
@@ -995,7 +904,7 @@ method db_upgrade ($db_from = undef) {
         }
         print "    Saving table $table\n    ";
 
-        my $t = $db_from->prepare("select * from $table;");
+        my $t = $db->prepare("select * from $table;");
         $t->execute();
         $i = 0;
         while (1) {
@@ -1012,7 +921,7 @@ method db_upgrade ($db_from = undef) {
             last
                 unless defined $rows;
 
-            if ($to_sqlite) {
+            if ($is_sqlite) {
                 print INSERT "INSERT OR IGNORE INTO $table (";
             } else {
                 print INSERT "INSERT INTO $table (";
@@ -1048,24 +957,22 @@ method db_upgrade ($db_from = undef) {
         print "\n";
     }
 
-    if ($drop_table) {
-        for my $table (@tables) {
-            if ($from_sqlite && ($table =~ /(?:^|\.)sqlite_/)) {
-                next;
-            }
-            print "    Dropping old table $table\n";
-            $self->db()->do("DROP TABLE $table;");
+    for my $table (@tables) {
+        if ($is_sqlite && ($table =~ /(?:^|\.)sqlite_/)) {
+            next;
         }
+        print "    Dropping old table $table\n";
+        $db->do("DROP TABLE $table;");
     }
 
     print "    Inserting new database schema\n";
-    if (!$self->insert_schema($to_sqlite)) {
+    if (!$self->insert_schema($is_sqlite)) {
         return 0;
     }
 
     print "    Restoring old data\n    ";
 
-    $self->db()->begin_work;
+    $db->begin_work;
     open INSERT, '<' . $ins_file;
     $i = 0;
     while (<INSERT>) {
@@ -1078,10 +985,10 @@ method db_upgrade ($db_from = undef) {
             STDOUT->flush();
         }
         s/[\r\n]//g;
-        $self->db()->do($_);
+        $db->do($_);
     }
     close INSERT;
-    $self->db()->commit;
+    $db->commit;
 
     unlink $ins_file;
 }
@@ -1273,257 +1180,6 @@ method db_put_word_count ($session, $bucket, $word, $count) {
 
     $self->validate_sql_prepare_and_execute(
         $db_put_word_count, $bucketid, $wordid, $count);
-    return 1;
-}
-
-=head2 upgrade_predatabase_data
-
-Looks for old POPFile data (in flat files or BerkeleyDB tables) and
-upgrades it to the SQL database.  Data upgraded is removed.
-
-=cut
-
-method upgrade_predatabase_data() {
-    my $possible_colors = [qw(
-        red green blue brown
-        orange purple magenta gray
-        plum silver pink lightgreen
-        lightblue lightcyan lightcoral lightsalmon
-        lightgrey darkorange darkcyan feldspar
-        black)];
-    my $c = 0;
-
-    # There's an assumption here that this is the single user version
-    # of POPFile and hence what we do is cheat and get a session key
-    # assuming that the user name is admin with password ''
-
-    my $session = $self->get_session_key('admin', '');
-
-    unless (defined($session)) {
-        $self->log_msg(WARN => "Tried to get the session key for user admin and failed; cannot upgrade old data");
-        return;
-    }
-
-    my @buckets = glob $self->get_user_path($self->config('corpus') . '/*');
-
-    for my $bucket (@buckets) {
-        # A bucket directory must be a directory
-
-        next
-            unless (-d $bucket);
-        next
-            unless (-e "$bucket/table") || (-e "$bucket/table.db");
-
-        return 0
-            if (!$self->upgrade_bucket($session, $bucket));
-
-        my $color = '';
-
-        # See if there's a color file specified
-        if (open COLOR, '<' . "$bucket/color") {
-            $color = <COLOR>;
-
-            # Someone (who shall remain nameless) went in and manually created
-            # empty color files in their corpus directories which would cause
-            # $color at this point to be undefined and hence you'd get warnings
-            # about undefined variables below.  So this little test is to deal
-            # with that user and to make POPFile a little safer which is always
-            # a good thing
-
-            unless (defined($color)) {
-                $color = '';
-            } else {
-                $color =~ s/[\r\n]//g;
-            }
-            close COLOR;
-            unlink "$bucket/color";
-        }
-
-    (my $clean = $bucket) =~ s{[/\\]|^\s+|\s+$}{}g;
-    $clean =~ s{\.\.}{}g;
-    $clean =~ s{[^\p{L}\p{N}\s\-_]+}{}g;
-    $bucket = $clean || $bucket;
-
-    $self->set_bucket_color($session, $bucket, ($color eq '')?$possible_colors->[$c]:$color);
-
-        $c = ($c+1) % scalar $possible_colors->@*;
-    }
-
-    $self->release_session_key($session);
-
-    return 1;
-}
-
-=head2 upgrade_bucket
-
-Loads an individual bucket
-
-C<$session> Valid session key from get_session_key
-C<$bucket> The bucket name
-
-=cut
-
-method upgrade_bucket ($session, $bucket) {
-    (my $clean = $bucket) =~ s{[/\\]|^\s+|\s+$}{}g;
-    $clean =~ s{\.\.}{}g;
-    $clean =~ s{[^\p{L}\p{N}\s\-_]+}{}g;
-    $bucket = $clean || $bucket;
-
-    $self->create_bucket($session, $bucket);
-
-    if (open PARAMS, '<' . $self->get_user_path($self->config('corpus') . "/$bucket/params")) {
-        while (<PARAMS>)  {
-            s/[\r\n]//g;
-            if (/^([[:lower:]]+) ([^\r\n\t ]+)$/)  {
-                $self->set_bucket_parameter($session, $bucket, $1, $2);
-            }
-        }
-        close PARAMS;
-        unlink $self->get_user_path($self->config('corpus') . "/$bucket/params");
-    }
-
-    # Pre v0.21.0 POPFile had GLOBAL parameters for subject modification,
-    # XTC and XPL insertion.  To make the upgrade as clean as possible
-    # check these parameters so that if they were OFF we set the equivalent
-    # per bucket to off
-
-    for my $gl ('subject', 'xtc', 'xpl') {
-        $self->log_msg(INFO => "Checking deprecated parameter GLOBAL_$gl for $bucket\n");
-        my $val = $self->configuration()->deprecated_parameter("GLOBAL_$gl");
-        if (defined($val) && ($val == 0)) {
-            $self->log_msg(INFO => "GLOBAL_$gl is 0 for $bucket, overriding $gl\n");
-            $self->set_bucket_parameter($session, $bucket, $gl, 0);
-        }
-    }
-
-    # See if there are magnets defined
-    if (open MAGNETS, '<' . $self->get_user_path($self->config('corpus') . "/$bucket/magnets")) {
-        while (<MAGNETS>)  {
-            s/[\r\n]//g;
-
-            # Because of a bug in v0.17.9 and earlier of POPFile the text of
-            # some magnets was getting mangled by certain characters having
-            # a \ prepended.  Code here removes the \ in these cases to make
-            # an upgrade smooth.
-
-            if (/^([^ ]+) (.+)$/)  {
-                my $type = $1;
-                my $value = $2;
-
-                $value =~ s/^[ \t]+//g;
-                $value =~ s/[ \t]+$//g;
-
-                $value =~ s/\\(\?|\*|\||\(|\)|\[|\]|\{|\}|\^|\$|\.)/$1/g;
-                $self->create_magnet($session, $bucket, $type, $value);
-            } else {
-                # This branch is used to catch the original magnets in an
-                # old version of POPFile that were just there for from
-                # addresses only
-
-                if (/^(.+)$/) {
-                    my $value = $1;
-                    $value =~ s/\\(\?|\*|\||\(|\)|\[|\]|\{|\}|\^|\$|\.)/$1/g;
-                    $self->create_magnet($session, $bucket, 'from', $value);
-                }
-            }
-        }
-        close MAGNETS;
-        unlink $self->get_user_path($self->config('corpus') . "/$bucket/magnets");
-    }
-
-    # If there is no existing table but there is a table file (the old style
-    # flat file used by POPFile for corpus storage) then create the new
-    # database from it thus performing an automatic upgrade.
-
-    if (-e $self->get_user_path($self->config('corpus') . "/$bucket/table")) {
-        $self->log_msg(WARN => "Performing automatic upgrade of $bucket corpus from flat file to DBI");
-
-        $self->db()->begin_work();
-
-        if (open WORDS, '<' . $self->get_user_path($self->config('corpus') . "/$bucket/table"))  {
-            my $wc = 1;
-
-            my $first = <WORDS>;
-            if (defined($first) && ($first =~ s/^__CORPUS__ __VERSION__ (\d+)//)) {
-                if ($1 != $corpus_version)  {
-                    print STDERR "Incompatible corpus version in $bucket\n";
-                    close WORDS;
-                    $self->db()->rollback;
-                    return 0;
-                } else {
-                    $self->log_msg(WARN => "Upgrading bucket $bucket...");
-
-                    while (<WORDS>) {
-                        if ($wc % 100 == 0) {
-                            $self->log_msg(WARN => "$wc");
-                        }
-                        $wc += 1;
-                        s/[\r\n]//g;
-
-                        if (/^([^\s]+) (\d+)$/) {
-                            if ($2 != 0) {
-                                $self->db_put_word_count($session, $bucket, $1, $2);
-                            }
-                        } else {
-                            $self->log_msg(WARN => "Found entry in corpus for $bucket that looks wrong: \"$_\" (ignoring)");
-                        }
-                    }
-                }
-
-                if ($wc > 1) {
-                    $wc -= 1;
-                    $self->log_msg(WARN => "(completed $wc words)");
-                }
-                close WORDS;
-            } else {
-                close WORDS;
-                $self->db()->rollback();
-                unlink $self->get_user_path($self->config('corpus') . "/$bucket/table");
-                return 0;
-            }
-
-            $self->db()->commit();
-            unlink $self->get_user_path($self->config('corpus') . "/$bucket/table");
-        }
-    }
-
-    # Now check to see if there's a BerkeleyDB-style table
-
-    my $bdb_file = $self->get_user_path($self->config('corpus') . "/$bucket/table.db");
-
-    if (-e $bdb_file) {
-        $self->log_msg(WARN => "Performing automatic upgrade of $bucket corpus from BerkeleyDB to DBI");
-
-        require BerkeleyDB;
-
-        my %h;
-        tie %h, "BerkeleyDB::Hash", -Filename => $bdb_file;
-
-        $self->log_msg(WARN => "Upgrading bucket $bucket...");
-        $self->db()->begin_work;
-
-        my $wc = 1;
-
-        for my $word (keys %h) {
-            if ($wc % 100 == 0) {
-            $self->log_msg(WARN => "$wc");
-            }
-
-            next if ($word =~ /__POPFILE__(LOG__TOTAL|TOTAL|UNIQUE)__/);
-
-            $wc += 1;
-            if ($h{$word} != 0) {
-                $self->db_put_word_count($session, $bucket, $word, $h{$word});
-            }
-        }
-
-        $wc -= 1;
-        $self->log_msg(WARN => "(completed $wc words)");
-        $self->db()->commit();
-        untie %h;
-        unlink $bdb_file;
-    }
-
     return 1;
 }
 
