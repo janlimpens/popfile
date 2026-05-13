@@ -2950,10 +2950,7 @@ C<$id> Word ID from the words table
 =cut
 
 method get_word_by_id ($id) {
-    my $row = $self->validate_sql_prepare_and_execute(
-        'SELECT word FROM words WHERE id = ?',
-        $id)->fetchrow_arrayref;
-    return $row ? $row->[0] : undef
+    return $corpus->word_for_id($self->db(), $id)
 }
 
 =head2 remove_word_from_bucket

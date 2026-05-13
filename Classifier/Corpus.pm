@@ -87,4 +87,10 @@ method raw_word_prefixes($dbh, $bucketid) {
             AND matrix.bucketid = ?", undef, $bucketid)
 }
 
+method word_for_id($dbh, $id) {
+    my $row = $dbh->selectrow_arrayref(
+        'SELECT word FROM words WHERE id = ?', undef, $id);
+    return $row ? $row->[0] : undef
+}
+
 1;
