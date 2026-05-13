@@ -21,7 +21,10 @@ C<history_days> configuration parameter.
 =cut
 
 use Object::Pad;
+use POPFile::Features;
 use locale;
+use lib '.';
+use POPFile::DBUtil ();
 
 my @fields = (
     'history.id AS "slot"',
@@ -39,7 +42,6 @@ my @fields = (
     'size');
 my $fields_slot = join ', ', @fields;
 
-use lib '.';
 use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
 class POPFile::History
@@ -48,8 +50,6 @@ class POPFile::History
     use Date::Parse;
     use Digest::MD5 qw(md5_hex);
     use File::Path qw(make_path);
-    use builtin qw(trim);
-    no warnings 'experimental::builtin';
 
     field $commit_list = [];
 
@@ -224,7 +224,7 @@ the caller specify the insertion timestamp (defaults to C<time()>).
 method reserve_slot ($inserted_time = undef) {
     $inserted_time //= time;
 
-    my $insert_sth = $self->db()->prepare($self->normalize_sql(
+    my $insert_sth = $self->db()->prepare(POPFile::DBUtil::normalize_sql(
         'INSERT INTO history ( userid, committed, inserted )
          VALUES ( ?, ?, ? )'));
     my $is_sqlite2 = ($self->db()->{Driver}->{Name} =~ /SQLite2?/) &&
@@ -270,7 +270,7 @@ method release_slot ($slot) {
     # Remove the entry from the database and delete the file
     # if present
 
-    $self->validate_sql_prepare_and_execute('DELETE FROM history WHERE history.id = ?', $slot);
+    $self->db()->do('DELETE FROM history WHERE history.id = ?', undef, $slot);
 
     my $file = $self->get_slot_file($slot);
 
@@ -340,10 +340,10 @@ method change_slot_classification ($slot, $class, $session, $undo) {
         $oldbucketid = $fields[10];
     }
 
-    $self->validate_sql_prepare_and_execute(
+    $self->db()->do(
         'UPDATE history SET bucketid = ?, usedtobe = ?
          WHERE id = ?',
-        $bucketid, $oldbucketid, $slot);
+        undef, $bucketid, $oldbucketid, $slot);
     $self->force_requery();
 }
 
@@ -356,9 +356,9 @@ without rescanning the entire folder.
 =cut
 
 method set_message_id ($slot, $mid) {
-    $self->validate_sql_prepare_and_execute(
+    $self->db()->do(
         'UPDATE history SET mid = ? WHERE id = ?',
-        $mid, $slot)
+        undef, $mid, $slot)
 }
 
 =head2 revert_slot_classification($slot)
@@ -373,10 +373,10 @@ method revert_slot_classification ($slot) {
     my @fields = $self->get_slot_fields($slot);
     my $oldbucketid = $fields[9];
 
-    $self->validate_sql_prepare_and_execute(
+    $self->db()->do(
         'UPDATE history SET bucketid = ?, usedtobe = ?
          WHERE id = ?',
-        $oldbucketid, 0, $slot);
+        undef, $oldbucketid, 0, $slot);
     $self->force_requery();
 }
 
@@ -393,14 +393,14 @@ C<magnet(11)>, C<size(12)>.  Returns C<undef> if C<$slot> is invalid.
 method get_slot_fields ($slot) {
     return if !defined($slot) || $slot !~ /^\d+$/;
 
-    my $h = $self->validate_sql_prepare_and_execute(
+    my $sth = $self->db()->prepare(
         "SELECT $fields_slot FROM history, buckets
          LEFT JOIN magnets ON magnets.id = history.magnetid
          WHERE history.id = ?
            AND buckets.id = history.bucketid
-           AND history.committed = 1",
-        $slot);
-    return $h->fetchrow_array
+           AND history.committed = 1");
+    $sth->execute($slot);
+    return $sth->fetchrow_array
 }
 
 =head2 is_valid_slot($slot)
@@ -412,12 +412,12 @@ Returns 1 if C<$slot> is a committed history entry, C<undef> otherwise.
 method is_valid_slot ($slot) {
     return if !defined($slot) || $slot !~ /^\d+$/;
 
-    my $h = $self->validate_sql_prepare_and_execute(
+    my $sth = $self->db()->prepare(
         'SELECT id FROM history
          WHERE history.id = ?
-           AND history.committed = 1',
-        $slot);
-    my @row = $h->fetchrow_array;
+           AND history.committed = 1');
+    $sth->execute($slot);
+    my @row = $sth->fetchrow_array;
 
     return ((@row) && ($row[0] == $slot));
 }
@@ -435,7 +435,7 @@ method commit_history() {
         return;
     }
 
-    my $update_history = $self->db()->prepare($self->normalize_sql(
+    my $update_history = $self->db()->prepare(POPFile::DBUtil::normalize_sql(
         'UPDATE history SET
              hdr_from = ?,
              hdr_to = ?,
@@ -734,12 +734,12 @@ is found.
 =cut
 
 method get_slot_from_hash ($hash) {
-    my $h = $self->validate_sql_prepare_and_execute(
-        'SELECT id FROM history WHERE hash = ? LIMIT 1',
-        $hash);
-    my $result = $h->fetchrow_arrayref;
+    my $sth = $self->db()->prepare(
+        'SELECT id FROM history WHERE hash = ? LIMIT 1');
+    $sth->execute($hash);
+    my $result = $sth->fetchrow_arrayref;
 
-    return defined($result)?$result->[0]:'';
+    return defined($result) ? $result->[0] : '';
 }
 
 #----------------------------------------------------------------------------
@@ -927,9 +927,10 @@ method set_query ($id, $filter, $search, $sort, $not) {
     $self->log_msg(DEBUG => "Base query is $count");
     $count =~ s/XXX/COUNT(*)/;
 
-    my $h = $self->validate_sql_prepare_and_execute($count, $queries{$id}{params}->@*);
-    $queries{$id}{count} = $h->fetchrow_arrayref->[0];
-    $h->finish;
+    my $sth = $self->db()->prepare_cached($count);
+    $sth->execute($queries{$id}{params}->@*);
+    $queries{$id}{count} = $sth->fetchrow_arrayref->[0];
+    $sth->finish;
 
     my $select = $queries{$id}{base};
     $select =~ s/XXX/$fields_slot/;
@@ -950,7 +951,7 @@ method get_search_queries(%args) {
         ->where($where);
     if (my $search = $args{search}) {
         $search =~ s/\0//g;
-        $search = trim($search);
+        $search =~ s/^\s+|\s+$//g;
         my $pat = "%$search%";
         my $like_expr = $qb->combine(OR =>
             $qb->like('hdr_from', $pat),
@@ -993,16 +994,12 @@ method delete_query ($id) {
 
     my $delete = $queries{$id}{base};
     $delete =~ s/XXX/history.id/;
-    my $d = $self->validate_sql_prepare_and_execute($delete, $queries{$id}{params}->@*);
-    my $history_id;
-    my @row;
-    my @ids;
-    $d->bind_columns(\$history_id);
-    while ($d->fetchrow_arrayref) {
-        push (@ids, $history_id);
-    }
-    for my $id (@ids) {
-        $self->delete_slot($id, 1);
+    my $sth = $self->db()->prepare_cached($delete);
+    $sth->execute($queries{$id}{params}->@*);
+    my @ids = map { $_->[0] } $sth->fetchall_arrayref->@*;
+    $sth->finish;
+    for my $slot_id (@ids) {
+        $self->delete_slot($slot_id, 1);
     }
 
     $self->stop_deleting();
@@ -1208,16 +1205,11 @@ Called automatically on each C<TICKD> message-queue event (i.e. once per day).
 method cleanup_history() {
     my $seconds_per_day = 24 * 60 * 60;
     my $old = time - $self->config('history_days') * $seconds_per_day;
-    my @ids;
-    my $d = $self->validate_sql_prepare_and_execute(
-        'SELECT id FROM history WHERE inserted < ?',
-        $old);
-    my $id;
-    $d->bind_columns(\$id);
-    while ($d->fetchrow_arrayref) {
-        push (@ids, $id);
-    }
-    $d->finish;
+    my $sth = $self->db()->prepare_cached(
+        'SELECT id FROM history WHERE inserted < ?');
+    $sth->execute($old);
+    my @ids = map { $_->[0] } $sth->fetchall_arrayref->@*;
+    $sth->finish;
     for my $id (@ids) {
         $self->delete_slot($id, 1);
     }
