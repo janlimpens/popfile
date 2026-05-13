@@ -657,7 +657,6 @@ when done.
 =cut
 
 method start_deleting() {
-#    $classifier->tweak_sqlite( 1, 1, $self->db() );
     $self->db()->begin_work;
 }
 
@@ -669,7 +668,6 @@ Commits the transaction opened by C<start_deleting()>.
 
 method stop_deleting() {
     $self->db()->commit;
-#    $classifier->tweak_sqlite( 1, 0, $self->db() );
 }
 
 =head2 get_slot_file($slot)
