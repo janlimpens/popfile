@@ -18,6 +18,7 @@ sub make_imap {
     $config->parameter('imap_enabled', 1);
     $config->parameter('imap_training_mode', 0);
     $config->parameter('imap_update_interval', 60);
+    POPFile::Config->instance()->load($config);
     return ($imap, $config, $mq)
 }
 
