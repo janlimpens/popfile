@@ -383,7 +383,9 @@ success, 0 if command-line parsing failed.
 
 method CORE_config() {
     $components{core}{config}->load_configuration();
-    return $components{core}{config}->parse_command_line();
+    my $ok = $components{core}{config}->parse_command_line();
+    POPFile::Config->instance()->load($components{core}{config});
+    return $ok
 }
 
 =head2 CORE_start

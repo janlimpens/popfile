@@ -433,6 +433,14 @@ method parameter ($name, $value = undef) {
         : undef
 }
 
+method config_hash() {
+    my %hash;
+    for my $key (keys %configuration_parameters) {
+        $hash{$key} = $configuration_parameters{$key}{value};
+    }
+    return \%hash
+}
+
 =head2 is_default
 
     my $bool = $self->is_default($name);

@@ -1,0 +1,45 @@
+#!/usr/bin/env perl
+# convention-check — verify POPFile code conventions
+use strict;
+use warnings;
+
+my $file = shift or die "usage: $0 <file.pm>\n";
+open my $fh, '<', $file or die "$file: $!\n";
+
+my $line_num = 0;
+my %issues;
+
+my $in_pod = 0;
+
+while (<$fh>) {
+    $line_num++;
+    if (/^=\w/) { $in_pod = 1; next }
+    if (/^=cut/) { $in_pod = 0; next }
+    next if $in_pod;
+    next if /^\s*#/;
+    # Padding: multiple spaces before = or ;
+    if (/[a-z]\s{2,}[=;]/ && !/^use\s+\w+\s+/) {
+        $issues{"$line_num: padding"} = $_;
+    }
+    # @{$ref} style
+    if (/\@\{\$/) {
+        $issues{"$line_num: use \$ref->\@* not \@{\\\$ref}"} = $_;
+    }
+    # %{$ref} style
+    if (/%\{\$/) {
+        $issues{"$line_num: use \$ref->%* not %{\\\$ref}"} = $_;
+    }
+    # Method call without parentheses (not a keyword)
+    if (/\$\w+->\w+\s*[;}]/ && !/\$\w+->\w+\s*\(/) {
+        $issues{"$line_num: method call without ()"} = $_;
+    }
+}
+
+if (%issues) {
+    print "$file: ", scalar(keys %issues), " convention issue(s)\n";
+    for my $k (sort keys %issues) {
+        print "  $k\n";
+    }
+    exit 1;
+}
+print "$file: clean\n";
