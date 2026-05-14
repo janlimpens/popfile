@@ -6,6 +6,7 @@ use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
 
 use File::Temp qw(tempdir);
 use Test2::V0;
+use POPFile::Config;
 use TestHelper;
 
 require POPFile::Logger;
@@ -25,6 +26,7 @@ subtest 'active log file is named popfile.log' => sub {
     my $dir = tempdir(CLEANUP => 1) . '/';
     $config->parameter('logger_logdir', $dir);
     $config->parameter('GLOBAL_debug', 0);
+    POPFile::Config->instance()->load($config);
 
     my $t0 = 1_000_000;
     no warnings 'redefine';
@@ -39,6 +41,7 @@ subtest 'rotation renames old log with ISO date and opens fresh popfile.log' => 
     my $dir = tempdir(CLEANUP => 1) . '/';
     $config->parameter('logger_logdir', $dir);
     $config->parameter('GLOBAL_debug', 0);
+    POPFile::Config->instance()->load($config);
 
     my $day1 = int(1_750_000_000 / $seconds_per_day) * $seconds_per_day;
     my $day2 = $day1 + $seconds_per_day;
@@ -64,6 +67,7 @@ subtest 'remove_debug_files deletes files older than 3 days' => sub {
     my ($logger, $config) = make_logger();
     my $dir = tempdir(CLEANUP => 1) . '/';
     $config->parameter('logger_logdir', $dir);
+    POPFile::Config->instance()->load($config);
 
     my $now = 1_750_000_000;
     no warnings 'redefine';

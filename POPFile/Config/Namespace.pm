@@ -20,7 +20,7 @@ field $_store :param;
 field $_prefix :param;
 
 method get($key) {
-    $_store->{$_prefix . '_' . $key}
+    $_store->{$_prefix . $key}
 }
 
 1;
