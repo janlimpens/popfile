@@ -235,6 +235,37 @@ method word_match($magnet, $match, $type) {
     return $matched
 }
 
+=head2 classify($ctx, $session, $file)
+
+Classifier pipeline entry point.  Parses headers from C<\$file>, iterates
+over all buckets with magnets, and returns C<(\$bucket, \$magnet_id)> on
+the first match.  Returns C<(undef, undef)> if no magnet fires.
+
+=cut
+
+method classify($ctx, $session, $file) {
+    return (undef, undef)
+        unless defined $file && -f $file;
+    my $userid = $ctx->valid_session_key($session);
+    return (undef, undef)
+        unless defined $userid;
+    my $dbh = $ctx->get_handle();
+    my $parser = $ctx->parser();
+    $parser->parse_file($file, $ctx->global_config('message_cutoff'));
+    for my $bucket ($self->get_buckets_with($dbh, $userid)) {
+        my $bucketid = $ctx->get_bucket_id($session, $bucket);
+        next
+            unless defined $bucketid;
+        for my $type ($self->get_types_in_bucket($dbh, $bucketid)) {
+            my $id = $self->find_match($dbh, $bucketid, $type,
+                $parser->get_header($type));
+            return ($bucket, $id)
+                if $id;
+        }
+    }
+    return (undef, undef)
+}
+
 method find_match($dbh, $bucketid, $type, $match) {
     my $sth = $dbh->prepare(
         'SELECT magnets.val, magnets.id

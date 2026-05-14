@@ -76,7 +76,7 @@ sub run_experiment {
         if (open my $fh, '<', $msg->{file}) {
             my $content = do { local $/; <$fh> };
             close $fh;
-            my $predicted = $bayes->classify($session, \$content);
+            my $predicted = $bayes->classify($bayes, $session, \$content);
             $total{$msg->{bucket}}++;
             $correct{$msg->{bucket}}++ if defined $predicted && $predicted eq $msg->{bucket};
         }

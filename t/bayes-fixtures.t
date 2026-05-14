@@ -62,8 +62,8 @@ subtest 'reset_db then reload fixture gives consistent state' => sub {
     my $session = TestHelper::reset_db($bayes, $config);
     TestHelper::load_fixture($bayes, $session, 'two-buckets-trained');
 
-    my $ham_class  = $bayes->classify($session, "$TestHelper::REPO_ROOT/t/fixtures/ham.eml");
-    my $spam_class = $bayes->classify($session, "$TestHelper::REPO_ROOT/t/fixtures/spam.eml");
+    my $ham_class  = $bayes->classify($bayes, $session, "$TestHelper::REPO_ROOT/t/fixtures/ham.eml");
+    my $spam_class = $bayes->classify($bayes, $session, "$TestHelper::REPO_ROOT/t/fixtures/spam.eml");
 
     is( $ham_class,  'inbox', 'ham classifies correctly after fixture reload' );
     is( $spam_class, 'spam',  'spam classifies correctly after fixture reload' );

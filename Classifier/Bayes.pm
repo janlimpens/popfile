@@ -15,6 +15,7 @@ use Classifier::Sessions;
 use Classifier::Magnets;
 use Classifier::Stopwords;
 use Classifier::Schema;
+use Classifier::Pipeline;
 use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
 use IO::Handle;
@@ -97,8 +98,7 @@ field $not_likely = {};
 # than the second probability (default 100×)
 field $unclassified = log(100);
 
-field $magnet_used = 0;
-field $magnet_detail = 0;
+field $pipeline :reader = undef;
 
 field $sessions :reader = undef;
 field $magnets :reader = undef;
@@ -112,6 +112,7 @@ field $db_name = '';
 BUILD {
     $self->set_name('bayes');
     $schema = Classifier::Schema->new();
+    $pipeline = Classifier::Pipeline->new();
 }
 
 =head2 initialize
@@ -201,6 +202,7 @@ method initialize() {
     # http://www.sqlite.org/pragma.html#pragma_journal_mode
 
     $self->config(sqlite_journal_mode => 'delete');
+    $self->config(bayes_magnets_enabled => 1);
 
     # Japanese wakachigaki parser ('kakasi' or 'mecab' or 'internal').
 
@@ -272,6 +274,8 @@ method start() {
         unless $self->db_connect();
     $sessions = Classifier::Sessions->new();
     $magnets = Classifier::Magnets->new();
+    $pipeline->register($magnets, priority => 0, name => 'magnets')
+        if $self->config('bayes_magnets_enabled');
     $corpus = Classifier::Corpus->new();
     $stopwords = Classifier::Stopwords->new();
 
@@ -681,6 +685,7 @@ method db_connect() {
          WHERE (matrix.times <= 0 OR matrix.times IS NULL)
             AND matrix.bucketid = ?'));
     $buckets->load_parameter_ids($db);
+    $pipeline->register($self, priority => 1, name => 'bayes');
     return 1
 }
 
@@ -735,51 +740,8 @@ C<$word> word to lookup
 
 =cut
 
-=head2 magnet_match_helper
-
-Helper the determines if a specific string matches a certain magnet
-type in a bucket, used by magnet_match_
-
-C<$session> Valid session from get_session_key
-C<$match> The string to match
-C<$bucket> The bucket to check
-C<$type> The magnet type to check
-
-=cut
-
-method magnet_match_helper ($session, $match, $bucket, $type) {
-    my $userid = $self->valid_session_key($session);
-    return 0
-        unless defined $userid
-            && exists $db_bucketid->{$userid}{$bucket};
-    my $id = $magnets->find_match($self->get_handle(),
-        $db_bucketid->{$userid}{$bucket}{id}, $type, $match);
-    if ($id) {
-        $magnet_used = 1;
-        $magnet_detail = $id;
-        return 1
-    }
-    return 0
-}
-
 method single_magnet_match ($magnet, $match, $type) {
     return $magnets->word_match($magnet, $match, $type)
-}
-
-=head2 magnet_match
-
-Helper the determines if a specific string matches a certain magnet
-type in a bucket
-
-C<$session> Valid session from get_session_key
-C<$match> The string to match
-C<$bucket> The bucket to check
-C<$type> The magnet type to check
-
-=cut
-
-method magnet_match ($session, $match, $bucket, $type) {
-    return $self->magnet_match_helper($session, $match, $bucket, $type);
 }
 
 =head2 write_line
@@ -1033,7 +995,7 @@ $matrix to actual words
 
 =cut
 
-method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = undef) {
+method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap = undef) {
     my $msg_total = 0;
 
     my $userid = $self->valid_session_key($session);
@@ -1041,9 +1003,6 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
         unless defined $userid;
 
     $unclassified = log($self->config('unclassified_weight'));
-
-    $magnet_used = 0;
-    $magnet_detail = 0;
 
     if (defined($file)) {
         return if (!-f $file);
@@ -1064,16 +1023,6 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
 
     return "unclassified"
         unless $not_likely->{$userid}->%*;
-
-    # Check to see if this email should be classified based on a magnet
-
-    for my $bucket ($self->get_buckets_with_magnets($session))  {
-        for my $type ($self->get_magnet_types_in_bucket($session, $bucket)) {
-            if ($self->magnet_match($session, $parser->get_header($type), $bucket, $type)) {
-                return $bucket;
-            }
-        }
-    }
 
     # The score hash will contain the likelihood that the given
     # message is in each bucket, the buckets are the keys for score
@@ -1732,7 +1681,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     $classification = ($class ne '')
         ? $class
-        : $self->classify($session, undef);
+        : $pipeline->classify($self, $session, undef);
 
     my $subject_modification = $self->get_bucket_parameter($session, $classification, 'subject');
     my $xtc_insertion = $self->get_bucket_parameter($session, $classification, 'xtc');
@@ -1934,11 +1883,12 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
         if ($nosave) {
             $history->release_slot($slot);
         } else {
-            $history->commit_slot($session, $slot, $classification, $magnet_detail);
+            $history->commit_slot($session, $slot, $classification,
+                $pipeline->last_detail());
         }
     }
-
-    return ($classification, $slot, $magnet_used);
+    return ($classification, $slot,
+        $pipeline->last_classifier() eq 'magnets' ? 1 : 0);
 }
 
 =head2 get_buckets

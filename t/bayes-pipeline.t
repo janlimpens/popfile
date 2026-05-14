@@ -42,7 +42,7 @@ subtest 'training and classification' => sub {
     ok($bayes->get_bucket_word_count($session, 'spam') > 0, 'spam has words after training');
     ok($bayes->get_bucket_word_count($session, 'ham')  > 0, 'ham has words after training');
 
-    my $result = $bayes->classify($session, $spam_file);
+    my $result = $bayes->classify($bayes, $session, $spam_file);
     is($result, 'spam', 'spam message classified as spam');
 };
 

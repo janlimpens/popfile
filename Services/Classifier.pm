@@ -83,7 +83,7 @@ Classifies the message in C<$file> and returns the bucket name.
 
 =cut
 
-method classify ($file)     { $classifier->classify($session, $file) }
+method classify ($file)     { $classifier->classify($classifier, $session, $file) }
 
 =head1 BUCKETS
 

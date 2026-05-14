@@ -81,11 +81,11 @@ subtest 'training and classification' => sub {
     ok( $spam_wc  > 0, "spam has $spam_wc words after training" );
 
     # Classify the ham fixture – should land in 'inbox'
-    my $ham_class = $bayes->classify($session, $ham_fixture);
+    my $ham_class = $bayes->classify($bayes, $session, $ham_fixture);
     is( $ham_class, 'inbox', 'ham classified into inbox' );
 
     # Classify the spam fixture – should land in 'spam'
-    my $spam_class = $bayes->classify($session, $spam_fixture);
+    my $spam_class = $bayes->classify($bayes, $session, $spam_fixture);
     is( $spam_class, 'spam', 'spam classified into spam' );
 };
 
@@ -188,10 +188,10 @@ subtest 'stopword_ratio config filters uniform words at classify time' => sub {
 
     $bayes->config('stemming', 0);
     $bayes->config('stopword_ratio', 0);
-    my $class_no_filter = $bayes->classify($session, $ham_fixture);
+    my $class_no_filter = $bayes->classify($bayes, $session, $ham_fixture);
 
     $bayes->config('stopword_ratio', 1000);
-    my $class_with_filter = $bayes->classify($session, $ham_fixture);
+    my $class_with_filter = $bayes->classify($bayes, $session, $ham_fixture);
 
     ok( defined $class_no_filter,   'classify works without filtering' );
     ok( defined $class_with_filter, 'classify works with aggressive filtering (ratio 1000)' );
