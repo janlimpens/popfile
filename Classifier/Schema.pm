@@ -15,21 +15,14 @@ Reads C<Classifier/popfile.sql>, creates the initial schema on fresh
 databases, and performs a full dump-and-reload upgrade when the schema
 version changes.
 
-All SQL is executed through the DBI handle passed in method signatures.
-No database connection is stored.
+Receives a config reference (usually the Bayes module) at construction
+time so it can resolve paths and read language settings itself instead
+of requiring them as method parameters.
 
 =cut
 
 field $_serial = 0;
-
-=head2 ensure_schema($dbh, $root_path, $is_sqlite)
-
-Checks whether the schema exists and is current.  Creates it if the
-database is empty; upgrades if the version does not match.
-
-Returns true on success.
-
-=cut
+field $_config :param = undef;
 
 method ensure_schema($dbh, $root_path, $is_sqlite) {
     my $version = $self->_schema_version($root_path);
@@ -52,6 +45,39 @@ method ensure_schema($dbh, $root_path, $is_sqlite) {
         return $self->_create($dbh, $root_path, $is_sqlite)
     }
     return 1
+}
+
+method setup($dbh) {
+    my $driver = $dbh->{Driver}->{Name};
+    my $root = $_config ? $_config->get_root_path('') : '.';
+    return 0
+        unless $self->ensure_schema($dbh, $root, $driver =~ /SQLite/i);
+    if ($driver =~ /SQLite/i
+        && $_config && $_config->can('parser')
+        && $_config->parser()->lang() eq 'Nihongo') {
+        $dbh->do('pragma case_sensitive_like=1');
+    }
+    $self->_ensure_mid_column($dbh);
+    return 1
+}
+
+method _ensure_mid_column($dbh) {
+    my $driver = $dbh->{Driver}->{Name};
+    my $has_mid;
+    if ($driver =~ /SQLite/i) {
+        $has_mid = grep { $_->[1] eq 'mid' }
+            $dbh->selectall_arrayref("PRAGMA table_info(history)")->@*;
+    } elsif ($driver =~ /mysql/i) {
+        $has_mid = grep { $_->[0] eq 'mid' }
+            $dbh->selectall_arrayref("SHOW COLUMNS FROM history")->@*;
+    } else {
+        $has_mid = grep { $_->[0] eq 'mid' }
+            $dbh->selectall_arrayref(
+                q{SELECT column_name FROM information_schema.columns
+                 WHERE table_name='history' AND column_name='mid'})->@*;
+    }
+    $dbh->do("ALTER TABLE history ADD COLUMN mid TEXT")
+        unless $has_mid;
 }
 
 method _schema_version($root_path) {

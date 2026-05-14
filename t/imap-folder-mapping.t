@@ -38,8 +38,8 @@ subtest 'CRUD for bucket-folder mappings' => sub {
     $imap->folder_for_bucket('spam', 'Junk');
     is($imap->folder_for_bucket('spam'), 'Junk', 'bucket mapped to Junk');
 
-    my ($imap2) = make_imap();
-    is($imap2->folder_for_bucket('spam'), undef, 'separate instance has own DB');
+    my ($imap2, $cfg2) = make_imap();
+    is($imap2->folder_for_bucket('spam'), undef, 'separate instance with own DB has no mapping');
 
     $imap->folder_for_bucket('spam', 'SpamNew');
     is($imap->folder_for_bucket('spam'), 'SpamNew', 'mapping updated via upsert');

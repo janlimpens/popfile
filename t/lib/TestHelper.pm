@@ -11,7 +11,8 @@ package TestHelper;
 use POPFile::Features;
 use File::Temp qw(tempdir);
 use FindBin    qw($Bin);
-use Cwd        qw(abs_path);
+use Cwd qw(abs_path);
+use POPFile::Database;
 
 our $REPO_ROOT = abs_path("$Bin/..");
 
@@ -60,15 +61,26 @@ sub wire($mod, $config, $mq) {
 # Must be called after Classifier::Bayes->initialize() and before start().
 # ---------------------------------------------------------------------------
 sub configure_db($config) {
+    my ($dbconnect, $database, $dbuser, $dbauth);
     if ( defined $ENV{TEST_DBCONNECT} ) {
         $config->parameter('bayes_dbconnect', $ENV{TEST_DBCONNECT});
         $config->parameter('bayes_dbuser',    $ENV{TEST_DBUSER}   // '');
         $config->parameter('bayes_dbauth',    $ENV{TEST_DBAUTH}   // '');
         $config->parameter('bayes_database',  $ENV{TEST_DATABASE} // 'popfile_test');
+        $database = $ENV{TEST_DATABASE} // 'popfile_test';
+        $dbconnect = $ENV{TEST_DBCONNECT};
     } else {
         my $db_file = $config->popfile_user() . '/popfile_test.db';
         $config->parameter('bayes_dbconnect', "dbi:SQLite:dbname=$db_file");
+        $config->parameter('bayes_database', $db_file);
+        $dbconnect = "dbi:SQLite:dbname=$db_file";
+        $database = $db_file;
     }
+    POPFile::Database->instance()->configure(
+        dbconnect => $dbconnect,
+        database => $database,
+        dbuser => $dbuser,
+        dbauth => $dbauth);
 }
 
 # ---------------------------------------------------------------------------

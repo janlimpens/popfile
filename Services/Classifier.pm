@@ -4,7 +4,6 @@
 package Services::Classifier;
 
 use Object::Pad;
-use File::Copy qw(copy);
 use locale;
 
 class Services::Classifier :isa(POPFile::Module);
@@ -67,10 +66,8 @@ method deliver ($type, @message) {
 
 method backup_database() {
     return
-        unless $classifier->config('sqlite_backup') && $classifier->is_sqlite();
-    my $db_name = $classifier->db_name();
-    copy($db_name, "$db_name.backup")
-        or $self->log_msg(WARN => "Failed to backup database");
+        unless $classifier->config('sqlite_backup');
+    POPFile::Database->instance()->backup($classifier->db_name());
 }
 
 =head1 CLASSIFICATION

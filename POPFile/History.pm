@@ -91,7 +91,6 @@ and disconnects the cloned database handle.
 
 method stop() {
     $self->commit_history();
-    $self->_disconnect();
 }
 
 method _txn($coderef) {
@@ -108,9 +107,6 @@ method _txn($coderef) {
 
 method start () {
     $queries = POPFile::HistoryQueries->new();
-    $self->connect_db(
-        dbconnect => $self->module_config('bayes', 'dbconnect') // '',
-        database => $self->module_config('bayes', 'database') // 'popfile.db');
     return 1
 }
 

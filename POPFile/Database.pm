@@ -2,6 +2,7 @@
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
 use POPFile::Features;
+use File::Copy qw(copy);
 
 my $_instance;
 
@@ -27,6 +28,7 @@ Transaction wrapping is provided by C<txn($coderef)>.
 =cut
 
 field $_pid = $$;
+field $_is_sqlite = 0;
 field $_mojo_db = undef;
 field $_dbh = undef;
 field $_config = {};
@@ -40,6 +42,7 @@ method instance :common (%config) {
 
 method configure(%config) {
     %$_config = (%$_config, %config);
+    undef $_dbh;
 }
 
 method get_handle(%overrides) {
@@ -67,34 +70,42 @@ method disconnect() {
     undef $_dbh;
 }
 
+method backup($db_path) {
+    return
+        unless $_is_sqlite;
+    copy($db_path, "$db_path.backup")
+        or die "Failed to backup database: $!";
+}
+
 method _connect(%overrides) {
     my %c = (%$_config, %overrides);
-    my $dbconnect = $c{dbconnect} // 'dbi:SQLite:dbname=$dbname';
+    my $dbconnect = $c{dbconnect} || 'dbi:SQLite:dbname=$dbname';
     my $sqlite = ($dbconnect =~ /sqlite/i);
     my $mysql = ($dbconnect =~ /mysql/i);
-    my $dbname = $c{database} // 'popfile.db';
+    my $dbname = $c{database} || 'popfile.db';
     $dbconnect =~ s/\$dbname/$dbname/g;
-    my $dsn;
     if ($sqlite) {
-        $dsn = $dbname;
         require Mojo::SQLite;
-        $_mojo_db = Mojo::SQLite->new($dsn);
-        $_mojo_db->options(sqlite_unicode => 1);
+        my $mojo = Mojo::SQLite->new($dbname);
+        $mojo->options({sqlite_unicode => 1});
+        $_mojo_db = $mojo->db();
+        $_is_sqlite = 1;
     } elsif ($mysql) {
         my $user = $c{dbuser} // '';
         my $auth = $c{dbauth} // '';
-        $dsn = "mysql://$user:$auth\@localhost/$dbname";
         require Mojo::mysql;
-        $_mojo_db = Mojo::mysql->new($dsn);
-        $_mojo_db->options(mysql_auto_reconnect => 1);
+        my $mojo = Mojo::mysql->new("mysql://$user:$auth\@localhost/$dbname");
+        $mojo->options({mysql_auto_reconnect => 1});
+        $_mojo_db = $mojo->db();
     } else {
         my $user = $c{dbuser} // '';
         my $auth = $c{dbauth} // '';
-        $dsn = "postgresql://$user:$auth\@localhost/$dbname";
         require Mojo::Pg;
-        $_mojo_db = Mojo::Pg->new($dsn);
+        my $mojo = Mojo::Pg->new("postgresql://$user:$auth\@localhost/$dbname");
+        $_mojo_db = $mojo->db();
     }
-    return $_mojo_db->db()
+    $_mojo_db->ping();
+    return $_mojo_db->dbh()
 }
 
 1;

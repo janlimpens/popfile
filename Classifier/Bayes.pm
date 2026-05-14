@@ -111,7 +111,7 @@ field $db_name :reader = '';
 
 BUILD {
     $self->set_name('bayes');
-    $schema = Classifier::Schema->new();
+    $schema = Classifier::Schema->new(config => $self);
     $pipeline = Classifier::Pipeline->new();
 }
 
@@ -569,20 +569,12 @@ Connects to the POPFile database and returns 1 if successful.
 =cut
 
 method db_connect() {
-    my $db = $self->connect_db();
+    my $db = $self->get_handle();
     return 0
         unless defined $db;
     $db_name = $self->config('database');
-    if ($self->is_sqlite() && $parser->lang() eq 'Nihongo') {
-        $db->do('pragma case_sensitive_like=1');
-    }
-    my $root = $self->get_root_path('');
-    my $sqlite = $self->is_sqlite();
     return 0
-        unless $schema->ensure_schema($db, $root, $sqlite);
-    my $has_mid = grep { $_->[1] eq 'mid' }
-        @{$db->selectall_arrayref("PRAGMA table_info(history)")};
-    $db->do("ALTER TABLE history ADD COLUMN mid TEXT") unless $has_mid;
+        unless $schema->setup($db);
     $db_delete_zero_words = $db->prepare($self->normalize_sql(
         'DELETE FROM matrix
          WHERE (matrix.times <= 0 OR matrix.times IS NULL)
@@ -603,12 +595,7 @@ method db_disconnect() {
     return
         unless ref $db_delete_zero_words;
     $db_delete_zero_words->finish();
-
-    # Avoid DBD::SQLite 'closing dbh with active statement handles' bug
-
     undef $db_delete_zero_words;
-
-    $self->_disconnect();
 }
 
 =head2 db_update_cache

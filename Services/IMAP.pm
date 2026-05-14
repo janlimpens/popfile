@@ -389,7 +389,6 @@ method _run_poll_work($subprocess = undef) {
             $result->{training_done} = -1;
         }
     }
-    $dbh->disconnect() if defined $dbh;
     return $result
 }
 
@@ -428,21 +427,17 @@ calling C<disconnect()> when done.  Safe to call in forked subprocesses.
 =cut
 
 method _open_uid_db() {
-    return $self->_connect(
-        $self->_db_path(),
-        RaiseError => 1, PrintError => 0, AutoCommit => 1)
+    POPFile::Database->instance()->get_handle()
 }
 
 =head2 _open_db()
 
-Opens a fresh DBI connection for folder mapping operations.
+Returns the shared database handle for folder mapping operations.
 
 =cut
 
 method _open_db() {
-    return $self->_connect(
-        $self->_db_path(),
-        RaiseError => 1, PrintError => 0, AutoCommit => 1)
+    POPFile::Database->instance()->get_handle()
 }
 
 =head2 _ensure_folder_tables()
@@ -470,7 +465,6 @@ method _ensure_folder_tables() {
         bucket_name varchar(255) not null,
         folder_name varchar(255) not null,
         unique(userid, bucket_name))');
-    $dbh->disconnect();
 }
 
 =head2 _migrate_folder_config()
@@ -488,7 +482,6 @@ method _migrate_folder_config() {
         'SELECT count(*) FROM imap_watched_folders WHERE userid = ?',
         undef, $userid);
     if ($existing) {
-        $dbh->disconnect();
         return
     }
     my $cfg = $self->configuration();
@@ -514,7 +507,6 @@ method _migrate_folder_config() {
             $sth->execute($userid, $_, $mapping{$_}) for keys %mapping;
         }
     }
-    $dbh->disconnect();
 }
 
 =head2 _load_uid_state($dbh)
@@ -1152,7 +1144,6 @@ method folder_for_bucket ($bucket, $folder = undef) {
     my ($result) = $dbh->selectrow_array(
         'SELECT folder_name FROM imap_folder_mappings WHERE userid = ? AND bucket_name = ?',
         undef, $userid, $bucket);
-    $dbh->disconnect();
     return $result
 }
 
@@ -1172,13 +1163,11 @@ method watched_folders (@new_folders) {
         my $sth = $dbh->prepare(
             'INSERT INTO imap_watched_folders (userid, folder_name) VALUES (?, ?)');
         $sth->execute($userid, $_) for @new_folders;
-        $dbh->disconnect();
         return
     }
     my $rows = $dbh->selectcol_arrayref(
         'SELECT folder_name FROM imap_watched_folders WHERE userid = ? ORDER BY id',
         undef, $userid);
-    $dbh->disconnect();
     return @$rows
 }
 
@@ -1193,7 +1182,6 @@ method folder_mappings() {
     my $rows = $dbh->selectall_arrayref(
         'SELECT bucket_name, folder_name FROM imap_folder_mappings WHERE userid = 1',
         { Slice => {} }) // [];
-    $dbh->disconnect();
     return map { $_->{bucket_name} => $_->{folder_name} } $rows->@*
 }
 
