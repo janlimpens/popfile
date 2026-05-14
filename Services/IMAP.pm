@@ -7,8 +7,9 @@ no warnings 'experimental::try';
 use Mojo::IOLoop;
 use Services::IMAP::Client;
 use Services::IMAP::Folder;
+use POPFile::Role::DBConnect;
 
-class Services::IMAP :isa(POPFile::Module);
+class Services::IMAP :isa(POPFile::Module) :does(POPFile::Role::DBConnect);
 
 =head1 NAME
 
@@ -427,10 +428,9 @@ calling C<disconnect()> when done.  Safe to call in forked subprocesses.
 =cut
 
 method _open_uid_db() {
-    require DBI;
-    return DBI->connect(
-        'dbi:SQLite:dbname=' . $self->_db_path(), '', '',
-        { RaiseError => 1, PrintError => 0, AutoCommit => 1 })
+    return $self->_connect(
+        $self->_db_path(),
+        RaiseError => 1, PrintError => 0, AutoCommit => 1)
 }
 
 =head2 _open_db()
@@ -440,10 +440,9 @@ Opens a fresh DBI connection for folder mapping operations.
 =cut
 
 method _open_db() {
-    require DBI;
-    return DBI->connect(
-        'dbi:SQLite:dbname=' . $self->_db_path(), '', '',
-        { RaiseError => 1, PrintError => 0, AutoCommit => 1 })
+    return $self->_connect(
+        $self->_db_path(),
+        RaiseError => 1, PrintError => 0, AutoCommit => 1)
 }
 
 =head2 _ensure_folder_tables()
@@ -1181,6 +1180,21 @@ method watched_folders (@new_folders) {
         undef, $userid);
     $dbh->disconnect();
     return @$rows
+}
+
+=head2 folder_mappings()
+
+Returns a hash mapping bucket names to IMAP folder names.
+
+=cut
+
+method folder_mappings() {
+    my $dbh = $self->_open_db();
+    my $rows = $dbh->selectall_arrayref(
+        'SELECT bucket_name, folder_name FROM imap_folder_mappings WHERE userid = 1',
+        { Slice => {} }) // [];
+    $dbh->disconnect();
+    return map { $_->{bucket_name} => $_->{folder_name} } $rows->@*
 }
 
 =head2 train_on_archive()

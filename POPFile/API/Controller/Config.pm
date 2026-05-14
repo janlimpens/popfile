@@ -155,24 +155,10 @@ sub get_status($self) {
             $client->logout();
             my %on_server = map { $_ => 1 } @server_folders;
             
-            # Read watched folders and mappings from DB
-            my $db_path = $cfg_obj->get_user_path($cfg_obj->module_config('bayes', 'database'));
-            my $dbconnect = $cfg_obj->module_config('bayes', 'dbconnect');
-            if (defined $dbconnect && $dbconnect =~ /dbname=([^;]+)/) {
-                $db_path = $1;
-            }
-            require DBI;
-            my $dbh = DBI->connect("dbi:SQLite:dbname=$db_path", '', '',
-                { RaiseError => 1, PrintError => 0 });
-            my @watched = @{
-                $dbh->selectcol_arrayref(
-                    'SELECT folder_name FROM imap_watched_folders WHERE userid = 1 ORDER BY id')
-                    // [] };
-            my $mapping_rows = $dbh->selectall_arrayref(
-                'SELECT bucket_name, folder_name FROM imap_folder_mappings WHERE userid = 1',
-                { Slice => {} }) // [];
-            my %map_hash = map { $_->{bucket_name} => $_->{folder_name} } $mapping_rows->@*;
-            $dbh->disconnect();
+            # Read watched folders and mappings from IMAP service
+            my $imap_svc = $self->popfile_imap;
+            my @watched = $imap_svc->watched_folders();
+            my %map_hash = $imap_svc->folder_mappings();
             
             my @missing_w = grep { !$on_server{$_} } @watched;
             push @c, { id => 'watched_folders', label => 'Watched Folders',
