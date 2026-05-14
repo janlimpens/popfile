@@ -56,6 +56,7 @@ $self->config('param', $value);
 =cut
 
 method config ($param, $val = undef) {
+    warn "[LEGACY CONFIG] $name->config('$param')\n";
     return $self->module_config($name, $param, $val);
 }
 
@@ -66,6 +67,7 @@ Get or set a global (GLOBAL-namespaced) configuration parameter.
 =cut
 
 method global_config ($param, $val = undef) {
+    warn "[LEGACY CONFIG] $name->global_config('$param')\n";
     return $self->module_config('GLOBAL', $param, $val);
 }
 
@@ -76,6 +78,7 @@ Get or set a configuration parameter under an explicit module namespace.
 =cut
 
 method module_config ($module, $param, $val = undef) {
+    warn "[LEGACY CONFIG] module_config($module, '$param')\n";
     return $configuration->parameter($module . '_' . $param, $val);
 }
 
