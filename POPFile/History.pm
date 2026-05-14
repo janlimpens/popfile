@@ -108,15 +108,9 @@ method _txn($coderef) {
 
 method start () {
     $queries = POPFile::HistoryQueries->new();
-    my $dbconnect = $self->module_config('bayes', 'dbconnect') // '';
-    my $dbname;
-    if ($dbconnect =~ /:memory:/i) {
-        $dbname = ':memory:';
-    } else {
-        $dbname = $self->get_user_path(
-            $self->module_config('bayes', 'database') // 'popfile.db');
-    }
-    $self->_connect($dbname, sqlite_unicode => 1);
+    $self->connect_db(
+        dbconnect => $self->module_config('bayes', 'dbconnect') // '',
+        database => $self->module_config('bayes', 'database') // 'popfile.db');
     return 1
 }
 

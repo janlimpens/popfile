@@ -28,6 +28,43 @@ method _connect ($dsn, %opts) {
     return $dbh
 }
 
+method connect_db(%overrides) {
+    my $dbconnect = $overrides{dbconnect} // $self->config('dbconnect');
+    my $sqlite = ($dbconnect =~ /sqlite/i);
+    my $mysql = ($dbconnect =~ /mysql/i);
+    my $dbname;
+    my %opts;
+    if ($sqlite) {
+        $dbname = $dbconnect =~ /:memory:/i
+            ? ':memory:'
+            : $self->get_user_path($overrides{database} // $self->config('database'));
+        $opts{sqlite_unicode} = 1;
+    } else {
+        $dbname = $overrides{database} // $self->config('database');
+        $opts{mysql_auto_reconnect} = 1
+            if $mysql;
+    }
+    $dbconnect =~ s/\$dbname/$dbname/g;
+    $self->log_msg(INFO => "Connecting to $dbconnect");
+    my $dsn;
+    if ($sqlite) {
+        $dsn = $dbname;
+    } elsif ($mysql) {
+        my $user = $overrides{dbuser} // $self->config('dbuser') // '';
+        my $auth = $overrides{dbauth} // $self->config('dbauth') // '';
+        my ($host) = ($dbconnect =~ /host=([^;]+)/i);
+        $host //= 'localhost';
+        $dsn = "mysql://$user:$auth\@$host/$dbname";
+    } else {
+        my $user = $overrides{dbuser} // $self->config('dbuser') // '';
+        my $auth = $overrides{dbauth} // $self->config('dbauth') // '';
+        my ($host) = ($dbconnect =~ /host=([^;]+)/i);
+        $host //= 'localhost';
+        $dsn = "postgresql://$user:$auth\@$host/$dbname";
+    }
+    return $self->_connect($dsn, %opts)
+}
+
 method get_handle () {
     return defined $_mojo_db ? $_mojo_db->dbh() : undef
 }

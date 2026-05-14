@@ -23,6 +23,7 @@ POPFile-based utilities that need to load a subset of modules.
 use Object::Pad;
 use lib '.';
 use POPFile::Features;
+use POPFile::Database;
 use feature 'try';
 no warnings 'experimental::try';
 use locale;
@@ -335,6 +336,19 @@ method CORE_link_components() {
     $components{classifier}{bayes}->parser()->set_mangle(
         $components{classifier}{wordmangle});
 
+    if (defined $components{core}{api}) {
+        my $api = $components{core}{api};
+        my $cfg = $components{core}{config};
+        my $database = $api->module_config('bayes', 'database') // 'popfile.db';
+        my $dbconnect = $api->module_config('bayes', 'dbconnect') // '';
+        $database = $cfg->get_user_path($database)
+            if $dbconnect =~ /sqlite/i && $dbconnect !~ /:memory:/i;
+        POPFile::Database->instance()->configure(
+            dbconnect => $dbconnect,
+            database => $database,
+            dbuser => $api->module_config('bayes', 'dbuser'),
+            dbauth => $api->module_config('bayes', 'dbauth'));
+    }
 }
 
 =head2 CORE_initialize

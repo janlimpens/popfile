@@ -564,100 +564,25 @@ method update_constants ($session) {
 
 =head2 db_connect
 
-Connects to the POPFile database and returns 1 if successful
+Connects to the POPFile database and returns 1 if successful.
 
 =cut
 
 method db_connect() {
-    # Connect to the database, note that the database must exist for
-    # this to work, to make this easy for people POPFile we will
-    # create the database automatically here using the file
-    # 'popfile.sql' which should be located in the same directory the
-    # Classifier/Bayes.pm module
-
-    # If we are using SQLite then the dbname is actually the name of a
-    # file, and hence we treat it like one, otherwise we leave it
-    # alone
-
-    my $dbname;
-    my $dbconnect = $self->config('dbconnect');
-    my $dbpresent;
-    my $sqlite = ($dbconnect =~ /sqlite/i);
-    my $mysql = ($dbconnect =~ /mysql/i);
-    my %connection_options = ();
-    if ($sqlite) {
-        if ($dbconnect =~ /:memory:/i) {
-            $dbname = ':memory:';
-            $dbpresent = 0;
-        } else {
-            $dbname = $self->get_user_path($self->config('database'));
-            $dbpresent = (-e $dbname) || 0;
-        }
-        $connection_options{sqlite_unicode} = 1;
-    } else {
-        $dbname = $self->config('database');
-        $dbpresent = 1;
-
-        if ($mysql) {
-            # Turn on auto_reconnect
-            $connection_options{mysql_auto_reconnect} = 1;
-        }
-    }
-
-    # Record whether we are using SQLite or not and the name of the
-    # database so that other routines can access it; this is used by
-    # the backup_database routine to make a backup copy of the
-    # database when using SQLite.
-
-    $db_name = $dbname;
-
-    # Now perform the connect, note that this is database independent
-    # at this point, the actual database that we connect to is defined
-    # by the dbconnect parameter.
-
-    $dbconnect =~ s/\$dbname/$dbname/g;
-    $self->log_msg(INFO => "Attempting to connect to $dbconnect ($dbpresent)");
-
-    my $dsn;
-    if ($sqlite) {
-        $dsn = $dbname;
-    } elsif ($mysql) {
-        my $user = $self->config('dbuser') // '';
-        my $auth = $self->config('dbauth') // '';
-        my ($host) = ($dbconnect =~ /host=([^;]+)/i);
-        $host //= 'localhost';
-        $dsn = "mysql://$user:$auth\@$host/$dbname";
-    } else {
-        my $user = $self->config('dbuser') // '';
-        my $auth = $self->config('dbauth') // '';
-        my ($host) = ($dbconnect =~ /host=([^;]+)/i);
-        $host //= 'localhost';
-        $dsn = "postgresql://$user:$auth\@$host/$dbname";
-    }
-    $self->_connect($dsn, %connection_options);
-    my $db = $self->get_handle();
-    unless (defined($db)) {
-        $self->log_msg(WARN => "Failed to connect to database and got error $DBI::errstr");
-        return 0;
-    }
+    my $db = $self->connect_db();
+    return 0
+        unless defined $db;
+    $db_name = $self->config('database');
     if ($self->is_sqlite() && $parser->lang() eq 'Nihongo') {
         $db->do('pragma case_sensitive_like=1');
     }
     my $root = $self->get_root_path('');
+    my $sqlite = $self->is_sqlite();
     return 0
         unless $schema->ensure_schema($db, $root, $sqlite);
     my $has_mid = grep { $_->[1] eq 'mid' }
         @{$db->selectall_arrayref("PRAGMA table_info(history)")};
     $db->do("ALTER TABLE history ADD COLUMN mid TEXT") unless $has_mid;
-
-    # Now prepare common SQL statements for use, as a matter of convention the
-    # parameters to each statement always appear in the following order:
-    #
-    # user
-    # bucket
-    # word
-    # parameter
-
     $db_delete_zero_words = $db->prepare($self->normalize_sql(
         'DELETE FROM matrix
          WHERE (matrix.times <= 0 OR matrix.times IS NULL)
