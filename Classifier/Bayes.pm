@@ -105,7 +105,6 @@ field $buckets :reader = undef;
 field $corpus :reader = undef;
 field $stopwords :reader = undef;
 
-field $db_is_sqlite = 0;
 field $db_name = '';
 
 BUILD {
@@ -329,26 +328,10 @@ method backup_database() {
     # If database backup is turned on and we are using SQLite then
     # backup the database by copying it
     # TODO: separate implementations
-    if ($self->config('sqlite_backup') && $db_is_sqlite) {
+    if ($self->config('sqlite_backup') && $self->is_sqlite()) {
         unless (copy($db_name, "$db_name.backup")) {
             $self->log_msg(WARN => "Failed to backup database ".$db_name);
         }
-    }
-}
-
-=head2 tweak_sqlite($tweak, $state, $db)
-
-Applies or reverts a named SQLite optimisation.  Currently only tweak
-C<1> (async writes via C<PRAGMA synchronous=off>) is implemented and
-is guarded by the C<sqlite_fast_writes> config flag.
-
-=cut
-
-method tweak_sqlite ($tweak, $state, $db) {
-    return unless $db_is_sqlite;
-    if ($tweak == 1 && $self->config('sqlite_fast_writes')) {
-        $self->log_msg(INFO => "sqlite_fast_writes: synchronous=" . ($state ? 'off' : 'normal'));
-        $db->do('pragma synchronous=' . ($state ? 'off' : 'normal'));
     }
 }
 
@@ -641,7 +624,6 @@ method db_connect() {
     # the backup_database routine to make a backup copy of the
     # database when using SQLite.
 
-    $db_is_sqlite = $sqlite;
     $db_name = $dbname;
 
     # Now perform the connect, note that this is database independent
@@ -673,31 +655,9 @@ method db_connect() {
         $self->log_msg(WARN => "Failed to connect to database and got error $DBI::errstr");
         return 0;
     }
-
-    if ($sqlite) {
-        $self->log_msg(INFO => "Using SQLite library version " . $db->{sqlite_version});
-
-        # Set the synchronous mode to normal (default of SQLite 2.x).
-
-        $self->tweak_sqlite(1, 1, $db);
-
-        # For Japanese compatibility
-
-        if ($parser->lang() eq 'Nihongo') {
-            $db->do('pragma case_sensitive_like=1');
-        }
-
-        if ($db->{sqlite_version} ge '3.6.0') {
-            # Configure journal mode
-
-            my $journal_mode = $self->config('sqlite_journal_mode');
-
-            if ($journal_mode =~ /^(delete|truncate|persist|memory|off)$/i) {
-                $db->do("pragma journal_mode=$journal_mode");
-            }
-        }
+    if ($self->is_sqlite() && $parser->lang() eq 'Nihongo') {
+        $db->do('pragma case_sensitive_like=1');
     }
-
     unless ($dbpresent) {
         unless ($self->insert_schema($sqlite)) {
             return 0

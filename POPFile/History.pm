@@ -170,8 +170,6 @@ method reserve_slot ($inserted_time = undef) {
     my $insert_sth = $self->db()->prepare(POPFile::DBUtil::normalize_sql(
         'INSERT INTO history ( userid, committed, inserted )
          VALUES ( ?, ?, ? )'));
-    my $is_sqlite2 = ($self->db()->{Driver}->{Name} =~ /SQLite2?/)
-        && ($self->db()->{sqlite_version} =~ /^2\./);
     my $slot;
     while (!defined($slot) || $slot == 0) {
         my $candidate = int(rand(1000000000) + 2);
@@ -179,11 +177,7 @@ method reserve_slot ($inserted_time = undef) {
         my $result = $insert_sth->execute(1, $candidate, $inserted_time);
         next
             unless defined $result;
-        if ($is_sqlite2) {
-            $slot = $self->db()->func('last_insert_rowid');
-        } else {
-            $slot = $self->db()->last_insert_id(undef, undef, 'history', 'id');
-        }
+        $slot = $self->db()->last_insert_id(undef, undef, 'history', 'id');
     }
     $insert_sth->finish();
     $self->log_msg(DEBUG => "reserve_slot returning slot id $slot");
