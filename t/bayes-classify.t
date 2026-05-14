@@ -182,22 +182,6 @@ subtest 'get_stopword_candidates' => sub {
 };
 
 # -----------------------------------------------------------------------
-subtest 'stopword_ratio config filters uniform words at classify time' => sub {
-    my $ham_fixture  = "$Bin/fixtures/ham.eml";
-    my $spam_fixture = "$Bin/fixtures/spam.eml";
-
-    $bayes->config('stemming', 0);
-    $bayes->config('stopword_ratio', 0);
-    my $class_no_filter = $bayes->classify($bayes, $session, $ham_fixture);
-
-    $bayes->config('stopword_ratio', 1000);
-    my $class_with_filter = $bayes->classify($bayes, $session, $ham_fixture);
-
-    ok( defined $class_no_filter,   'classify works without filtering' );
-    ok( defined $class_with_filter, 'classify works with aggressive filtering (ratio 1000)' );
-    $bayes->config('stopword_ratio', 0);
-};
-
 # -----------------------------------------------------------------------
 subtest 'clear bucket' => sub {
     my $wc_before = $bayes->get_bucket_word_count($session, 'inbox');

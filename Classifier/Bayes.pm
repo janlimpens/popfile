@@ -18,6 +18,7 @@ use Classifier::Schema;
 use Classifier::Pipeline;
 use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
+use POPFile::Role::Config;
 use IO::Handle;
 use DBI;
 use List::Util qw(max min);
@@ -42,7 +43,24 @@ my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
 
 my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
 
-class Classifier::Bayes :isa(POPFile::Module) :does(POPFile::Role::DBConnect) :does(POPFile::Role::SQL) :does(POPFile::Role::Logging);
+class Classifier::Bayes
+    :isa(POPFile::Module)
+    :does(POPFile::Role::DBConnect)
+    :does(POPFile::Role::SQL)
+    :does(POPFile::Role::Config)
+    :does(POPFile::Role::Logging);
+
+    my %DEFAULTS = (
+        unclassified_weight => 100,
+        stopword_ratio => 0,
+        subject_mod_left => '[',
+        subject_mod_right => ']',
+        subject_mod_pos => 1,
+        hostname => '',
+        xpl_angle => 0,
+        localhostname => '',
+        bayes_magnets_enabled => 1,
+        nihongo_parser => 'kakasi');
 
 =head1 NAME
 
@@ -122,92 +140,8 @@ Called to set up the Bayes module's parameters
 =cut
 
 method initialize() {
-    # This is the name for the database
-
-    $self->config(database => 'popfile.db');
-
-    # This is the 'connect' string used by DBI to connect to the
-    # database, if you decide to change from using SQLite to some
-    # other database (e.g. MySQL, Oracle, ...) this *should* be all
-    # you need to change.  The additional parameters user and auth are
-    # needed for some databases.
-    #
-    # Note that the dbconnect string
-    # will be interpolated before being passed to DBI and the variable
-    # $dbname can be used within it and it resolves to the full path
-    # to the database named in the database parameter above.
-
-    $self->config(dbconnect => 'dbi:SQLite:dbname=$dbname');
-    $self->config(dbuser => '');
-    $self->config(dbauth => '');
-
-    # No default unclassified weight is the number of times more sure
-    # POPFile must be of the top class vs the second class, default is
-    # 100 times more
-
-    $self->config(unclassified_weight => 100);
-    $self->config(stopword_ratio => 0);
-
-    # The characters that appear before and after a subject
-    # modification
-
-    $self->config(subject_mod_left => '[');
-    $self->config(subject_mod_right => ']');
-
-    # The position to insert a subject modification
-    #  1 : Beginning of the subject (default)
-    # -1 : End of the subject
-
-    $self->config(subject_mod_pos => 1);
-
-    # Get the hostname for use in the X-POPFile-Link header
-
     $hostname = hostname;
-
-    # Allow the user to override the hostname
-
-    $self->config(hostname => $hostname);
-
-    # If set to 1 then the X-POPFile-Link will have < > around the URL
-    # (i.e. X-POPFile-Link: <http://foo.bar>) when set to 0 there are
-    # none (i.e. X-POPFile-Link: http://foo.bar)
-
-    $self->config(xpl_angle => 0);
-
-    # This parameter is used when the UI is operating in Stealth Mode.
-    # If left blank (the default setting) the X-POPFile-Link will use 127.0.0.1
-    # otherwise it will use this string instead. The system's HOSTS file should
-    # map the string to 127.0.0.1
-
-    $self->config(localhostname => '');
-
-    $self->config(sqlite_fast_writes => 1);
-    $self->config(sqlite_backup => 1);
-
-    # SQLite Journal mode.
-    # To use this option, DBD::SQLite v1.20 or later is required.
-    #
-    #   delete   : Delete journal file after committing. (default)
-    #              Slow but reliable.
-    #   truncate : Truncate journal file to zero length after committing.
-    #              Faster than 'delete' in some environment but less reliable.
-    #   persist  : Persist journal file after committing.
-    #              Faster than 'delete' in some environment but less reliable.
-    #   memory   : Store journal file in memory.
-    #              Very fast but can't rollback when process crashes.
-    #   off      : Turn off journaling.
-    #              Fastest of all but can't rollback.
-    #
-    # For more information about the journal mode, see:
-    # http://www.sqlite.org/pragma.html#pragma_journal_mode
-
-    $self->config(sqlite_journal_mode => 'delete');
-    $self->config(bayes_magnets_enabled => 1);
-
-    # Japanese wakachigaki parser ('kakasi' or 'mecab' or 'internal').
-
-    $self->config(nihongo_parser => 'kakasi');
-
+    $self->module_config('bayes', 'hostname', $hostname);
     $self->mq_register('COMIT', $self);
     $self->mq_register('RELSE', $self);
 
@@ -263,7 +197,7 @@ method start() {
 
     $parser->set_lang($language);
     $parser->mangle()->set_ui_language($language);
-    $unclassified = log($self->config('unclassified_weight'));
+    $unclassified = log(($self->config->get('unclassified_weight') // $DEFAULTS{unclassified_weight}));
 
     $buckets = Classifier::Buckets->new();
     return 0
@@ -271,19 +205,19 @@ method start() {
     $sessions = Classifier::Sessions->new();
     $magnets = Classifier::Magnets->new();
     $pipeline->register($magnets, priority => 0, name => 'magnets')
-        if $self->config('bayes_magnets_enabled');
+        if ($self->config->get('bayes_magnets_enabled') // $DEFAULTS{bayes_magnets_enabled});
     $corpus = Classifier::Corpus->new();
     $stopwords = Classifier::Stopwords->new();
 
     if ($language eq 'Nihongo') {
         # Setup Nihongo (Japanese) parser.
 
-        my $nihongo_parser = $self->config('nihongo_parser');
+        my $nihongo_parser = ($self->config->get('nihongo_parser') // $DEFAULTS{nihongo_parser});
 
         $nihongo_parser = $parser->setup_nihongo_parser($nihongo_parser);
 
         $self->log_msg(DEBUG => "Use Nihongo (Japanese) parser : $nihongo_parser");
-        $self->config(nihongo_parser => $nihongo_parser);
+        $self->module_config('bayes', 'nihongo_parser', $nihongo_parser);
     }
 
     return 1;
@@ -572,7 +506,6 @@ method db_connect() {
     my $db = $self->get_handle();
     return 0
         unless defined $db;
-    $db_name = $self->config('database');
     return 0
         unless $schema->setup($db);
     $db_delete_zero_words = $db->prepare($self->normalize_sql(
@@ -892,7 +825,7 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
     return
         unless defined $userid;
 
-    $unclassified = log($self->config('unclassified_weight'));
+    $unclassified = log(($self->config->get('unclassified_weight') // $DEFAULTS{unclassified_weight}));
 
     if (defined($file)) {
         return if (!-f $file);
@@ -1005,7 +938,7 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
     my @id_list = $id_list_ref->@*;
     my $not_likely_for_bucket = $not_likely->{$userid};
     my $display_not_likely = (sort { $a <=> $b } values $not_likely_for_bucket->%*)[0] // 0;
-    my $stopword_ratio = $self->config('stopword_ratio') + 0;
+    my $stopword_ratio = ($self->config->get('stopword_ratio') // $DEFAULTS{stopword_ratio}) + 0;
 
     for my $id (@id_list) {
         if ($stopword_ratio > 0 && @buckets > 1) {
@@ -1578,7 +1511,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     my $xpl_insertion = $self->get_bucket_parameter($session, $classification, 'xpl');
     my $quarantine = $self->get_bucket_parameter($session, $classification, 'quarantine');
 
-    my $modification = $self->config('subject_mod_left') . $classification . $self->config('subject_mod_right');
+    my $modification = ($self->config->get('subject_mod_left') // $DEFAULTS{subject_mod_left}) . $classification . ($self->config->get('subject_mod_right') // $DEFAULTS{subject_mod_right});
 
     # Add the Subject line modification or the original line back again
     # Don't add the classification unless it is not present
@@ -1589,7 +1522,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
         if (! defined $msg_subject) {
             $msg_subject = " $modification";
         } elsif ($msg_subject !~ /\Q$modification\E/) {
-            if ($self->config('subject_mod_pos') > 0) {
+            if (($self->config->get('subject_mod_pos') // $DEFAULTS{subject_mod_pos}) > 0) {
                 $msg_subject = " $modification$msg_subject";
             } else {
                 $msg_subject = "$msg_subject $modification";
@@ -1620,13 +1553,13 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     # Add the XPL header
 
     my $host = $self->module_config('api', 'local')
-        ? $self->config('localhostname') || '127.0.0.1'
-        : $self->config('hostname');
+        ? ($self->config->get('localhostname') // $DEFAULTS{localhostname}) || '127.0.0.1'
+        : ($self->config->get('hostname') // $DEFAULTS{hostname});
     my $port = $self->module_config('api', 'port');
 
     my $xpl = "http://$host:$port/jump_to_message?view=$slot";
 
-    $xpl = "<$xpl>" if ($self->config('xpl_angle'));
+    $xpl = "<$xpl>" if (($self->config->get('xpl_angle') // $DEFAULTS{xpl_angle}));
 
     if ($xpl_insertion && !$quarantine) {
         $msg_head_after .= "X-POPFile-Link: $xpl$crlf";
