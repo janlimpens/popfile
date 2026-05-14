@@ -6,6 +6,7 @@ use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
 
 use Test2::V0;
 use TestHelper;
+use POPFile::Config;
 
 require Services::IMAP;
 
@@ -43,7 +44,9 @@ sub make_imap {
     $imap->set_classifier(StubClassifier->new());
     $config->parameter('imap_enabled', 1);
     $config->parameter('imap_training_mode', 0);
-    return ($imap, $config)
+    POPFile::Config->instance()->load($config);
+        POPFile::Config->instance()->load($config);
+return ($imap, $config)
 }
 
 subtest 'all watched folders are scanned in a single poll cycle' => sub {

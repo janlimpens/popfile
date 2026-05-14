@@ -8,6 +8,7 @@ use Test2::V0;
 use Log::Any::Test;
 use Log::Any qw($log);
 use TestHelper;
+use POPFile::Config;
 
 require Services::IMAP;
 
@@ -65,7 +66,9 @@ sub make_imap {
     $config->parameter('imap_update_interval', 20);
     $imap->watched_folders('INBOX');
     $imap->folder_for_bucket('work', 'Work');
-    return ($imap, $config)
+    POPFile::Config->instance()->load($config);
+        POPFile::Config->instance()->load($config);
+return ($imap, $config)
 }
 
 subtest 'request_folder_move without cached mid: uid_next reset when source_bucket given' => sub {

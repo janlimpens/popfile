@@ -80,15 +80,15 @@ BUILD {
     $self->set_name('imap');
 }
 
-method _host()       { $self->module_config('imap', 'hostname') // $DEFAULTS{hostname} }
-method _port()       { $self->module_config('imap', 'port') // $DEFAULTS{port} }
-method _login()      { $self->module_config('imap', 'login') // $DEFAULTS{login} }
-method _password()   { $self->module_config('imap', 'password') // $DEFAULTS{password} }
-method _interval()   { $self->module_config('imap', 'update_interval') // $DEFAULTS{update_interval} }
-method _expunge()    { $self->module_config('imap', 'expunge') // $DEFAULTS{expunge} }
-method _use_ssl()    { $self->module_config('imap', 'use_ssl') // $DEFAULTS{use_ssl} }
-method _enabled()    { $self->module_config('imap', 'enabled') // $DEFAULTS{enabled} }
-method _training_limit() { $self->module_config('imap', 'training_limit') // $DEFAULTS{training_limit} }
+method _host()       { $self->config->get('hostname') // $DEFAULTS{hostname} }
+method _port()       { $self->config->get('port') // $DEFAULTS{port} }
+method _login()      { $self->config->get('login') // $DEFAULTS{login} }
+method _password()   { $self->config->get('password') // $DEFAULTS{password} }
+method _interval()   { $self->config->get('update_interval') // $DEFAULTS{update_interval} }
+method _expunge()    { $self->config->get('expunge') // $DEFAULTS{expunge} }
+method _use_ssl()    { $self->config->get('use_ssl') // $DEFAULTS{use_ssl} }
+method _enabled()    { $self->config->get('enabled') // $DEFAULTS{enabled} }
+method _training_limit() { $self->config->get('training_limit') // $DEFAULTS{training_limit} }
 
 method _training_mode() { $training_mode }
 method _training_error() { $training_error }

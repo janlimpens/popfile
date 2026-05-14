@@ -6,6 +6,7 @@ use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
 
 use Test2::V0;
 use TestHelper;
+use POPFile::Config;
 
 sub make_imap {
     my ($config, $mq) = TestHelper::setup();
@@ -16,7 +17,8 @@ sub make_imap {
     $imap->initialize();
     $imap->start();
     $imap->watched_folders('INBOX');  # seed default
-    return ($imap, $config)
+        POPFile::Config->instance()->load($config);
+return ($imap, $config)
 }
 
 subtest 'CRUD for watched folders' => sub {
