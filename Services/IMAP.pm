@@ -1,15 +1,30 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
-use Fcntl ();
 use feature 'try';
 no warnings 'experimental::try';
+use Fcntl ();
 use Mojo::IOLoop;
 use Services::IMAP::Client;
 use Services::IMAP::Folder;
 use POPFile::Role::DBConnect;
+use POPFile::Role::Config;
 
-class Services::IMAP :isa(POPFile::Module) :does(POPFile::Role::DBConnect);
+class Services::IMAP
+    :isa(POPFile::Module)
+    :does(POPFile::Role::DBConnect)
+    :does(POPFile::Role::Config);
+
+    my %DEFAULTS = (
+        hostname => '',
+        port => 143,
+        login => '',
+        password => '',
+        update_interval => 20,
+        expunge => 0,
+        use_ssl => 0,
+        enabled => 0,
+        training_limit => 0);
 
 =head1 NAME
 
@@ -56,12 +71,28 @@ field @pending_train_buckets;
 field %_uid_next_override;
 field %hash_to_mid;
 field %pending_direct_moves;
+field $training_mode = 0;
+field $training_error = '';
 
 my $cfg_separator = "-->";
 
 BUILD {
     $self->set_name('imap');
 }
+
+method _host()       { $self->config->get('hostname') // $DEFAULTS{hostname} }
+method _port()       { $self->config->get('port') // $DEFAULTS{port} }
+method _login()      { $self->config->get('login') // $DEFAULTS{login} }
+method _password()   { $self->config->get('password') // $DEFAULTS{password} }
+method _interval()   { $self->config->get('update_interval') // $DEFAULTS{update_interval} }
+method _expunge()    { $self->config->get('expunge') // $DEFAULTS{expunge} }
+method _use_ssl()    { $self->config->get('use_ssl') // $DEFAULTS{use_ssl} }
+method _enabled()    { $self->config->get('enabled') // $DEFAULTS{enabled} }
+method _training_limit() { $self->config->get('training_limit') // $DEFAULTS{training_limit} }
+
+method _training_mode() { $training_mode }
+method _training_error() { $training_error }
+
 
 =head2 initialize()
 
@@ -73,18 +104,7 @@ C<enabled> (0), C<training_mode> (0).  Returns 1.
 =cut
 
 method initialize() {
-    $self->config('hostname', '');
-    $self->config('port', 143);
-    $self->config('login', '');
-    $self->config('password', '');
-    $self->config('update_interval', 20);
-    $self->config('expunge', 0);
-    $self->config('use_ssl', 0);
-    $self->config('enabled', 0);
-    $self->config('training_mode', 0);
-    $self->config('training_error', '');
-    $self->config('training_limit', 0);
-    $last_update = time - $self->config('update_interval');
+    $last_update = time - $self->_interval();
     return 1
 }
 
@@ -131,12 +151,12 @@ method start() {
         $self->log_msg(WARN => "IMAP folder table setup skipped: $e")
             unless $e =~ /unable to open/i;
     }
-    my $interval = $self->config('update_interval');
+    my $interval = $self->_interval();
     $timer_id = Mojo::IOLoop->recurring($interval => sub { $self->poll() });
-    if ($self->config('enabled') && defined $activity) {
-        my $host = $self->config('hostname') || 'not configured';
-        my $port = $self->config('port') || 143;
-        my $ssl = $self->config('use_ssl') ? ' (SSL)' : '';
+    if ($self->_enabled() && defined $activity) {
+        my $host = $self->_host() || 'not configured';
+        my $port = $self->_port() || 143;
+        my $ssl = $self->_use_ssl() ? ' (SSL)' : '';
         $activity->add_event({
             level => 'info',
             module => 'imap',
@@ -203,13 +223,13 @@ method poll() {
             push @pending_train_buckets, $1
                 if $flag =~ /popfile\.train\.(.+)$/;
         }
-        $self->config('training_mode', 1);
+        $training_mode = 1;
     }
-    return if $self->config('enabled') == 0
-           && $self->config('training_mode') == 0;
+    return if $self->_enabled() == 0
+           && $self->_training_mode() == 0;
     if ($poll_running) {
         my $age = $self->_poll_age();
-        my $limit = $self->config('update_interval') * 3;
+        my $limit = $self->_interval() * 3;
         if ($age > $limit) {
             $self->log_msg(WARN => "IMAP poll watchdog: subprocess hung for ${age}s, resetting.");
             $poll_running = 0;
@@ -235,15 +255,15 @@ method poll() {
             if ($result->{error}) {
                 $self->log_msg(WARN => $result->{error});
                 if ($result->{training_done} == -1) {
-                    $self->config('training_error', $result->{error});
-                    $self->config('training_mode', 0);
+                    $training_error = $result->{error};
+                    $training_mode = 0;
                 }
             }
             if ($result->{training_done}) {
                 unlink @pending_train_flags;
                 @pending_train_flags = ();
                 @pending_train_buckets = ();
-                $self->config('training_mode', 0);
+                $training_mode = 0;
             }
             $hash_to_mid{$_} = $result->{hash_to_mid}{$_}
                 for keys $result->{hash_to_mid}->%*;
@@ -320,7 +340,7 @@ method _run_poll_work($subprocess = undef) {
     try {
         local $SIG{PIPE} = 'IGNORE';
         local $SIG{__DIE__};
-        if ($self->config('training_mode') == 1) {
+        if ($self->_training_mode() == 1) {
             $result->{trained} = $self->train_on_archive();
             $result->{training_done} = 1;
         }
@@ -385,7 +405,7 @@ method _run_poll_work($subprocess = undef) {
         $result->{error} = $msg;
         $emit->('error', 'IMAP Error', $msg)
             if defined $subprocess;
-        if ($self->config('training_mode') == 1) {
+        if ($self->_training_mode() == 1) {
             $result->{training_done} = -1;
         }
     }
@@ -464,7 +484,7 @@ method _migrate_folder_config() {
     }
     my $cfg = $self->configuration();
     my $sep = '-->';
-    my $watched_raw = $self->config('watched_folders')
+    my $watched_raw = $self->config->get('watched_folders')
         // $cfg->deprecated_parameter('imap_watched_folders');
     if (defined $watched_raw && $watched_raw ne '') {
         my @folders = grep { $_ ne '' } split /$sep/, $watched_raw;
@@ -474,7 +494,7 @@ method _migrate_folder_config() {
             $sth->execute($userid, $_) for @folders;
         }
     }
-    my $mapping_raw = $self->config('bucket_folder_mappings')
+    my $mapping_raw = $self->config->get('bucket_folder_mappings')
         // $cfg->deprecated_parameter('imap_bucket_folder_mappings');
     if (defined $mapping_raw && $mapping_raw ne '') {
         my %mapping = split /$sep/, $mapping_raw;
@@ -554,7 +574,7 @@ method _drain_direct_moves ($result) {
             if ($destination ne $folder) {
                 $self->log_msg(WARN => "Direct move: UID $uids[0] from $folder to $destination.");
                 $imap->move_message($uids[0], $destination);
-                $imap->expunge() if $self->config('expunge');
+                $imap->expunge() if $self->_expunge();
             }
             push $result->{direct_moved_hashes}->@*, $hash;
             last;
@@ -865,7 +885,7 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
         }
         $self->log_msg(DEBUG => "Ignoring message $msg");
     }
-    $imap->expunge() if $moved_message && $self->config('expunge');
+    $imap->expunge() if $moved_message && $self->_expunge();
     $emit->('info', 'Scan done', "$folder: " . ($moved_message ? "$moved_message moved" : scalar(@uids) . ' checked, no moves'));
     return $moved_message
 }
@@ -1174,7 +1194,7 @@ is cleared by the parent callback in C<poll()>.
 =cut
 
 method train_on_archive() {
-    $self->config('training_error', '');
+    $training_error = '';
     $self->log_msg(WARN => "Training on existing archive.");
     %folders = ();
     $self->build_folder_list();
@@ -1187,7 +1207,7 @@ method train_on_archive() {
         return 0
     }
     $self->connect_server();
-    my $limit = $self->config('training_limit') || 0;
+    my $limit = $self->_training_limit() || 0;
     my $batch_size = $limit > 0 ? $limit : 50;
     my $total_msgs = 0;
     my $total_folders = 0;
