@@ -14,6 +14,7 @@ use Classifier::MailParse;
 use Classifier::Sessions;
 use Classifier::Magnets;
 use Classifier::Stopwords;
+use Classifier::Schema;
 use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
 use IO::Handle;
@@ -104,11 +105,13 @@ field $magnets :reader = undef;
 field $buckets :reader = undef;
 field $corpus :reader = undef;
 field $stopwords :reader = undef;
+field $schema :reader = undef;
 
 field $db_name = '';
 
 BUILD {
     $self->set_name('bayes');
+    $schema = Classifier::Schema->new();
 }
 
 =head2 initialize
@@ -658,49 +661,9 @@ method db_connect() {
     if ($self->is_sqlite() && $parser->lang() eq 'Nihongo') {
         $db->do('pragma case_sensitive_like=1');
     }
-    unless ($dbpresent) {
-        unless ($self->insert_schema($sqlite)) {
-            return 0
-        }
-    }
-
-    # Now check for a need to upgrade the database because the schema
-    # has been changed.  From POPFile v0.22.0 there's a special
-    # 'popfile' table inside the database that contains the schema
-    # version number.  If the version number doesn't match or is
-    # missing then do the upgrade.
-
-    open my $schema_fh, '<', $self->get_root_path('Classifier/popfile.sql');
-    <$schema_fh> =~ /-- POPFILE SCHEMA (\d+)/;
-    my $version = $1;
-    close $schema_fh;
-
-    my $need_upgrade = 1;
-
-    #
-    # retrieve the SQL_IDENTIFIER_QUOTE_CHAR for the database then use it
-    # to strip off any sqlquotechars from the table names we retrieve
-    #
-
-    my $sqlquotechar = $db->get_info(29) || '';
-    my @tables = map { s/$sqlquotechar//g; $_ } $db->tables();
-
-    for my $table (@tables) {
-        if ($table =~ /\.?popfile$/) {
-            my @row = $db->selectrow_array('select version from popfile');
-            if ($#row == 0) {
-                $need_upgrade = ($row[0] != $version);
-            }
-        }
-    }
-
-    if ($need_upgrade) {
-        print "\n\nDatabase schema is outdated, performing automatic upgrade\n";
-        # The database needs upgrading
-        $self->db_upgrade();
-        print "\nDatabase upgrade complete\n\n";
-    }
-
+    my $root = $self->get_root_path('');
+    return 0
+        unless $schema->ensure_schema($db, $root, $sqlite);
     my $has_mid = grep { $_->[1] eq 'mid' }
         @{$db->selectall_arrayref("PRAGMA table_info(history)")};
     $db->do("ALTER TABLE history ADD COLUMN mid TEXT") unless $has_mid;
@@ -721,167 +684,6 @@ method db_connect() {
     return 1
 }
 
-=head2 insert_schema
-
-Insert the POPFile schema in a database
-
-C<$sqlite> Set to 1 if this is a SQLite database
-
-=cut
-
-method insert_schema ($sqlite) {
-    if (-e $self->get_root_path('Classifier/popfile.sql')) {
-        my $schema = '';
-
-        $self->log_msg(WARN => "Creating database schema");
-
-        open my $schema_fh, '<', $self->get_root_path('Classifier/popfile.sql');
-        while (<$schema_fh>) {
-            next if (/^--/);
-            next if (!/[a-z;]/);
-            s/--.*$//;
-
-            # If the line begins 'alter' and we are doing SQLite then ignore
-            # the line
-
-            if ($sqlite && (/^alter/i)) {
-                next;
-            }
-
-            $schema .= $_;
-
-            if (/end;/ || (/\);/) || (/^alter/i)) {
-                $self->get_handle()->do($schema);
-                $schema = '';
-            }
-        }
-        close $schema_fh;
-        return 1;
-    } else {
-        $self->log_msg(WARN => "Can't find the database schema");
-        return 0;
-    }
-}
-
-=head2 db_upgrade
-
-Upgrade the POPFile schema by dumping, recreating, and restoring data.
-
-=cut
-
-method db_upgrade() {
-    my $db = $self->get_handle();
-    my $is_sqlite = ($db->{Driver}->{Name} =~ /SQLite/);
-
-    my $sqlquotechar = $db->get_info(29) || '';
-    my @tables = map { s/$sqlquotechar//g; $_ } ($db->tables());
-
-    # Dump all data as INSERT statements, drop old tables,
-    # recreate schema, then restore data.
-
-    my $i = 0;
-    my $ins_file = $self->get_user_path('insert.sql');
-    open INSERT, '>' . $ins_file;
-
-    for my $table (@tables) {
-        next if ($table =~ /\.?popfile$/);
-        if ($is_sqlite && ($table =~ /(?:^|\.)sqlite_/)) {
-            next;
-        }
-        if ($i > 99) {
-            print "\n";
-        }
-        print "    Saving table $table\n    ";
-
-        my $t = $db->prepare("select * from $table;");
-        $t->execute();
-        $i = 0;
-        while (1) {
-            if ((++$i % 100) == 0) {
-                print "[$i]";
-                STDOUT->flush();
-            }
-            if (($i % 1000) == 0) {
-                print "\n";
-                STDOUT->flush();
-            }
-            my $rows = $t->fetchrow_arrayref;
-
-            last
-                unless defined $rows;
-
-            if ($is_sqlite) {
-                print INSERT "INSERT OR IGNORE INTO $table (";
-            } else {
-                print INSERT "INSERT INTO $table (";
-            }
-            for my $i (0..$t->{NUM_OF_FIELDS}-1) {
-                if ($i != 0) {
-                    print INSERT ',';
-                }
-                print INSERT $t->{NAME}->[$i];
-            }
-            print INSERT ') VALUES (';
-            for my $i (0..$t->{NUM_OF_FIELDS}-1) {
-                if ($i != 0) {
-                    print INSERT ',';
-                }
-                my $val = $rows->[$i];
-                if ($t->{TYPE}->[$i] !~ /^int/i) {
-                    $val = '' unless (defined($val));
-                    $val =~ s/\x00//g;
-                    $val = $self->get_handle()->quote($val);
-                } else {
-                    $val = 'NULL' unless (defined($val));
-                }
-                print INSERT $val;
-            }
-            print INSERT ");\n";
-        }
-        $t->finish;
-    }
-
-    close INSERT;
-
-    if ($i > 99) {
-        print "\n";
-    }
-
-    for my $table (@tables) {
-        if ($is_sqlite && ($table =~ /(?:^|\.)sqlite_/)) {
-            next;
-        }
-        print "    Dropping old table $table\n";
-        $db->do("DROP TABLE $table;");
-    }
-
-    print "    Inserting new database schema\n";
-    if (!$self->insert_schema($is_sqlite)) {
-        return 0;
-    }
-
-    print "    Restoring old data\n    ";
-
-    $db->begin_work;
-    open INSERT, '<' . $ins_file;
-    $i = 0;
-    while (<INSERT>) {
-        if ((++$i % 100) == 0) {
-           print "[$i]";
-           STDOUT->flush();
-        }
-        if (($i % 1000) == 0) {
-            print "\n";
-            STDOUT->flush();
-        }
-        s/[\r\n]//g;
-        $db->do($_);
-    }
-    close INSERT;
-    $db->commit;
-
-    unlink $ins_file;
-}
 
 =head2 db_disconnect
 
