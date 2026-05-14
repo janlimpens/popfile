@@ -3,6 +3,8 @@
 use Object::Pad;
 use POPFile::Features;
 
+my $_instance;
+
 class POPFile::Database;
 
 =head1 NAME
@@ -24,14 +26,12 @@ Transaction wrapping is provided by C<txn($coderef)>.
 
 =cut
 
-field $_pid       = $$;
-field $_mojo_db   = undef;
-field $_dbh       = undef;
-field $_config    = {};
+field $_pid = $$;
+field $_mojo_db = undef;
+field $_dbh = undef;
+field $_config = {};
 
-my $_instance;
-
-method instance(%config) {
+method instance :common (%config) {
     $_instance //= __PACKAGE__->new();
     $_instance->configure(%config)
         if %config;
