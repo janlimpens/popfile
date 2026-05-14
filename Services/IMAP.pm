@@ -312,7 +312,7 @@ method _run_poll_work($subprocess = undef) {
     };
     my $dbh;
     try {
-        $dbh = $self->_open_uid_db();
+        $dbh = POPFile::Database->instance()->get_handle();
     }
     catch ($e) {
         $self->log_msg(WARN => "Could not open uid state DB: $e");
@@ -418,28 +418,6 @@ method _db_path() {
     return $self->get_user_path($self->module_config('bayes', 'database'))
 }
 
-=head2 _open_uid_db()
-
-Opens a fresh, self-contained DBI connection to the SQLite database for
-reading and writing C<imap_folder_state>.  The caller is responsible for
-calling C<disconnect()> when done.  Safe to call in forked subprocesses.
-
-=cut
-
-method _open_uid_db() {
-    POPFile::Database->instance()->get_handle()
-}
-
-=head2 _open_db()
-
-Returns the shared database handle for folder mapping operations.
-
-=cut
-
-method _open_db() {
-    POPFile::Database->instance()->get_handle()
-}
-
 =head2 _ensure_folder_tables()
 
 Creates the C<imap_watched_folders> and C<imap_folder_mappings> tables
@@ -448,7 +426,7 @@ if they do not exist yet.
 =cut
 
 method _ensure_folder_tables() {
-    my $dbh = $self->_open_db();
+    my $dbh = POPFile::Database->instance()->get_handle();
     $dbh->do('CREATE TABLE IF NOT EXISTS imap_folder_state (
         id integer primary key,
         folder varchar(255) unique not null,
@@ -476,7 +454,7 @@ DB tables already contain data or the config keys are not present.
 =cut
 
 method _migrate_folder_config() {
-    my $dbh = $self->_open_db();
+    my $dbh = POPFile::Database->instance()->get_handle();
     my $userid = 1;
     my $existing = $dbh->selectrow_array(
         'SELECT count(*) FROM imap_watched_folders WHERE userid = ?',
@@ -1131,7 +1109,7 @@ mapping in the C<imap_folder_mappings> database table.
 =cut
 
 method folder_for_bucket ($bucket, $folder = undef) {
-    my $dbh = $self->_open_db();
+    my $dbh = POPFile::Database->instance()->get_handle();
     my $userid = 1;
     if (defined $folder) {
         $dbh->do(
@@ -1156,7 +1134,7 @@ the C<imap_watched_folders> database table.
 =cut
 
 method watched_folders (@new_folders) {
-    my $dbh = $self->_open_db();
+    my $dbh = POPFile::Database->instance()->get_handle();
     my $userid = 1;
     if (@new_folders) {
         $dbh->do('DELETE FROM imap_watched_folders WHERE userid = ?', undef, $userid);
@@ -1178,7 +1156,7 @@ Returns a hash mapping bucket names to IMAP folder names.
 =cut
 
 method folder_mappings() {
-    my $dbh = $self->_open_db();
+    my $dbh = POPFile::Database->instance()->get_handle();
     my $rows = $dbh->selectall_arrayref(
         'SELECT bucket_name, folder_name FROM imap_folder_mappings WHERE userid = 1',
         { Slice => {} }) // [];
