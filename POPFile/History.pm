@@ -44,23 +44,32 @@ my $fields_slot = join ', ', @fields;
 
 use POPFile::Role::DBConnect;
 use POPFile::Role::SQL;
+use POPFile::Role::Config;
 use POPFile::HistoryQueries;
+
 class POPFile::History
-    :isa(POPFile::Module) :does(POPFile::Role::DBConnect) :does(POPFile::Role::SQL);
+    :isa(POPFile::Module)
+    :does(POPFile::Role::DBConnect)
+    :does(POPFile::Role::SQL)
+    :does(POPFile::Role::Config);
 
     use Date::Parse;
     use Digest::MD5 qw(md5_hex);
     use Path::Tiny qw(path);
 
-    field $commit_list = [];
+    my %DEFAULTS = (
+        history_days => 2,
+        archive => 0,
+        archive_dir => 'archive',
+        archive_classes => 0);
 
-    field $queries :reader;
+field $commit_list = [];
+field $queries :reader;
+field $classifier :writer(set_classifier) = 0;
 
-    field $classifier :writer(set_classifier) = 0;
-
-    BUILD {
-        $self->set_name('history');
-    }
+BUILD {
+    $self->set_name('history');
+}
 
 =head2 initialize
 
@@ -73,13 +82,9 @@ Returns 1 on success.
 =cut
 
 method initialize() {
-    $self->config('history_days', 2);
-    $self->config('archive', 0);
-    $self->config('archive_dir', 'archive');
-    $self->config('archive_classes', 0);
     $self->mq_register('TICKD', $self);
     $self->mq_register('COMIT', $self);
-    return 1;
+    return 1
 }
 
 =head2 stop
@@ -91,18 +96,21 @@ and disconnects the cloned database handle.
 
 method stop() {
     $self->commit_history();
+    return
 }
 
 method _txn($coderef) {
     my $dbh = $self->get_handle();
+    my $result;
     $dbh->begin_work();
     try {
-        $coderef->();
+        $result = $coderef->();
         $dbh->commit();
     } catch ($e) {
         $dbh->rollback();
         die $e;
     }
+    return $result
 }
 
 method start () {
@@ -119,7 +127,7 @@ pending commit queue. Returns 1.
 
 method service() {
     $self->commit_history();
-    return 1;
+    return 1
 }
 
 =head2 deliver
@@ -138,6 +146,7 @@ method deliver ($type, @message) {
     if ($type eq 'COMIT') {
         push $commit_list->@*, \@message;
     }
+    return
 }
 
 =head2 reserve_slot
@@ -171,7 +180,7 @@ method reserve_slot ($inserted_time = undef) {
     }
     $insert_sth->finish();
     $self->log_msg(DEBUG => "reserve_slot returning slot id $slot");
-    return ($slot, $self->get_slot_file($slot));
+    return ($slot, $self->get_slot_file($slot))
 }
 
 =head2 release_slot
@@ -198,6 +207,7 @@ method release_slot ($slot) {
             last;
         }
     }
+    return
 }
 
 =head2 commit_slot
@@ -216,7 +226,7 @@ is the magnet used (or C<undef>).
 =cut
 
 method commit_slot ($session, $slot, $bucket, $magnet) {
-    $self->mq_post('COMIT', $session, $slot, $bucket, $magnet);
+    return $self->mq_post('COMIT', $session, $slot, $bucket, $magnet);
 }
 
 =head2 change_slot_classification($slot, $class, $session, $undo)
@@ -241,6 +251,7 @@ method change_slot_classification ($slot, $class, $session, $undo) {
          WHERE id = ?',
         undef, $bucketid, $oldbucketid, $slot);
     $queries->invalidate_all();
+    return
 }
 
 =head2 set_message_id($slot, $mid)
@@ -254,7 +265,8 @@ without rescanning the entire folder.
 method set_message_id ($slot, $mid) {
     $self->get_handle()->do(
         'UPDATE history SET mid = ? WHERE id = ?',
-        undef, $mid, $slot)
+        undef, $mid, $slot);
+    return
 }
 
 =head2 revert_slot_classification($slot)
@@ -274,6 +286,7 @@ method revert_slot_classification ($slot) {
          WHERE id = ?',
         undef, $oldbucketid, 0, $slot);
     $queries->invalidate_all();
+    return
 }
 
 =head2 get_slot_fields($slot)
@@ -287,8 +300,8 @@ C<magnet(11)>, C<size(12)>.  Returns C<undef> if C<$slot> is invalid.
 =cut
 
 method get_slot_fields ($slot) {
-    return if !defined($slot) || $slot !~ /^\d+$/;
-
+    return
+        if !defined($slot) || $slot !~ /^\d+$/;
     my $sth = $self->get_handle()->prepare(
         "SELECT $fields_slot FROM history, buckets
          LEFT JOIN magnets ON magnets.id = history.magnetid
@@ -296,7 +309,7 @@ method get_slot_fields ($slot) {
            AND buckets.id = history.bucketid
            AND history.committed = 1");
     $sth->execute($slot);
-    return $sth->fetchrow_array
+    return $sth->fetchrow_array()
 }
 
 =head2 is_valid_slot($slot)
@@ -314,12 +327,9 @@ method is_valid_slot ($slot) {
            AND history.committed = 1');
     $sth->execute($slot);
     my @row = $sth->fetchrow_array;
-    return (@row && $row[0] == $slot);
+    return (@row && $row[0] == $slot)
 }
 
-#----------------------------------------------------------------------------
-# commit_history — flushes the COMIT queue to the database
-#----------------------------------------------------------------------------
 method commit_history() {
     return
         unless $commit_list->@*;
@@ -395,6 +405,7 @@ method commit_history() {
     $update_history->finish();
     $commit_list = [];
     $queries->invalidate_all();
+    return
 }
 
 =head2 delete_slot($slot, $archive)
@@ -411,8 +422,8 @@ method delete_slot ($slot, $archive) {
         unless defined $slot && $slot =~ /^\d+$/;
     my $file = $self->get_slot_file($slot);
     $self->log_msg(DEBUG => "delete_slot called for slot $slot, file $file");
-    if ($archive && $self->config('archive')) {
-        my $path = $self->get_user_path($self->config('archive_dir'), 0);
+    if (($self->config->get('archive') // $DEFAULTS{archive}) && $archive) {
+        my $path = $self->get_user_path(($self->config->get('archive_dir') // $DEFAULTS{archive_dir}), 0);
         path($path)->mkpath;
         my $qb = $self->qb();
         my $select = $qb->select('buckets.name')
@@ -428,8 +439,8 @@ method delete_slot ($slot, $archive) {
             && $bucket_name ne 'unknown class') {
             $path .= '/' . $bucket_name;
             path($path)->mkpath;
-            if ($self->config('archive_classes') > 0) {
-                my $subdir = int(rand($self->config('archive_classes')));
+            if (($self->config->get('archive_classes') // $DEFAULTS{archive_classes}) > 0) {
+                my $subdir = int(rand(($self->config->get('archive_classes') // $DEFAULTS{archive_classes})));
                 $path .= '/' . $subdir;
                 path($path)->mkpath;
             }
@@ -438,6 +449,7 @@ method delete_slot ($slot, $archive) {
     }
     $self->release_slot($slot);
     $queries->invalidate_all();
+    return
 }
 
 =head2 get_slot_file($slot)
@@ -460,7 +472,7 @@ method get_slot_file ($slot) {
     path($path)->mkpath;
     $path .= substr($hex_slot, 4, 2) . '/';
     path($path)->mkpath;
-    return $path . 'popfile' . substr($hex_slot, 6, 2) . '.msg';
+    return $path . 'popfile' . substr($hex_slot, 6, 2) . '.msg'
 }
 
 =head2 get_message_hash($messageid, $date, $subject, $received)
@@ -477,7 +489,7 @@ method get_message_hash ($messageid, $date, $subject, $received) {
     $date //= '';
     $subject //= '';
     $received //= '';
-    return md5_hex("[$messageid][$date][$subject][$received]");
+    return md5_hex("[$messageid][$date][$subject][$received]")
 }
 
 =head2 get_slot_from_hash($hash)
@@ -494,7 +506,7 @@ method get_slot_from_hash ($hash) {
     $sth->execute($hash);
     my $result = $sth->fetchrow_arrayref;
 
-    return defined($result) ? $result->[0] : '';
+    return defined($result) ? $result->[0] : ''
 }
 
 =head2 set_query($id, $filter, $search, $sort, $not)
@@ -504,7 +516,8 @@ Delegates to L<POPFile::HistoryQueries/set>.
 =cut
 
 method set_query ($id, $filter, $search, $sort, $not) {
-    $queries->set($id, $filter, $search, $sort, $not, $self->get_handle())
+    $queries->set($id, $filter, $search, $sort, $not, $self->get_handle());
+    return
 }
 
 =head2 delete_query($id)
@@ -521,6 +534,7 @@ method delete_query ($id) {
             $self->delete_slot($slot_id, 1)
         }
     });
+    return
 }
 
 =head2 cleanup_history()
@@ -532,7 +546,7 @@ Called automatically on each C<TICKD> message-queue event (i.e. once per day).
 
 method cleanup_history() {
     my $seconds_per_day = 24 * 60 * 60;
-    my $cutoff_time = time - $self->config('history_days') * $seconds_per_day;
+    my $cutoff_time = time - ($self->config->get('history_days') // $DEFAULTS{history_days}) * $seconds_per_day;
     my $sth = $self->get_handle()->prepare_cached(
         'SELECT id FROM history WHERE inserted < ?');
     $sth->execute($cutoff_time);
@@ -541,6 +555,7 @@ method cleanup_history() {
     for my $id (@ids) {
         $self->delete_slot($id, 1);
     }
+    return
 }
 
 1;
