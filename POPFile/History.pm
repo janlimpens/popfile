@@ -56,8 +56,6 @@ class POPFile::History
 
     field $queries :reader;
 
-    field $firsttime = 1;
-
     field $classifier :writer(set_classifier) = 0;
 
     BUILD {
@@ -124,18 +122,12 @@ method start () {
 
 =head2 service
 
-Called periodically so that the module can do its work. On the first call
-triggers the legacy history file upgrade, then flushes the commit queue.
-
-Returns 1.
+Called periodically so that the module can do its work. Flushes the
+pending commit queue. Returns 1.
 
 =cut
 
 method service() {
-    if ($firsttime) {
-        $self->upgrade_history_files();
-        $firsttime = 0;
-    }
     $self->commit_history();
     return 1;
 }
@@ -564,76 +556,6 @@ method make_directory ($path) {
     return 1
         if -d $path;
     return make_path($path);
-}
-
-sub _cmp_history_file {
-    $a =~ /popfile(\d+)=(\d+)\.msg/;
-    my ($ad, $am) = ($1, $2);
-    $b =~ /popfile(\d+)=(\d+)\.msg/;
-    my ($bd, $bm) = ($1, $2);
-    return $ad == $bd
-        ? $bm <=> $am
-        : $bd <=> $ad;
-}
-
-method upgrade_history_files() {
-    my @msgs = sort _cmp_history_file glob $self->get_user_path(
-        $self->global_config('msgdir') . 'popfile*.msg', 0);
-    return
-        unless @msgs;
-    my $session = $classifier->get_session_key('admin', '');
-    print "\nFound old history files, moving them into database\n    ";
-    my $i = 0;
-    $self->_txn(sub {
-        for my $msg (@msgs) {
-            if ((++$i % 100) == 0) {
-                print "[$i]";
-                STDOUT->flush();
-            }
-            my ($reclassified, $bucket) = $self->history_read_class($msg);
-            if ($bucket ne 'unknown_class') {
-                my ($slot, $file) = $self->reserve_slot();
-                rename $msg, $file;
-                push $commit_list->@*, [$session, $slot, $bucket, 0];
-            }
-        }
-    });
-    print "\nDone upgrading history\n";
-    $self->commit_history();
-    $classifier->release_session_key($session);
-    unlink $self->get_user_path(
-        $self->global_config('msgdir') . 'history_cache', 0);
-}
-
-method history_read_class ($filename) {
-    $filename =~ s/msg$/cls/;
-    my $reclassified = 0;
-    my $bucket = 'unknown class';
-    my $usedtobe;
-    my $magnet = '';
-    if (open my $class_fh, '<', $filename) {
-        $bucket = <$class_fh>;
-        if (defined($bucket)
-            && ($bucket =~ /([^ ]+) MAGNET ([^\r\n]+)/)) {
-            $bucket = $1;
-            $magnet = $2;
-        }
-        $reclassified = 0;
-        if (defined($bucket) && ($bucket =~ /RECLASSIFIED/)) {
-            $bucket = <$class_fh>;
-            $usedtobe = <$class_fh>;
-            $reclassified = 1;
-            $usedtobe =~ s/[\r\n]//g;
-        }
-        close $class_fh;
-        $bucket =~ s/[\r\n]//g
-            if defined($bucket);
-        unlink $filename;
-    } else {
-        return (undef, $bucket, undef, undef);
-    }
-    $bucket //= 'unknown class';
-    return ($reclassified, $bucket, $usedtobe, $magnet);
 }
 
 =head2 cleanup_history()
