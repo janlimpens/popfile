@@ -2729,7 +2729,7 @@ method delete_bucket ($session, $bucket) {
         unless defined $db_bucketid->{$userid}{$bucket};
     $buckets->delete_from_db($self->db(), $userid, $bucket);
     $self->db_update_cache($session, undef, $bucket);
-    $history->force_requery();
+    $history->queries()->invalidate_all();
     return 1
 }
 
@@ -2761,7 +2761,7 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
     $buckets->rename_in_db($self->db(),
         $db_bucketid->{$userid}{$old_bucket}{id}, $new_bucket);
     $self->db_update_cache($session, $new_bucket, $old_bucket);
-    $history->force_requery();
+    $history->queries()->invalidate_all();
     return 1
 }
 
@@ -3021,7 +3021,7 @@ method delete_magnet ($session, $bucket, $type, $text) {
     return 0
         unless defined $db_bucketid->{$userid}{$bucket};
     return $magnets->delete($self->db(), $db_bucketid->{$userid}{$bucket}{id}, $type, $text,
-        sub { $history->force_requery() })
+        sub { $history->queries()->invalidate_all() })
 }
 
 =head2 get_stopword_list

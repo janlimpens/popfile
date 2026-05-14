@@ -75,5 +75,8 @@ sub is_pseudo_bucket { 0 }
 
 package ImapPollSyncTest::StubHistory;
 sub new { bless {}, shift }
-sub force_requery {}
+sub queries { bless {}, 'ImapPollSyncTest::StubQueries' }
 sub get_slot_from_hash { '' }
+
+package ImapPollSyncTest::StubQueries;
+sub invalidate_all {}

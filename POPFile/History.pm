@@ -13,7 +13,7 @@ Stores and retrieves classified messages in the POPFile database.  Each
 message that passes through a proxy is recorded in the C<history> table with
 its classification result, sender, subject, and other header fields.
 
-The module supports paged queries (C<start_query>/C<get_query_rows>),
+The module supports paged queries via C<POPFile::HistoryQueries>,
 on-the-fly reclassification, slot reservation for messages still in
 transit, and periodic cleanup of old entries based on the
 C<history_days> configuration parameter.
@@ -264,7 +264,7 @@ method change_slot_classification ($slot, $class, $session, $undo) {
         'UPDATE history SET bucketid = ?, usedtobe = ?
          WHERE id = ?',
         undef, $bucketid, $oldbucketid, $slot);
-    $self->force_requery();
+    $queries->invalidate_all();
 }
 
 =head2 set_message_id($slot, $mid)
@@ -297,7 +297,7 @@ method revert_slot_classification ($slot) {
         'UPDATE history SET bucketid = ?, usedtobe = ?
          WHERE id = ?',
         undef, $oldbucketid, 0, $slot);
-    $self->force_requery();
+    $queries->invalidate_all();
 }
 
 =head2 get_slot_fields($slot)
@@ -418,7 +418,7 @@ method commit_history() {
     });
     $update_history->finish();
     $commit_list = [];
-    $self->force_requery();
+    $queries->invalidate_all();
 }
 
 =head2 delete_slot($slot, $archive)
@@ -461,7 +461,7 @@ method delete_slot ($slot, $archive) {
         }
     }
     $self->release_slot($slot);
-    $self->force_requery();
+    $queries->invalidate_all();
 }
 
 =head2 get_slot_file($slot)
@@ -521,29 +521,6 @@ method get_slot_from_hash ($hash) {
     return defined($result) ? $result->[0] : '';
 }
 
-=head2 start_query()
-
-Allocates a new query session and returns a unique ID string.  The session
-holds a result cache and must be released with C<stop_query()> when no longer
-needed.  Use C<set_query()> to specify filter and sort options, then retrieve
-rows with C<get_query_rows()>.
-
-=cut
-
-method start_query() {
-    return $queries->start()
-}
-
-=head2 stop_query($id)
-
-Releases the query session identified by C<$id>.
-
-=cut
-
-method stop_query ($id) {
-    $queries->stop($id)
-}
-
 =head2 set_query($id, $filter, $search, $sort, $not)
 
 Delegates to L<POPFile::HistoryQueries/set>.
@@ -552,16 +529,6 @@ Delegates to L<POPFile::HistoryQueries/set>.
 
 method set_query ($id, $filter, $search, $sort, $not) {
     $queries->set($id, $filter, $search, $sort, $not, $self->db())
-}
-
-=head2 get_search_queries(%args)
-
-Delegates to L<POPFile::HistoryQueries/search>.
-
-=cut
-
-method get_search_queries(%args) {
-    return $queries->search($self->db(), %args)
 }
 
 =head2 delete_query($id)
@@ -578,27 +545,6 @@ method delete_query ($id) {
             $self->delete_slot($slot_id, 1)
         }
     });
-}
-
-=head2 get_query_size($id)
-
-Returns the total number of rows matched by the query C<$id>.
-
-=cut
-
-method get_query_size ($id) {
-    return $queries->session_count($id)
-}
-
-=head2 get_query_rows($id, $start, $count)
-
-Returns C<$count> rows starting at 1-based position C<$start> from the result
-set of query C<$id>.
-
-=cut
-
-method get_query_rows ($id, $start, $count) {
-    return $queries->rows($id, $start, $count)
 }
 
 # ---------------------------------------------------------------------------
@@ -620,7 +566,7 @@ method make_directory ($path) {
     return make_path($path);
 }
 
-sub compare_mf__ {
+sub _cmp_history_file {
     $a =~ /popfile(\d+)=(\d+)\.msg/;
     my ($ad, $am) = ($1, $2);
     $b =~ /popfile(\d+)=(\d+)\.msg/;
@@ -631,7 +577,7 @@ sub compare_mf__ {
 }
 
 method upgrade_history_files() {
-    my @msgs = sort compare_mf__ glob $self->get_user_path(
+    my @msgs = sort _cmp_history_file glob $self->get_user_path(
         $self->global_config('msgdir') . 'popfile*.msg', 0);
     return
         unless @msgs;
@@ -722,18 +668,6 @@ method copy_file ($from, $to_dir, $to_name) {
         }
         close $from_fh;
     }
-}
-
-=head2 force_requery()
-
-Invalidates the result caches of all open query sessions so that the next call
-to C<get_query_rows()> re-executes the query against the database.  Called
-automatically after any write operation.
-
-=cut
-
-method force_requery() {
-    $queries->invalidate_all()
 }
 
 1;

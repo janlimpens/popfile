@@ -202,7 +202,11 @@ sub setup_mojo_services {
 # ---------------------------------------------------------------------------
 package TestHelper::History;
 
-sub force_requery {}
+sub queries { bless {}, 'TestHelper::History::Queries' }
+
+package TestHelper::History::Queries;
+
+sub invalidate_all {}
 
 # ---------------------------------------------------------------------------
 # Stub MQ

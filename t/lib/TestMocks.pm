@@ -58,10 +58,13 @@ sub remove_message_from_bucket ($self, $bucket, $file) {
 package TestMocks::MockHist;
 
 sub new ($class, %args) {
-    bless { slots => $args{slots} // {}, mid_log => [], queries => {}, next_qid => 1, %args }, $class
+    bless { slots => $args{slots} // {}, mid_log => [], _query_state => {}, next_qid => 1, %args }, $class
 }
 
-sub get_search_queries ($self, %args) {
+sub queries ($self) { $self }
+sub db ($self) { undef }
+
+sub search ($self, $dbh, %args) {
     my $bucket   = $args{bucket} // '';
     my $search   = $args{search} // '';
     my $page     = $args{page}   // 1;
@@ -114,28 +117,28 @@ sub is_valid_slot ($self, $slot) {
 
 sub get_slot_from_hash ($self, $hash) { '' }
 
-sub start_query ($self) {
+sub start ($self) {
     my $qid = $self->{next_qid}++;
-    $self->{queries}{$qid} = { filter => '', search => '' };
+    $self->{_query_state}{$qid} = { filter => '', search => '' };
     return $qid
 }
 
-sub stop_query ($self, $qid) { delete $self->{queries}{$qid} }
+sub stop ($self, $qid) { delete $self->{_query_state}{$qid} }
 
 sub set_query ($self, $qid, $filter, $search, $sort, $not) {
-    $self->{queries}{$qid}{filter} = $filter // '';
-    $self->{queries}{$qid}{search} = $search // '';
+    $self->{_query_state}{$qid}{filter} = $filter // '';
+    $self->{_query_state}{$qid}{search} = $search // '';
 }
 
-sub get_query_size ($self, $qid) {
-    my $filter = $self->{queries}{$qid}{filter} // '';
+sub session_count ($self, $qid) {
+    my $filter = $self->{_query_state}{$qid}{filter} // '';
     my @matching = grep { $filter eq '' || $self->{slots}{$_}{bucket} eq $filter }
         keys $self->{slots}->%*;
     return scalar @matching
 }
 
-sub get_query_rows ($self, $qid, $start, $count) {
-    my $filter = $self->{queries}{$qid}{filter} // '';
+sub rows ($self, $qid, $start, $count) {
+    my $filter = $self->{_query_state}{$qid}{filter} // '';
     my @ids = sort { $a <=> $b } grep {
         $filter eq '' || $self->{slots}{$_}{bucket} eq $filter
     } keys $self->{slots}->%*;

@@ -89,7 +89,7 @@ sub list_history ($self) {
     $per_page = $per_page_default
         if $per_page < 1 || $per_page > $max_per_page;
     my $hist = $svc->history_obj();
-    my ($total, $rows) = $hist->get_search_queries(
+    my ($total, $rows) = $hist->queries()->search($hist->db(),
         $bucket ? (bucket => $bucket) : (),
         $search ? (search => $search) : (),
         page => $page,
@@ -112,11 +112,11 @@ sub reclassify_unclassified ($self) {
     my $svc = $self->popfile_svc;
     my $session = $self->popfile_session;
     my $hist = $svc->history_obj();
-    my $qid = $hist->start_query();
+    my $qid = $hist->queries()->start();
     $hist->set_query($qid, 'unclassified', '', '-inserted', 0);
-    my $total = $hist->get_query_size($qid);
-    my @rows = $hist->get_query_rows($qid, 1, $total);
-    $hist->stop_query($qid);
+    my $total = $hist->queries()->session_count($qid);
+    my @rows = $hist->queries()->rows($qid, 1, $total);
+    $hist->queries()->stop($qid);
     my $updated = 0;
     for my $row (@rows) {
         next unless defined $row;
