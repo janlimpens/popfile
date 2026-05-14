@@ -107,7 +107,7 @@ field $corpus :reader = undef;
 field $stopwords :reader = undef;
 field $schema :reader = undef;
 
-field $db_name = '';
+field $db_name :reader = '';
 
 BUILD {
     $self->set_name('bayes');
@@ -211,8 +211,6 @@ method initialize() {
     $self->mq_register('COMIT', $self);
     $self->mq_register('RELSE', $self);
 
-    $self->mq_register('TICKD', $self);
-
     return 1;
 }
 
@@ -230,8 +228,6 @@ method deliver ($type, @message) {
             $self->classified($message[0], $message[2]);
         } elsif ($type eq 'RELSE') {
             $sessions->remove_session($message[0]);
-        } elsif ($type eq 'TICKD') {
-            $self->backup_database();
         }
     }
 }
@@ -322,24 +318,6 @@ method classified ($session, $class) {
         $class,
         'count',
         $self->get_bucket_parameter($session, $class, 'count') + 1)
-}
-
-=head2 backup_database
-
-Called when the TICKD message is received each hour and if we are using
-the default SQLite database will make a copy with the .backup extension
-
-=cut
-
-method backup_database() {
-    # If database backup is turned on and we are using SQLite then
-    # backup the database by copying it
-    # TODO: separate implementations
-    if ($self->config('sqlite_backup') && $self->is_sqlite()) {
-        unless (copy($db_name, "$db_name.backup")) {
-            $self->log_msg(WARN => "Failed to backup database ".$db_name);
-        }
-    }
 }
 
 =head2 reclassified

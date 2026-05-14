@@ -4,6 +4,7 @@
 package Services::Classifier;
 
 use Object::Pad;
+use File::Copy qw(copy);
 use locale;
 
 class Services::Classifier :isa(POPFile::Module);
@@ -42,6 +43,7 @@ BUILD {
 
 method start() {
     $session = $classifier->get_session_key('admin', '');
+    $self->mq_register('TICKD', $self);
     return defined($session) ? 1 : 0;
 }
 
@@ -56,6 +58,18 @@ method stop() {
         $classifier->release_session_key($session);
         $session = '';
     }
+}
+
+method deliver ($type, @message) {
+    $self->backup_database()
+        if $type eq 'TICKD';
+}
+
+method backup_database() {
+    return
+        unless $classifier->config('sqlite_backup') && $classifier->is_sqlite();
+    copy($classifier->db_name(), "$classifier->{db_name}.backup")
+        or $self->log_msg(WARN => "Failed to backup database");
 }
 
 =head1 CLASSIFICATION
