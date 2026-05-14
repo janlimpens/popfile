@@ -50,7 +50,7 @@ class POPFile::History
 
     use Date::Parse;
     use Digest::MD5 qw(md5_hex);
-    use File::Path qw(make_path);
+    use Path::Tiny qw(path);
 
     field $commit_list = [];
 
@@ -429,7 +429,7 @@ method delete_slot ($slot, $archive) {
     $self->log_msg(DEBUG => "delete_slot called for slot $slot, file $file");
     if ($archive && $self->config('archive')) {
         my $path = $self->get_user_path($self->config('archive_dir'), 0);
-        $self->make_directory($path);
+        path($path)->mkpath;
         my $qb = $self->qb();
         my $select = $qb->select('buckets.name')
             ->from(qw(history buckets))
@@ -443,13 +443,13 @@ method delete_slot ($slot, $archive) {
         if ($bucket_name ne 'unclassified'
             && $bucket_name ne 'unknown class') {
             $path .= '/' . $bucket_name;
-            $self->make_directory($path);
+            path($path)->mkpath;
             if ($self->config('archive_classes') > 0) {
                 my $subdir = int(rand($self->config('archive_classes')));
                 $path .= '/' . $subdir;
-                $self->make_directory($path);
+                path($path)->mkpath;
             }
-            $self->copy_file($file, $path, "popfile$slot.msg");
+            path($file)->copy("$path/popfile$slot.msg");
         }
     }
     $self->release_slot($slot);
@@ -471,11 +471,11 @@ method get_slot_file ($slot) {
     my $path = $self->get_user_path(
         $self->global_config('msgdir')
         . substr($hex_slot, 0, 2) . '/', 0);
-    $self->make_directory($path);
+    path($path)->mkpath;
     $path .= substr($hex_slot, 2, 2) . '/';
-    $self->make_directory($path);
+    path($path)->mkpath;
     $path .= substr($hex_slot, 4, 2) . '/';
-    $self->make_directory($path);
+    path($path)->mkpath;
     return $path . 'popfile' . substr($hex_slot, 6, 2) . '.msg';
 }
 
@@ -539,25 +539,6 @@ method delete_query ($id) {
     });
 }
 
-# ---------------------------------------------------------------------------
-#
-# make_directory__
-#
-# Wrapper for mkdir that ensures that the path we are making doesn't end in
-# / or \ (Done because your can't do mkdir 'foo/' on NextStep.
-#
-# $path        The directory to make
-#
-# Returns whatever mkdir returns
-#
-# ---------------------------------------------------------------------------
-method make_directory ($path) {
-    $path =~ s/[\\\/]$//;
-    return 1
-        if -d $path;
-    return make_path($path);
-}
-
 =head2 cleanup_history()
 
 Deletes history entries older than C<history_days> configuration days.
@@ -575,20 +556,6 @@ method cleanup_history() {
     $sth->finish();
     for my $id (@ids) {
         $self->delete_slot($id, 1);
-    }
-}
-
-method copy_file ($from, $to_dir, $to_name) {
-    if (open my $from_fh, '<', $from) {
-        if (open my $to_fh, '>', "$to_dir/$to_name") {
-            binmode $from_fh;
-            binmode $to_fh;
-            while (<$from_fh>) {
-                print $to_fh $_;
-            }
-            close $to_fh;
-        }
-        close $from_fh;
     }
 }
 

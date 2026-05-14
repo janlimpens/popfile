@@ -28,6 +28,7 @@ requires 'Mojolicious', '9.0';
 requires 'Net::DNS::Native', '0';
 requires 'Net::SSLeay', '0';
 requires 'Object::Pad', '0.800';
+requires 'Path::Tiny', '0';
 requires 'Role::Tiny', '0';
 
 # carton exec cpanm -L local --notest Module::Name
