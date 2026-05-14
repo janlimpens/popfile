@@ -13,6 +13,7 @@ use File::Temp qw(tempdir);
 use FindBin    qw($Bin);
 use Cwd qw(abs_path);
 use POPFile::Database;
+use POPFile::Config;
 
 our $REPO_ROOT = abs_path("$Bin/..");
 
@@ -81,6 +82,7 @@ sub configure_db($config) {
         database => $database,
         dbuser => $dbuser,
         dbauth => $dbauth);
+    POPFile::Config->instance()->load($config);
 }
 
 # ---------------------------------------------------------------------------

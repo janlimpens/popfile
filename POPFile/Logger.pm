@@ -9,10 +9,19 @@ use Log::Any::Adapter;
 use Mojo::IOLoop;
 use POSIX qw(strftime);
 use POPFile::Log::Adapter;
+use POPFile::Role::Config;
 
 my $seconds_per_day = 60 * 60 * 24;
 
-class POPFile::Logger :isa(POPFile::Module);
+class POPFile::Logger
+    :isa(POPFile::Module)
+    :does(POPFile::Role::Config);
+
+    my %DEFAULTS = (
+        format => 'default',
+        level => 0,
+        log_to_stdout => 0,
+        log_sql => 0);
 
 =head1 NAME
 
@@ -54,12 +63,8 @@ message-queue event.  Returns 1.
 =cut
 
 method initialize() {
-    $self->global_config('debug', 1);
-    $self->config('logdir', $self->_default_log_dir());
-    $self->config('format', 'default');
-    $self->config('level', 0);
-    $self->config('log_to_stdout', 0);
-    $self->config('log_sql', 0);
+    $self->module_config('GLOBAL', 'debug', 1);
+    $self->module_config('logger', 'logdir', $self->_default_log_dir());
     $self->mq_register('TICKD', $self);
     return 1
 }
@@ -97,7 +102,7 @@ message.  Returns 1.
 =cut
 
 method start() {
-    my $dir = $self->get_user_path($self->config('logdir'), 0);
+    my $dir = $self->get_user_path($self->module_config('logger', 'logdir'), 0);
     make_path($dir) unless -d $dir;
     $self->calculate_today();
     $self->_reconfigure_adapter();
@@ -138,10 +143,10 @@ not changed since the last call.
 method calculate_today() {
     my $new_today = int($self->time / $seconds_per_day) * $seconds_per_day;
     return if $new_today == $today;
-    my $log = $self->get_user_path($self->config('logdir') . 'popfile.log', 0);
+    my $log = $self->get_user_path($self->module_config('logger', 'logdir') . 'popfile.log', 0);
     if ($today != 0 && defined $log && -f $log) {
         my $dated = $self->get_user_path(
-            $self->config('logdir') . strftime('popfile-%Y-%m-%d.log', localtime($today)), 0);
+            $self->module_config('logger', 'logdir') . strftime('popfile-%Y-%m-%d.log', localtime($today)), 0);
         rename $log, $dated;
     }
     $today = $new_today;
@@ -153,14 +158,14 @@ method reconfigure() {
 }
 
 method _reconfigure_adapter() {
-    my $debug = $self->global_config('debug') // 0;
+    my $debug = ($self->config('GLOBAL')->get('debug')) // 0;
     POPFile::Log::Adapter->configure(
         to_file => ($debug & 1) ? 1 : 0,
-        to_stdout => $self->config('log_to_stdout') ? 1 : 0,
+        to_stdout => ($self->config->get('log_to_stdout') // $DEFAULTS{log_to_stdout}) ? 1 : 0,
         filename => $debug_filename,
-        popfile_level => $self->config('level') // 0,
-        log_sql => $self->config('log_sql') ? 1 : 0,
-        format => $self->config('format') // 'default',
+        popfile_level => ($self->config->get('level') // $DEFAULTS{level}) // 0,
+        log_sql => ($self->config->get('log_sql') // $DEFAULTS{log_sql}) ? 1 : 0,
+        format => ($self->config->get('format') // $DEFAULTS{format}) // 'default',
     );
     Log::Any::Adapter->set('+POPFile::Log::Adapter');
 }
@@ -176,7 +181,7 @@ never removed.
 method remove_debug_files() {
     my $cutoff = strftime('%Y-%m-%d', localtime($self->time - 3 * $seconds_per_day));
     my @files = glob($self->get_user_path(
-        $self->config('logdir') . 'popfile-????-??-??.log', 0));
+        $self->module_config('logger', 'logdir') . 'popfile-????-??-??.log', 0));
     for my $f (@files) {
         next unless $f =~ /popfile-(\d{4}-\d{2}-\d{2})\.log$/;
         my $date = $1;
@@ -194,7 +199,7 @@ level if C<$level> is within the configured C<level> threshold.
 
 method debug ($level, $message) {
     Log::Any->get_logger(category => 'POPFile')->info($message)
-        if $level <= ($self->config('level') // 0);
+        if $level <= (($self->config->get('level') // $DEFAULTS{level}) // 0);
 }
 
 =head2 debug_filename()
