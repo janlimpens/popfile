@@ -68,7 +68,8 @@ method deliver ($type, @message) {
 method backup_database() {
     return
         unless $classifier->config('sqlite_backup') && $classifier->is_sqlite();
-    copy($classifier->db_name(), "$classifier->{db_name}.backup")
+    my $db_name = $classifier->db_name();
+    copy($db_name, "$db_name.backup")
         or $self->log_msg(WARN => "Failed to backup database");
 }
 
