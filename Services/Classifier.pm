@@ -332,14 +332,54 @@ Returns the total number of magnets defined.
 
 =cut
 
-method get_buckets_with_magnets()             { $classifier->get_buckets_with_magnets($session) }
-method get_magnet_types()                     { $classifier->get_magnet_types($session) }
-method get_magnet_types_in_bucket ($b)      { $classifier->get_magnet_types_in_bucket($session, $b) }
-method get_magnets ($b, $t)                 { $classifier->get_magnets($session, $b, $t) }
-method create_magnet ($b, $t, $text)        { $classifier->create_magnet($session, $b, $t, $text) }
-method delete_magnet ($b, $t, $text)        { $classifier->delete_magnet($session, $b, $t, $text) }
-method clear_magnets()                        { $classifier->clear_magnets($session) }
-method magnet_count()                         { $classifier->magnet_count($session) }
+method get_buckets_with_magnets() {
+    my $userid = $classifier->valid_session_key($session);
+    return
+        unless defined $userid;
+    return $classifier->magnets()->get_buckets_with($classifier->get_handle(), $userid)
+}
+method get_magnet_types()             { $classifier->magnets()->get_types($classifier->get_handle()) }
+method get_magnet_types_in_bucket ($b) {
+    my $userid = $classifier->valid_session_key($session);
+    return
+        unless defined $userid;
+    return $classifier->magnets()->get_types_in_bucket($classifier->get_handle(),
+        $classifier->get_bucket_id($session, $b))
+}
+method get_magnets ($b, $t) {
+    my $userid = $classifier->valid_session_key($session);
+    return
+        unless defined $userid;
+    return $classifier->magnets()->get($classifier->get_handle(),
+        $classifier->get_bucket_id($session, $b), $t)
+}
+method create_magnet ($b, $t, $text) {
+    my $userid = $classifier->valid_session_key($session);
+    return
+        unless defined $userid;
+    return $classifier->magnets()->create($classifier->get_handle(),
+        $classifier->get_bucket_id($session, $b), $t, $text)
+}
+method delete_magnet ($b, $t, $text) {
+    my $userid = $classifier->valid_session_key($session);
+    return
+        unless defined $userid;
+    return $classifier->magnets()->delete($classifier->get_handle(),
+        $classifier->get_bucket_id($session, $b), $t, $text,
+        sub { $history->queries()->invalidate_all() })
+}
+method clear_magnets() {
+    my $userid = $classifier->valid_session_key($session);
+    return
+        unless defined $userid;
+    return $classifier->magnets()->clear($classifier->get_handle(), $userid)
+}
+method magnet_count() {
+    my $userid = $classifier->valid_session_key($session);
+    return
+        unless defined $userid;
+    return $classifier->magnets()->count($classifier->get_handle(), $userid)
+}
 
 =head1 STOPWORDS
 
