@@ -22,14 +22,14 @@ method _connect ($dsn, %opts) {
     }
     $_mojo->options(\%opts)
         if %opts;
-    $_mojo_db = $_mojo->db;
-    my $dbh = $_mojo_db->dbh;
+    $_mojo_db = $_mojo->db();
+    my $dbh = $_mojo_db->dbh();
     $self->_apply_sqlite_optimizations($dbh);
     return $dbh
 }
 
-method db () {
-    return defined $_mojo_db ? $_mojo_db->dbh : undef
+method get_handle () {
+    return defined $_mojo_db ? $_mojo_db->dbh() : undef
 }
 
 method mojo () { return $_mojo }

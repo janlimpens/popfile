@@ -114,7 +114,7 @@ sub setup_bayes($config, $mq) {
 # Returns a fresh session key.
 # ---------------------------------------------------------------------------
 sub reset_db($bayes, $config) {
-    my $db = $bayes->db();
+    my $db = $bayes->get_handle();
     $db->do('delete from history');
     $db->do('delete from matrix');
     $db->do('delete from words');

@@ -215,10 +215,10 @@ subtest 'matrix integrity after training (regression #170)' => sub {
     }
     my $wc = $bayes->get_bucket_word_count($session, 'spam2');
     ok( $wc > 0, "spam2 has $wc words after training" );
-    my $null_bucket_rows = $bayes->db()->selectrow_array(
+    my $null_bucket_rows = $bayes->get_handle()->selectrow_array(
         'SELECT COUNT(*) FROM matrix WHERE bucketid IS NULL');
     is( $null_bucket_rows, 0, 'no matrix rows with NULL bucketid' );
-    my $spam2_matrix_count = $bayes->db()->selectrow_array(
+    my $spam2_matrix_count = $bayes->get_handle()->selectrow_array(
         'SELECT COUNT(*) FROM matrix m JOIN buckets b ON m.bucketid = b.id WHERE b.name = ?',
         undef, 'spam2');
     ok( $spam2_matrix_count > 0, "spam2 has $spam2_matrix_count matrix entries" );

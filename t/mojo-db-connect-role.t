@@ -30,10 +30,10 @@ subtest '_connect returns a DBI handle' => sub {
     ok($dbh->ping(), 'handle is alive after connect');
 };
 
-subtest 'db() returns the same live DBI handle' => sub {
-    my $dbh = $obj->db();
-    ok(defined $dbh, 'db() is defined');
-    ok($dbh->ping(), 'db() handle is alive');
+subtest 'get_handle() returns the same live DBI handle' => sub {
+    my $dbh = $obj->get_handle();
+    ok(defined $dbh, 'get_handle() is defined');
+    ok($dbh->ping(), 'get_handle() handle is alive');
 };
 
 subtest 'mojo() returns a Mojo::SQLite instance' => sub {
@@ -44,7 +44,7 @@ subtest 'mojo() returns a Mojo::SQLite instance' => sub {
 
 subtest '_disconnect clears both db and mojo' => sub {
     $obj->_disconnect();
-    ok(!defined $obj->db(), 'db() undef after disconnect');
+    ok(!defined $obj->get_handle(), 'get_handle() undef after disconnect');
     ok(!defined $obj->mojo(), 'mojo() undef after disconnect');
 };
 

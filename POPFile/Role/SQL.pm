@@ -20,7 +20,7 @@ my %driver_map = (
 method qb() {
     return $_qb
         if defined $_qb;
-    my $driver = $self->db()->{Driver}{Name} // 'SQLite';
+    my $driver = $self->get_handle()->{Driver}{Name} // 'SQLite';
     my $dialect = $driver_map{$driver} // 'sqlite';
     $_qb = Query::Builder->new(dialect => $dialect);
     return $_qb
@@ -46,7 +46,7 @@ method check_for_nullbytes ($string) {
 }
 
 method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
-    my $dbh = $self->db()
+    my $dbh = $self->get_handle()
         or croak 'Could not get handle';
     my $sth;
     if ((ref $sql_or_sth) =~ m/^DBI::/) {

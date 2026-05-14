@@ -62,7 +62,7 @@ sub new ($class, %args) {
 }
 
 sub queries ($self) { $self }
-sub db ($self) { undef }
+sub get_handle ($self) { undef }
 
 sub search ($self, $dbh, %args) {
     my $bucket   = $args{bucket} // '';

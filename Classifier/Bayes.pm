@@ -508,7 +508,7 @@ method get_base_value ($session, $bucket, $word) {
     my $userid = $self->valid_session_key($session);
     return 0
         unless defined $userid;
-    return $corpus->word_count_get($self->db(),
+    return $corpus->word_count_get($self->get_handle(),
         $db_bucketid->{$userid}{$bucket}{id}, $word) // 0
 }
 
@@ -524,7 +524,7 @@ method set_value ($session, $bucket, $word, $value) {
     return 0
         unless defined $userid;
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    $corpus->word_count_set($self->db(), $bucketid, $word, $value);
+    $corpus->word_count_set($self->get_handle(), $bucketid, $word, $value);
     $self->validate_sql_prepare_and_execute(
         $db_delete_zero_words, $bucketid);
     return 1
@@ -650,7 +650,7 @@ method db_connect() {
         $dsn = "postgresql://$user:$auth\@$host/$dbname";
     }
     $self->_connect($dsn, %connection_options);
-    my $db = $self->db();
+    my $db = $self->get_handle();
     unless (defined($db)) {
         $self->log_msg(WARN => "Failed to connect to database and got error $DBI::errstr");
         return 0;
@@ -751,7 +751,7 @@ method insert_schema ($sqlite) {
             $schema .= $_;
 
             if (/end;/ || (/\);/) || (/^alter/i)) {
-                $self->db()->do($schema);
+                $self->get_handle()->do($schema);
                 $schema = '';
             }
         }
@@ -770,7 +770,7 @@ Upgrade the POPFile schema by dumping, recreating, and restoring data.
 =cut
 
 method db_upgrade() {
-    my $db = $self->db();
+    my $db = $self->get_handle();
     my $is_sqlite = ($db->{Driver}->{Name} =~ /SQLite/);
 
     my $sqlquotechar = $db->get_info(29) || '';
@@ -830,7 +830,7 @@ method db_upgrade() {
                 if ($t->{TYPE}->[$i] !~ /^int/i) {
                     $val = '' unless (defined($val));
                     $val =~ s/\x00//g;
-                    $val = $self->db()->quote($val);
+                    $val = $self->get_handle()->quote($val);
                 } else {
                     $val = 'NULL' unless (defined($val));
                 }
@@ -916,8 +916,8 @@ method db_update_cache ($session, $updated_bucket = undef, $deleted_bucket = und
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-    $buckets->refresh_id_cache($self->db(), $db_bucketid, $userid);
-    $corpus->refresh_counts($self->db(), $db_bucketcount, $db_bucketunique,
+    $buckets->refresh_id_cache($self->get_handle(), $db_bucketid, $userid);
+    $corpus->refresh_counts($self->get_handle(), $db_bucketcount, $db_bucketunique,
         $db_bucketid, $userid, $updated_bucket, $deleted_bucket);
     $self->update_constants($session);
 }
@@ -950,7 +950,7 @@ method magnet_match_helper ($session, $match, $bucket, $type) {
     return 0
         unless defined $userid
             && exists $db_bucketid->{$userid}{$bucket};
-    my $id = $magnets->find_match($self->db(),
+    my $id = $magnets->find_match($self->get_handle(),
         $db_bucketid->{$userid}{$bucket}{id}, $type, $match);
     if ($id) {
         $magnet_used = 1;
@@ -1032,7 +1032,7 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
         return
     }
     $self->log_msg(5, "add_words_to_bucket: user=$userid bucket=$bucket bucketid=$bucketid words=" . scalar(keys $parser->words()->%*));
-    $corpus->add_words($self->db(), $bucketid, $subtract, $parser->words()->%*)
+    $corpus->add_words($self->get_handle(), $bucketid, $subtract, $parser->words()->%*)
 }
 
 =head2 echo_to_dot
@@ -1157,7 +1157,7 @@ C<$pwd> The user's password
 =cut
 
 method get_session_key ($user, $pwd) {
-    my ($session, $userid) = $sessions->create_session($self->db(), $user, $pwd);
+    my ($session, $userid) = $sessions->create_session($self->get_handle(), $user, $pwd);
     return
         unless defined $session;
     $self->db_update_cache($session);
@@ -1348,14 +1348,14 @@ method classify ($session, $file, $templ = undef, $matrix = undef, $idmap = unde
     my @words = sort keys $parser->words()->%*;
 
     my ($id_list_ref, $idmap_ref) = $corpus->resolve_word_ids(
-        $self->db(), \@words);
+        $self->get_handle(), \@words);
     if (defined $idmap) {
         %$idmap = (%$idmap, %$idmap_ref);
     } else {
         $idmap = $idmap_ref;
     }
     my $matrix_ref = $corpus->fetch_matrix(
-        $self->db(), $id_list_ref, $userid);
+        $self->get_handle(), $id_list_ref, $userid);
     if (defined $matrix) {
         %$matrix = (%$matrix, %$matrix_ref);
     } else {
@@ -2334,7 +2334,7 @@ method get_bucket_word_list ($session, $bucket, $prefix) {
         unless defined $userid;
     return
         unless exists $db_bucketid->{$userid}{$bucket};
-    return $corpus->word_list_for_bucket($self->db(),
+    return $corpus->word_list_for_bucket($self->get_handle(),
         $db_bucketid->{$userid}{$bucket}{id}, $prefix)
 }
 
@@ -2367,7 +2367,7 @@ method get_words_for_bucket ($session, $bucket, %opts) {
     my $dir  = ($opts{dir} // '') eq 'asc' ? 'ASC' : 'DESC';
     my $sort = $opts{sort} // 'relevance';
     my ($words, $total) = $corpus->bucket_word_page(
-        $self->db(), $db_bucketid->{$userid}{$bucket}{id},
+        $self->get_handle(), $db_bucketid->{$userid}{$bucket}{id},
         $sort, $dir, $per_page, $offset);
     return { words => $words, total => $total }
 }
@@ -2421,7 +2421,7 @@ method search_words_cross_bucket ($session, $prefix, %opts) {
 }
 
 method _search_words_fetch ($userid, $prefix, $bucket_filter, $sort, $dir, $per_page, $offset) {
-    return $corpus->search_words_cross($self->db(), $self->qb(),
+    return $corpus->search_words_cross($self->get_handle(), $self->qb(),
         $userid, $prefix, $bucket_filter, $sort, $dir, $per_page, $offset)
 }
 
@@ -2434,7 +2434,7 @@ C<$id> Word ID from the words table
 =cut
 
 method get_word_by_id ($id) {
-    return $corpus->word_for_id($self->db(), $id)
+    return $corpus->word_for_id($self->get_handle(), $id)
 }
 
 =head2 remove_word_from_bucket
@@ -2453,7 +2453,7 @@ method remove_word_from_bucket ($session, $bucket, $word) {
         unless defined $userid;
     return
         unless exists $db_bucketid->{$userid}{$bucket};
-    $corpus->remove_word($self->db(),
+    $corpus->remove_word($self->get_handle(),
         $db_bucketid->{$userid}{$bucket}{id}, $word);
     $self->db_update_cache($session, $bucket);
 }
@@ -2478,7 +2478,7 @@ method move_word_between_buckets ($session, $from_bucket, $to_bucket, $word) {
             && exists $db_bucketid->{$userid}{$to_bucket};
     my $from_id = $db_bucketid->{$userid}{$from_bucket}{id};
     my $to_id = $db_bucketid->{$userid}{$to_bucket}{id};
-    $corpus->move_word($self->db(), $from_id, $to_id, $word);
+    $corpus->move_word($self->get_handle(), $from_id, $to_id, $word);
     $self->db_update_cache($session, $from_bucket);
     $self->db_update_cache($session, $to_bucket);
 }
@@ -2498,7 +2498,7 @@ method get_bucket_word_prefixes($session, $bucket) {
         unless defined $userid;
     my $prev = '';
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    my $result = $corpus->raw_word_prefixes($self->db(), $bucketid);
+    my $result = $corpus->raw_word_prefixes($self->get_handle(), $bucketid);
     if (($self->module_config('api', 'locale')//'') eq 'Nihongo') {
         return
             grep {$_ ne $prev && ($prev = $_, 1)}
@@ -2629,7 +2629,7 @@ method get_bucket_parameter ($session, $bucket, $parameter) {
         unless defined $userid;
     return
         unless defined $db_bucketid->{$userid}{$bucket};
-    return $buckets->parameter_get($self->db(), $userid, $bucket,
+    return $buckets->parameter_get($self->get_handle(), $userid, $bucket,
         $db_bucketid->{$userid}{$bucket}{id}, $parameter)
 }
 
@@ -2645,7 +2645,7 @@ method set_bucket_parameter ($session, $bucket, $parameter, $value) {
         unless defined $userid;
     return
         unless defined $db_bucketid->{$userid}{$bucket};
-    return $buckets->parameter_set($self->db(), $userid, $bucket,
+    return $buckets->parameter_set($self->get_handle(), $userid, $bucket,
         $db_bucketid->{$userid}{$bucket}{id}, $parameter, $value)
 }
 
@@ -2667,7 +2667,7 @@ method create_bucket ($session, $bucket) {
         || $self->is_pseudo_bucket($session, $bucket);
     return 0
         unless $buckets->name_is_valid($bucket);
-    $buckets->create_in_db($self->db(), $userid, $bucket);
+    $buckets->create_in_db($self->get_handle(), $userid, $bucket);
     $self->db_update_cache($session, $bucket);
     return 1
 }
@@ -2687,7 +2687,7 @@ method delete_bucket ($session, $bucket) {
         unless defined $userid;
     return 0
         unless defined $db_bucketid->{$userid}{$bucket};
-    $buckets->delete_from_db($self->db(), $userid, $bucket);
+    $buckets->delete_from_db($self->get_handle(), $userid, $bucket);
     $self->db_update_cache($session, undef, $bucket);
     $history->queries()->invalidate_all();
     return 1
@@ -2718,7 +2718,7 @@ method rename_bucket ($session, $old_bucket, $new_bucket) {
     return 0
         unless $buckets->name_is_valid($new_bucket);
     $self->log_msg(INFO => "Rename bucket $old_bucket to $new_bucket");
-    $buckets->rename_in_db($self->db(),
+    $buckets->rename_in_db($self->get_handle(),
         $db_bucketid->{$userid}{$old_bucket}{id}, $new_bucket);
     $self->db_update_cache($session, $new_bucket, $old_bucket);
     $history->queries()->invalidate_all();
@@ -2854,7 +2854,7 @@ method get_buckets_with_magnets ($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-    return $magnets->get_buckets_with($self->db(), $userid)
+    return $magnets->get_buckets_with($self->get_handle(), $userid)
 }
 
 =head2 get_magnet_types_in_bucket
@@ -2872,7 +2872,7 @@ method get_magnet_types_in_bucket ($session, $bucket) {
         unless defined $userid;
     return
         unless defined $db_bucketid->{$userid}{$bucket};
-    return $magnets->get_types_in_bucket($self->db(), $db_bucketid->{$userid}{$bucket}{id})
+    return $magnets->get_types_in_bucket($self->get_handle(), $db_bucketid->{$userid}{$bucket}{id})
 }
 
 =head2 clear_bucket
@@ -2890,7 +2890,7 @@ method clear_bucket ($session, $bucket) {
         unless defined $userid;
     return
         unless defined $db_bucketid->{$userid}{$bucket};
-    $buckets->clear_bucket_words($self->db(),
+    $buckets->clear_bucket_words($self->get_handle(),
         $db_bucketid->{$userid}{$bucket}{id});
     $self->db_update_cache($session, $bucket);
     return 1
@@ -2908,7 +2908,7 @@ method clear_magnets ($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-    return $magnets->clear($self->db(), $userid)
+    return $magnets->clear($self->get_handle(), $userid)
 }
 
 =head2 get_magnets
@@ -2928,7 +2928,7 @@ method get_magnets ($session, $bucket, $type) {
     return 0
         unless defined $db_bucketid->{$userid}{$bucket}
             && defined $type;
-    return $magnets->get($self->db(), $db_bucketid->{$userid}{$bucket}{id}, $type)
+    return $magnets->get($self->get_handle(), $db_bucketid->{$userid}{$bucket}{id}, $type)
 }
 
 =head2 get_magnet_types
@@ -2943,7 +2943,7 @@ method get_magnet_types ($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-    return $magnets->get_types($self->db())
+    return $magnets->get_types($self->get_handle())
 }
 
 =head2 create_magnet
@@ -2963,7 +2963,7 @@ method create_magnet ($session, $bucket, $type, $text) {
         unless defined $userid;
     return 0
         unless defined $db_bucketid->{$userid}{$bucket};
-    return $magnets->create($self->db(), $db_bucketid->{$userid}{$bucket}{id}, $type, $text)
+    return $magnets->create($self->get_handle(), $db_bucketid->{$userid}{$bucket}{id}, $type, $text)
 }
 
 =head2 delete_magnet
@@ -2980,7 +2980,7 @@ method delete_magnet ($session, $bucket, $type, $text) {
         unless defined $userid;
     return 0
         unless defined $db_bucketid->{$userid}{$bucket};
-    return $magnets->delete($self->db(), $db_bucketid->{$userid}{$bucket}{id}, $type, $text,
+    return $magnets->delete($self->get_handle(), $db_bucketid->{$userid}{$bucket}{id}, $type, $text,
         sub { $history->queries()->invalidate_all() })
 }
 
@@ -3015,7 +3015,7 @@ method get_stopword_candidates ($session, $ratio = 2.0, $limit = 50) {
     my $userid = $self->valid_session_key($session);
     return ()
         unless defined $userid;
-    return $stopwords->get_candidates($self->db(), $userid, $ratio, $limit)
+    return $stopwords->get_candidates($self->get_handle(), $userid, $ratio, $limit)
 }
 
 =head2 magnet_count
@@ -3030,7 +3030,7 @@ method magnet_count ($session) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
-    return $magnets->count($self->db(), $userid)
+    return $magnets->count($self->get_handle(), $userid)
 }
 
 =head2 set_history

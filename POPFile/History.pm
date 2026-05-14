@@ -95,7 +95,7 @@ method stop() {
 }
 
 method _txn($coderef) {
-    my $dbh = $self->db();
+    my $dbh = $self->get_handle();
     $dbh->begin_work();
     try {
         $coderef->();
@@ -167,7 +167,7 @@ the caller specify the insertion timestamp (defaults to C<time()>).
 
 method reserve_slot ($inserted_time = undef) {
     $inserted_time //= time;
-    my $insert_sth = $self->db()->prepare(POPFile::DBUtil::normalize_sql(
+    my $insert_sth = $self->get_handle()->prepare(POPFile::DBUtil::normalize_sql(
         'INSERT INTO history ( userid, committed, inserted )
          VALUES ( ?, ?, ? )'));
     my $slot;
@@ -177,7 +177,7 @@ method reserve_slot ($inserted_time = undef) {
         my $result = $insert_sth->execute(1, $candidate, $inserted_time);
         next
             unless defined $result;
-        $slot = $self->db()->last_insert_id(undef, undef, 'history', 'id');
+        $slot = $self->get_handle()->last_insert_id(undef, undef, 'history', 'id');
     }
     $insert_sth->finish();
     $self->log_msg(DEBUG => "reserve_slot returning slot id $slot");
@@ -194,7 +194,7 @@ C<$slot> is the unique ID returned by C<reserve_slot>.
 =cut
 
 method release_slot ($slot) {
-    $self->db()->do('DELETE FROM history WHERE history.id = ?', undef, $slot);
+    $self->get_handle()->do('DELETE FROM history WHERE history.id = ?', undef, $slot);
     my $file = $self->get_slot_file($slot);
     unlink $file;
     my $directory = $file;
@@ -246,7 +246,7 @@ method change_slot_classification ($slot, $class, $session, $undo) {
         my @fields = $self->get_slot_fields($slot);
         $oldbucketid = $fields[10];
     }
-    $self->db()->do(
+    $self->get_handle()->do(
         'UPDATE history SET bucketid = ?, usedtobe = ?
          WHERE id = ?',
         undef, $bucketid, $oldbucketid, $slot);
@@ -262,7 +262,7 @@ without rescanning the entire folder.
 =cut
 
 method set_message_id ($slot, $mid) {
-    $self->db()->do(
+    $self->get_handle()->do(
         'UPDATE history SET mid = ? WHERE id = ?',
         undef, $mid, $slot)
 }
@@ -279,7 +279,7 @@ method revert_slot_classification ($slot) {
     my @fields = $self->get_slot_fields($slot);
     my $oldbucketid = $fields[9];
 
-    $self->db()->do(
+    $self->get_handle()->do(
         'UPDATE history SET bucketid = ?, usedtobe = ?
          WHERE id = ?',
         undef, $oldbucketid, 0, $slot);
@@ -299,7 +299,7 @@ C<magnet(11)>, C<size(12)>.  Returns C<undef> if C<$slot> is invalid.
 method get_slot_fields ($slot) {
     return if !defined($slot) || $slot !~ /^\d+$/;
 
-    my $sth = $self->db()->prepare(
+    my $sth = $self->get_handle()->prepare(
         "SELECT $fields_slot FROM history, buckets
          LEFT JOIN magnets ON magnets.id = history.magnetid
          WHERE history.id = ?
@@ -318,7 +318,7 @@ Returns 1 if C<$slot> is a committed history entry, C<undef> otherwise.
 method is_valid_slot ($slot) {
     return
         if !defined($slot) || $slot !~ /^\d+$/;
-    my $sth = $self->db()->prepare(
+    my $sth = $self->get_handle()->prepare(
         'SELECT id FROM history
          WHERE history.id = ?
            AND history.committed = 1');
@@ -333,7 +333,7 @@ method is_valid_slot ($slot) {
 method commit_history() {
     return
         unless $commit_list->@*;
-    my $update_history = $self->db()->prepare(POPFile::DBUtil::normalize_sql(
+    my $update_history = $self->get_handle()->prepare(POPFile::DBUtil::normalize_sql(
         'UPDATE history SET
              hdr_from = ?, hdr_to = ?, hdr_date = ?, hdr_cc = ?,
              hdr_subject = ?, sort_from = ?, sort_to = ?, sort_cc = ?,
@@ -431,7 +431,7 @@ method delete_slot ($slot, $archive) {
                 $qb->compare('history.bucketid' => \'buckets.id'),
                 $qb->compare('history.id' => $slot)))
             ->limit(1);
-        my $row = $self->db()->selectrow_arrayref(
+        my $row = $self->get_handle()->selectrow_arrayref(
             $select->as_sql(), undef, $select->params());
         my $bucket_name = $row->[0];
         if ($bucket_name ne 'unclassified'
@@ -499,7 +499,7 @@ is found.
 =cut
 
 method get_slot_from_hash ($hash) {
-    my $sth = $self->db()->prepare(
+    my $sth = $self->get_handle()->prepare(
         'SELECT id FROM history WHERE hash = ? LIMIT 1');
     $sth->execute($hash);
     my $result = $sth->fetchrow_arrayref;
@@ -514,7 +514,7 @@ Delegates to L<POPFile::HistoryQueries/set>.
 =cut
 
 method set_query ($id, $filter, $search, $sort, $not) {
-    $queries->set($id, $filter, $search, $sort, $not, $self->db())
+    $queries->set($id, $filter, $search, $sort, $not, $self->get_handle())
 }
 
 =head2 delete_query($id)
@@ -526,7 +526,7 @@ database and disk (with archiving if configured).  Wrapped in C<_txn> for atomic
 
 method delete_query ($id) {
     $self->_txn(sub {
-        my $ids = $queries->delete_ids($id, $self->db());
+        my $ids = $queries->delete_ids($id, $self->get_handle());
         for my $slot_id ($ids->@*) {
             $self->delete_slot($slot_id, 1)
         }
@@ -543,7 +543,7 @@ Called automatically on each C<TICKD> message-queue event (i.e. once per day).
 method cleanup_history() {
     my $seconds_per_day = 24 * 60 * 60;
     my $cutoff_time = time - $self->config('history_days') * $seconds_per_day;
-    my $sth = $self->db()->prepare_cached(
+    my $sth = $self->get_handle()->prepare_cached(
         'SELECT id FROM history WHERE inserted < ?');
     $sth->execute($cutoff_time);
     my @ids = map { $_->[0] } $sth->fetchall_arrayref->@*;

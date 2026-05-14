@@ -89,7 +89,7 @@ sub list_history ($self) {
     $per_page = $per_page_default
         if $per_page < 1 || $per_page > $max_per_page;
     my $hist = $svc->history_obj();
-    my ($total, $rows) = $hist->queries()->search($hist->db(),
+    my ($total, $rows) = $hist->queries()->search($hist->get_handle(),
         $bucket ? (bucket => $bucket) : (),
         $search ? (search => $search) : (),
         page => $page,
