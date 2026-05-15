@@ -4,8 +4,13 @@ use Object::Pad;
 use utf8;
 use feature 'try';
 no warnings 'experimental::try';
+use POPFile::Role::Config;
 
-class POPFile::Activity :isa(POPFile::Module);
+class POPFile::Activity
+    :isa(POPFile::Module)
+    :does(POPFile::Role::Config);
+
+    my %DEFAULTS = (buffer_size => 500);
 
 =head1 NAME
 
@@ -59,12 +64,11 @@ BUILD {
 }
 
 method initialize() {
-    $self->config(buffer_size => DEFAULT_BUFFER_SIZE);
     return 1
 }
 
 method start() {
-    $max_size = $self->config('buffer_size') // DEFAULT_BUFFER_SIZE;
+    $max_size = $self->config->get('buffer_size') // $DEFAULTS{buffer_size};
     $max_size = DEFAULT_BUFFER_SIZE
         if $max_size < 10;
     return 1
