@@ -27,7 +27,15 @@ my %ui_to_iso = (
     Romanian => 'ro', Russian => 'ru', Turkish => 'tr',
 );
 
-class Classifier::WordMangle :isa(POPFile::Module);
+use POPFile::Role::Config;
+
+class Classifier::WordMangle
+    :isa(POPFile::Module)
+    :does(POPFile::Role::Config);
+
+    my %DEFAULTS = (
+        stemming => 0,
+        auto_detect_language => 1);
 
 field %stop__;
 field $language = 'en';
@@ -79,8 +87,6 @@ parameters.  Returns 1.
 =cut
 
     method initialize() {
-        $self->config('stemming',             0);
-        $self->config('auto_detect_language', 1);
         return 1
     }
 
@@ -99,7 +105,7 @@ the current language.  Returns 1.
     method _init_language ($lang) {
         $language = $lang;
         $stemmer = undef;
-        if ($self->config('stemming') && $snowball_languages{$lang}) {
+        if (($self->config->get('stemming') // $DEFAULTS{stemming}) && $snowball_languages{$lang}) {
             $stemmer = Lingua::Stem::Snowball->new(lang => $lang, encoding => 'UTF-8');
         }
         %stop__ = ();
