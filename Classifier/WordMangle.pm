@@ -34,8 +34,9 @@ class Classifier::WordMangle
     :does(POPFile::Role::Config);
 
     my %DEFAULTS = (
-        stemming => 0,
         auto_detect_language => 1);
+
+    field $stemming :reader :writer = 0;
 
 field %stop__;
 field $language = 'en';
@@ -105,7 +106,7 @@ the current language.  Returns 1.
     method _init_language ($lang) {
         $language = $lang;
         $stemmer = undef;
-        if (($self->config->get('stemming') // $DEFAULTS{stemming}) && $snowball_languages{$lang}) {
+        if ($stemming && $snowball_languages{$lang}) {
             $stemmer = Lingua::Stem::Snowball->new(lang => $lang, encoding => 'UTF-8');
         }
         %stop__ = ();
