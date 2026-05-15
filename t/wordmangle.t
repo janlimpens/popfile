@@ -87,19 +87,11 @@ subtest 'language switch cleans stopwords' => sub {
     is( $wm->mangle('the'), '',      'english stopword back after switch' );
 };
 
-subtest 'stemming' => sub {
-    skip('runtime config changes not supported with frozen config', 1);
-};
-
 subtest 'lingua stopwords' => sub {
     $wm->set_language('en');
 
     is( $wm->mangle('the'),   '', '"the" filtered as lingua stopword' );
     is( $wm->mangle('hello'), 'hello', 'non-stopword still passes' );
-};
-
-subtest 'german stemming and stopwords' => sub {
-    skip('runtime config changes not supported with frozen config', 1);
 };
 
 subtest 'set_language survives repeat calls' => sub {
