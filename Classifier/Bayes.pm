@@ -81,13 +81,6 @@ field $db_bucketunique = {};
 
 field $parser :reader = Classifier::MailParse->new();
 
-field $possible_colors = [qw(
-    red green blue brown
-    orange purple magenta gray
-    plum silver pink lightgreen
-    lightblue lightcyan lightcoral lightsalmon
-    lightgrey darkorange darkcyan feldspar
-    black)];
 # Precomputed per-bucket log-probabilities
 field $bucket_start = {};
 
@@ -348,19 +341,6 @@ method get_word_colors ($session, @words) {
     return %colors
 }
 
-=head2 get_not_likely_
-
-Returns the probability of a word that doesn't appear
-
-=cut
-
-method get_not_likely ($session, $bucket) {
-    my $userid = $self->valid_session_key($session);
-    return
-        unless defined $userid;
-    return $not_likely->{$userid}{$bucket} // 0;
-}
-
 =head2 get_value_
 
 Returns the value for a specific word in a bucket.  The word is
@@ -398,44 +378,6 @@ method get_base_value ($session, $bucket, $word) {
         unless defined $userid;
     return $corpus->word_count_get($self->get_handle(),
         $db_bucketid->{$userid}{$bucket}{id}, $word) // 0
-}
-
-=head2 set_value_
-
-Sets the value for a word in a bucket and updates the total word
-counts for the bucket and globally
-
-=cut
-
-method set_value ($session, $bucket, $word, $value) {
-    my $userid = $self->valid_session_key($session);
-    return 0
-        unless defined $userid;
-    my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
-    $corpus->word_count_set($self->get_handle(), $bucketid, $word, $value);
-    $self->validate_sql_prepare_and_execute(
-        $db_delete_zero_words, $bucketid);
-    return 1
-}
-
-=head2 get_sort_value_
-
-behaves the same as get_value_, except that it
-returns not_likely rather than 0 if the word is not found.  This
-makes its result more suitable as a sort key for bucket ranking.
-
-=cut
-
-method get_sort_value ($session, $bucket, $word) {
-    my $v = $self->get_value($session, $bucket, $word);
-    if ($v == 0) {
-    my $userid = $self->valid_session_key($session);
-    return
-        unless defined $userid;
-        return $not_likely->{$userid}{$bucket} // 0
-    } else {
-        return $v
-    }
 }
 
 =head2 update_constants
@@ -532,10 +474,6 @@ C<$bucket> bucket word is in
 C<$word> word to lookup
 
 =cut
-
-method single_magnet_match ($magnet, $match, $type) {
-    return $magnets->word_match($magnet, $match, $type)
-}
 
 =head2 write_line
 
@@ -658,6 +596,7 @@ C<$pos> Start position
 C<$len> Word length
 
 =cut
+
 sub substr_euc($str, $pos, $len) {
     my $result_str;
     my $char;
@@ -730,41 +669,6 @@ method release_session_key ($session) {
     $self->mq_post("RELSE", $session);
 }
 
-
-=head2 get_top_bucket
-
-Helper function used by classify to get the bucket with the highest
-score from data stored in a matrix of information (see definition of
-%matrix in classify for details) and a list of potential buckets
-
-
-Returns the bucket in $buckets with the highest score
-
-C<$userid> User ID for database access
-C<$id> ID of a word in $matrix
-C<$matrix> Reference to the %matrix hash in classify
-C<$buckets> Reference to a list of buckets
-
-=cut
-
-method get_top_bucket ($userid, $id, $matrix, $buckets) {
-    my $best_probability = 0;
-    my $top_bucket = 'unclassified';
-
-    for my $bucket ($buckets->@*) {
-        my $probability = 0;
-        if (defined($matrix->{$id}{$bucket}) && ($matrix->{$id}{$bucket} > 0)) {
-            $probability = $matrix->{$id}{$bucket} / $db_bucketcount->{$userid}{$bucket};
-        }
-
-        if ($probability > $best_probability) {
-            $best_probability = $probability;
-            $top_bucket = $bucket;
-        }
-    }
-
-    return $top_bucket;
-}
 
 =head2 classify
 
@@ -2193,5 +2097,4 @@ method set_history($h) {
     $history = $h;
 }
 
-# end class Classifier::Bayes
 1;
