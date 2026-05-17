@@ -15,10 +15,10 @@ sub make_imap {
     my $imap = Services::IMAP->new();
     TestHelper::wire($imap, $config, $mq);
     $imap->initialize();
-    $config->parameter('imap_enabled', 0);
-    $config->parameter('imap_training_mode', 0);
-    $config->parameter('imap_update_interval', 20);
-    POPFile::Config->instance()->load($config);
+    TestHelper::set_config($config, 'imap_enabled' => 0);
+    TestHelper::set_config($config, 'imap_training_mode' => 0);
+    TestHelper::set_config($config, 'imap_update_interval' => 20);
+    TestHelper::load_singleton($config);
     return $imap
 }
 
@@ -51,10 +51,10 @@ subtest 'recurring timer fires poll() with short interval' => sub {
     my $imap = Services::IMAP->new();
     TestHelper::wire($imap, $config, $mq);
     $imap->initialize();
-    $config->parameter('imap_enabled', 1);
-    $config->parameter('imap_training_mode', 0);
-    $config->parameter('imap_update_interval', 0);
-    POPFile::Config->instance()->load($config);
+    TestHelper::set_config($config, 'imap_enabled' => 1);
+    TestHelper::set_config($config, 'imap_training_mode' => 0);
+    TestHelper::set_config($config, 'imap_update_interval' => 0);
+    TestHelper::load_singleton($config);
     my $poll_count = 0;
     no warnings 'redefine';
     local *Services::IMAP::poll = sub { $poll_count++ };

@@ -30,8 +30,10 @@ sub _build_app ($password = '', $local = 1) {
     $ui->set_mq($mq);
     $ui->initialize();
     $ui->set_classifier_service($svc);
-    $config->parameter('api_local', $local);
-    $config->parameter('api_password', $password);
+    TestHelper::set_config($config,
+        api_local => $local,
+        api_password => $password,
+    );
     my $app = $ui->build_app($svc, $session);
     $app->log->level('fatal');
     return $app

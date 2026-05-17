@@ -18,8 +18,8 @@ require Services::IMAP;
 
 sub make_imap(%extra) {
     my ($config, $mq, $tmpdir) = TestHelper::setup();
-    $config->parameter('imap_enabled', 1);
-    $config->parameter('imap_update_interval', 3600);
+    TestHelper::set_config($config, 'imap_enabled' => 1);
+    TestHelper::set_config($config, 'imap_update_interval' => 3600);
     my $srv = Services::IMAP->new();
     TestHelper::wire($srv, $config, $mq);
     $srv->initialize();

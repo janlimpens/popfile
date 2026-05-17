@@ -34,8 +34,10 @@ my $proxy = TestProxy->new();
 TestHelper::wire($proxy, $config, $mq);
 $proxy->set_name('testproxy');
 $proxy->initialize();
-$config->parameter('testproxy_port', 0);
-$config->parameter('testproxy_local', 0);
+TestHelper::set_config($config,
+    testproxy_port => 0,
+    testproxy_local => 0,
+);
 
 my $started = $proxy->start();
 is($started, 1, 'proxy started successfully');

@@ -61,13 +61,13 @@ sub make_imap {
     $imap->start();
     $imap->set_classifier(StubClassifier->new());
     $imap->set_history(StubHistory->new());
-    $config->parameter('imap_enabled', 1);
-    $config->parameter('imap_training_mode', 0);
-    $config->parameter('imap_update_interval', 20);
+    TestHelper::set_config($config, 'imap_enabled' => 1);
+    TestHelper::set_config($config, 'imap_training_mode' => 0);
+    TestHelper::set_config($config, 'imap_update_interval' => 20);
     $imap->watched_folders('INBOX');
     $imap->folder_for_bucket('work', 'Work');
-    POPFile::Config->instance()->load($config);
-        POPFile::Config->instance()->load($config);
+    TestHelper::load_singleton($config);
+        TestHelper::load_singleton($config);
 return ($imap, $config)
 }
 

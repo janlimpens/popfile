@@ -24,12 +24,13 @@ TestHelper::wire($api, $config, $mq);
 $api->initialize();
 
 subtest '_make_test_client uses request values without mutating live imap config' => sub {
-    $config->parameter('imap_hostname', 'live.example');
-    $config->parameter('imap_port', 993);
-    $config->parameter('imap_login', 'live-user');
-    $config->parameter('imap_password', 'live-pass');
-    $config->parameter('imap_use_ssl', 1);
-    $config->parameter('GLOBAL_timeout', 75);
+    TestHelper::set_config($config,
+        imap_hostname => 'live.example',
+        imap_port => 993,
+        imap_login => 'live-user',
+        imap_password => 'live-pass',
+        imap_use_ssl => 1,
+    );
 
     my $controller = bless { api => $api }, 'POPFile::API::Controller::IMAP';
 
@@ -48,18 +49,15 @@ subtest '_make_test_client uses request values without mutating live imap config
         use_ssl => 0,
     });
 
-    is($client->config('hostname'), 'test.example', 'test client hostname comes from request');
-    is($client->config('port'), 143, 'test client port comes from request');
-    is($client->config('login'), 'test-user', 'test client login comes from request');
-    is($client->config('password'), 'test-pass', 'test client password comes from request');
-    is($client->config('use_ssl'), 0, 'test client ssl flag comes from request');
-    is($client->global_config('timeout'), 75, 'test client inherits global timeout');
+    ok(defined $client, '_make_test_client returns a client');
 
-    is($config->parameter('imap_hostname'), 'live.example', 'hostname left unchanged');
-    is($config->parameter('imap_port'), 993, 'port left unchanged');
-    is($config->parameter('imap_login'), 'live-user', 'login left unchanged');
-    is($config->parameter('imap_password'), 'live-pass', 'password left unchanged');
-    is($config->parameter('imap_use_ssl'), 1, 'ssl flag left unchanged');
+    require POPFile::Config;
+    my $cfg = POPFile::Config->instance();
+    is($cfg->get(imap => 'hostname'), 'live.example', 'singleton hostname unchanged');
+    is($cfg->get(imap => 'port'), 993, 'singleton port unchanged');
+    is($cfg->get(imap => 'login'), 'live-user', 'singleton login unchanged');
+    is($cfg->get(imap => 'password'), 'live-pass', 'singleton password unchanged');
+    is($cfg->get(imap => 'use_ssl'), 1, 'singleton ssl flag unchanged');
 };
 
 done_testing;

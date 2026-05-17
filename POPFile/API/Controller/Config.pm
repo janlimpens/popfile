@@ -73,6 +73,7 @@ sub get_config($self) {
 }
 
 sub update_config($self) {
+    require POPFile::ConfigFile;
     my $body = $self->req->json // {};
     my $path = POPFile::Config->resolve_path();
     my $data = POPFile::ConfigFile->new()->load($path);

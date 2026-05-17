@@ -11,12 +11,16 @@ field $json_encoder = Cpanel::JSON::XS->new()->utf8()->pretty()->canonical();
 field $json_decoder = Cpanel::JSON::XS->new()->utf8();
 
 method load($path) {
+    return +{version => 2}
+        unless -e $path;
     my $content = path($path)->slurp_utf8();
     return $json_decoder->decode($content)
 }
 
 method save($path, $data) {
-    path($path)->spew_utf8($json_encoder->encode($data), {atomic => 1});
+    my $tmp = "$path.tmp";
+    path($tmp)->spew_utf8($json_encoder->encode($data));
+    rename($tmp, $path) or die "Cannot rename $tmp to $path: $!";
     chmod(0600, $path);
     return
 }

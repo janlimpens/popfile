@@ -15,10 +15,10 @@ sub make_imap {
     my $imap = Services::IMAP->new();
     TestHelper::wire($imap, $config, $mq);
     $imap->initialize();
-    $config->parameter('imap_enabled', 1);
-    $config->parameter('imap_training_mode', 0);
-    $config->parameter('imap_update_interval', 60);
-    POPFile::Config->instance()->load($config);
+    TestHelper::set_config($config, 'imap_enabled' => 1);
+    TestHelper::set_config($config, 'imap_training_mode' => 0);
+    TestHelper::set_config($config, 'imap_update_interval' => 60);
+    TestHelper::load_singleton($config);
     return ($imap, $config, $mq)
 }
 

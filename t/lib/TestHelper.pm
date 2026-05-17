@@ -45,6 +45,42 @@ sub setup {
     return ($config, $mq, $tmpdir);
 }
 
+sub load_singleton($config) {
+    my $path = $ENV{POPFILE_PATH};
+    return
+        unless $path && -e $path;
+    POPFile::Config->instance()->load_file($path);
+}
+
+sub set_config($config, %params) {
+    my $tmpdir = $config->popfile_user();
+    my $path = "$tmpdir/config.json";
+    $ENV{POPFILE_PATH} = $path;
+    _write_config($config, $path, %params);
+    load_singleton($config);
+}
+
+sub _write_config($config, $path, %overrides) {
+    require POPFile::ConfigFile;
+    my $cf = POPFile::ConfigFile->new();
+    my $data = -e $path ? $cf->load($path) : +{version => 2};
+    $data->{version} //= 2;
+    $data->{bayes}{database} = $overrides{database}
+        if exists $overrides{database};
+    $data->{bayes}{dbconnect} = $overrides{dbconnect}
+        if exists $overrides{dbconnect};
+    $data->{bayes}{dbuser} = $overrides{dbuser} // '';
+    $data->{bayes}{dbauth} = $overrides{dbauth} // '';
+    $data->{history}{history_days} = $overrides{history_days}
+        if exists $overrides{history_days};
+    for my $key (keys %overrides) {
+        next if $key =~ /^(database|dbconnect|dbuser|dbauth|history_days)$/;
+        my ($ns, $param) = split /_/, $key, 2;
+        $data->{$ns}{$param} = $overrides{$key};
+    }
+    $cf->save($path, $data);
+}
+
 # ---------------------------------------------------------------------------
 # wire($module, $config, $mq)
 # ---------------------------------------------------------------------------
@@ -62,27 +98,33 @@ sub wire($mod, $config, $mq) {
 # Must be called after Classifier::Bayes->initialize() and before start().
 # ---------------------------------------------------------------------------
 sub configure_db($config) {
+    my $tmpdir = $config->popfile_user();
+    my $json_path = "$tmpdir/config.json";
+    $ENV{POPFILE_PATH} = $json_path;
     my ($dbconnect, $database, $dbuser, $dbauth);
     if ( defined $ENV{TEST_DBCONNECT} ) {
-        $config->parameter('bayes_dbconnect', $ENV{TEST_DBCONNECT});
-        $config->parameter('bayes_dbuser',    $ENV{TEST_DBUSER}   // '');
-        $config->parameter('bayes_dbauth',    $ENV{TEST_DBAUTH}   // '');
-        $config->parameter('bayes_database',  $ENV{TEST_DATABASE} // 'popfile_test');
         $database = $ENV{TEST_DATABASE} // 'popfile_test';
         $dbconnect = $ENV{TEST_DBCONNECT};
+        $dbuser = $ENV{TEST_DBUSER} // '';
+        $dbauth = $ENV{TEST_DBAUTH} // '';
     } else {
-        my $db_file = $config->popfile_user() . '/popfile_test.db';
-        $config->parameter('bayes_dbconnect', "dbi:SQLite:dbname=$db_file");
-        $config->parameter('bayes_database', $db_file);
+        my $db_file = "$tmpdir/popfile_test.db";
         $dbconnect = "dbi:SQLite:dbname=$db_file";
         $database = $db_file;
+        $dbuser = '';
+        $dbauth = '';
     }
+    _write_config($config, $json_path,
+        database => $database,
+        dbconnect => $dbconnect,
+        dbuser => $dbuser,
+        dbauth => $dbauth);
     POPFile::Database->instance()->configure(
         dbconnect => $dbconnect,
         database => $database,
         dbuser => $dbuser,
         dbauth => $dbauth);
-    POPFile::Config->instance()->load($config);
+    load_singleton($config);
 }
 
 # ---------------------------------------------------------------------------
@@ -182,7 +224,10 @@ sub load_fixture($bayes, $session, $fixture) {
 sub setup_mojo_services {
     my ($config, $mq, $tmpdir) = setup();
     configure_db($config);
-    $config->parameter('history_history_days', 9999);
+    my $json_path = "$tmpdir/config.json";
+    my $data = POPFile::ConfigFile->new()->load($json_path);
+    $data->{history}{history_days} = 9999;
+    POPFile::ConfigFile->new()->save($json_path, $data);
 
     require POPFile::Module;
     require POPFile::History;

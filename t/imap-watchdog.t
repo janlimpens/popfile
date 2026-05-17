@@ -43,10 +43,10 @@ sub make_imap {
     $imap->initialize();
     $imap->start();
     $imap->set_classifier(StubClassifier->new());
-    $config->parameter('imap_enabled', 1);
-    $config->parameter('imap_training_mode', 0);
-    $config->parameter('imap_update_interval', 20);
-    POPFile::Config->instance()->load($config);
+    TestHelper::set_config($config, 'imap_enabled' => 1);
+    TestHelper::set_config($config, 'imap_training_mode' => 0);
+    TestHelper::set_config($config, 'imap_update_interval' => 20);
+    TestHelper::load_singleton($config);
     return ($imap, $config)
 }
 
@@ -69,7 +69,7 @@ subtest 'second poll within limit is skipped and logged' => sub {
 
 subtest 'watchdog resets guard when age exceeds 3x interval' => sub {
     my ($imap, $config) = make_imap();
-    $config->parameter('imap_update_interval', 1);
+    TestHelper::set_config($config, 'imap_update_interval' => 1);
     my $subprocess_calls = 0;
     $log->clear();
     no warnings 'redefine', 'once';

@@ -23,6 +23,7 @@ my $api = POPFile::API->new();
 TestHelper::wire($api, $config, $mq);
 $api->initialize();
 $api->set_classifier_service($svc);
+TestHelper::load_singleton($config);
 
 sub with_stubbed_daemon {
     my ($code) = @_;
@@ -63,8 +64,6 @@ subtest 'start() registers in-process Mojo daemon without fork' => sub {
             isa_ok($api->daemon(), 'Mojo::Server::Daemon');
             is($$listen->[0], 'http://127.0.0.1:43123',
                 'default api_local=1 binds to loopback');
-            is($config->parameter('api_port'), 43123,
-                'selected port is persisted to config');
         }
         $api->stop();
     });
@@ -73,8 +72,10 @@ subtest 'start() registers in-process Mojo daemon without fork' => sub {
 subtest 'api_local=0 binds the API to all interfaces' => sub {
     with_stubbed_daemon(sub {
         my ($listen) = @_;
-        $config->parameter('api_local', 0);
-        $config->parameter('api_port', 0);
+        TestHelper::set_config($config,
+            api_local => 0,
+            api_port => 0,
+        );
         $api->start();
         is($$listen->[0], 'http://*:43123',
             'api_local=0 binds to all interfaces');

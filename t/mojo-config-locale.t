@@ -33,6 +33,10 @@ $config->set_popfile_root("$root/");
 $config->initialize();
 $config->set_started(1);
 
+use File::Temp qw(tempdir);
+my $tmpdir = tempdir(CLEANUP => 1);
+$ENV{POPFILE_PATH} = "$tmpdir/config.json";
+
 my $ui = POPFile::API->new();
 $ui->set_configuration($config);
 $ui->set_mq($mq);
@@ -54,9 +58,10 @@ subtest 'PUT /api/v1/config persists api_locale' => sub {
     $t->put_ok('/api/v1/config', json => { api_locale => 'de' })
       ->status_is(200)
       ->json_is('/ok', 1);
-    $t->get_ok('/api/v1/config')
-      ->status_is(200)
-      ->json_is('/api_locale', 'de', 'locale persisted across GET');
+    ok(-e "$tmpdir/config.json", 'config.json written');
+    require POPFile::ConfigFile;
+    my $data = POPFile::ConfigFile->new()->load("$tmpdir/config.json");
+    is($data->{api}{locale}, 'de', 'locale persisted on disk');
 };
 
 subtest 'GET /api/v1/i18n returns locale list' => sub {
@@ -100,12 +105,11 @@ subtest 'imap_password accepted in config update without errors' => sub {
         imap_login => 'alice',
         imap_password => 's3cret',
     })->status_is(200)->json_is('/ok', 1);
-    $t->get_ok('/api/v1/config')
-      ->status_is(200);
-    my $cfg = $t->tx->res->json;
-    is($cfg->{imap_hostname}, 'mail.example.com', 'hostname persisted');
-    is($cfg->{imap_login}, 'alice', 'login persisted');
-    is($cfg->{imap_password}, 's3cret', 'password persisted but not logged');
+    require POPFile::ConfigFile;
+    my $data = POPFile::ConfigFile->new()->load("$tmpdir/config.json");
+    is($data->{imap}{hostname}, 'mail.example.com', 'hostname persisted');
+    is($data->{imap}{login}, 'alice', 'login persisted');
+    is($data->{imap}{password}, 's3cret', 'password persisted but not logged');
 };
 
 done_testing;

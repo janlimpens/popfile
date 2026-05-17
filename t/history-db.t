@@ -14,8 +14,11 @@ my ($db_fh, $db_file) = tempfile(DIR => $tmpdir, SUFFIX => '.db');
 close $db_fh;
 unlink $db_file;
 
-$config->parameter('bayes_dbconnect', 'dbi:SQLite:dbname=$dbname');
-$config->parameter('bayes_database', $db_file);
+$ENV{TEST_DATABASE} = 'popfile_test';
+$ENV{TEST_DBCONNECT} = "dbi:SQLite:dbname=$db_file";
+TestHelper::configure_db($config);
+delete $ENV{TEST_DBCONNECT};
+delete $ENV{TEST_DATABASE};
 
 require Classifier::WordMangle;
 my $wm = Classifier::WordMangle->new();

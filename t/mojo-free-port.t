@@ -13,26 +13,22 @@ use warnings;
 
 use Test2::V0;
 use IO::Socket::INET ();
-use TestMocks;
+use TestHelper;
 
 require POPFile::API;
-require POPFile::Configuration;
 
-my $mq = TestMocks::StubMQ->new();
-
-my $config = POPFile::Configuration->new();
-$config->set_configuration($config);
-$config->set_mq($mq);
-$config->initialize();
-$config->set_started(1);
+my ($config, $mq, $tmpdir) = TestHelper::setup();
 
 my $ui = POPFile::API->new();
-$ui->set_configuration($config);
-$ui->set_mq($mq);
+TestHelper::wire($ui, $config, $mq);
 $ui->initialize();
+TestHelper::set_config($config,
+    api_open_browser => 1,
+    api_port => 0,
+);
 
 subtest 'open_browser config param defaults to 1' => sub {
-    is($ui->config('open_browser'), 1, 'open_browser default is 1');
+    is($ui->config->get('open_browser'), 1, 'open_browser default is 1');
 };
 
 subtest '_find_free_port returns a usable port' => sub {
@@ -51,7 +47,6 @@ subtest '_find_free_port returns a usable port' => sub {
 };
 
 subtest 'port 0 config triggers free-port allocation' => sub {
-    $ui->config('port', 0);
     my $port = $ui->_find_free_port();
     ok($port != 0, 'allocated port is non-zero');
 };

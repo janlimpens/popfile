@@ -132,6 +132,7 @@ sub _touch($path) {
 }
 
 sub trigger_training ($self) {
+    require POPFile::ConfigFile;
     my $api = $self->popfile_api();
     my $body = $self->req->json // {};
     my @buckets = ref $body->{buckets} eq 'ARRAY' ? $body->{buckets}->@* : ();

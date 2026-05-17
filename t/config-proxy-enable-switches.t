@@ -32,6 +32,9 @@ for my $class (qw(Proxy::POP3 Proxy::SMTP Proxy::NNTP)) {
     $proxy->initialize();
 }
 
+$ENV{POPFILE_PATH} = "$tmpdir/config.json";
+TestHelper::set_config($config);
+
 my $controller = bless {
     api => $api,
     rendered => undef,
@@ -62,9 +65,9 @@ subtest 'config controller exposes proxy enabled keys' => sub {
     $controller->{rendered} = undef;
     $controller->get_config();
     my $json = $controller->{rendered}{json};
-    is($json->{pop3_enabled}, 0, 'pop3_enabled exposed with default 0');
-    is($json->{smtp_enabled}, 0, 'smtp_enabled exposed with default 0');
-    is($json->{nntp_enabled}, 0, 'nntp_enabled exposed with default 0');
+    is($json->{pop3_enabled}, '', 'pop3_enabled empty in fresh config');
+    is($json->{smtp_enabled}, '', 'smtp_enabled empty in fresh config');
+    is($json->{nntp_enabled}, '', 'nntp_enabled empty in fresh config');
 };
 
 subtest 'config controller persists proxy enabled keys' => sub {
@@ -75,9 +78,11 @@ subtest 'config controller persists proxy enabled keys' => sub {
     };
     $controller->update_config();
 
-    is($config->parameter('pop3_enabled'), 1, 'pop3_enabled updated');
-    is($config->parameter('smtp_enabled'), 1, 'smtp_enabled updated');
-    is($config->parameter('nntp_enabled'), 1, 'nntp_enabled updated');
+    require POPFile::ConfigFile;
+    my $data = POPFile::ConfigFile->new()->load("$tmpdir/config.json");
+    is($data->{pop3}{enabled}, 1, 'pop3_enabled updated');
+    is($data->{smtp}{enabled}, 1, 'smtp_enabled updated');
+    is($data->{nntp}{enabled}, 1, 'nntp_enabled updated');
 };
 
 done_testing;

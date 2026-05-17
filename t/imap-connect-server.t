@@ -42,10 +42,10 @@ sub make_imap {
     $imap->initialize();
     $imap->start();
     $imap->set_classifier(StubClassifier->new());
-    $config->parameter('imap_enabled', 1);
-    $config->parameter('imap_training_mode', 0);
-    POPFile::Config->instance()->load($config);
-        POPFile::Config->instance()->load($config);
+    TestHelper::set_config($config, 'imap_enabled' => 1);
+    TestHelper::set_config($config, 'imap_training_mode' => 0);
+    TestHelper::load_singleton($config);
+        TestHelper::load_singleton($config);
 return ($imap, $config)
 }
 

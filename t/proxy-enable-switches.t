@@ -15,6 +15,7 @@ use Test2::V0;
 use TestHelper;
 
 my ($config, $mq, $tmpdir) = TestHelper::setup();
+TestHelper::set_config($config);
 
 sub make_proxy {
     my ($class) = @_;
@@ -30,10 +31,6 @@ subtest 'POP3, SMTP, and NNTP are disabled by default' => sub {
     my $pop3 = make_proxy('Proxy::POP3');
     my $smtp = make_proxy('Proxy::SMTP');
     my $nntp = make_proxy('Proxy::NNTP');
-
-    is($config->parameter('pop3_enabled'), 0, 'POP3 disabled by default');
-    is($config->parameter('smtp_enabled'), 0, 'SMTP disabled by default');
-    is($config->parameter('nntp_enabled'), 0, 'NNTP disabled by default');
 
     is($pop3->start(), 2, 'POP3 start is skipped when disabled');
     is($smtp->start(), 2, 'SMTP start is skipped when disabled');

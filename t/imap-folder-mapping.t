@@ -16,9 +16,8 @@ sub make_imap {
     TestHelper::wire($imap, $config, $mq);
     $imap->initialize();
     $imap->start();
-    $imap->watched_folders('INBOX');  # seed default
-        POPFile::Config->instance()->load($config);
-return ($imap, $config)
+    $imap->watched_folders('INBOX');
+    return ($imap, $config)
 }
 
 subtest 'CRUD for watched folders' => sub {

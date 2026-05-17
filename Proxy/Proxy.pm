@@ -68,8 +68,6 @@ and C<socks_port>.  Returns 1.
 =cut
 
     method initialize() {
-        $self->config->write(enabled => 1);
-        $self->config->write(port => 0);
         return 1;
     }
 
