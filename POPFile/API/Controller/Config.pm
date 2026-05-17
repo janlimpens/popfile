@@ -83,6 +83,7 @@ sub update_config($self) {
         my ($mod, $param) = CFG->{$key}->@*;
         $data->{$mod}{$param} = $body->{$key};
     }
+    POPFile::Config->validate_doc($data);
     POPFile::ConfigFile->new()->save($path, $data);
     if (grep { /^logger_/ } keys $body->%*) {
         my $loader = $self->popfile_loader();

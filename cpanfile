@@ -46,3 +46,4 @@ on 'develop' => sub {
     requires 'Test::MockObject', '0';
     requires 'Test2::V0', '0';
 };
+requires 'JSON::Schema::Modern';
