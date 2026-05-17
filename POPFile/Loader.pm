@@ -119,7 +119,10 @@ when the global debug level is greater than 0.
 =cut
 
 method CORE_warning (@message) {
-    if (POPFile::Config->instance()->get(GLOBAL => 'debug') > 0) {
+    return if $_[0] =~ /^Can't locate .+\/XS\.pm/;
+    return if $_[0] =~ /^Can't locate Class\/XSAccessor\.pm/;
+    my $debug = POPFile::Config->instance()->get(GLOBAL => 'debug');
+    if (defined $debug && $debug > 0) {
         Log::Any->get_logger(category => 'POPFile')->warning("Perl warning: @message");
         warn @message;
     }
@@ -135,10 +138,14 @@ exits with code 1.
 
 method CORE_die (@message) {
     return if $^S;
+    my $msg = "@message";
+    return if $msg =~ /^Can't locate .+\/XS\.pm/;
+    return if $msg =~ /^Can't locate Class\/XSAccessor\.pm/;
 
     print STDERR @message;
 
-    if (POPFile::Config->instance()->get(GLOBAL => 'debug') > 0) {
+    my $debug = POPFile::Config->instance()->get(GLOBAL => 'debug');
+    if (defined $debug && $debug > 0) {
         Log::Any->get_logger(category => 'POPFile')->error("Perl fatal error: @message");
     }
 

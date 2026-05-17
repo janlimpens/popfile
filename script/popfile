@@ -5,6 +5,11 @@
 
 BEGIN {
     $| = 1;
+    $SIG{__WARN__} = sub {
+        return if $_[0] =~ /^Can't locate .+\/XS\.pm/;
+        return if $_[0] =~ /^Can't locate Class\/XSAccessor\.pm/;
+        warn @_;
+    };
     for my $i (0..$#ARGV) {
         if ($ARGV[$i] =~ /^--root=(.+)$/) {
             $ENV{POPFILE_ROOT} = $1;
