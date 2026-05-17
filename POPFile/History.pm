@@ -77,8 +77,6 @@ Returns 1 on success.
 =cut
 
 method initialize() {
-    $self->mq_register('TICKD', $self);
-    $self->mq_register('COMIT', $self);
     return 1
 }
 
@@ -109,6 +107,8 @@ method _txn($coderef) {
 }
 
 method start () {
+    $self->mq_register('TICKD', $self);
+    $self->mq_register('COMIT', $self);
     $queries = POPFile::HistoryQueries->new();
     return 1
 }

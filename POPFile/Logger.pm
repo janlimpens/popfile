@@ -58,7 +58,6 @@ message-queue event.  Returns 1.
 =cut
 
 method initialize() {
-    $self->mq_register('TICKD', $self);
     return 1
 }
 
@@ -105,6 +104,7 @@ message.  Returns 1.
 method start() {
     my $dir = $self->get_user_path($self->_logdir(), 0);
     make_path($dir) unless -d $dir;
+    $self->mq_register('TICKD', $self);
     $self->calculate_today();
     $self->_reconfigure_adapter();
     Mojo::IOLoop->recurring(3600 => sub { $self->mq()->post('TICKD', time()) });

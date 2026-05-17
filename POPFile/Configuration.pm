@@ -44,7 +44,6 @@ Subscribes to the C<TICKD> message for periodic PID checks.
 =cut
 
 method initialize() {
-    $self->mq_register('TICKD', $self);
     return 1;
 }
 
@@ -56,6 +55,7 @@ already running.  Returns 1 on success, 0 if a live instance was detected.
 =cut
 
 method start() {
+    $self->mq_register('TICKD', $self);
     $started = 1;
     $pid_file = $self->get_user_path('popfile.pid', 0);
     if (defined($self->live_check())) {
