@@ -192,8 +192,9 @@ sub get_status($self) {
 sub restart($self) {
     $self->render(json => { ok => \1, message => 'Restarting...' });
     $self->rendered(200);
-    require POPFile::Configuration;
-    POPFile::Configuration->delete_pid();
+    my $dir = ($ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.');
+    $dir =~ s{[\\/]+$}{};
+    unlink("$dir/popfile.pid");
     my $script = $ENV{POPFILE_SCRIPT} // $0;
     exec($^X, $script, 'start')
 }
