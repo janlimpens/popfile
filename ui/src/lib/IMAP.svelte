@@ -8,6 +8,7 @@
   let allBuckets = $derived(loadedBuckets.length ? loadedBuckets : buckets);
 
   // ── Connection config ─────────────────────────────────────────────────
+  /** @type {{ imap_hostname?: string, imap_port?: number, imap_login?: string, imap_password?: string, imap_use_ssl?: number, imap_enabled?: number, imap_expunge?: number, imap_training_mode?: number, imap_training_limit?: number, imap_training_error?: number, imap_update_interval?: number, [key: string]: any }} */
   let cfg     = $state({});
   let watched  = $state([]);    // string[]
   let mappings = $state([]);    // {bucket, folder}[]
@@ -16,6 +17,7 @@
   let cfgDirty      = $state(false);
   let foldersDirty  = $state(false);
   let cfgStatus     = $state('');
+  let restartNeeded = $state(false);
   let foldersStatus = $state('');
   let newWatch      = $state('');
   let newMapBucket = $state('');
@@ -83,8 +85,21 @@
       body: JSON.stringify(cfg),
     });
     saving = false;
-    cfgStatus = res.ok ? 'ok' : 'error';
-    if (res.ok) { cfgDirty = false; setTimeout(() => cfgStatus = '', 2500); }
+    if (res.ok) {
+      const body = await res.json();
+      cfgStatus = 'ok';
+      restartNeeded = body.restart_needed || false;
+      cfgDirty = false;
+      setTimeout(() => { cfgStatus = ''; }, 5000);
+    } else {
+      cfgStatus = 'error';
+    }
+  }
+
+  async function doRestart() {
+    if (!confirm(t('Settings_ConfirmRestart') || 'Restart POPFile now?')) return;
+    try { await fetch('/api/v1/restart', { method: 'POST' }); } catch (e) {}
+    setTimeout(() => { window.location.reload(); }, 2000);
   }
 
   // ── Save folder config ────────────────────────────────────────────────
@@ -264,7 +279,7 @@
     <input id="imap_enabled" class="switch" type="checkbox"
       checked={cfg.imap_enabled == 1}
       disabled={!connectionReady}
-      onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
+      onchange={(e) => { const tgt = /** @type {HTMLInputElement} */ (e.target); cfg.imap_enabled = tgt.checked ? 1 : 0; saveCfg(); }}
     />
   </div>
 
@@ -306,7 +321,7 @@
         <label for="imap_expunge">{t('Imap_Expunge')}</label>
         <input id="imap_expunge" class="switch" type="checkbox"
           checked={cfg.imap_expunge == 1}
-          onchange={(e) => { cfg.imap_expunge = e.target.checked ? 1 : 0; markCfg(); }}
+          onchange={(e) => { const tgt = /** @type {HTMLInputElement} */ (e.target); cfg.imap_expunge = tgt.checked ? 1 : 0; markCfg(); }}
         />
       </div>
     </div>
@@ -322,6 +337,10 @@
         </label>
       {/if}
       {#if cfgStatus === 'ok'}  <span class="msg-ok"><span class="icon">check</span> {t('Update')}</span>
+        {#if restartNeeded}
+          <span class="msg-restart"><span class="icon">restart_alt</span> {t('Settings_RestartNeeded')}</span>
+          <button class="btn btn-restart" onclick={doRestart}>{t('Settings_RestartNow')}</button>
+        {/if}
       {:else if cfgStatus === 'error'}<span class="msg-err"><span class="icon">close</span> Error</span>
       {/if}
       <button class="btn btn-secondary" onclick={testConnection} disabled={testing}>
@@ -467,7 +486,7 @@
         <label for="imap_training_mode">{t('Imap_TrainingMode')}</label>
         <input id="imap_training_mode" class="switch" type="checkbox"
           checked={cfg.imap_training_mode == 1}
-          onchange={(e) => { cfg.imap_training_mode = e.target.checked ? 1 : 0; saveCfg(); }}
+          onchange={(e) => { const tgt = /** @type {HTMLInputElement} */ (e.target); cfg.imap_training_mode = tgt.checked ? 1 : 0; saveCfg(); }}
         />
       </div>
       <div class="field-row">
@@ -518,7 +537,7 @@
             disabled={wizardLoading || wizardSelected.size === 0}>{t('Imap_WizardApply')}</button>
         </footer>
       {:else}
-        <p>{t('Imap_WizardDone', { count: wizardDone.length })}</p>
+        <p>{t('Imap_WizardDone').replace('{count}', String(wizardDone.length))}</p>
         <ul class="wizard-list">
           {#each wizardDone as d}
             <li><span class="tag">{d.folder}</span> → <span class="tag bucket-tag">{d.bucket}</span></li>
@@ -793,5 +812,8 @@
   .wizard-list { list-style: none; margin: 0 0 1rem; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
   .wizard-list li { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
   .bucket-tag { background: var(--accent-subtle); color: var(--accent); }
-  .card-footer { display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  .card-footer { display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: wrap; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  .msg-restart { font-size: 0.8rem; color: var(--warning, #e6a817); font-weight: 500; }
+  .btn-restart { padding: 0.3rem 0.8rem; background: var(--warning, #e6a817); color: #fff; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; }
+  .btn-restart:hover { opacity: 0.85; }
 </style>
