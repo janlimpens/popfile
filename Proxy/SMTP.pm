@@ -11,6 +11,14 @@ my $eol = "\015\012";
 
 class Proxy::SMTP :isa(Proxy::Proxy);
 
+    my %DEFAULTS = (
+        port => 25,
+        chain_server => '',
+        chain_port => 25,
+        local => 1,
+        enabled => 0,
+    );
+
 =head1 NAME
 
 Proxy::SMTP — SMTP proxy that classifies outgoing messages with POPFile
@@ -44,17 +52,8 @@ BUILD {
 
     # ----------------------------------------------------------------------------
     method initialize() {
-        $self->config('port', 25);
-        $self->config('chain_server', '');
-        $self->config('chain_port', 25);
-        $self->config('local', 1);
-        $self->config('welcome_string', "SMTP POPFile (" . $self->version() . ") welcome");
-
-        if (!$self->SUPER::initialize()) {
-            return 0;
-        }
-
-        $self->config('enabled', 0);
+        return 0
+            unless $self->SUPER::initialize();
         return 1;
     }
 
@@ -67,12 +66,10 @@ then calls C<< Proxy::Proxy->start() >> to open the listening socket.
 =cut
 
     method start() {
-        if ($self->config('enabled') == 0) {
-            return 2;
-        }
+        $self->set_welcome_string("SMTP POPFile (" . $self->version() . ") welcome");
 
-        if ($self->config('welcome_string') =~ /^SMTP POPFile \(v\d+\.\d+\.\d+\) welcome$/) {
-            $self->config('welcome_string', "SMTP POPFile (" . $self->version() . ") welcome");
+        if (($self->config->get('enabled') // $DEFAULTS{enabled}) == 0) {
+            return 2;
         }
 
         return $self->SUPER::start();
@@ -92,7 +89,7 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
         my $count = 0;
         my $mail;
 
-        $self->tee($client, "220 " . $self->config('welcome_string') . "$eol");
+        $self->tee($client, "220 " . $self->welcome_string() . "$eol");
 
         while (<$client>) {
             my $command = $_;
@@ -100,10 +97,10 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
             $self->log_msg(DEBUG => "Command: --$command--");
 
             if ($command =~ /HELO/i) {
-                if ($self->config('chain_server')) {
+                if ($self->config->get('chain_server') // $DEFAULTS{chain_server}) {
                     if ($mail = $self->verify_connected($mail, $client,
-                            $self->config('chain_server'),
-                            $self->config('chain_port'))) {
+                            $self->config->get('chain_server') // $DEFAULTS{chain_server},
+                            $self->config->get('chain_port') // $DEFAULTS{chain_port})) {
                         $self->smtp_echo_response($mail, $client, $command);
                     } else {
                         last;
@@ -115,10 +112,10 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
             }
 
             if ($command =~ /EHLO/i) {
-                if ($self->config('chain_server')) {
+                if ($self->config->get('chain_server') // $DEFAULTS{chain_server}) {
                     if ($mail = $self->verify_connected($mail, $client,
-                            $self->config('chain_server'),
-                            $self->config('chain_port'))) {
+                            $self->config->get('chain_server') // $DEFAULTS{chain_server},
+                            $self->config->get('chain_port') // $DEFAULTS{chain_port})) {
                         my $unsupported = qr/250\-CHUNKING|BINARYMIME|XEXCH50/;
                         $self->smtp_echo_response($mail, $client, $command, $unsupported);
                     } else {

@@ -424,20 +424,6 @@ method api_session() {
     return $api_session
 }
 
-=head2 _db_path()
-
-Returns the full filesystem path of the POPFile SQLite database.
-
-=cut
-
-method _db_path() {
-    my $dbconnect = $self->module_config('bayes', 'dbconnect');
-    if (defined $dbconnect && $dbconnect =~ /dbname=([^;]+)/) {
-        return $1
-    }
-    return $self->get_user_path($self->module_config('bayes', 'database'))
-}
-
 =head2 _ensure_folder_tables()
 
 Creates the C<imap_watched_folders> and C<imap_folder_mappings> tables
@@ -479,13 +465,10 @@ method _migrate_folder_config() {
     my $existing = $dbh->selectrow_array(
         'SELECT count(*) FROM imap_watched_folders WHERE userid = ?',
         undef, $userid);
-    if ($existing) {
-        return
-    }
-    my $cfg = $self->configuration();
+    return
+        if $existing;
     my $sep = '-->';
-    my $watched_raw = $self->config->get('watched_folders')
-        // $cfg->deprecated_parameter('imap_watched_folders');
+    my $watched_raw = $self->config->get('watched_folders');
     if (defined $watched_raw && $watched_raw ne '') {
         my @folders = grep { $_ ne '' } split /$sep/, $watched_raw;
         if (@folders) {
@@ -494,8 +477,7 @@ method _migrate_folder_config() {
             $sth->execute($userid, $_) for @folders;
         }
     }
-    my $mapping_raw = $self->config->get('bucket_folder_mappings')
-        // $cfg->deprecated_parameter('imap_bucket_folder_mappings');
+    my $mapping_raw = $self->config->get('bucket_folder_mappings');
     if (defined $mapping_raw && $mapping_raw ne '') {
         my %mapping = split /$sep/, $mapping_raw;
         if (%mapping) {
@@ -605,7 +587,6 @@ connected client on success, or C<undef> and sets C<$imap_error> on failure.
 
 method new_imap_client(%args) {
     my $client = Services::IMAP::Client->new();
-    $client->set_configuration($self->configuration());
     $client->set_mq($self->mq());
     $client->set_name($self->name());
     if (defined $args{nexts}) {

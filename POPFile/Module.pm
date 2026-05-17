@@ -6,6 +6,8 @@ package POPFile::Module;
 use Object::Pad;
 use IO::Select;
 
+use POPFile::Config;
+
 # Class-wide slurp buffer — keyed by filehandle stringification so that
 # handles can be shared between objects without losing buffered data.
 
@@ -45,42 +47,6 @@ Lifecycle: C<initialize> → C<start> → C<service> [loop] → C<stop>
 
 
 =head1 PROTECTED HELPERS
-
-=head2 config
-
-Get or set a module-specific configuration parameter.
-
-my $val = $self->config('param');
-$self->config('param', $value);
-
-=cut
-
-method config ($param, $val = undef) {
-    warn "[LEGACY CONFIG] $name->config('$param')\n";
-    return $self->module_config($name, $param, $val);
-}
-
-=head2 global_config
-
-Get or set a global (GLOBAL-namespaced) configuration parameter.
-
-=cut
-
-method global_config ($param, $val = undef) {
-    warn "[LEGACY CONFIG] $name->global_config('$param')\n";
-    return $self->module_config('GLOBAL', $param, $val);
-}
-
-=head2 module_config
-
-Get or set a configuration parameter under an explicit module namespace.
-
-=cut
-
-method module_config ($module, $param, $val = undef) {
-    warn "[LEGACY CONFIG] module_config($module, '$param')\n";
-    return $configuration->parameter($module . '_' . $param, $val);
-}
 
 =head2 mq_post
 
@@ -204,7 +170,7 @@ Returns C<undef> on timeout or closed connection.
 =cut
 
 method slurp ($handle, $timeout = undef) {
-    $timeout //= $self->global_config('timeout');
+    $timeout //= $self->_global_timeout();
 
     unless (defined $slurp_data{"$handle"}{data}) {
         $slurp_data{"$handle"}{select} = IO::Select->new($handle);
@@ -286,7 +252,7 @@ sockets and SSL handles (via C<< $handle->pending() >>).
 =cut
 
 method can_read ($handle, $timeout = undef) {
-    $timeout //= $self->global_config('timeout');
+    $timeout //= $self->_global_timeout();
 
     my $can_read = 0;
     if ($handle =~ /ssl/i) {
@@ -301,6 +267,10 @@ method can_read ($handle, $timeout = undef) {
         }
     }
     return $can_read;
+}
+
+method _global_timeout() {
+    POPFile::Config->instance()->get(GLOBAL => 'timeout')
 }
 
 =head1 ACCESSORS

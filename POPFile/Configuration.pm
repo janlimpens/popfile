@@ -5,41 +5,32 @@ package POPFile::Configuration;
 
 =head1 NAME
 
-POPFile::Configuration - manage POPFile configuration parameters
+POPFile::Configuration — PID management, path resolution, CLI parsing
 
 =head1 DESCRIPTION
 
-Loads and saves C<popfile.cfg>, manages all registered configuration
-parameters across POPFile modules, and parses the command line.
+Manages the POPFile PID file, resolves user/root paths, parses the command
+line, and provides encryption helpers for sensitive config values.
 
-Individual modules register parameters via C<config()> / C<global_config()>
-(inherited from L<POPFile::Module>).  C<POPFile::Configuration> stores the
-canonical values and persists them to disk.  It also handles upgrading old
-parameter names from earlier POPFile releases.
+Configuration storage has moved to L<POPFile::Config> and L<POPFile::ConfigFile>.
+This module no longer stores or persists configuration parameters.
 
 =cut
 
 use Object::Pad;
-use builtin qw(true false);
 use locale;
 
-use File::Copy qw(copy);
-use File::Basename qw(basename);
 use Getopt::Long;
-use Cpanel::JSON::XS ();
 
 class POPFile::Configuration
     :isa(POPFile::Module);
 
-field %configuration_parameters;
 field $pid_file = '';
 field $pid_check = 0;
-field $save_needed :reader :writer = 0;
+field $pidcheck_interval = 5;
 field $started :reader :writer = 0;
 field $popfile_root :reader :writer = $ENV{POPFILE_ROOT} || './';
 field $popfile_user :reader :writer = $ENV{POPFILE_USER} || './';
-field %deprecated_parameters;
-field $config_format :reader :writer = "legacy";  # "legacy" or "json"
 
 BUILD {
     $pid_check = time;
@@ -48,17 +39,11 @@ BUILD {
 
 =head2 initialize
 
-Registers default configuration values and subscribes to the C<TICKD>
-message for periodic saves.
+Subscribes to the C<TICKD> message for periodic PID checks.
 
 =cut
 
 method initialize() {
-    $self->config('piddir', './');
-    $self->config('pidcheck_interval', 5);
-    $self->global_config('timeout', 60);
-    $self->global_config('msgdir', 'messages/');
-    $self->global_config('message_cutoff', 100000);
     $self->mq_register('TICKD', $self);
     return 1;
 }
@@ -72,7 +57,7 @@ already running.  Returns 1 on success, 0 if a live instance was detected.
 
 method start() {
     $started = 1;
-    $pid_file = $self->get_user_path($self->config('piddir') . 'popfile.pid', 0);
+    $pid_file = $self->get_user_path('popfile.pid', 0);
     if (defined($self->live_check())) {
         return 0;
     }
@@ -89,13 +74,11 @@ Periodically checks the PID file and rewrites it if it has been removed
 
 method service() {
     my $time = time;
-    if ($self->config('pidcheck_interval') > 0) {
-        if ($pid_check <= ($time - $self->config('pidcheck_interval'))) {
-            $pid_check = $time;
-            if (!$self->check_pid()) {
-                $self->write_pid();
-                $self->log_msg(WARN => "New POPFile instance detected and signalled");
-            }
+    if ($pid_check <= ($time - $pidcheck_interval)) {
+        $pid_check = $time;
+        if (!$self->check_pid()) {
+            $self->write_pid();
+            $self->log_msg(WARN => "New POPFile instance detected and signalled");
         }
     }
     return 1;
@@ -103,26 +86,21 @@ method service() {
 
 =head2 stop
 
-Saves the configuration to disk and deletes the PID file.
+Deletes the PID file.
 
 =cut
 
 method stop() {
-    $self->save_configuration();
     $self->delete_pid();
 }
 
 =head2 deliver
 
-Handles the C<TICKD> message by saving the configuration to disk (no-op if
-no parameter has changed since the last save).
+Handles the C<TICKD> message (no-op — periodic saves are handled by ConfigFile).
 
 =cut
 
 method deliver ($type, @message) {
-    if ($type eq 'TICKD') {
-        $self->save_configuration();
-    }
 }
 
 =head2 live_check
@@ -137,7 +115,7 @@ if none.
 method live_check() {
     if ($self->check_pid()) {
         my $oldpid = $self->get_pid();
-        my $wait_time = $self->config('pidcheck_interval') * 2;
+        my $wait_time = $pidcheck_interval * 2;
         my $error = "\n\nA copy of POPFile appears to be running.\n Attempting to signal the previous copy.\n Waiting $wait_time seconds for a reply.\n";
         $self->delete_pid();
         print STDERR $error;
@@ -207,8 +185,7 @@ method delete_pid() {
 =head2 parse_command_line
 
 Parses C<@ARGV> using L<Getopt::Long>.  Accepts C<--set key=value> pairs and
-legacy positional C<-key value> pairs.  Updates matching registered
-parameters.  Returns 1 on success, 0 on parse error.
+legacy positional C<-key value> pairs.  Returns 1 on success, 0 on parse error.
 
 =cut
 
@@ -217,136 +194,14 @@ method parse_command_line() {
     if (!GetOptions("set=s" => \@set_options)) {
         return 0;
     }
-    my @options;
     for my $i (0..$#set_options) {
         $set_options[$i] =~ /-?(.+)=(.+)/;
         unless (defined $1) {
             print STDERR "\nBad option: $set_options[$i]\n";
             return 0;
         }
-        push @options, ("-$1");
-        if (defined($2)) {
-            push @options, ($2);
-        }
-    }
-    push @options, @ARGV;
-    if (@options)  {
-        my $i = 0;
-        while ($i <= $#options )  {
-            if ($options[$i] =~ /^-(.+)$/) {
-                my $parameter = $self->upgrade_parameter($1);
-                if (defined($configuration_parameters{$parameter})) {
-                    if ($i < $#options ) {
-                        $self->parameter($parameter, $options[$i+1]);
-                        $i += 2;
-                    } else {
-                        print STDERR "\nMissing argument for $options[$i]\n";
-                        return 0;
-                    }
-                } else {
-                    print STDERR "\nUnknown option $options[$i]\n";
-                    return 0;
-                }
-            } else {
-                print STDERR "\nExpected a command line option and got $options[$i]\n";
-                return 0;
-            }
-        }
     }
     return 1;
-}
-
-=head2 upgrade_parameter
-
-Given a legacy parameter name (from the command line or an old config file),
-returns the current canonical name.  Returns the input unchanged if no
-upgrade mapping exists.
-
-=cut
-
-method upgrade_parameter ($parameter) {
-    my %upgrades = (
-        corpus => 'bayes_corpus',
-        unclassified_probability => 'bayes_unclassified_probability',
-
-        piddir => 'config_piddir',
-
-        debug => 'GLOBAL_debug',
-        msgdir => 'GLOBAL_msgdir',
-        timeout => 'GLOBAL_timeout',
-
-        logdir => 'logger_logdir',
-
-        localpop => 'pop3_local',
-        port => 'pop3_port',
-        sport => 'pop3_secure_port',
-        server => 'pop3_secure_server',
-        separator => 'pop3_separator',
-        toptoo => 'pop3_toptoo',
-
-        language => 'api_locale',
-        html_language => 'api_locale',
-
-        archive => 'history_archive',
-        archive_classes => 'history_archive_classes',
-        archive_dir => 'history_archive_dir',
-        history_days => 'history_history_days',
-        html_archive => 'history_archive',
-        html_archive_classes => 'history_archive_classes',
-        html_archive_dir => 'history_archive_dir',
-        html_history_days => 'history_history_days',
-    );
-    if (defined($upgrades{$parameter})) {
-        return $upgrades{$parameter};
-    } else {
-        return $parameter;
-    }
-}
-
-=head2 load_configuration
-
-Reads C<popfile.cfg> and populates the configuration hash.  Unknown
-parameters (no longer registered by any module) are preserved in a
-deprecated-parameters store so they are not silently lost on the next save.
-
-=cut
-
-method load_configuration() {
-    $started = 1;
-    my $legacy_config = $self->get_user_path('popfile.cfg');
-    my $json_config = $self->get_user_path('config.json');
-    $self->_migrate_legacy_to_json()
-        if !-e $json_config && -e $legacy_config;
-    if (!-e $json_config && !-e $legacy_config) {
-        my $sample = $self->get_root_path('config.json.sample');
-        copy($sample, $json_config)
-            if -e $sample;
-    }
-    if (-e $json_config) {
-        $config_format = 'json';
-        $self->_load_json();
-        return
-    }
-    $config_format = 'legacy';
-    $self->_load_legacy();
-}
-
-=head2 save_configuration
-
-Writes all registered parameters to C<popfile.cfg> (via a temporary file to
-avoid corruption).  Does nothing if no parameter has changed since the last
-save (C<save_needed> is 0).
-
-=cut
-
-method save_configuration() {
-    return if $save_needed == 0;
-
-    if ($config_format eq 'json') {
-        $self->_save_json();
-    } else {
-        $self->_save_legacy();
-    }
 }
 
 =head2 get_user_path
@@ -405,82 +260,9 @@ method path_join ($left, $right, $sandbox = undef) {
     return "$left/$right";
 }
 
-=head2 parameter
-
-    my $val = $self->parameter($name);
-    $self->parameter($name, $new_value);
-
-Gets or sets a configuration parameter by its fully-qualified name (e.g.
-C<pop3_port>).  Setting a value before C<start()> is called also updates the
-default.  Returns the current value, or C<undef> if the parameter is not
-registered.
-
-=cut
-
-method parameter ($name, $value = undef) {
-    if (defined $value) {
-        if ($started && $name =~ /^imap_(hostname|login)$/ && $value eq '' && $configuration_parameters{$name}{value}) {
-            require Carp;
-            Carp::cluck("CONFIG_DIAG: $name set to empty after load");
-        }
-        $save_needed = 1;
-        $configuration_parameters{$name}{value} = $value;
-        $configuration_parameters{$name}{default} = $value
-            if $started == 0;
-    }
-    return defined $configuration_parameters{$name}
-        ? $configuration_parameters{$name}{value}
-        : undef
-}
-
-method config_hash() {
-    my %hash;
-    for my $key (keys %configuration_parameters) {
-        $hash{$key} = $configuration_parameters{$key}{value};
-    }
-    return \%hash
-}
-
-=head2 is_default
-
-    my $bool = $self->is_default($name);
-
-Returns true if the named parameter still holds its registered default value.
-
-=cut
-
-method is_default ($name) {
-    return ($configuration_parameters{$name}{value} eq
-             $configuration_parameters{$name}{default});
-}
-
-=head2 configuration_parameters
-
-Returns a sorted list of all registered parameter names.
-
-=cut
-
-method configuration_parameters() {
-    return sort keys %configuration_parameters;
-}
-
-=head2 deprecated_parameter
-
-    my $val = $self->deprecated_parameter($name);
-
-Returns the value of a parameter that was present in C<popfile.cfg> but is
-no longer registered by any module, or C<undef> if it was never seen.
-
-=cut
-
-method deprecated_parameter ($name) {
-    return $deprecated_parameters{$name};
-}
-
 =head2 _is_sensitive_key
 
 Returns true for configuration keys whose values should be encrypted at rest.
-Currently covers C<imap_password>.
 
 =cut
 
@@ -494,8 +276,7 @@ method _is_sensitive_key($key) {
 =head2 _encrypt_config
 
 Encrypts a sensitive configuration value using AES-256-CBC with a key derived
-from the POPFile root path.  Returns the base64-encoded ciphertext prefixed
-with C<ENC:> so legacy plaintext configs are not broken on upgrade.
+from the POPFile root path.
 
 =cut
 
@@ -514,8 +295,7 @@ method _encrypt_config($plaintext) {
 
 =head2 _decrypt_config
 
-Decrypts a value previously encrypted with C<_encrypt_config>.  Returns the
-input unchanged if it is not prefixed with C<ENC:>.
+Decrypts a value previously encrypted with C<_encrypt_config>.
 
 =cut
 
@@ -546,192 +326,6 @@ method _crypto_key() {
     require Digest::SHA;
     my $seed = $popfile_root . ':popfile-config-key';
     return Digest::SHA::sha256($seed)
-}
-
-my %_CONFIG_TYPES = (
-    api_port => 'int',
-    api_local => 'bool',
-    api_open_browser => 'bool',
-    api_session_dividers => 'bool',
-    api_page_size => 'int',
-    api_word_page_size => 'int',
-    bayes_sqlite_backup => 'bool',
-    bayes_sqlite_fast_writes => 'bool',
-    bayes_unclassified_weight => 'int',
-    bayes_subject_mod_pos => 'bool',
-    bayes_xpl_angle => 'bool',
-    bayes_stopword_ratio => 'int',
-    config_pidcheck_interval => 'int',
-    GLOBAL_timeout => 'int',
-    GLOBAL_message_cutoff => 'int',
-    GLOBAL_debug => 'int',
-    history_history_days => 'int',
-    history_archive => 'bool',
-    history_archive_classes => 'int',
-    imap_port => 'int',
-    imap_use_ssl => 'bool',
-    imap_enabled => 'bool',
-    imap_training_mode => 'bool',
-    imap_expunge => 'bool',
-    imap_update_interval => 'int',
-    imap_training_limit => 'int',
-    logger_level => 'int',
-    logger_log_to_stdout => 'bool',
-    logger_log_sql => 'bool',
-    pop3_port => 'int',
-    pop3_secure_port => 'int',
-    pop3_local => 'bool',
-    pop3_secure_server => 'bool',
-    pop3_toptoo => 'bool',
-    smtp_port => 'int',
-    smtp_chain_port => 'int',
-    smtp_local => 'bool',
-    nntp_port => 'int',
-    nntp_local => 'bool',
-    nntp_headtoo => 'bool',
-    nntp_enabled => 'bool',
-    pop3_enabled => 'bool',
-    smtp_enabled => 'bool',
-    wordmangle_stemming => 'bool',
-    wordmangle_auto_detect_language => 'bool' );
-
-method _config_to_json ($key, $value) {
-    return $value
-        unless defined $value;
-    my $type = $_CONFIG_TYPES{$key};
-    if ($type && $type eq 'bool') {
-        return $value ? true : false
-    }
-    if ($type && $type eq 'int') {
-        return 0 + $value
-    }
-    return $value
-}
-
-method _json_to_config ($key, $value) {
-    return $value
-        unless defined $value;
-    my $type = $_CONFIG_TYPES{$key};
-    if ($type && $type eq 'bool') {
-        return $value ? '1' : '0'
-    }
-    if ($type && $type eq 'int') {
-        return "$value"
-    }
-    return "$value"
-}
-
-method _load_json() {
-    require POPFile::ConfigFile;
-    my $cf = POPFile::ConfigFile->new();
-    my $data = $cf->load($self->get_user_path("config.json"));
-    for my $section (keys %$data) {
-        next
-            if $section eq "version";
-        my $nested = $data->{$section};
-        next
-            unless ref $nested eq "HASH";
-        for my $key (keys %$nested) {
-            my $full_name = $section . "_" . $key;
-            my $value = $nested->{$key};
-            $value = $self->_json_to_config($full_name, $value);
-            $value = $self->_decrypt_config($value)
-                if $self->_is_sensitive_key($full_name);
-            $configuration_parameters{$full_name}{value} = $value;
-        }
-    }
-    $save_needed = 0;
-}
-
-method _save_json() {
-    require POPFile::ConfigFile;
-    my %data = (version => 2);
-    for my $key (sort keys %configuration_parameters) {
-        my $value = $configuration_parameters{$key}{value};
-        $value = $self->_encrypt_config($value)
-            if $self->_is_sensitive_key($key);
-        $value = $self->_config_to_json($key, $value);
-        if ($key =~ /^(.+?)_(.+)$/) {
-            my $section = $1;
-            my $param = $2;
-            $data{$section}{$param} = $value;
-        }
-    }
-    my $cf = POPFile::ConfigFile->new();
-    $cf->save($self->get_user_path("config.json"), \%data);
-    $save_needed = 0;
-}
-
-method _load_legacy() {
-    my $config_file = $self->get_user_path('popfile.cfg');
-    if (open my $config, '<', $config_file) {
-        my $loaded = 0;
-        while (<$config>) {
-            s/(\015|\012)//g;
-            next
-                if /^\s*#/;
-            if (/^\s*(\S+)\s+(.+)/) {
-                my $parameter = $1;
-                my $value = $2;
-                $value =~ s/\s+$//;
-                $parameter = $self->upgrade_parameter($parameter);
-                if (defined($configuration_parameters{$parameter})) {
-                    $value = $self->_decrypt_config($value)
-                        if $self->_is_sensitive_key($parameter);
-                    $configuration_parameters{$parameter}{value} = $value;
-                    $loaded++;
-                } else {
-                    $deprecated_parameters{$parameter} = $value;
-                }
-            }
-        }
-        close $config;
-        $self->log_msg(INFO => "Loaded $loaded parameters from legacy popfile.cfg");
-    } else {
-        if (-e $config_file && !-r _) {
-            $self->log_msg(WARN => "Couldn't load from the configuration file $config_file");
-        }
-    }
-    $save_needed = 0;
-}
-
-method _save_legacy() {
-    my $config_file = $self->get_user_path('popfile.cfg');
-    my $config_temp = $self->get_user_path('popfile.cfg.tmp');
-    if (-e $config_file && !-w _) {
-        $self->log_msg(WARN => "Can't write to the configuration file " . basename($config_file));
-        return
-    }
-    if (open my $tmp, '>', $config_temp) {
-        for my $key (sort keys %configuration_parameters) {
-            my $value = $configuration_parameters{$key}{value};
-            $value = $self->_encrypt_config($value)
-                if $self->_is_sensitive_key($key);
-            print $tmp "$key $value\n";
-        }
-        close $tmp;
-        if (copy($config_temp, $config_file)) {
-            unlink $config_temp;
-            $save_needed = 0;
-        } else {
-            $self->log_msg(WARN => "Couldn't write configuration to $config_file: $!");
-        }
-    } else {
-        $self->log_msg(WARN => "Couldn't open a temporary configuration file $config_temp");
-    }
-    chmod 0600, $config_file
-        if -e $config_file;
-}
-
-method _migrate_legacy_to_json() {
-    $self->log_msg(INFO => 'Migrating legacy popfile.cfg to config.json');
-    $self->_load_legacy();
-    $config_format = 'json';
-    $self->_save_json();
-    my $legacy_config = $self->get_user_path('popfile.cfg');
-    my $backup = $self->get_user_path('popfile.cfg.bak');
-    rename($legacy_config, $backup) or die "Cannot backup $legacy_config: $!";
-    $self->log_msg(INFO => 'Migration complete — popfile.cfg backed up to popfile.cfg.bak');
 }
 
 1;

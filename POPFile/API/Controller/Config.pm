@@ -64,39 +64,38 @@ use constant CFG => {
 };
 
 sub get_config($self) {
-    my $api = $self->popfile_api;
-    my %cfg;
+    my %result;
     for my $key (keys %{CFG()}) {
         my ($mod, $param) = CFG->{$key}->@*;
-        $cfg{$key} = $api->module_config($mod, $param) // '';
+        $result{$key} = POPFile::Config->instance()->get($mod, $param) // '';
     }
-    $self->render(json => \%cfg)
+    $self->render(json => \%result)
 }
 
 sub update_config($self) {
-    my $api = $self->popfile_api;
     my $body = $self->req->json // {};
+    my $path = POPFile::Config->resolve_path();
+    my $data = POPFile::ConfigFile->new()->load($path);
     for my $key (keys $body->%*) {
-        next unless exists CFG->{$key};
+        next
+            unless exists CFG->{$key};
         my ($mod, $param) = CFG->{$key}->@*;
-        if ($key =~ /^imap_(hostname|login)$/) {
-            my $val = $body->{$key} // '(undef)';
-            $self->app->log->info("CONFIG_DIAG: update_config setting $key='$val'");
-        }
-        $api->module_config($mod, $param, $body->{$key});
+        $data->{$mod}{$param} = $body->{$key};
     }
-    $api->configuration()->save_configuration();
+    POPFile::ConfigFile->new()->save($path, $data);
     if (grep { /^logger_/ } keys $body->%*) {
-        my $loader = $self->popfile_loader;
-        my $logger = $loader->get_module('POPFile::Logger') if defined $loader;
-        $logger->reconfigure() if defined $logger;
+        my $loader = $self->popfile_loader();
+        my $logger = $loader->get_module('POPFile::Logger')
+            if defined $loader;
+        $logger->reconfigure()
+            if defined $logger;
     }
     $self->render(json => { ok => \1 })
 }
 
 sub get_status($self) {
-    my $api = $self->popfile_api;
-    my $imap_enabled = $api->module_config('imap', 'enabled') // 0;
+    my $cfg = POPFile::Config->instance();
+    my $imap_enabled = $cfg->get(imap => 'enabled') // 0;
     unless ($imap_enabled) {
         return $self->render(json => { checks => [{
             id => 'imap_service',
@@ -105,12 +104,12 @@ sub get_status($self) {
             detail => 'IMAP is disabled. Enable it in Settings → IMAP.',
         }] });
     }
-    my $hostname = $api->module_config('imap', 'hostname') // '';
-    my $port = $api->module_config('imap', 'port') // '';
-    my $login = $api->module_config('imap', 'login') // '';
-    my $password = $api->module_config('imap', 'password') // '';
-    my $use_ssl = $api->module_config('imap', 'use_ssl') // 0;
-    my $flag_pattern = $api->get_user_path('popfile.train*', 0);
+    my $hostname = $cfg->get(imap => 'hostname') // '';
+    my $port = $cfg->get(imap => 'port') // '';
+    my $login = $cfg->get(imap => 'login') // '';
+    my $password = $cfg->get(imap => 'password') // '';
+    my $use_ssl = $cfg->get(imap => 'use_ssl') // 0;
+    my $flag_pattern = $self->popfile_api->get_user_path('popfile.train*', 0);
     my @train_flags = defined $flag_pattern ? glob($flag_pattern) : ();
     my @train_pending = map { /popfile\.train\.(.+)$/ ? $1 : '*' } @train_flags;
     unless ($hostname ne '' && $port ne '') {
@@ -121,22 +120,15 @@ sub get_status($self) {
             detail => 'IMAP not configured',
         }] });
     }
-    my $cfg_obj = $api->configuration();
-    my $mq_obj = $api->mq();
+    my $mq_obj = $self->popfile_api->mq();
     $self->render_later();
     Mojo::IOLoop->subprocess(
         sub {
             require Services::IMAP::Client;
             my @c;
             my $client = Services::IMAP::Client->new();
-            $client->set_configuration($cfg_obj);
             $client->set_mq($mq_obj);
             $client->set_name('imap');
-            $client->config('hostname', $hostname);
-            $client->config('port', $port);
-            $client->config('login', $login);
-            $client->config('password', $password);
-            $client->config('use_ssl', $use_ssl);
             unless ($client->connect()) {
                 push @c, { id => 'connectivity', label => 'IMAP Connectivity',
                     status => 'error', detail => "Cannot reach $hostname:$port" };
@@ -154,12 +146,9 @@ sub get_status($self) {
             my @server_folders = $client->get_mailbox_list();
             $client->logout();
             my %on_server = map { $_ => 1 } @server_folders;
-            
-            # Read watched folders and mappings from IMAP service
-            my $imap_svc = $self->popfile_imap;
+            my $imap_svc = $self->popfile_imap();
             my @watched = $imap_svc->watched_folders();
             my %map_hash = $imap_svc->folder_mappings();
-            
             my @missing_w = grep { !$on_server{$_} } @watched;
             push @c, { id => 'watched_folders', label => 'Watched Folders',
                 status => @missing_w ? 'warn' : 'ok',

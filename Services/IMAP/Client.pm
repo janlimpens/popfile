@@ -2,7 +2,34 @@
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
 
-class Services::IMAP::Client :isa(POPFile::Module);
+use POPFile::Role::Config;
+
+my %DEFAULTS = (
+    hostname => '',
+    port => 143,
+    use_ssl => 0,
+    login => '',
+    password => '',
+);
+
+class Services::IMAP::Client
+    :isa(POPFile::Module)
+    :does(POPFile::Role::Config);
+
+field $test_hostname;
+field $test_port;
+field $test_use_ssl;
+field $test_login;
+field $test_password;
+
+method set_test_credentials(%args) {
+    $test_hostname = $args{hostname};
+    $test_port = $args{port};
+    $test_use_ssl = $args{use_ssl};
+    $test_login = $args{login};
+    $test_password = $args{password};
+    return
+}
 
 use Carp qw(confess);
 use Encode qw(decode);
@@ -70,10 +97,10 @@ success, C<undef> on failure.
 =cut
 
 method connect() {
-    my $hostname = $self->config('hostname');
-    my $port = $self->config('port');
-    my $use_ssl = $self->config('use_ssl');
-    my $timeout = $self->global_config('timeout');
+    my $hostname = $test_hostname // $self->config->get('hostname') // $DEFAULTS{hostname};
+    my $port = $test_port // $self->config->get('port') // $DEFAULTS{port};
+    my $use_ssl = $test_use_ssl // $self->config->get('use_ssl') // $DEFAULTS{use_ssl};
+    my $timeout = $self->_global_timeout();
     $self->log_msg(INFO => "Connecting to $hostname:$port");
     unless ($hostname ne '' && $port ne '') {
         $self->log_msg(WARN => "Invalid port or hostname. Will not connect to server.");
@@ -121,8 +148,8 @@ C<undef> on failure.  Credentials are masked in the log.
 =cut
 
 method login() {
-    my $login = $self->config('login');
-    my $pass = $self->config('password');
+    my $login = $test_login // $self->config->get('login') // $DEFAULTS{login};
+    my $pass = $test_password // $self->config->get('password') // $DEFAULTS{password};
     $self->log_msg(INFO => "Logging in");
     $self->say('LOGIN "' . $login . '" "' . $pass . '"');
     return $self->get_response() == 1 ? 1 : undef
@@ -257,7 +284,7 @@ method get_response() {
         alarm 0;
         $self->bail_out("The connection to the IMAP server timed out while we waited for a response.");
     };
-    alarm $self->global_config('timeout');
+    alarm $self->_global_timeout();
     my $actual_tag = sprintf "A%05d", $tag;
     my $response = '';
     my $count_octets = 0;
@@ -430,7 +457,7 @@ method search_header_in_folder ($folder_name, $field, $value) {
 Fetches C<$part> (e.g. C<'HEADER'>, C<'TEXT'>,
 C<'HEADER.FIELDS (…)'>, or C<''> for the whole message) of UID C<$msg>
 using C<UID FETCH … BODY.PEEK[…]>.  Body size is capped by
-C<global_config('message_cutoff')>.  Returns C<(1, @lines)> on success or
+C<message_cutoff> from the global config.  Returns C<(1, @lines)> on success or
 C<(0)> on failure.
 
 =cut
@@ -443,7 +470,7 @@ method fetch_message_part ($msg, $part) {
         $self->log_msg(DEBUG => "Fetching message $msg");
     }
     if ($part eq 'TEXT' || $part eq '') {
-        my $limit = $self->global_config('message_cutoff') || 0;
+        my $limit = $self->config('GLOBAL')->get('message_cutoff') || 0;
         $self->say("UID FETCH $msg (FLAGS BODY.PEEK[$part]<0.$limit>)");
     }
     else {

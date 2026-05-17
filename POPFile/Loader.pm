@@ -23,9 +23,8 @@ POPFile-based utilities that need to load a subset of modules.
 use Object::Pad;
 use lib '.';
 use POPFile::Features;
+use POPFile::Config;
 use POPFile::Database;
-use feature 'try';
-no warnings 'experimental::try';
 use locale;
 
 use Getopt::Long qw(:config pass_through);
@@ -120,7 +119,7 @@ when the global debug level is greater than 0.
 =cut
 
 method CORE_warning (@message) {
-    if ($self->module_config('GLOBAL', 'debug') > 0) {
+    if (POPFile::Config->instance()->get(GLOBAL => 'debug') > 0) {
         Log::Any->get_logger(category => 'POPFile')->warning("Perl warning: @message");
         warn @message;
     }
@@ -139,7 +138,7 @@ method CORE_die (@message) {
 
     print STDERR @message;
 
-    if ($self->module_config('GLOBAL', 'debug') > 0) {
+    if (POPFile::Config->instance()->get(GLOBAL => 'debug') > 0) {
         Log::Any->get_logger(category => 'POPFile')->error("Perl fatal error: @message");
     }
 
@@ -337,17 +336,16 @@ method CORE_link_components() {
         $components{classifier}{wordmangle});
 
     if (defined $components{core}{api}) {
-        my $api = $components{core}{api};
         my $cfg = $components{core}{config};
-        my $database = $api->module_config('bayes', 'database') // 'popfile.db';
-        my $dbconnect = $api->module_config('bayes', 'dbconnect') // '';
+        my $database = POPFile::Config->instance()->get(bayes => 'database') // 'popfile.db';
+        my $dbconnect = POPFile::Config->instance()->get(bayes => 'dbconnect') // '';
         $database = $cfg->get_user_path($database)
             if $dbconnect =~ /sqlite/i && $dbconnect !~ /:memory:/i;
         POPFile::Database->instance()->configure(
             dbconnect => $dbconnect,
             database => $database,
-            dbuser => $api->module_config('bayes', 'dbuser'),
-            dbauth => $api->module_config('bayes', 'dbauth'));
+            dbuser => POPFile::Config->instance()->get(bayes => 'dbuser'),
+            dbauth => POPFile::Config->instance()->get(bayes => 'dbauth'));
     }
 }
 
@@ -382,10 +380,32 @@ success, 0 if command-line parsing failed.
 =cut
 
 method CORE_config() {
-    $components{core}{config}->load_configuration();
-    my $ok = $components{core}{config}->parse_command_line();
-    POPFile::Config->instance()->load($components{core}{config});
-    return $ok
+    POPFile::Config->instance();
+    my $port = POPFile::Config->instance()->get(api => 'port');
+    if (!defined $port || $port == 0) {
+        $self->_assign_free_port();
+    }
+    return $components{core}{config}->parse_command_line()
+}
+
+method _assign_free_port() {
+    require IO::Socket::INET;
+    require POPFile::ConfigFile;
+    my $sock = IO::Socket::INET->new(
+        LocalAddr => '127.0.0.1',
+        LocalPort => 0,
+        Listen => 1,
+        ReuseAddr => 1,
+    ) or die "POPFile::Loader: cannot bind to find free port: $!";
+    my $port = $sock->sockport();
+    $sock->close();
+    my $path = POPFile::Config->resolve_path();
+    my $data = +{version => 2};
+    $data = POPFile::ConfigFile->new()->load($path)
+        if -e $path;
+    $data->{api}{port} = $port;
+    POPFile::ConfigFile->new()->save($path, $data);
+    exec($^X, $0, @ARGV)
 }
 
 =head2 CORE_start
@@ -595,20 +615,6 @@ method root_path ($path) {
     $path         =~ s/^[\/\\]//;
 
     return "$popfile_root/$path";
-}
-
-
-=head2 module_config
-
-    my $val = $self->module_config($module, $item);
-    $self->module_config($module, $item, $value);
-
-Thin proxy to C<< POPFile::Configuration->module_config() >>.
-
-=cut
-
-method module_config ($module, $item, $value = undef) {
-    return $components{core}{config}->module_config($module, $item, $value);
 }
 
 =head2 deliver

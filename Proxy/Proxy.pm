@@ -11,9 +11,18 @@ use IO::Handle;
 use IO::Socket;
 use IO::Select;
 
+use POPFile::Role::Config;
+
 my $eol = "\015\012";
 
-class Proxy::Proxy :isa(POPFile::Module);
+class Proxy::Proxy :isa(POPFile::Module) :does(POPFile::Role::Config);
+
+    my %DEFAULTS = (
+        enabled => 1,
+        port => 0,
+        local => 0,
+    );
+
     field $classifier_service = undef;
 
     field $connection_timeout_error :reader :writer = '';
@@ -25,6 +34,12 @@ class Proxy::Proxy :isa(POPFile::Module);
 
     field $server_id = undef;
     field $bound_port :reader = 0;
+
+    field $welcome_string :writer = '';
+
+    method welcome_string() {
+        return $welcome_string ne '' ? $welcome_string : ''
+    }
 
 =head1 NAME
 
@@ -53,12 +68,8 @@ and C<socks_port>.  Returns 1.
 =cut
 
     method initialize() {
-        $self->config('enabled', 1);
-        $self->config('port',    0);
-
-        $self->config('socks_server', '');
-        $self->config('socks_port',   1080);
-
+        $self->config->write(enabled => 1);
+        $self->config->write(port => 0);
         return 1;
     }
 
@@ -74,10 +85,10 @@ Returns 0 if the server cannot be started; 1 on success.
 
     method start() {
         require Mojo::IOLoop;
-        $self->log_msg(INFO => "Opening listening socket on port " . $self->config('port') . '.');
+        $self->log_msg(INFO => "Opening listening socket on port " . ($self->config->get('port') // $DEFAULTS{port}) . '.');
 
-        my $local = ($self->config('local') || 0) == 1;
-        my %listen_args = (port => $self->config('port'));
+        my $local = (($self->config->get('local') // $DEFAULTS{local}) // 0) == 1;
+        my %listen_args = (port => $self->config->get('port') // $DEFAULTS{port});
         $listen_args{address} = '127.0.0.1' if $local;
 
         my $name = $self->name();
@@ -96,7 +107,7 @@ Returns 0 if the server cannot be started; 1 on success.
         );
 
         unless (defined $server_id) {
-            my $port = $self->config('port');
+            my $port = $self->config->get('port') // $DEFAULTS{port};
             $self->log_msg(WARN => "Couldn't start the $name proxy because POPFile could not bind to the listen port $port");
             print STDERR "\nCouldn't start the $name proxy because POPFile could not bind to the\nlisten port $port. This could be because there is another service\nusing that port or because you do not have the right privileges on\nyour system (On Unix systems this can happen if you are not root\nand the port you specified is less than 1024).\n\n";
             return 0;
@@ -208,7 +219,7 @@ C<($response, 1)> on success or C<($connection_timeout_error, 0)> on failure.
         if (!$can_read) {
             my $selector = IO::Select->new($mail);
             my ($ready) = $selector->can_read(
-                (!$null_resp ? $self->global_config('timeout') : .5));
+                (!$null_resp ? $self->_global_timeout() : .5));
             $can_read = defined($ready) && ($ready == $mail);
         }
 
@@ -264,47 +275,34 @@ the connected socket on success, C<undef> on failure.
     method verify_connected ($mail, $client, $hostname, $port, $ssl = 0) {
         return $mail if ($mail && $mail->connected);
 
-        if ($self->config('socks_server') ne '') {
-            require IO::Socket::Socks;
-            $self->log_msg(WARN => "Attempting to connect to socks server at "
-                        . $self->config('socks_server') . ":"
-                        . $self->config('socks_port'));
-
-            $mail = IO::Socket::Socks->new(
-                        ProxyAddr => $self->config('socks_server'),
-                        ProxyPort => $self->config('socks_port'),
-                        ConnectAddr => $hostname,
-                        ConnectPort => $port);
-        } else {
-            if ($ssl) {
-                try { require IO::Socket::SSL; }
-                catch ($e) {
-                    $self->tee($client, "$ssl_not_supported_error$eol");
-                    return;
-                }
-
-                $self->log_msg(WARN => "Attempting to connect to SSL server at $hostname:$port");
-
-                $mail = IO::Socket::SSL->new(
-                            Proto => "tcp",
-                            PeerAddr => $hostname,
-                            PeerPort => $port,
-                            Timeout => $self->global_config('timeout'),
-                            Domain => AF_INET);
-            } else {
-                $self->log_msg(WARN => "Attempting to connect to POP server at $hostname:$port");
-
-                $mail = IO::Socket::INET->new(
-                            Proto => "tcp",
-                            PeerAddr => $hostname,
-                            PeerPort => $port,
-                            Timeout => $self->global_config('timeout'));
+        if ($ssl) {
+            try { require IO::Socket::SSL; }
+            catch ($e) {
+                $self->tee($client, "$ssl_not_supported_error$eol");
+                return;
             }
+
+            $self->log_msg(WARN => "Attempting to connect to SSL server at $hostname:$port");
+
+            $mail = IO::Socket::SSL->new(
+                        Proto => "tcp",
+                        PeerAddr => $hostname,
+                        PeerPort => $port,
+                        Timeout => $self->_global_timeout(),
+                        Domain => AF_INET);
+        } else {
+            $self->log_msg(WARN => "Attempting to connect to POP server at $hostname:$port");
+
+            $mail = IO::Socket::INET->new(
+                        Proto => "tcp",
+                        PeerAddr => $hostname,
+                        PeerPort => $port,
+                        Timeout => $self->_global_timeout());
         }
 
         if ($mail) {
             if ($mail->connected) {
-                $self->log_msg(WARN => "Connected to $hostname:$port timeout " . $self->global_config('timeout'));
+                $self->log_msg(WARN => "Connected to $hostname:$port timeout " . $self->_global_timeout());
 
                 if (!$ssl) {
                     binmode($mail);
@@ -312,7 +310,7 @@ the connected socket on success, C<undef> on failure.
 
                 if (!$ssl || ($mail->pending() == 0)) {
                     my $selector = IO::Select->new($mail);
-                    last unless $selector->can_read($self->global_config('timeout'));
+                    last unless $selector->can_read($self->_global_timeout());
                 }
 
                 my $buf = '';
@@ -324,7 +322,7 @@ the connected socket on success, C<undef> on failure.
                     my $temp_buf;
                     my $wait = 0;
 
-                    for my $i (0..($self->global_config('timeout') * 100)) {
+                    for my $i (0..($self->_global_timeout() * 100)) {
                         if (!$hit_newline) {
                             $temp_buf = $self->flush_extra($mail, $client, 1);
                             $hit_newline = ($temp_buf =~ /[\r\n]/);

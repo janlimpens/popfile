@@ -19,32 +19,23 @@ use Mojo::Base 'Mojolicious::Controller', -signatures;
 use POPFile::Features;
 
 sub _make_test_client($self, $body) {
-    require POPFile::Configuration;
     require Services::IMAP::Client;
-    my $api = $self->popfile_api;
-    my $base = $api->configuration();
-    my $config = POPFile::Configuration->new();
-    $config->set_configuration($config);
-    $config->set_mq($api->mq());
-    $config->set_popfile_root($base->popfile_root());
-    $config->set_popfile_user($base->popfile_user());
-    $config->initialize();
-    $config->set_started(1);
-    $config->parameter('GLOBAL_timeout', $base->parameter('GLOBAL_timeout') // 60);
+    my $api = $self->popfile_api();
     my $client = Services::IMAP::Client->new();
-    $client->set_configuration($config);
     $client->set_mq($api->mq());
     $client->set_name('imap');
-    $client->config('hostname', $body->{hostname} // '');
-    $client->config('port', $body->{port} // 143);
-    $client->config('login', $body->{login} // '');
-    $client->config('password', $body->{password} // '');
-    $client->config('use_ssl', $body->{use_ssl} // 0);
+    $client->set_test_credentials(
+        hostname => $body->{hostname} // '',
+        port => $body->{port} // 143,
+        use_ssl => $body->{use_ssl} // 0,
+        login => $body->{login} // '',
+        password => $body->{password} // '',
+    );
     return $client
 }
 
 sub get_folders ($self) {
-    my $imap = $self->popfile_imap;
+    my $imap = $self->popfile_imap();
     my @watched = ();
     my @mappings = ();
     if (defined $imap) {
@@ -68,7 +59,7 @@ sub get_folders ($self) {
 }
 
 sub update_folders ($self) {
-    my $imap = $self->popfile_imap;
+    my $imap = $self->popfile_imap();
     return $self->render(status => 503, json => { error => 'IMAP not available' })
         unless defined $imap;
     my $body = $self->req->json // {};
@@ -83,16 +74,13 @@ sub update_folders ($self) {
             $imap->folder_for_bucket($m->{bucket}, $m->{folder});
         }
     }
-    my $api = $self->popfile_api;
-    $api->configuration()->save_configuration();
     $self->render(json => { ok => \1 });
 }
 
 sub get_server_folders ($self) {
     require Services::IMAP::Client;
-    my $api = $self->popfile_api;
+    my $api = $self->popfile_api();
     my $client = Services::IMAP::Client->new();
-    $client->set_configuration($api->configuration());
     $client->set_mq($api->mq());
     $client->set_name('imap');
     unless ($client->connect()) {
@@ -109,7 +97,6 @@ sub get_server_folders ($self) {
 sub test_connection ($self) {
     my $body = $self->req->json // {};
     my $client = $self->_make_test_client($body);
-    my $err = '';
     try {
         unless ($client->connect()) {
             die 'connect';
@@ -120,6 +107,7 @@ sub test_connection ($self) {
         $client->logout();
     }
     catch ($e) {
+        my $err;
         if ($e =~ /^connect/) {
             $err = 'Could not connect to server';
         }
@@ -144,12 +132,14 @@ sub _touch($path) {
 }
 
 sub trigger_training ($self) {
-    my $api = $self->popfile_api;
+    my $api = $self->popfile_api();
     my $body = $self->req->json // {};
     my @buckets = ref $body->{buckets} eq 'ARRAY' ? $body->{buckets}->@* : ();
     my $all = $body->{all} || !@buckets;
-    $api->module_config('imap', 'training_error', '');
-    $api->configuration()->save_configuration();
+    my $path = POPFile::Config->resolve_path();
+    my $data = POPFile::ConfigFile->new()->load($path);
+    $data->{imap}{training_error} = '';
+    POPFile::ConfigFile->new()->save($path, $data);
     my @queued;
     if ($all) {
         my $flag = $api->get_user_path('popfile.train');
@@ -167,7 +157,7 @@ sub trigger_training ($self) {
 }
 
 sub training_status ($self) {
-    my $api = $self->popfile_api;
+    my $api = $self->popfile_api();
     my $pattern = $api->get_user_path('popfile.train*', 0);
     my @flags = defined $pattern ? glob($pattern) : ();
     my @pending = map {
@@ -177,7 +167,7 @@ sub training_status ($self) {
 }
 
 sub rescan_folder ($self) {
-    my $imap = $self->popfile_imap;
+    my $imap = $self->popfile_imap();
     return $self->render(status => 503, json => { error => 'IMAP not available' })
         unless defined $imap;
     my $body = $self->req->json // {};

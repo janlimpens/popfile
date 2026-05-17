@@ -1,62 +1,24 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Jan Limpens
-package POPFile::ConfigFile;
-
-=head1 NAME
-
-POPFile::ConfigFile - JSON-based configuration file I/O
-
-=head1 DESCRIPTION
-
-This module provides atomic read/write operations for POPFile's JSON
-configuration file.  It handles UTF-8 encoding, advisory locking, and
-atomic writes via temp-file + rename.
-
-=cut
-
 use Object::Pad;
 
 class POPFile::ConfigFile;
 
 use Cpanel::JSON::XS;
-use Fcntl qw(:flock :seek :mode);
 use Path::Tiny qw(path);
 
-field $json_encoder :reader;
-field $json_decoder :reader;
+field $json_encoder = Cpanel::JSON::XS->new()->utf8()->pretty()->canonical();
+field $json_decoder = Cpanel::JSON::XS->new()->utf8();
 
-ADJUST {
-    $json_encoder = Cpanel::JSON::XS->new->utf8->pretty->canonical;
-    $json_decoder = Cpanel::JSON::XS->new->utf8;
-}
-
-method load ($path) {
-    my $fh = path($path)->openr_utf8();
-    flock($fh, LOCK_SH) or die "Cannot lock $path: $!";
-    my $content = do { local $/; <$fh> };
-    $fh->close();
-    
+method load($path) {
+    my $content = path($path)->slurp_utf8();
     return $json_decoder->decode($content)
 }
 
-method save ($path, $data) {
-    my $tmp_path = $path . '.tmp';
-    
-    my $fh = path($tmp_path)->openw_utf8();
-    print $fh $json_encoder->encode($data);
-    $fh->close();
-    
-    # Lock and rename atomically
-    my $dest_path = path($path);
-    # Create file if it doesn't exist
-    $dest_path->touch();
-    my $lock_fh = $dest_path->openrw();
-    flock($lock_fh, LOCK_EX) or die "Cannot lock $path: $!";
-    
-    rename($tmp_path, $path) or die "Cannot rename $tmp_path to $path: $!";
+method save($path, $data) {
+    path($path)->spew_utf8($json_encoder->encode($data), {atomic => 1});
     chmod(0600, $path);
-    
-    $lock_fh->close();
+    return
 }
 
 1;

@@ -11,6 +11,14 @@ my $eol = "\015\012";
 
 class Proxy::NNTP :isa(Proxy::Proxy);
 
+    my %DEFAULTS = (
+        enabled => 0,
+        port => 119,
+        local => 1,
+        headtoo => 0,
+        separator => ':',
+    );
+
 =head1 NAME
 
 Proxy::NNTP — NNTP proxy that classifies news articles with POPFile
@@ -46,19 +54,8 @@ BUILD {
 
     # ----------------------------------------------------------------------------
     method initialize() {
-        $self->config('enabled',        0);
-        $self->config('port',           119);
-        $self->config('local',          1);
-        $self->config('headtoo',        0);
-        $self->config('separator',      ':');
-        $self->config('welcome_string',
-            "NNTP POPFile (" . $self->version() . ") server ready");
-
-        if (!$self->SUPER::initialize()) {
-            return 0;
-        }
-
-        $self->config('enabled', 0);
+        return 0
+            unless $self->SUPER::initialize();
         return 1;
     }
 
@@ -71,14 +68,10 @@ then calls C<< Proxy::Proxy->start() >> to open the listening socket.
 =cut
 
     method start() {
-        if ($self->config('enabled') == 0) {
-            return 2;
-        }
+        $self->set_welcome_string("NNTP POPFile (" . $self->version() . ") server ready");
 
-        if ($self->config('welcome_string') =~
-             /^NNTP POPFile \(v\d+\.\d+\.\d+\) server ready$/) {
-            $self->config('welcome_string',
-                            "NNTP POPFile (" . $self->version() . ") server ready");
+        if (($self->config->get('enabled') // $DEFAULTS{enabled}) == 0) {
+            return 2;
         }
 
         return $self->SUPER::start();
@@ -100,7 +93,7 @@ classifying full articles via the classifier service.
         my $news;
         my $connection_state = 'username needed';
 
-        $self->tee($client, "201 " . $self->config('welcome_string') . "$eol");
+        $self->tee($client, "201 " . $self->welcome_string() . "$eol");
 
         while (<$client>) {
             my $command = $_;
@@ -119,7 +112,7 @@ classifying full articles via the classifier service.
             }
 
             if ($connection_state eq 'username needed') {
-                my $separator = $self->config('separator');
+                my $separator = ':';
                 my $user_command = "^ *AUTHINFO USER ([^:]+)(:([\\d]{1,5}))?(\\Q$separator\\E(.+))?";
 
                 if ($command =~ /$user_command/i) {
@@ -234,7 +227,7 @@ classifying full articles via the classifier service.
                         $message_id = $1;
                     }
 
-                    if ($self->config('headtoo')) {
+                    if ($self->config->get('headtoo') // $DEFAULTS{headtoo}) {
                         my ($class, $history_file);
                         my $cached = 0;
 

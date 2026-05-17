@@ -22,16 +22,31 @@ use Object::Pad;
 use utf8;
 use POPFile::Features;
 
+use POPFile::Role::Config;
 use Scalar::Util qw(looks_like_number);
 use Data::Page;
 
-class POPFile::API :isa(POPFile::Module);
+my %DEFAULTS = (
+    port => 0,
+    password => '',
+    static_dir => 'public',
+    local => 1,
+    page_size => 25,
+    word_page_size => 50,
+    session_dividers => 1,
+    wordtable_format => '',
+    locale => '',
+    open_browser => 1,
+);
+
+class POPFile::API :isa(POPFile::Module) :does(POPFile::Role::Config);
 
 field $classifier_service = undef;
 field $imap_service = undef;
 field $loader_ref = undef;
 field $activity_module = undef;
 field $daemon_ref = undef;
+field $port = 0;
 
 BUILD {
     $self->set_name('api');
@@ -47,16 +62,6 @@ the server is ready (config key: C<open_browser>).
 =cut
 
 method initialize() {
-    $self->config(port => 0);
-    $self->config(password => '');
-    $self->config(static_dir => 'public');
-    $self->config(local => 1);
-    $self->config(page_size => 25);
-    $self->config(word_page_size => 50);
-    $self->config(session_dividers => 1);
-    $self->config(wordtable_format => '');
-    $self->config(locale => '');
-    $self->config(open_browser => 1);
     return 1
 }
 
@@ -75,7 +80,7 @@ method _find_free_port() {
         LocalPort => 0,
         ReuseAddr => 1 );
     $socket_args{LocalAddr} = '127.0.0.1'
-        if $self->config('local');
+        if $self->config->get('local') // $DEFAULTS{local};
     my $sock = IO::Socket::INET->new(
         %socket_args );
     my $port = $sock->sockport();
@@ -85,38 +90,24 @@ method _find_free_port() {
 
 method start() {
     require Mojo::Server::Daemon;
-    my $port = $self->config('port');
-    my $port_file = $self->configuration()->get_user_path('popfile.port');
-    if ($port == 0) {
-        if (-e $port_file && open my $fh, '<', $port_file) {
-            chomp(my $saved = <$fh>);
-            close $fh;
-            $port = $saved + 0
-                if $saved =~ /^\d+$/ && $saved > 0;
-        }
-        $port = $self->_find_free_port()
-            if $port == 0;
-        $self->config('port', $port);
-        if (open my $fh, '>', "$port_file.tmp") {
-            print $fh $port;
-            close $fh;
-            rename "$port_file.tmp", $port_file;
-        }
-    }
+    my $resolved = $self->config->get('port') // $DEFAULTS{port};
+    $resolved = $self->_find_free_port()
+        if $resolved == 0;
+    $port = $resolved;
     my $app = $self->build_app($classifier_service, undef);
-    my $host = $self->config('local')
+    my $host = $self->config->get('local') // $DEFAULTS{local}
         ? '127.0.0.1'
         : '*';
     my $daemon = Mojo::Server::Daemon->new(
         app => $app,
-        listen => ["http://$host:$port"] );
+        listen => ["http://$host:$resolved"] );
     $daemon->silent(1);
     $daemon->start();
     $daemon_ref = $daemon;
-    $self->log_msg(WARN => "POPFile::API: listening on port $port");
-    if ($self->config('open_browser') && !$ENV{HARNESS_ACTIVE}) {
+    $self->log_msg(WARN => "POPFile::API: listening on port $resolved");
+    if (($self->config->get('open_browser') // $DEFAULTS{open_browser}) && !$ENV{HARNESS_ACTIVE}) {
         require Browser::Open;
-        my $url = "http://localhost:$port/";
+        my $url = "http://localhost:$resolved/";
         Browser::Open::open_browser($url)
             if $url =~ /^https?:\/\/localhost(?::\d+)?\/?$/;
     }
@@ -141,7 +132,7 @@ C<http://localhost:7070/>), or an empty string before C<start()> is called.
 
 method url() {
     return '' unless defined $daemon_ref;
-    return 'http://localhost:' . $self->config('port') . '/'
+    return 'http://localhost:' . $port . '/'
 }
 
 =head2 stop
@@ -203,7 +194,7 @@ method build_app ($svc, $session = undef) {
     require Mojolicious;
     require Mojo::Path;
 
-    my $static = $self->get_root_path($self->config('static_dir'));
+    my $static = $self->get_root_path($self->config->get('static_dir') // $DEFAULTS{static_dir});
     require Cwd;
     $static = Cwd::realpath($static) // $static;
     my $app = Mojolicious->new();
@@ -248,9 +239,9 @@ method build_app ($svc, $session = undef) {
     $app->hook(before_dispatch => sub ($c) {
         my $path = $c->req->url->path->to_string;
         return unless $path =~ m{^/api/};
-        my $password = $self->config('password') // '';
+        my $password = $self->config->get('password') // '';
         return if $password eq '';
-        my $local = $self->config('local') // 1;
+        my $local = $self->config->get('local') // 1;
         return if $local && $c->req->method eq 'GET';
         return if $local && $c->req->method eq 'HEAD';
         my $token = $c->req->headers->header('X-POPFile-Token') // '';

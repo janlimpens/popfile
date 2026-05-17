@@ -60,7 +60,10 @@ class Classifier::Bayes
         xpl_angle => 0,
         localhostname => '',
         bayes_magnets_enabled => 1,
-        nihongo_parser => 'kakasi');
+        nihongo_parser => 'kakasi',
+        locale => '',
+        message_cutoff => 100000,
+    );
 
 =head1 NAME
 
@@ -141,7 +144,6 @@ Called to set up the Bayes module's parameters
 
 method initialize() {
     $hostname = hostname;
-    $self->module_config('bayes', 'hostname', $hostname);
     $self->mq_register('COMIT', $self);
     $self->mq_register('RELSE', $self);
 
@@ -185,7 +187,7 @@ method start() {
     # UTF-8 but POPFile uses EUC-JP encoding for Japanese. In this situation
     # lc() does not work correctly.
 
-    my $language = $self->module_config(api => 'locale') || '';
+    my $language = $self->config->get('locale') // $DEFAULTS{locale};
 
     if ($language =~ /^(Nihongo$|Korean$|Chinese)/) {
         use POSIX qw(locale_h);
@@ -217,7 +219,6 @@ method start() {
         $nihongo_parser = $parser->setup_nihongo_parser($nihongo_parser);
 
         $self->log_msg(DEBUG => "Use Nihongo (Japanese) parser : $nihongo_parser");
-        $self->module_config('bayes', 'nihongo_parser', $nihongo_parser);
     }
 
     return 1;
@@ -449,8 +450,9 @@ method set_value ($session, $bucket, $word, $value) {
     return 1
 }
 
-=head2 get_sort_value_ behaves the same as get_value_, except that it
+=head2 get_sort_value_
 
+behaves the same as get_value_, except that it
 returns not_likely rather than 0 if the word is not found.  This
 makes its result more suitable as a sort key for bucket ranking.
 
@@ -831,7 +833,7 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
         return if (!-f $file);
 
         $parser->parse_file($file,
-            $self->global_config('message_cutoff'));
+            $self->config->get('message_cutoff') // $DEFAULTS{message_cutoff});
     }
 
     # Get the list of buckets
@@ -1357,7 +1359,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # The maximum size of message to parse, or 0 for unlimited
 
-    my $max_size = $self->global_config('message_cutoff');
+    my $max_size = $self->config->get('message_cutoff') // $DEFAULTS{message_cutoff};
     $max_size = 0 unless (defined($max_size) || ($max_size =~ /\D/));
 
     my $msg_file;
@@ -1552,10 +1554,10 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # Add the XPL header
 
-    my $host = $self->module_config('api', 'local')
+    my $host = $self->config('GLOBAL')->get('local') // 1
         ? ($self->config->get('localhostname') // $DEFAULTS{localhostname}) || '127.0.0.1'
-        : ($self->config->get('hostname') // $DEFAULTS{hostname});
-    my $port = $self->module_config('api', 'port');
+        : $hostname;
+    my $port = $self->config('GLOBAL')->get('port') // 0;
 
     my $xpl = "http://$host:$port/jump_to_message?view=$slot";
 
@@ -2074,14 +2076,14 @@ method get_bucket_word_prefixes($session, $bucket) {
     my $prev = '';
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
     my $result = $corpus->raw_word_prefixes($self->get_handle(), $bucketid);
-    if (($self->module_config('api', 'locale')//'') eq 'Nihongo') {
+    if (($self->config->get('locale') // $DEFAULTS{locale}) eq 'Nihongo') {
         return
             grep {$_ ne $prev && ($prev = $_, 1)}
             sort
             map {substr_euc($_,0,1)}
             $result->@*;
     } else {
-        if  (($self->module_config('api', 'locale') // '') eq 'Korean') {
+        if  (($self->config->get('locale') // $DEFAULTS{locale}) eq 'Korean') {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {$_ =~ /([\x20-\x80]|$eksc)/} $result->@*;
         } else {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr($_,0,1)} $result->@*;
@@ -2326,7 +2328,7 @@ method add_messages_to_bucket ($session, $bucket, @files) {
     $parser->stop_parse();
 
     for my $file (@files) {
-        $parser->parse_file($file, $self->global_config('message_cutoff'), 0);
+        $parser->parse_file($file, $self->config->get('message_cutoff') // $DEFAULTS{message_cutoff}, 0);
     }
 
     $self->add_words_to_bucket($session, $bucket, 1);
@@ -2410,7 +2412,7 @@ method remove_message_from_bucket ($session, $bucket, $file) {
     }
 
     $parser->parse_file($file,
-        $self->global_config('message_cutoff'));
+        $self->config->get('message_cutoff') // $DEFAULTS{message_cutoff});
         $self->add_words_to_bucket($session, $bucket, -1);
         $self->db_update_cache($session, $bucket);
 
