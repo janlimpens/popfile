@@ -88,7 +88,7 @@ subtest 'language switch cleans stopwords' => sub {
 };
 
 subtest 'stemming' => sub {
-    $wm->set_stemming(1);
+    $wm->_set_stemming(1);
     $wm->set_language('en');
 
     is( $wm->mangle('running'), 'run',       'English stem: running -> run' );
@@ -96,7 +96,7 @@ subtest 'stemming' => sub {
     is( $wm->mangle('dogs'),    'dog',       'English stem: dogs -> dog' );
     is( $wm->mangle('from:alice', 1), 'from:alice', 'pseudoword with colon not stemmed' );
 
-    $wm->set_stemming(0);
+    $wm->_set_stemming(0);
     $wm->set_language('en');
 };
 
@@ -108,14 +108,14 @@ subtest 'lingua stopwords' => sub {
 };
 
 subtest 'german stemming and stopwords' => sub {
-    $wm->set_stemming(1);
+    $wm->_set_stemming(1);
     $wm->set_language('de');
 
     is( $wm->get_language(), 'de', 'language set to de' );
     isnt( $wm->mangle('und'), 'und', '"und" filtered as German stopword' );
     is( $wm->mangle('und'), '', '"und" is empty after filtering' );
 
-    $wm->set_stemming(0);
+    $wm->_set_stemming(0);
     $wm->set_language('en');
 };
 

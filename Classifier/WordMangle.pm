@@ -34,7 +34,9 @@ class Classifier::WordMangle
     :does(POPFile::Role::Config);
 
 
-    field $stemming :reader :writer = 0;
+    field $stemming :reader = 0;
+
+method _set_stemming($val) { $stemming = $val }
 
 field %stop__;
 field $language = 'en';
@@ -97,6 +99,7 @@ the current language.  Returns 1.
 =cut
 
     method start() {
+        $stemming = $self->config->get('stemming');
         $self->_init_language($language);
         return 1
     }
