@@ -65,10 +65,6 @@ method _logdir() {
     $self->config->get('logdir') // $self->_default_log_dir()
 }
 
-method _debug() {
-    $self->config('GLOBAL')->get('debug') // 0
-}
-
 method _default_log_dir() {
     if ($^O eq 'MSWin32') {
         my $base = $ENV{LOCALAPPDATA} // $ENV{APPDATA} // $ENV{USERPROFILE} // '.';
@@ -159,9 +155,8 @@ method reconfigure() {
 }
 
 method _reconfigure_adapter() {
-    my $debug = ($self->_debug()) // 0;
     POPFile::Log::Adapter->configure(
-        to_file => ($debug & 1) ? 1 : 0,
+        to_file => 1,
         to_stdout => ($self->config->get('log_to_stdout')) ? 1 : 0,
         filename => $debug_filename,
         popfile_level => ($self->config->get('level')) // 0,
