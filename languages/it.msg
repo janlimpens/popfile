@@ -205,6 +205,7 @@ Settings_SSLChainPort Porta SSL a catena
 Settings_SSLChainServer Server SSL a catena
 Settings_SaveChanges Salva modifiche
 Settings_Saved Salvato
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Salvataggio...
 Settings_Search Cerca impostazioni...
 Settings_SectionClassifier Classificatore

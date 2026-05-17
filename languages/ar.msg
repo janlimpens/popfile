@@ -203,6 +203,7 @@ Settings_SSLChainPort منفذ سلسلة SSL
 Settings_SSLChainServer خادم سلسلة SSL
 Settings_SaveChanges حفظ التغييرات
 Settings_Saved تم الحفظ
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving جارٍ الحفظ...
 Settings_Search البحث في الإعدادات...
 Settings_SectionClassifier المصنف

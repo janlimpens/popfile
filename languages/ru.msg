@@ -205,6 +205,7 @@ Settings_SSLChainPort Порт SSL-цепочки
 Settings_SSLChainServer Сервер SSL-цепочки
 Settings_SaveChanges Сохранить изменения
 Settings_Saved Сохранено
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Сохранение...
 Settings_Search Поиск настроек...
 Settings_SectionClassifier Классификатор

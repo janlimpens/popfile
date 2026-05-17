@@ -191,6 +191,7 @@ Settings_SSLChainPort SSL-Chain-Port
 Settings_SSLChainServer SSL-Chain-Server
 Settings_SaveChanges Änderungen speichern
 Settings_Saved Gespeichert
+Settings_RestartNeeded Neustart erforderlich, damit Änderungen wirksam werden.
 Settings_Saving Speichere...
 Settings_Search Einstellungen suchen...
 Settings_SectionClassifier Klassifizierer

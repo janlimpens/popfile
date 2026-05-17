@@ -205,6 +205,7 @@ Settings_SSLChainPort SSL lánc port
 Settings_SSLChainServer SSL lánc kiszolgáló
 Settings_SaveChanges Változtatások mentése
 Settings_Saved Mentve
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Mentés...
 Settings_Search Beállítások keresése...
 Settings_SectionClassifier Osztályozó

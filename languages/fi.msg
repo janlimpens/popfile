@@ -203,6 +203,7 @@ Settings_SSLChainPort SSL-ketjuportti
 Settings_SSLChainServer SSL-ketjupalvelin
 Settings_SaveChanges Tallenna muutokset
 Settings_Saved Tallennettu
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Tallennetaan...
 Settings_Search Hae asetuksia...
 Settings_SectionClassifier Luokittelija

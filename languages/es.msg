@@ -206,6 +206,7 @@ Settings_SSLChainPort Puerto SSL en cadena
 Settings_SSLChainServer Servidor SSL en cadena
 Settings_SaveChanges Guardar cambios
 Settings_Saved Guardado
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Guardando...
 Settings_Search Buscar configuración...
 Settings_SectionClassifier Clasificador

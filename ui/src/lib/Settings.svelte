@@ -6,6 +6,7 @@
   let config = $state({});
   let active = $state('ui');
   let status = $state('');
+  let restartNeeded = $state(false);
   let dirty = $state(false);
   let saving = $state(false);
   let settingsSearch = $state('');
@@ -204,9 +205,11 @@
     });
     saving = false;
     if (res.ok) {
+      const body = await res.json();
       status = 'ok';
+      restartNeeded = body.restart_needed || false;
       dirty = false;
-      setTimeout(() => { status = ''; }, 2500);
+      setTimeout(() => { status = ''; }, 5000);
       await initLocale(config.api_locale || '');
     } else {
       status = 'error';
@@ -385,6 +388,9 @@
     <footer class="section-footer">
       {#if status === 'ok'}
         <span class="msg-ok"><span class="icon">check</span> {t('Settings_Saved')}</span>
+        {#if restartNeeded}
+          <span class="msg-restart"><span class="icon">restart_alt</span> {t('Settings_RestartNeeded')}</span>
+        {/if}
       {:else if status === 'error'}
         <span class="msg-err"><span class="icon">close</span> {t('Settings_ErrorSaving')}</span>
       {/if}
@@ -603,5 +609,6 @@
   .btn-save:not(:disabled):hover { opacity: 0.88; }
 
   .msg-ok   { font-size: 0.85rem; color: var(--success); font-weight: 500; }
+  .msg-restart { font-size: 0.8rem; color: var(--warning, #e6a817); font-weight: 500; margin-left: 0.5rem; }
   .msg-err  { font-size: 0.85rem; color: var(--danger);  font-weight: 500; }
 </style>

@@ -92,7 +92,7 @@ sub update_config($self) {
         $logger->reconfigure()
             if defined $logger;
     }
-    $self->render(json => { ok => \1 })
+    $self->render(json => { ok => \1, restart_needed => \1 })
 }
 
 sub get_status($self) {

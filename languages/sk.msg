@@ -205,6 +205,7 @@ Settings_SSLChainPort Port SSL reťazca
 Settings_SSLChainServer Server SSL reťazca
 Settings_SaveChanges Uložiť zmeny
 Settings_Saved Uložené
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Ukladám...
 Settings_Search Hľadať nastavenia...
 Settings_SectionClassifier Klasifikátor

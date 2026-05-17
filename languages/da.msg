@@ -205,6 +205,7 @@ Settings_SSLChainPort SSL-kædeport
 Settings_SSLChainServer SSL-kædeserver
 Settings_SaveChanges Gem ændringer
 Settings_Saved Gemt
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Gemmer...
 Settings_Search Søg i indstillinger...
 Settings_SectionClassifier Klassifikatoren

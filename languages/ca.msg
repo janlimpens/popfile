@@ -203,6 +203,7 @@ Settings_SSLChainPort Port SSL en cadena
 Settings_SSLChainServer Servidor SSL en cadena
 Settings_SaveChanges Desa els canvis
 Settings_Saved Desat
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Desant...
 Settings_Search Cerca configuració...
 Settings_SectionClassifier Classificador

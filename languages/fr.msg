@@ -205,6 +205,7 @@ Settings_SSLChainPort Port SSL de chaîne
 Settings_SSLChainServer Serveur SSL de chaîne
 Settings_SaveChanges Enregistrer les modifications
 Settings_Saved Enregistré
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Enregistrement...
 Settings_Search Rechercher dans les paramètres...
 Settings_SectionClassifier Classifieur

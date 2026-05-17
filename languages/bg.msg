@@ -205,6 +205,7 @@ Settings_SSLChainPort SSL chain порт
 Settings_SSLChainServer SSL chain сървър
 Settings_SaveChanges Запиши промените
 Settings_Saved Записано
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Запис...
 Settings_Search Търсене в настройки...
 Settings_SectionClassifier Класификатор

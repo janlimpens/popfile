@@ -203,6 +203,7 @@ Settings_SSLChainPort SSL 链接端口
 Settings_SSLChainServer SSL 链接服务器
 Settings_SaveChanges 保存更改
 Settings_Saved 已保存
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving 保存中...
 Settings_Search 搜索设置...
 Settings_SectionClassifier 分类器

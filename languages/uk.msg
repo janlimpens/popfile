@@ -204,6 +204,7 @@ Settings_SSLChainPort Порт SSL-ланцюга
 Settings_SSLChainServer Сервер SSL-ланцюга
 Settings_SaveChanges Зберегти зміни
 Settings_Saved Збережено
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Збереження...
 Settings_Search Пошук налаштувань...
 Settings_SectionClassifier Класифікатор

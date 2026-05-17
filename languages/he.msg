@@ -204,6 +204,7 @@ Settings_SSLChainPort יציאת שרשרת SSL
 Settings_SSLChainServer שרת שרשרת SSL
 Settings_SaveChanges שמור שינויים
 Settings_Saved נשמר
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving שומר...
 Settings_Search חפש הגדרות...
 Settings_SectionClassifier מסווג

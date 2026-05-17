@@ -203,6 +203,7 @@ Settings_SSLChainPort SSL Zincir Portu
 Settings_SSLChainServer SSL Zincir Sunucusu
 Settings_SaveChanges Değişiklikleri Kaydet
 Settings_Saved Kaydedildi
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Kaydediliyor...
 Settings_Search Ayarlarda ara...
 Settings_SectionClassifier Sınıflandırıcı

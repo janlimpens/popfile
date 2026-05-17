@@ -204,6 +204,7 @@ Settings_SSLChainPort Θύρα αλυσίδας SSL
 Settings_SSLChainServer Διακομιστής αλυσίδας SSL
 Settings_SaveChanges Αποθήκευση αλλαγών
 Settings_Saved Αποθηκεύτηκε
+Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Saving Αποθήκευση...
 Settings_Search Αναζήτηση ρυθμίσεων...
 Settings_SectionClassifier Ταξινομητής
