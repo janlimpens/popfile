@@ -465,7 +465,7 @@ directories.
 method get_slot_file ($slot) {
     my $hex_slot = sprintf('%8.8x', $slot);
     my $path = $self->get_user_path(
-        $self->global_config('msgdir')
+        $self->config('GLOBAL')->get('msgdir')
         . substr($hex_slot, 0, 2) . '/', 0);
     path($path)->mkpath;
     $path .= substr($hex_slot, 2, 2) . '/';

@@ -98,13 +98,14 @@ unless ($noserver) {
     print "Config: " . File::Spec->rel2abs("$user/config.json") . "\n";
 }
 $POPFile->CORE_load($noserver);
-$POPFile->CORE_link_components();
 $POPFile->CORE_initialize();
 
 unless ($POPFile->CORE_config()) {
     print STDERR "Configuration error\n";
     exit 1;
 }
+
+$POPFile->CORE_link_components();
 
 if ($verb eq 'start') { do_start($POPFile) }
 elsif ($verb eq 'insert') { exit do_insert($POPFile, @verb_args) }

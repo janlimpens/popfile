@@ -251,7 +251,7 @@ method classify($ctx, $session, $file) {
         unless defined $userid;
     my $dbh = $ctx->get_handle();
     my $parser = $ctx->parser();
-    $parser->parse_file($file, $ctx->global_config('message_cutoff'));
+    $parser->parse_file($file, $ctx->config->get('message_cutoff') // 100000);
     for my $bucket ($self->get_buckets_with($dbh, $userid)) {
         my $bucketid = $ctx->get_bucket_id($session, $bucket);
         next
