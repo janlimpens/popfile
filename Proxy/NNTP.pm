@@ -11,13 +11,6 @@ my $eol = "\015\012";
 
 class Proxy::NNTP :isa(Proxy::Proxy);
 
-    my %DEFAULTS = (
-        enabled => 0,
-        port => 119,
-        local => 1,
-        headtoo => 0,
-        separator => ':',
-    );
 
 =head1 NAME
 
@@ -70,7 +63,7 @@ then calls C<< Proxy::Proxy->start() >> to open the listening socket.
     method start() {
         $self->set_welcome_string("NNTP POPFile (" . $self->version() . ") server ready");
 
-        if (($self->config->get('enabled') // $DEFAULTS{enabled}) == 0) {
+        if (($self->config->get('enabled')) == 0) {
             return 2;
         }
 
@@ -227,7 +220,7 @@ classifying full articles via the classifier service.
                         $message_id = $1;
                     }
 
-                    if ($self->config->get('headtoo') // $DEFAULTS{headtoo}) {
+                    if ($self->config->get('headtoo')) {
                         my ($class, $history_file);
                         my $cached = 0;
 

@@ -13,15 +13,6 @@ my $eol = "\015\012";
 
 class Proxy::POP3 :isa(Proxy::Proxy);
 
-    my %DEFAULTS = (
-        port => 1110,
-        secure_server => '',
-        secure_port => 995,
-        local => 1,
-        toptoo => 0,
-        separator => ':',
-        enabled => 0,
-    );
 
 =head1 NAME
 
@@ -82,7 +73,7 @@ then calls C<< Proxy::Proxy->start() >> to open the listening socket.
     method start() {
         $self->set_welcome_string("POP3 POPFile (" . $self->version() . ") server ready");
 
-        if (($self->config->get('enabled') // $DEFAULTS{enabled}) == 0) {
+        if (($self->config->get('enabled')) == 0) {
             return 2;
         }
 
@@ -124,10 +115,10 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
             $self->log_msg(DEBUG => "Command: --$command--");
 
             if ($command =~ /$transparent/i) {
-                if (($self->config->get('secure_server') // $DEFAULTS{secure_server}) ne '') {
+                if (($self->config->get('secure_server')) ne '') {
                     if ($mail = $self->verify_connected($mail, $client,
                             $self->config->get('secure_server'),
-                            $self->config->get('secure_port') // $DEFAULTS{secure_port})) {
+                            $self->config->get('secure_port'))) {
                         last if ($self->echo_response($mail, $client, $command) == 2);
                     } else {
                         next;
@@ -204,10 +195,10 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
             }
 
             if ($command =~ /AUTH ([^ ]+)/i) {
-                if (($self->config->get('secure_server') // $DEFAULTS{secure_server}) ne '') {
+                if (($self->config->get('secure_server')) ne '') {
                     if ($mail = $self->verify_connected($mail, $client,
                             $self->config->get('secure_server'),
-                            $self->config->get('secure_port') // $DEFAULTS{secure_port})) {
+                            $self->config->get('secure_port'))) {
                         my ($response, $ok) = $self->get_response($mail, $client, $command);
                         while ((!($response =~ /\+OK/)) && (!($response =~ /-ERR/))) {
                             my $auth = <$client>;
@@ -224,10 +215,10 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
             }
 
             if ($command =~ /AUTH/i) {
-                if (($self->config->get('secure_server') // $DEFAULTS{secure_server}) ne '') {
+                if (($self->config->get('secure_server')) ne '') {
                     if ($mail = $self->verify_connected($mail, $client,
                             $self->config->get('secure_server'),
-                            $self->config->get('secure_port') // $DEFAULTS{secure_port})) {
+                            $self->config->get('secure_port'))) {
                         my $response = $self->echo_response($mail, $client, "AUTH");
                         last if ($response == 2);
                         if ($response == 0) {
@@ -255,7 +246,7 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
             if ($command =~ /TOP (.*) (.*)/i) {
                 my $count = $1;
                 if ($2 ne '99999999') {
-                    if (($self->config->get('toptoo') // $DEFAULTS{toptoo}) == 1) {
+                    if (($self->config->get('toptoo')) == 1) {
                         my $response = $self->echo_response($mail, $client, "RETR $count");
                         last if ($response == 2);
                         if ($response == 0) {
@@ -284,10 +275,10 @@ C<STAT>, C<DELE>, C<NOOP>, C<CAPA>, C<RSET>, C<AUTH>, and C<QUIT>.
             }
 
             if ($command =~ /CAPA/i) {
-                if ($mail || (($self->config->get('secure_server') // $DEFAULTS{secure_server}) ne '')) {
+                if ($mail || (($self->config->get('secure_server')) ne '')) {
                     if ($mail || ($mail = $self->verify_connected($mail, $client,
                                        $self->config->get('secure_server'),
-                                       $self->config->get('secure_port') // $DEFAULTS{secure_port}))) {
+                                       $self->config->get('secure_port')))) {
                         my $response = $self->echo_response($mail, $client, "CAPA");
                         last if ($response == 2);
                         if ($response == 0) {

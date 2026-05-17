@@ -10,7 +10,6 @@ class POPFile::Activity
     :isa(POPFile::Module)
     :does(POPFile::Role::Config);
 
-    my %DEFAULTS = (buffer_size => 500);
 
 =head1 NAME
 
@@ -68,7 +67,7 @@ method initialize() {
 }
 
 method start() {
-    $max_size = $self->config->get('buffer_size') // $DEFAULTS{buffer_size};
+    $max_size = $self->config->get('buffer_size');
     $max_size = DEFAULT_BUFFER_SIZE
         if $max_size < 10;
     return 1

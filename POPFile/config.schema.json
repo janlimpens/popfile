@@ -1,8 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
-  "additionalProperties": false,
-  "properties": {
+    "properties": {
     "version": { "const": 2 },
     "api": {
       "type": "object",
@@ -77,7 +76,7 @@
         "enabled":         { "type": "boolean", "default": false },
         "training_mode":   { "type": "boolean", "default": false },
         "expunge":         { "type": "boolean", "default": false },
-        "update_interval": { "type": "integer", "minimum": 1, "default": 300 },
+        "update_interval": { "type": "integer", "minimum": 0, "default": 300 },
         "training_limit":  { "type": "integer", "minimum": 0, "default": 0 },
         "watched_folders":        { "type": "string", "default": "" },
         "bucket_folder_mappings": { "type": "string", "default": "" }

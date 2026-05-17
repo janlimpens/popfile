@@ -26,19 +26,6 @@ use POPFile::Role::Config;
 use Scalar::Util qw(looks_like_number);
 use Data::Page;
 
-my %DEFAULTS = (
-    port => 0,
-    password => '',
-    static_dir => 'public',
-    local => 1,
-    page_size => 25,
-    word_page_size => 50,
-    session_dividers => 1,
-    wordtable_format => '',
-    locale => '',
-    open_browser => 1,
-);
-
 class POPFile::API :isa(POPFile::Module) :does(POPFile::Role::Config);
 
 field $classifier_service = undef;
@@ -80,7 +67,7 @@ method _find_free_port() {
         LocalPort => 0,
         ReuseAddr => 1 );
     $socket_args{LocalAddr} = '127.0.0.1'
-        if $self->config->get('local') // $DEFAULTS{local};
+        if $self->config->get('local');
     my $sock = IO::Socket::INET->new(
         %socket_args );
     my $port = $sock->sockport();
@@ -90,12 +77,12 @@ method _find_free_port() {
 
 method start() {
     require Mojo::Server::Daemon;
-    my $resolved = $self->config->get('port') // $DEFAULTS{port};
+    my $resolved = $self->config->get('port');
     $resolved = $self->_find_free_port()
         if $resolved == 0;
     $port = $resolved;
     my $app = $self->build_app($classifier_service, undef);
-    my $host = $self->config->get('local') // $DEFAULTS{local}
+    my $host = $self->config->get('local')
         ? '127.0.0.1'
         : '*';
     my $daemon = Mojo::Server::Daemon->new(
@@ -105,7 +92,7 @@ method start() {
     $daemon->start();
     $daemon_ref = $daemon;
     $self->log_msg(WARN => "POPFile::API: listening on port $resolved");
-    if (($self->config->get('open_browser') // $DEFAULTS{open_browser}) && !$ENV{HARNESS_ACTIVE}) {
+    if (($self->config->get('open_browser')) && !$ENV{HARNESS_ACTIVE}) {
         require Browser::Open;
         my $url = "http://localhost:$resolved/";
         Browser::Open::open_browser($url)
@@ -194,7 +181,7 @@ method build_app ($svc, $session = undef) {
     require Mojolicious;
     require Mojo::Path;
 
-    my $static = $self->get_root_path($self->config->get('static_dir') // $DEFAULTS{static_dir});
+    my $static = $self->get_root_path($self->config->get('static_dir'));
     require Cwd;
     $static = Cwd::realpath($static) // $static;
     my $app = Mojolicious->new();

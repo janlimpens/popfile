@@ -11,145 +11,21 @@ my $instance;
 
 field %store;
 
-my $SCHEMA = {
-    type => 'object',
-    properties => {
-        version => { const => 2 },
-        api => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                port => { type => 'integer', minimum => 0, maximum => 65535 },
-                password => { type => 'string' },
-                static_dir => { type => 'string' },
-                local => { type => 'boolean' },
-                page_size => { type => 'integer', minimum => 1 },
-                word_page_size => { type => 'integer', minimum => 1 },
-                session_dividers => { type => 'boolean' },
-                wordtable_format => { type => 'string' },
-                locale => { type => 'string' },
-                open_browser => { type => 'boolean' },
-            },
-        },
-        bayes => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                database => { type => 'string' },
-                dbconnect => { type => 'string' },
-                dbuser => { type => 'string' },
-                dbauth => { type => 'string' },
-                corpus => { type => 'string' },
-                sqlite_backup => { type => 'boolean' },
-                sqlite_fast_writes => { type => 'boolean' },
-                unclassified_weight => { type => 'integer' },
-                subject_mod_pos => { type => 'boolean' },
-                subject_mod_left => { type => 'string' },
-                subject_mod_right => { type => 'string' },
-                xpl_angle => { type => 'boolean' },
-                stopword_ratio => { type => 'integer' },
-                hostname => { type => 'string' },
-                localhostname => { type => 'string' },
-                bayes_magnets_enabled => { type => 'boolean' },
-                nihongo_parser => { type => 'string' },
-                locale => { type => 'string' },
-                message_cutoff => { type => 'integer' },
-            },
-        },
-        GLOBAL => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                timeout => { type => 'integer', minimum => 1 },
-                msgdir => { type => 'string' },
-                message_cutoff => { type => 'integer', minimum => 1 },
-                debug => { type => 'integer', minimum => 0, maximum => 3 },
-            },
-        },
-        history => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                history_days => { type => 'integer', minimum => 0 },
-                archive => { type => 'boolean' },
-                archive_classes => { type => 'integer', minimum => 0 },
-                archive_dir => { type => 'string' },
-            },
-        },
-        imap => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                hostname => { type => 'string' },
-                port => { type => 'integer', minimum => 1, maximum => 65535 },
-                login => { type => 'string' },
-                password => { type => 'string' },
-                use_ssl => { type => 'boolean' },
-                enabled => { type => 'boolean' },
-                training_mode => { type => 'boolean' },
-                expunge => { type => 'boolean' },
-                update_interval => { type => 'integer', minimum => 0 },
-                training_limit => { type => 'integer', minimum => 0 },
-                watched_folders => { type => 'string' },
-                bucket_folder_mappings => { type => 'string' },
-            },
-        },
-        logger => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                logdir => { type => 'string' },
-                level => { type => 'integer', minimum => 0, maximum => 4 },
-                log_to_stdout => { type => 'boolean' },
-                log_sql => { type => 'boolean' },
-                format => { type => 'string' },
-            },
-        },
-        pop3 => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                port => { type => 'integer', minimum => 1, maximum => 65535 },
-                secure_port => { type => 'integer', minimum => 1, maximum => 65535 },
-                local => { type => 'boolean' },
-                secure_server => { type => 'string' },
-                toptoo => { type => 'boolean' },
-                separator => { type => 'string' },
-                enabled => { type => 'boolean' },
-            },
-        },
-        smtp => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                port => { type => 'integer', minimum => 1, maximum => 65535 },
-                chain_server => { type => 'string' },
-                chain_port => { type => 'integer', minimum => 1, maximum => 65535 },
-                local => { type => 'boolean' },
-                enabled => { type => 'boolean' },
-            },
-        },
-        nntp => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                port => { type => 'integer', minimum => 1, maximum => 65535 },
-                local => { type => 'boolean' },
-                headtoo => { type => 'boolean' },
-                separator => { type => 'string' },
-                enabled => { type => 'boolean' },
-            },
-        },
-        wordmangle => {
-            type => 'object',
-            additionalProperties => false,
-            properties => {
-                stemming => { type => 'boolean' },
-                auto_detect_language => { type => 'boolean' },
-            },
-        },
-    },
-};
+my $SCHEMA;
+
+sub _load_schema() {
+    return $SCHEMA
+        if $SCHEMA;
+    require Cpanel::JSON::XS;
+    require File::Basename;
+    my $dir = File::Basename::dirname($INC{'POPFile/Config.pm'});
+    my $path = "$dir/config.schema.json";
+    open my $fh, '<', $path or die "POPFile::Config: cannot read $path: $!";
+    my $content = do { local $/; <$fh> };
+    close $fh;
+    $SCHEMA = Cpanel::JSON::XS->new()->utf8()->decode($content);
+    return $SCHEMA
+}
 
 method instance :common () {
     return $instance
@@ -177,12 +53,29 @@ method load_file($path) {
         unless -e $path;
     require POPFile::ConfigFile;
     my $data = POPFile::ConfigFile->new()->load($path);
-    $self->_coerce_types($data, $SCHEMA->{properties});
+    $self->_coerce_types($data, _load_schema()->{properties});
     my $result = $self->_validate($data);
     die "POPFile::Config: invalid $path\n" . join("\n", $result->@*)
         unless $result->@* == 0;
     delete $data->{version};
+    $self->_apply_defaults($data, _load_schema()->{properties});
     %store = $data->%*;
+}
+
+method _apply_defaults($node, $schema_node) {
+    return
+        unless ref $schema_node eq 'HASH';
+    for my $key (keys $schema_node->%*) {
+        my $prop = $schema_node->{$key};
+        next
+            unless ref $prop eq 'HASH';
+        if (($prop->{type} // '') eq 'object' && $prop->{properties}) {
+            $node->{$key} //= {};
+            $self->_apply_defaults($node->{$key}, $prop->{properties});
+        } elsif (exists $prop->{default}) {
+            $node->{$key} //= $prop->{default};
+        }
+    }
 }
 
 method _coerce_types($node, $schema_node) {
@@ -212,7 +105,7 @@ method _coerce_types($node, $schema_node) {
 method _validate($data) {
     require JSON::Schema::Modern;
     my $js = JSON::Schema::Modern->new();
-    my $result = $js->evaluate($data, $SCHEMA);
+    my $result = $js->evaluate($data, _load_schema());
     return []
         if $result->{valid};
     my @messages;
@@ -234,7 +127,7 @@ Used by the API controller before saving config changes.
 method validate_doc :common ($data) {
     my $doc = +{version => 2, %{ $data // {} }};
     my $tmp = POPFile::Config->new();
-    $tmp->_coerce_types($doc, $SCHEMA->{properties});
+    $tmp->_coerce_types($doc, _load_schema()->{properties});
     my $result = $tmp->_validate($doc);
     die "POPFile::Config: invalid config\n" . join("\n", $result->@*)
         unless $result->@* == 0;

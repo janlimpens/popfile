@@ -4,14 +4,6 @@ use Object::Pad;
 
 use POPFile::Role::Config;
 
-my %DEFAULTS = (
-    hostname => '',
-    port => 143,
-    use_ssl => 0,
-    login => '',
-    password => '',
-);
-
 class Services::IMAP::Client
     :isa(POPFile::Module)
     :does(POPFile::Role::Config);
@@ -97,9 +89,9 @@ success, C<undef> on failure.
 =cut
 
 method connect() {
-    my $hostname = $test_hostname // $self->config->get('hostname') // $DEFAULTS{hostname};
-    my $port = $test_port // $self->config->get('port') // $DEFAULTS{port};
-    my $use_ssl = $test_use_ssl // $self->config->get('use_ssl') // $DEFAULTS{use_ssl};
+    my $hostname = $test_hostname // $self->config->get('hostname');
+    my $port = $test_port // $self->config->get('port');
+    my $use_ssl = $test_use_ssl // $self->config->get('use_ssl');
     my $timeout = $self->_global_timeout();
     $self->log_msg(INFO => "Connecting to $hostname:$port");
     unless ($hostname ne '' && $port ne '') {
@@ -148,8 +140,8 @@ C<undef> on failure.  Credentials are masked in the log.
 =cut
 
 method login() {
-    my $login = $test_login // $self->config->get('login') // $DEFAULTS{login};
-    my $pass = $test_password // $self->config->get('password') // $DEFAULTS{password};
+    my $login = $test_login // $self->config->get('login');
+    my $pass = $test_password // $self->config->get('password');
     $self->log_msg(INFO => "Logging in");
     $self->say('LOGIN "' . $login . '" "' . $pass . '"');
     return $self->get_response() == 1 ? 1 : undef

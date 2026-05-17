@@ -11,13 +11,6 @@ my $eol = "\015\012";
 
 class Proxy::SMTP :isa(Proxy::Proxy);
 
-    my %DEFAULTS = (
-        port => 25,
-        chain_server => '',
-        chain_port => 25,
-        local => 1,
-        enabled => 0,
-    );
 
 =head1 NAME
 
@@ -68,7 +61,7 @@ then calls C<< Proxy::Proxy->start() >> to open the listening socket.
     method start() {
         $self->set_welcome_string("SMTP POPFile (" . $self->version() . ") welcome");
 
-        if (($self->config->get('enabled') // $DEFAULTS{enabled}) == 0) {
+        if (($self->config->get('enabled')) == 0) {
             return 2;
         }
 
@@ -97,10 +90,10 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
             $self->log_msg(DEBUG => "Command: --$command--");
 
             if ($command =~ /HELO/i) {
-                if ($self->config->get('chain_server') // $DEFAULTS{chain_server}) {
+                if ($self->config->get('chain_server')) {
                     if ($mail = $self->verify_connected($mail, $client,
-                            $self->config->get('chain_server') // $DEFAULTS{chain_server},
-                            $self->config->get('chain_port') // $DEFAULTS{chain_port})) {
+                            $self->config->get('chain_server'),
+                            $self->config->get('chain_port'))) {
                         $self->smtp_echo_response($mail, $client, $command);
                     } else {
                         last;
@@ -112,10 +105,10 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
             }
 
             if ($command =~ /EHLO/i) {
-                if ($self->config->get('chain_server') // $DEFAULTS{chain_server}) {
+                if ($self->config->get('chain_server')) {
                     if ($mail = $self->verify_connected($mail, $client,
-                            $self->config->get('chain_server') // $DEFAULTS{chain_server},
-                            $self->config->get('chain_port') // $DEFAULTS{chain_port})) {
+                            $self->config->get('chain_server'),
+                            $self->config->get('chain_port'))) {
                         my $unsupported = qr/250\-CHUNKING|BINARYMIME|XEXCH50/;
                         $self->smtp_echo_response($mail, $client, $command, $unsupported);
                     } else {

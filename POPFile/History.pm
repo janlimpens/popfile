@@ -57,11 +57,6 @@ class POPFile::History
     use Digest::MD5 qw(md5_hex);
     use Path::Tiny qw(path);
 
-    my %DEFAULTS = (
-        history_days => 2,
-        archive => 0,
-        archive_dir => 'archive',
-        archive_classes => 0);
 
 field $commit_list = [];
 field $queries :reader;
@@ -422,8 +417,8 @@ method delete_slot ($slot, $archive) {
         unless defined $slot && $slot =~ /^\d+$/;
     my $file = $self->get_slot_file($slot);
     $self->log_msg(DEBUG => "delete_slot called for slot $slot, file $file");
-    if (($self->config->get('archive') // $DEFAULTS{archive}) && $archive) {
-        my $path = $self->get_user_path(($self->config->get('archive_dir') // $DEFAULTS{archive_dir}), 0);
+    if (($self->config->get('archive')) && $archive) {
+        my $path = $self->get_user_path(($self->config->get('archive_dir')), 0);
         path($path)->mkpath;
         my $qb = $self->qb();
         my $select = $qb->select('buckets.name')
@@ -439,8 +434,8 @@ method delete_slot ($slot, $archive) {
             && $bucket_name ne 'unknown class') {
             $path .= '/' . $bucket_name;
             path($path)->mkpath;
-            if (($self->config->get('archive_classes') // $DEFAULTS{archive_classes}) > 0) {
-                my $subdir = int(rand(($self->config->get('archive_classes') // $DEFAULTS{archive_classes})));
+            if (($self->config->get('archive_classes')) > 0) {
+                my $subdir = int(rand(($self->config->get('archive_classes'))));
                 $path .= '/' . $subdir;
                 path($path)->mkpath;
             }
@@ -546,7 +541,7 @@ Called automatically on each C<TICKD> message-queue event (i.e. once per day).
 
 method cleanup_history() {
     my $seconds_per_day = 24 * 60 * 60;
-    my $cutoff_time = time - ($self->config->get('history_days') // $DEFAULTS{history_days}) * $seconds_per_day;
+    my $cutoff_time = time - ($self->config->get('history_days')) * $seconds_per_day;
     my $sth = $self->get_handle()->prepare_cached(
         'SELECT id FROM history WHERE inserted < ?');
     $sth->execute($cutoff_time);

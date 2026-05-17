@@ -17,11 +17,6 @@ class POPFile::Logger
     :isa(POPFile::Module)
     :does(POPFile::Role::Config);
 
-    my %DEFAULTS = (
-        format => 'default',
-        level => 0,
-        log_to_stdout => 0,
-        log_sql => 0);
 
 =head1 NAME
 
@@ -167,11 +162,11 @@ method _reconfigure_adapter() {
     my $debug = ($self->_debug()) // 0;
     POPFile::Log::Adapter->configure(
         to_file => ($debug & 1) ? 1 : 0,
-        to_stdout => ($self->config->get('log_to_stdout') // $DEFAULTS{log_to_stdout}) ? 1 : 0,
+        to_stdout => ($self->config->get('log_to_stdout')) ? 1 : 0,
         filename => $debug_filename,
-        popfile_level => ($self->config->get('level') // $DEFAULTS{level}) // 0,
-        log_sql => ($self->config->get('log_sql') // $DEFAULTS{log_sql}) ? 1 : 0,
-        format => ($self->config->get('format') // $DEFAULTS{format}) // 'default',
+        popfile_level => ($self->config->get('level')) // 0,
+        log_sql => ($self->config->get('log_sql')) ? 1 : 0,
+        format => ($self->config->get('format')) // 'default',
     );
     Log::Any::Adapter->set('+POPFile::Log::Adapter');
 }
@@ -205,7 +200,7 @@ level if C<$level> is within the configured C<level> threshold.
 
 method debug ($level, $message) {
     Log::Any->get_logger(category => 'POPFile')->info($message)
-        if $level <= (($self->config->get('level') // $DEFAULTS{level}) // 0);
+        if $level <= (($self->config->get('level')) // 0);
 }
 
 =head2 debug_filename()

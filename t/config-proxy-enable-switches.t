@@ -65,9 +65,9 @@ subtest 'config controller exposes proxy enabled keys' => sub {
     $controller->{rendered} = undef;
     $controller->get_config();
     my $json = $controller->{rendered}{json};
-    is($json->{pop3_enabled}, '', 'pop3_enabled empty in fresh config');
-    is($json->{smtp_enabled}, '', 'smtp_enabled empty in fresh config');
-    is($json->{nntp_enabled}, '', 'nntp_enabled empty in fresh config');
+    is($json->{pop3_enabled}, 0, 'pop3_enabled default is 0');
+    is($json->{smtp_enabled}, 0, 'smtp_enabled default is 0');
+    is($json->{nntp_enabled}, 0, 'nntp_enabled default is 0');
 };
 
 subtest 'config controller persists proxy enabled keys' => sub {

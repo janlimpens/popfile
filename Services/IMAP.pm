@@ -15,16 +15,6 @@ class Services::IMAP
     :does(POPFile::Role::DBConnect)
     :does(POPFile::Role::Config);
 
-    my %DEFAULTS = (
-        hostname => '',
-        port => 143,
-        login => '',
-        password => '',
-        update_interval => 20,
-        expunge => 0,
-        use_ssl => 0,
-        enabled => 0,
-        training_limit => 0);
 
 =head1 NAME
 
@@ -80,15 +70,15 @@ BUILD {
     $self->set_name('imap');
 }
 
-method _host()       { $self->config->get('hostname') // $DEFAULTS{hostname} }
-method _port()       { $self->config->get('port') // $DEFAULTS{port} }
-method _login()      { $self->config->get('login') // $DEFAULTS{login} }
-method _password()   { $self->config->get('password') // $DEFAULTS{password} }
-method _interval()   { $self->config->get('update_interval') // $DEFAULTS{update_interval} }
-method _expunge()    { $self->config->get('expunge') // $DEFAULTS{expunge} }
-method _use_ssl()    { $self->config->get('use_ssl') // $DEFAULTS{use_ssl} }
-method _enabled()    { $self->config->get('enabled') // $DEFAULTS{enabled} }
-method _training_limit() { $self->config->get('training_limit') // $DEFAULTS{training_limit} }
+method _host()       { $self->config->get('hostname') }
+method _port()       { $self->config->get('port') }
+method _login()      { $self->config->get('login') }
+method _password()   { $self->config->get('password') }
+method _interval()   { $self->config->get('update_interval') }
+method _expunge()    { $self->config->get('expunge') }
+method _use_ssl()    { $self->config->get('use_ssl') }
+method _enabled()    { $self->config->get('enabled') }
+method _training_limit() { $self->config->get('training_limit') }
 
 method _training_mode() { $training_mode }
 method _training_error() { $training_error }

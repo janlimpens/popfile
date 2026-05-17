@@ -33,8 +33,6 @@ class Classifier::WordMangle
     :isa(POPFile::Module)
     :does(POPFile::Role::Config);
 
-    my %DEFAULTS = (
-        auto_detect_language => 1);
 
     field $stemming :reader :writer = 0;
 

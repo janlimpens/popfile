@@ -17,11 +17,6 @@ my $eol = "\015\012";
 
 class Proxy::Proxy :isa(POPFile::Module) :does(POPFile::Role::Config);
 
-    my %DEFAULTS = (
-        enabled => 1,
-        port => 0,
-        local => 0,
-    );
 
     field $classifier_service = undef;
 
@@ -83,10 +78,10 @@ Returns 0 if the server cannot be started; 1 on success.
 
     method start() {
         require Mojo::IOLoop;
-        $self->log_msg(INFO => "Opening listening socket on port " . ($self->config->get('port') // $DEFAULTS{port}) . '.');
+        $self->log_msg(INFO => "Opening listening socket on port " . ($self->config->get('port')) . '.');
 
-        my $local = (($self->config->get('local') // $DEFAULTS{local}) // 0) == 1;
-        my %listen_args = (port => $self->config->get('port') // $DEFAULTS{port});
+        my $local = (($self->config->get('local')) // 0) == 1;
+        my %listen_args = (port => $self->config->get('port'));
         $listen_args{address} = '127.0.0.1' if $local;
 
         my $name = $self->name();
@@ -105,7 +100,7 @@ Returns 0 if the server cannot be started; 1 on success.
         );
 
         unless (defined $server_id) {
-            my $port = $self->config->get('port') // $DEFAULTS{port};
+            my $port = $self->config->get('port');
             $self->log_msg(WARN => "Couldn't start the $name proxy because POPFile could not bind to the listen port $port");
             print STDERR "\nCouldn't start the $name proxy because POPFile could not bind to the\nlisten port $port. This could be because there is another service\nusing that port or because you do not have the right privileges on\nyour system (On Unix systems this can happen if you are not root\nand the port you specified is less than 1024).\n\n";
             return 0;

@@ -50,20 +50,6 @@ class Classifier::Bayes
     :does(POPFile::Role::Config)
     :does(POPFile::Role::Logging);
 
-    my %DEFAULTS = (
-        unclassified_weight => 100,
-        stopword_ratio => 0,
-        subject_mod_left => '[',
-        subject_mod_right => ']',
-        subject_mod_pos => 1,
-        hostname => '',
-        xpl_angle => 0,
-        localhostname => '',
-        bayes_magnets_enabled => 1,
-        nihongo_parser => 'kakasi',
-        locale => '',
-        message_cutoff => 100000,
-    );
 
 =head1 NAME
 
@@ -187,7 +173,7 @@ method start() {
     # UTF-8 but POPFile uses EUC-JP encoding for Japanese. In this situation
     # lc() does not work correctly.
 
-    my $language = $self->config->get('locale') // $DEFAULTS{locale};
+    my $language = $self->config->get('locale');
 
     if ($language =~ /^(Nihongo$|Korean$|Chinese)/) {
         use POSIX qw(locale_h);
@@ -199,7 +185,7 @@ method start() {
 
     $parser->set_lang($language);
     $parser->mangle()->set_ui_language($language);
-    $unclassified = log(($self->config->get('unclassified_weight') // $DEFAULTS{unclassified_weight}));
+    $unclassified = log(($self->config->get('unclassified_weight')));
 
     $buckets = Classifier::Buckets->new();
     return 0
@@ -207,14 +193,14 @@ method start() {
     $sessions = Classifier::Sessions->new();
     $magnets = Classifier::Magnets->new();
     $pipeline->register($magnets, priority => 0, name => 'magnets')
-        if ($self->config->get('bayes_magnets_enabled') // $DEFAULTS{bayes_magnets_enabled});
+        if ($self->config->get('bayes_magnets_enabled'));
     $corpus = Classifier::Corpus->new();
     $stopwords = Classifier::Stopwords->new();
 
     if ($language eq 'Nihongo') {
         # Setup Nihongo (Japanese) parser.
 
-        my $nihongo_parser = ($self->config->get('nihongo_parser') // $DEFAULTS{nihongo_parser});
+        my $nihongo_parser = ($self->config->get('nihongo_parser'));
 
         $nihongo_parser = $parser->setup_nihongo_parser($nihongo_parser);
 
@@ -827,13 +813,13 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
     return
         unless defined $userid;
 
-    $unclassified = log(($self->config->get('unclassified_weight') // $DEFAULTS{unclassified_weight}));
+    $unclassified = log(($self->config->get('unclassified_weight')));
 
     if (defined($file)) {
         return if (!-f $file);
 
         $parser->parse_file($file,
-            $self->config->get('message_cutoff') // $DEFAULTS{message_cutoff});
+            $self->config->get('message_cutoff'));
     }
 
     # Get the list of buckets
@@ -940,7 +926,7 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
     my @id_list = $id_list_ref->@*;
     my $not_likely_for_bucket = $not_likely->{$userid};
     my $display_not_likely = (sort { $a <=> $b } values $not_likely_for_bucket->%*)[0] // 0;
-    my $stopword_ratio = ($self->config->get('stopword_ratio') // $DEFAULTS{stopword_ratio}) + 0;
+    my $stopword_ratio = ($self->config->get('stopword_ratio')) + 0;
 
     for my $id (@id_list) {
         if ($stopword_ratio > 0 && @buckets > 1) {
@@ -1359,7 +1345,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # The maximum size of message to parse, or 0 for unlimited
 
-    my $max_size = $self->config->get('message_cutoff') // $DEFAULTS{message_cutoff};
+    my $max_size = $self->config->get('message_cutoff');
     $max_size = 0 unless (defined($max_size) || ($max_size =~ /\D/));
 
     my $msg_file;
@@ -1513,7 +1499,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     my $xpl_insertion = $self->get_bucket_parameter($session, $classification, 'xpl');
     my $quarantine = $self->get_bucket_parameter($session, $classification, 'quarantine');
 
-    my $modification = ($self->config->get('subject_mod_left') // $DEFAULTS{subject_mod_left}) . $classification . ($self->config->get('subject_mod_right') // $DEFAULTS{subject_mod_right});
+    my $modification = ($self->config->get('subject_mod_left')) . $classification . ($self->config->get('subject_mod_right'));
 
     # Add the Subject line modification or the original line back again
     # Don't add the classification unless it is not present
@@ -1524,7 +1510,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
         if (! defined $msg_subject) {
             $msg_subject = " $modification";
         } elsif ($msg_subject !~ /\Q$modification\E/) {
-            if (($self->config->get('subject_mod_pos') // $DEFAULTS{subject_mod_pos}) > 0) {
+            if (($self->config->get('subject_mod_pos')) > 0) {
                 $msg_subject = " $modification$msg_subject";
             } else {
                 $msg_subject = "$msg_subject $modification";
@@ -1555,13 +1541,13 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     # Add the XPL header
 
     my $host = $self->config('GLOBAL')->get('local') // 1
-        ? ($self->config->get('localhostname') // $DEFAULTS{localhostname}) || '127.0.0.1'
+        ? ($self->config->get('localhostname')) || '127.0.0.1'
         : $hostname;
     my $port = $self->config('GLOBAL')->get('port') // 0;
 
     my $xpl = "http://$host:$port/jump_to_message?view=$slot";
 
-    $xpl = "<$xpl>" if (($self->config->get('xpl_angle') // $DEFAULTS{xpl_angle}));
+    $xpl = "<$xpl>" if (($self->config->get('xpl_angle')));
 
     if ($xpl_insertion && !$quarantine) {
         $msg_head_after .= "X-POPFile-Link: $xpl$crlf";
@@ -2076,14 +2062,14 @@ method get_bucket_word_prefixes($session, $bucket) {
     my $prev = '';
     my $bucketid = $db_bucketid->{$userid}{$bucket}{id};
     my $result = $corpus->raw_word_prefixes($self->get_handle(), $bucketid);
-    if (($self->config->get('locale') // $DEFAULTS{locale}) eq 'Nihongo') {
+    if (($self->config->get('locale')) eq 'Nihongo') {
         return
             grep {$_ ne $prev && ($prev = $_, 1)}
             sort
             map {substr_euc($_,0,1)}
             $result->@*;
     } else {
-        if  (($self->config->get('locale') // $DEFAULTS{locale}) eq 'Korean') {
+        if  (($self->config->get('locale')) eq 'Korean') {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {$_ =~ /([\x20-\x80]|$eksc)/} $result->@*;
         } else {
             return grep {$_ ne $prev && ($prev = $_, 1)} sort map {substr($_,0,1)} $result->@*;
@@ -2328,7 +2314,7 @@ method add_messages_to_bucket ($session, $bucket, @files) {
     $parser->stop_parse();
 
     for my $file (@files) {
-        $parser->parse_file($file, $self->config->get('message_cutoff') // $DEFAULTS{message_cutoff}, 0);
+        $parser->parse_file($file, $self->config->get('message_cutoff'), 0);
     }
 
     $self->add_words_to_bucket($session, $bucket, 1);
@@ -2412,7 +2398,7 @@ method remove_message_from_bucket ($session, $bucket, $file) {
     }
 
     $parser->parse_file($file,
-        $self->config->get('message_cutoff') // $DEFAULTS{message_cutoff});
+        $self->config->get('message_cutoff'));
         $self->add_words_to_bucket($session, $bucket, -1);
         $self->db_update_cache($session, $bucket);
 
