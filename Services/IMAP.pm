@@ -677,9 +677,9 @@ method connect_server(%uid_state) {
             }
         }
         else {
-            $self->log_msg(WARN => "Storing UIDVALIDITY for folder $folder.");
+            $self->log_msg(WARN => "First connect to folder $folder — starting from UID 1.");
             $imap->uid_validity($folder, $uidvalidity);
-            $imap->uid_next($folder, $uidnext);
+            $imap->uid_next($folder, 1);
         }
     }
 }
