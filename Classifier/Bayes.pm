@@ -65,11 +65,6 @@ methods (C<create_bucket>, C<add_message_to_bucket>, etc.).
 
 =cut
 
-field $wordscores :reader :writer = 0;
-
-# wmformat: format of the word-matrix display in message detail
-field $wmformat :reader :writer = '';
-
 field $hostname = '';
 
 field $history = 0;
@@ -781,7 +776,6 @@ bucket name
 C<$session> A valid session key returned by a call to get_session_key
 $file The name of the file containing the text to classify (or undef
 to use the data already in the parser)
-C<$templ> Reference to the UI template used for word score display
 $matrix (optional) Reference to a hash that will be filled with the
 word matrix used in classification
 $idmap (optional) Reference to a hash that will map word ids in the
@@ -789,9 +783,7 @@ $matrix to actual words
 
 =cut
 
-method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap = undef) {
-    my $msg_total = 0;
-
+method classify ($ctx, $session, $file, $matrix = undef, $idmap = undef) {
     my $userid = $self->valid_session_key($session);
     return
         unless defined $userid;
@@ -835,19 +827,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
 
     return "unclassified"
         if (@buckets < 2);
-
-    # For each word go through the buckets and calculate
-    # P(word|bucket) and then calculate P(word|bucket) ^ word count
-    # and multiply to the score
-    my $word_count = 0;
-
-    # The correction value is used to generate score displays variable
-    # which are consistent with the word scores shown by the GUI's
-    # word lookup feature.  It is computed to make the contribution of
-    # a word which is unrepresented in a bucket zero.  This correction
-    # affects only the values displayed in the display; it has no
-    # effect on the classification process.
-    my $correction = 0;
 
     # Classification against the database works in a sequence of steps
     # to get the fastest time possible.  The steps are as follows:
@@ -895,7 +874,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
     }
     my @id_list = $id_list_ref->@*;
     my $not_likely_for_bucket = $not_likely->{$userid};
-    my $display_not_likely = (sort { $a <=> $b } values $not_likely_for_bucket->%*)[0] // 0;
     my $stopword_ratio = ($self->config->get('stopword_ratio')) + 0;
 
     for my $id (@id_list) {
@@ -912,8 +890,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
             next()
                 if $all_present && $max_c / $min_c < $stopword_ratio;
         }
-        $word_count += 2;
-        my $wmax = -10000;
         my $count = $parser->words()->{$$idmap{$id}};
 
         for my $bucket (@buckets) {
@@ -924,14 +900,7 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
                 $matchcount{$bucket} += $count;
             }
 
-            $wmax = $probability if ($wmax < $probability);
             $score{$bucket} += ($probability * $count);
-        }
-
-        if ($wmax > $display_not_likely) {
-            $correction += $display_not_likely * $count;
-        } else {
-            $correction += $wmax * $count;
         }
     }
 
@@ -962,280 +931,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
         $score{$b} -= $base_score;
 
         $total += exp($score{$b}) if ($score{$b} > $ln2p_54);
-    }
-
-    if ($wordscores && defined($templ)) {
-        my %qm = $parser->quickmagnets()->%*;
-        my $mlen = scalar(keys $parser->quickmagnets()->%*);
-
-        if ($mlen > 0) {
-            $templ->param(View_QuickMagnets_If => 1);
-            $templ->param(View_QuickMagnets_Count => ($mlen + 1));
-            my @buckets = $self->get_buckets($session);
-            my $i = 0;
-            my %types = $self->get_magnet_types($session);
-
-            my @bucket_data;
-            for my $bucket (@buckets) {
-                my %row_data;
-                $row_data{View_QuickMagnets_Bucket} = $bucket;
-                $row_data{View_QuickMagnets_Bucket_Color} = $self->get_bucket_color($session, $bucket);
-                push (@bucket_data, \%row_data);
-            }
-
-            my @qm_data;
-            for my $type (sort keys %types) {
-                my %row_data;
-
-                if (defined $qm{$type}) {
-                    $i++;
-
-                    $row_data{View_QuickMagnets_Type} = $type;
-                    $row_data{View_QuickMagnets_I} = $i;
-                    $row_data{View_QuickMagnets_Loop_Buckets} = \@bucket_data;
-
-                    my @magnet_data;
-                    for my $magnet ($qm{$type}->@*) {
-                        my %row_magnet;
-                        $row_magnet{View_QuickMagnets_Magnet} = $magnet;
-                        push (@magnet_data, \%row_magnet);
-                    }
-                    $row_data{View_QuickMagnets_Loop_Magnets} = \@magnet_data;
-
-                    push (@qm_data, \%row_data);
-                }
-            }
-            $templ->param(View_QuickMagnets_Loop => \@qm_data);
-        }
-
-        $templ->param(View_Score_If_Score => $wmformat eq 'score');
-        my $log10 = log(10.0);
-
-        my @score_data;
-        for my $b (@ranking) {
-            my %row_data;
-            my $prob = exp($score{$b})/$total;
-            my $probstr;
-            my $rawstr;
-
-            # If the computed probability would display as 1, display
-            # it as .999999 instead.  We don't want to give the
-            # impression that POPFile is ever completely sure of its
-            # classification.
-            if ($prob >= .999999) {
-                $probstr = sprintf("%12.6f", 0.999999);
-            } else {
-                if ($prob >= 0.1 || $prob == 0.0) {
-                    $probstr = sprintf("%12.6f", $prob);
-                } else {
-                    $probstr = sprintf("%17.6e", $prob);
-                }
-            }
-
-            my $color = $self->get_bucket_color($session, $b);
-
-            $row_data{View_Score_Bucket} = $b;
-            $row_data{View_Score_Bucket_Color} = $color;
-            $row_data{View_Score_MatchCount} = $matchcount{$b};
-            $row_data{View_Score_ProbStr} = $probstr;
-
-            if ($wmformat eq 'score') {
-                $row_data{View_Score_If_Score} = 1;
-                $rawstr = sprintf("%12.6f", ($raw_score{$b} - $correction)/$log10);
-                $row_data{View_Score_RawStr} = $rawstr;
-            }
-            push (@score_data, \%row_data);
-        }
-        $templ->param(View_Score_Loop_Scores => \@score_data);
-
-        if ($wmformat ne '') {
-            $templ->param(View_Score_If_Table => 1);
-
-            my @header_data;
-            for my $ix (0..($#buckets > 7? 7: $#buckets)) {
-                my %row_data;
-                my $bucket = $ranking[$ix];
-                my $bucketcolor = $self->get_bucket_color($session, $bucket);
-                $row_data{View_Score_Bucket} = $bucket;
-                $row_data{View_Score_Bucket_Color} = $bucketcolor;
-                push (@header_data, \%row_data);
-            }
-            $templ->param('View_Score_Loop_Bucket_Header' => \@header_data);
-
-            my %wordprobs;
-
-            # If the word matrix is supposed to show probabilities,
-            # compute them, saving the results in %wordprobs.
-            if ($wmformat eq 'prob') {
-                for my $id (@id_list) {
-                    my $sumfreq = 0;
-                    my %wval;
-                    for my $bucket (@ranking) {
-                        $wval{$bucket} = $$matrix{$id}{$bucket} || 0;
-                        $sumfreq += $wval{$bucket};
-                    }
-
-                    # If $sumfreq is still zero then this word didn't
-                    # appear in any buckets so we shouldn't create
-                    # wordprobs entries for it
-                    if ($sumfreq != 0) {
-                        for my $bucket (@ranking) {
-                            $wordprobs{$bucket,$id} = $wval{$bucket} / $sumfreq;
-                        }
-                    }
-                }
-            }
-
-            my @ranked_ids;
-            if ($wmformat eq 'prob') {
-                @ranked_ids = sort {($wordprobs{$ranking[0],$b}||0) <=> ($wordprobs{$ranking[0],$a}||0)} @id_list;
-            } else {
-                @ranked_ids = sort {($$matrix{$b}{$ranking[0]}||0) <=> ($$matrix{$a}{$ranking[0]}||0)} @id_list;
-            }
-
-            my @word_data;
-            my %chart;
-            for my $id (@ranked_ids) {
-                my %row_data;
-                my $known = 0;
-
-                for my $bucket (@ranking) {
-                    if (defined($$matrix{$id}{$bucket})) {
-                        $known = 1;
-                        last;
-                    }
-                }
-
-                if ($known == 1) {
-                    my $wordcolor = $self->get_bucket_color($session, $self->get_top_bucket($userid, $id, $matrix, \@ranking));
-                    my $count = $parser->words()->{$$idmap{$id}};
-
-                    $row_data{View_Score_Word} = $$idmap{$id};
-                    $row_data{View_Score_Word_Color} = $wordcolor;
-                    $row_data{View_Score_Word_Count} = $count;
-
-                    my $base_probability = 0;
-                    if (defined($$matrix{$id}{$ranking[0]}) && ($$matrix{$id}{$ranking[0]} > 0)) {
-                        $base_probability = log($$matrix{$id}{$ranking[0]} / $db_bucketcount->{$userid}{$ranking[0]});
-                    }
-
-                    my @per_bucket;
-                    my @score;
-                    for my $ix (0..($#buckets > 7? 7: $#buckets)) {
-                        my %bucket_row;
-                        my $bucket = $ranking[$ix];
-                        my $probability = 0;
-                        if (defined($$matrix{$id}{$bucket}) && ($$matrix{$id}{$bucket} > 0)) {
-                            $probability = log($$matrix{$id}{$bucket} / $db_bucketcount->{$userid}{$bucket});
-                        }
-                        my $color = 'black';
-
-                        if ($probability >= $base_probability || $base_probability == 0) {
-                            $color = $self->get_bucket_color($session, $bucket);
-                        }
-
-                        $bucket_row{View_Score_If_Probability} = ($probability != 0);
-                        $bucket_row{View_Score_Word_Color} = $color;
-                        if ($probability != 0) {
-                            my $wordprobstr;
-                            if ($wmformat eq 'score') {
-                                $wordprobstr = sprintf("%12.4f", ($probability - $not_likely_for_bucket->{$bucket})/$log10);
-                                push (@score, $wordprobstr);
-                            } else {
-                                if ($wmformat eq 'prob') {
-                                    $wordprobstr = sprintf("%12.4f", $wordprobs{$bucket,$id});
-                                } else {
-                                    $wordprobstr = sprintf("%13.5f", exp($probability));
-                                }
-                            }
-                            $bucket_row{View_Score_Probability} = $wordprobstr;
-                        }
-                        else {
-                            # Scores eq 0 must also be remembered.
-                            push @score, 0;
-                        }
-                        push @per_bucket, \%bucket_row;
-                    }
-                    $row_data{View_Score_Loop_Per_Bucket} = \@per_bucket;
-
-                    # If we are doing the word scores then we build up
-                    # a hash that maps the name of a word to a value
-                    # which is the difference between the word scores
-                    # for the top two buckets.  We later use this to
-                    # draw a chart
-                    if ($wmformat eq 'score') {
-                        $chart{$idmap->{$id}} = ($score[0] || 0) - ($score[1] || 0);
-                    }
-
-                    push (@word_data, \%row_data);
-                }
-            }
-            $templ->param(View_Score_Loop_Words => \@word_data);
-
-            if ($wmformat eq 'score') {
-                # Draw a chart that shows how the decision between the top
-                # two buckets was made.
-                my @words = sort { $chart{$b} <=> $chart{$a} } keys %chart;
-
-                my @chart_data;
-                my $max_chart = $chart{$words[0]};
-                my $min_chart = $chart{$words[$#words]};
-                my $scale = ($max_chart > $min_chart) ? 400 / ($max_chart - $min_chart) : 0;
-
-                my $color_1 = $self->get_bucket_color($session, $ranking[0]);
-                my $color_2 = $self->get_bucket_color($session, $ranking[1]);
-
-                $templ->param('Bucket_1' => $ranking[0]);
-                $templ->param('Bucket_2' => $ranking[1]);
-
-                $templ->param('Color_Bucket_1' => $color_1);
-                $templ->param('Color_Bucket_2' => $color_2);
-
-                $templ->param('Score_Bucket_1' => sprintf("%.3f", ($raw_score{$ranking[0]} - $correction)/$log10));
-                $templ->param('Score_Bucket_2' => sprintf("%.3f", ($raw_score{$ranking[1]} - $correction)/$log10));
-
-                for (my $i=0; $i <= $#words; $i++) {
-                    my $word_1 = $words[$i];
-                    my $word_2 = $words[$#words - $i];
-
-                    my $width_1 = int($chart{$word_1} * $scale + .5);
-                    my $width_2 = int($chart{$word_2} * $scale - .5) * -1;
-
-                    last if ($width_1 <=0 && $width_2 <= 0);
-
-                    my %row_data;
-
-                    $row_data{View_Chart_Word_1} = $word_1;
-                    if ($width_1 > 0) {
-                        $row_data{View_If_Bar_1} = 1;
-                        $row_data{View_Width_1} = $width_1;
-                        $row_data{View_Color_1} = $color_1;
-                        $row_data{Score_Word_1} = sprintf "%.3f", $chart{$word_1};
-                    }
-                    else {
-                        $row_data{View_If_Bar_1} = 0;
-                    }
-
-                    $row_data{View_Chart_Word_2} = $word_2;
-                    if ($width_2 > 0) {
-                        $row_data{View_If_Bar_2} = 1;
-                        $row_data{View_Width_2} = $width_2;
-                        $row_data{View_Color_2} = $color_2;
-                        $row_data{Score_Word_2} = sprintf "%.3f", $chart{$word_2};
-                    }
-                    else {
-                        $row_data{View_If_Bar_2} = 0;
-                    }
-
-                    push (@chart_data, \%row_data);
-                }
-                $templ->param(View_Loop_Chart => \@chart_data);
-                $templ->param(If_chart => 1);
-            }
-            else {
-                $templ->param(If_chart => 0);
-            }
-        }
     }
 
     return $class;
@@ -1272,14 +967,13 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     $echo = 1    unless (defined $echo);
     $crlf = $eol unless (defined $crlf);
 
-    my $msg_subject;              # The message subject
-    my $msg_head_before = '';     # Store the message headers that
-                                  # come before Subject here
-    my $msg_head_after = '';      # Store the message headers that
-                                  # come after Subject here
-    my $msg_head_q = '';          # Store questionable header lines here
-    my $msg_body = '';            # Store the message body here
-    my $in_subject_header = 0;    # 1 if in Subject header
+    my $msg_body = '';
+    my $hdr = {
+        subject => undef,
+        before => '',
+        after => '',
+        q => '',
+        in_subject => 0 };
 
     # These two variables are used to control the insertion of the
     # X-POPFile-TimeoutPrevention header when downloading long or slow
@@ -1352,52 +1046,9 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
                 $message_size += length $line;
                 $self->write_line($nosave?undef:$msg, $fileline, $class);
 
-                # If there is no echoing occuring, it doesn't matter
-                # what we do to these
                 if ($echo) {
-                    if ($line =~ /^Subject:(.*)/i)  {
-                        $msg_subject = $1;
-                        $msg_subject =~ s/(\012|\015)//g;
-                        $in_subject_header = 1;
-                        next;
-                    } elsif ($line !~ /^[ \t]/) {
-                        $in_subject_header = 0;
-                    }
-
-                    # Strip out the X-Text-Classification header that
-                    # is in an incoming message
                     next
-                        if ($line =~ /^X-Text-Classification:/i);
-                    next
-                        if ($line =~ /^X-POPFile-Link:/i);
-
-                    # Store any lines that appear as though they may
-                    # be non-header content Lines that are headers
-                    # begin with whitespace or Alphanumerics and "-"
-                    # followed by a colon.
-                    #
-                    # This prevents weird things like HTML before the
-                    # headers terminate from causing the XPL and XTC
-                    # headers to be inserted in places some clients
-                    # can't detect
-                    if ($line =~ /^[ \t]/ && $in_subject_header) {
-                        $line =~ s/(\012|\015)//g;
-                        $msg_subject .= $crlf . $line;
-                        next;
-                    }
-
-                    if ($line =~ /^([ \t]|([A-Z0-9\-_]+:))/i) {
-                        unless (defined($msg_subject))  {
-                            $msg_head_before .= $msg_head_q . $line;
-                        } else {
-                            $msg_head_after  .= $msg_head_q . $line;
-                        }
-                        $msg_head_q = '';
-                    } else {
-                        # Gather up any header lines that are questionable
-                        $self->log_msg(INFO => "Found odd email header: $line");
-                        $msg_head_q .= $line;
-                    }
+                        if $self->_handle_echo_header($line, $hdr, $crlf);
                 }
             } else {
                 $self->write_line($nosave?undef:$msg, "\n", $class);
@@ -1447,36 +1098,34 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # Add the Subject line modification or the original line back again
     # Don't add the classification unless it is not present
-    my $original_msg_subject = $msg_subject;
+    my $original_msg_subject = $hdr->{subject};
 
     if ($subject_modification) {
-        if (! defined $msg_subject) {
-            $msg_subject = " $modification";
-        } elsif ($msg_subject !~ /\Q$modification\E/) {
+        if (!defined $hdr->{subject}) {
+            $hdr->{subject} = " $modification";
+        } elsif ($hdr->{subject} !~ /\Q$modification\E/) {
             if (($self->config->get('subject_mod_pos')) > 0) {
-                $msg_subject = " $modification$msg_subject";
+                $hdr->{subject} = " $modification$hdr->{subject}";
             } else {
-                $msg_subject = "$msg_subject $modification";
+                $hdr->{subject} = "$hdr->{subject} $modification";
             }
         }
     }
 
     if ($quarantine) {
         if (defined($original_msg_subject)) {
-            $msg_head_before .= "Subject:$original_msg_subject$crlf";
+            $hdr->{before} .= "Subject:$original_msg_subject$crlf";
         }
     } else {
-        if (defined($msg_subject)) {
-            $msg_head_before .= "Subject:$msg_subject$crlf";
+        if (defined $hdr->{subject}) {
+            $hdr->{before} .= "Subject:$hdr->{subject}$crlf";
         }
     }
 
-    # Add LF if $msg_head_after ends with CR to avoid header concatination
-    $msg_head_after =~ s/\015\z/$crlf/;
+    $hdr->{after} =~ s/\015\z/$crlf/;
 
-    # Add the XTC header
     if ($xtc_insertion && !$quarantine) {
-        $msg_head_after .= "X-Text-Classification: $classification$crlf";
+        $hdr->{after} .= "X-Text-Classification: $classification$crlf";
     }
 
     # Add the XPL header
@@ -1490,70 +1139,17 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     $xpl = "<$xpl>" if (($self->config->get('xpl_angle')));
 
     if ($xpl_insertion && !$quarantine) {
-        $msg_head_after .= "X-POPFile-Link: $xpl$crlf";
+        $hdr->{after} .= "X-POPFile-Link: $xpl$crlf";
     }
 
-    $msg_head_after .= $msg_head_q;
-    $msg_head_after .= $crlf if (!$getting_headers);
+    $hdr->{after} .= $hdr->{q};
+    $hdr->{after} .= $crlf if (!$getting_headers);
 
-    # Echo the text of the message to the client
     if ($echo) {
-        # If the bucket is quarantined then we'll treat it specially
-        # by changing the message header to contain information from
-        # POPFile and wrapping the original message in a MIME encoding
-       if ($quarantine) {
-       my ($orig_from, $orig_to, $orig_subject) = ($parser->get_header('from'), $parser->get_header('to'), $parser->get_header('subject'));
-       my ($encoded_from, $encoded_to) = ($orig_from, $orig_to);
-       if ($parser->lang() eq 'Nihongo') {
-               require Encode;
-
-               Encode::from_to($orig_from, 'euc-jp', 'iso-2022-jp');
-               Encode::from_to($orig_to, 'euc-jp', 'iso-2022-jp');
-               Encode::from_to($orig_subject, 'euc-jp', 'iso-2022-jp');
-
-               $encoded_from = $orig_from;
-               $encoded_to = $orig_to;
-               $encoded_from =~ s/(\x1B\x24\x42.+\x1B\x28\x42)/"=?ISO-2022-JP?B?" . encode_base64($1,'') . "?="/eg;
-               $encoded_to =~ s/(\x1B\x24\x42.+\x1B\x28\x42)/"=?ISO-2022-JP?B?" . encode_base64($1,'') . "?="/eg;
-           }
-
-           print $client "From: $encoded_from$crlf";
-           print $client "To: $encoded_to$crlf";
-           print $client "Date: " . $parser->get_header('date') . "$crlf";
-           print $client "Subject:$msg_subject$crlf" if (defined($msg_subject));
-           print $client "X-Text-Classification: $classification$crlf" if ($xtc_insertion);
-           print $client "X-POPFile-Link: $xpl$crlf" if ($xpl_insertion);
-           print $client "MIME-Version: 1.0$crlf";
-           print $client "Content-Type: multipart/report; boundary=\"$slot\"$crlf$crlf--$slot$crlf";
-           print $client "Content-Type: text/plain";
-           print $client "; charset=iso-2022-jp" if ($parser->lang() eq 'Nihongo');
-           print $client "$crlf$crlf";
-           print $client "POPFile has quarantined a message.  It is attached to this email.$crlf$crlf";
-           print $client "Quarantined Message Detail$crlf$crlf";
-
-           print $client "Original From: $orig_from$crlf";
-           print $client "Original To: $orig_to$crlf";
-           print $client "Original Subject: $orig_subject$crlf";
-
-           print $client "To examine the email open the attachment. ";
-           print $client "To change this mail's classification go to $xpl$crlf";
-           print $client "$crlf";
-           print $client "The first 20 words found in the email are:$crlf$crlf";
-
-           my $first20 = $parser->first20();
-           if ($parser->lang() eq 'Nihongo') {
-               require Encode;
-
-               Encode::from_to($first20, 'euc-jp', 'iso-2022-jp');
-           }
-
-           print $client $first20;
-           print $client "$crlf--$slot$crlf";
-           print $client "Content-Type: message/rfc822$crlf$crlf";
-        }
-
-        print $client $msg_head_before;
-        print $client $msg_head_after;
+        $self->_emit_quarantine_notice($client, $crlf, $slot, $xpl, $hdr->{subject}, $classification, $xtc_insertion, $xpl_insertion)
+            if $quarantine;
+        print $client $hdr->{before};
+        print $client $hdr->{after};
         print $client $msg_body;
     }
 
@@ -1576,50 +1172,7 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
         print $client ".$crlf"    if ($echo);
     }
 
-    # In some cases it's possible (and totally illegal) to get a . in
-    # the middle of the message, to cope with the we call flush_extra_
-    # here to remove any extra stuff the POP3 server is sending Make
-    # sure to supress output if we are not echoing, and to save to
-    # file if not echoing and saving
-    unless ($nosave || $echo) {
-        # if we're saving (not nosave) and not echoing, we can safely
-        # unload this into the temp file
-        if (open FLUSH, ">$msg_file.flush") {
-            binmode FLUSH;
-
-            # TODO: Do this in a faster way (without flushing to one
-            # file then copying to another) (perhaps a select on $mail
-            # to predict if there is flushable data)
-            $self->flush_extra($mail, \*FLUSH, 0);
-            close FLUSH;
-
-            # append any data we got to the actual temp file
-            if (((-s "$msg_file.flush") > 0) && (open FLUSH, "<$msg_file.flush")) {
-                binmode FLUSH;
-                if (open TEMP, ">>$msg_file") {
-                    binmode TEMP;
-
-                    # The only time we get data here is if it is after
-                    # a CRLF.CRLF We have to re-create it to avoid
-                    # data-loss
-                    print TEMP ".$crlf";
-
-                    print TEMP $_ while (<FLUSH>);
-
-                    # NOTE: The last line flushed MAY be a CRLF.CRLF,
-                    # which isn't actually part of the message body
-                    close TEMP;
-                }
-                close FLUSH;
-            }
-            unlink("$msg_file.flush");
-        }
-    } else {
-        # if we are echoing, the client can make sure we have no data
-        # loss otherwise, the data can be discarded (not saved and not
-        # echoed)
-        $self->flush_extra($mail, $client, $echo?0:1);
-    }
+    $self->_flush_message_overflow($mail, $client, $msg_file, $echo, $nosave, $crlf);
 
     if ($class eq '') {
         if ($nosave) {
@@ -1631,6 +1184,108 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     }
     return ($classification, $slot,
         $pipeline->last_classifier() eq 'magnets' ? 1 : 0);
+}
+
+method _handle_echo_header($line, $hdr, $crlf) {
+    if ($line =~ /^Subject:(.*)/i) {
+        $hdr->{subject} = $1;
+        $hdr->{subject} =~ s/(\012|\015)//g;
+        $hdr->{in_subject} = 1;
+        return 1
+    }
+    $hdr->{in_subject} = 0
+        unless $line =~ /^[ \t]/;
+    return 1
+        if $line =~ /^X-Text-Classification:/i;
+    return 1
+        if $line =~ /^X-POPFile-Link:/i;
+    if ($line =~ /^[ \t]/ && $hdr->{in_subject}) {
+        $line =~ s/(\012|\015)//g;
+        $hdr->{subject} .= $crlf . $line;
+        return 1
+    }
+    if ($line =~ /^([ \t]|([A-Z0-9\-_]+:))/i) {
+        unless (defined $hdr->{subject}) {
+            $hdr->{before} .= $hdr->{q} . $line;
+        } else {
+            $hdr->{after} .= $hdr->{q} . $line;
+        }
+        $hdr->{q} = '';
+    } else {
+        $self->log_msg(INFO => "Found odd email header: $line");
+        $hdr->{q} .= $line;
+    }
+    return 0
+}
+
+method _emit_quarantine_notice($client, $crlf, $slot, $xpl, $msg_subject, $classification, $xtc_insertion, $xpl_insertion) {
+    my ($orig_from, $orig_to, $orig_subject) = ($parser->get_header('from'), $parser->get_header('to'), $parser->get_header('subject'));
+    my ($encoded_from, $encoded_to) = ($orig_from, $orig_to);
+    if ($parser->lang() eq 'Nihongo') {
+        require Encode;
+        Encode::from_to($orig_from, 'euc-jp', 'iso-2022-jp');
+        Encode::from_to($orig_to, 'euc-jp', 'iso-2022-jp');
+        Encode::from_to($orig_subject, 'euc-jp', 'iso-2022-jp');
+        $encoded_from = $orig_from;
+        $encoded_to = $orig_to;
+        $encoded_from =~ s/(\x1B\x24\x42.+\x1B\x28\x42)/"=?ISO-2022-JP?B?" . encode_base64($1, '') . "?="/eg;
+        $encoded_to =~ s/(\x1B\x24\x42.+\x1B\x28\x42)/"=?ISO-2022-JP?B?" . encode_base64($1, '') . "?="/eg;
+    }
+    print $client "From: $encoded_from$crlf";
+    print $client "To: $encoded_to$crlf";
+    print $client "Date: " . $parser->get_header('date') . "$crlf";
+    print $client "Subject:$msg_subject$crlf"
+        if defined $msg_subject;
+    print $client "X-Text-Classification: $classification$crlf"
+        if $xtc_insertion;
+    print $client "X-POPFile-Link: $xpl$crlf"
+        if $xpl_insertion;
+    print $client "MIME-Version: 1.0$crlf";
+    print $client "Content-Type: multipart/report; boundary=\"$slot\"$crlf$crlf--$slot$crlf";
+    print $client "Content-Type: text/plain";
+    print $client "; charset=iso-2022-jp"
+        if $parser->lang() eq 'Nihongo';
+    print $client "$crlf$crlf";
+    print $client "POPFile has quarantined a message.  It is attached to this email.$crlf$crlf";
+    print $client "Quarantined Message Detail$crlf$crlf";
+    print $client "Original From: $orig_from$crlf";
+    print $client "Original To: $orig_to$crlf";
+    print $client "Original Subject: $orig_subject$crlf";
+    print $client "To examine the email open the attachment. ";
+    print $client "To change this mail's classification go to $xpl$crlf";
+    print $client "$crlf";
+    print $client "The first 20 words found in the email are:$crlf$crlf";
+    my $first20 = $parser->first20();
+    if ($parser->lang() eq 'Nihongo') {
+        require Encode;
+        Encode::from_to($first20, 'euc-jp', 'iso-2022-jp');
+    }
+    print $client $first20;
+    print $client "$crlf--$slot$crlf";
+    print $client "Content-Type: message/rfc822$crlf$crlf"
+}
+
+method _flush_message_overflow($mail, $client, $msg_file, $echo, $nosave, $crlf) {
+    if ($nosave || $echo) {
+        $self->flush_extra($mail, $client, $echo ? 0 : 1);
+        return
+    }
+    if (open FLUSH, ">$msg_file.flush") {
+        binmode FLUSH;
+        $self->flush_extra($mail, \*FLUSH, 0);
+        close FLUSH;
+        if (((-s "$msg_file.flush") > 0) && (open FLUSH, "<$msg_file.flush")) {
+            binmode FLUSH;
+            if (open TEMP, ">>$msg_file") {
+                binmode TEMP;
+                print TEMP ".$crlf";
+                print TEMP $_ while (<FLUSH>);
+                close TEMP;
+            }
+            close FLUSH;
+        }
+        unlink("$msg_file.flush");
+    }
 }
 
 =head2 get_buckets
