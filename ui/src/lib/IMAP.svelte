@@ -3,7 +3,7 @@
   import { t } from './locale.svelte.js';
   import { wizardOpen as setupWizardOpen } from './wizard.svelte.js';
 
-  let { buckets = [] } = $props();
+  let { buckets = [], ondirty = () => {} } = $props();
   let loadedBuckets = $state([]);
   let allBuckets = $derived(loadedBuckets.length ? loadedBuckets : buckets);
 
@@ -169,7 +169,7 @@
     testStatus = await res.json();
   }
 
-  function markCfg() { cfgDirty = true; cfgStatus = ''; testStatus = null; saveAnyway = false; }
+  function markCfg() { cfgDirty = true; cfgStatus = ''; testStatus = null; saveAnyway = false; ondirty(); }
 
   function onPortInput() {
     markCfg();
@@ -259,18 +259,14 @@
   </div>
 
   <!-- ── Enable toggle ───────────────────────────────────────────────── -->
-  <section class="card">
-    <div class="fields">
-      <div class="field-row">
-        <label for="imap_enabled">{t('Settings_EnableService')}</label>
-        <input id="imap_enabled" class="switch" type="checkbox"
-          checked={cfg.imap_enabled == 1}
-          disabled={!connectionReady}
-          onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
-        />
-      </div>
-    </div>
-  </section>
+  <div class="enable-row">
+    <label for="imap_enabled">{t('Settings_EnableService')}</label>
+    <input id="imap_enabled" class="switch" type="checkbox"
+      checked={cfg.imap_enabled == 1}
+      disabled={!connectionReady}
+      onchange={(e) => { cfg.imap_enabled = e.target.checked ? 1 : 0; saveCfg(); }}
+    />
+  </div>
 
   <!-- ── Connection settings ──────────────────────────────────────────── -->
   <section class="card">
@@ -547,7 +543,6 @@
 
 <style>
   .page {
-    padding: 1.75rem 2rem;
     max-width: 760px;
   }
 
@@ -556,7 +551,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 2rem;
-    margin-bottom: 1.75rem;
+    margin-bottom: 1rem;
   }
   .page-header h2 { margin: 0 0 0.25rem; }
   .page-header p  { margin: 0; font-size: 0.875rem; }
@@ -576,6 +571,17 @@
     transition: color 0.15s;
   }
   .advanced-toggle:hover { color: var(--text); }
+
+  /* ── Enable row ── */
+  .enable-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .enable-row label { font-size: 0.875rem; font-weight: 500; }
 
   /* ── Cards ── */
   .card {

@@ -69,10 +69,10 @@
       "additionalProperties": false,
       "properties": {
         "hostname":        { "type": "string",  "default": "" },
-        "port":            { "type": "integer", "minimum": 1, "maximum": 65535, "default": 143 },
+        "port":            { "type": "integer", "minimum": 1, "maximum": 65535, "default": 993 },
         "login":           { "type": "string",  "default": "" },
         "password":        { "type": "string",  "default": "" },
-        "use_ssl":         { "type": "boolean", "default": false },
+        "use_ssl":         { "type": "boolean", "default": true },
         "enabled":         { "type": "boolean", "default": false },
         "training_mode":   { "type": "boolean", "default": false },
         "expunge":         { "type": "boolean", "default": false },

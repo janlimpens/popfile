@@ -327,7 +327,7 @@
       {#each SECTIONS as section (section.id)}
         {#if active === section.id}
           {#if section.component === 'IMAP'}
-            <IMAP />
+            <IMAP ondirty={mark} />
           {:else}
           <div class="section">
             <header>
