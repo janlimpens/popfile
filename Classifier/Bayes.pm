@@ -27,15 +27,12 @@ use File::Copy;
 
 # This is used to get the hostname of the current machine
 # in a cross platform way
-
 use Sys::Hostname;
 
 # A handy variable containing the value of an EOL for networks
-
 my $eol = "\015\012";
 
 # Korean characters definition
-
 my $ksc5601_sym = '(?:[\xA1-\xAC][\xA1-\xFE])';
 my $ksc5601_han = '(?:[\xB0-\xC8][\xA1-\xFE])';
 my $ksc5601_hanja = '(?:[\xCA-\xFD][\xA1-\xFE])';
@@ -101,12 +98,7 @@ field $bucket_start = {};
 
 field $not_likely = {};
 
-# Unclassified cutoff: top probability must be this many times greater
-# than the second probability (default 100×)
-field $unclassified = log(100);
-
 field $pipeline :reader = undef;
-
 field $sessions :reader = undef;
 field $magnets :reader = undef;
 field $buckets :reader = undef;
@@ -172,7 +164,6 @@ method start() {
     # And on some configuration (e.g. Japanese Mac OS X), LC_CTYPE is set to
     # UTF-8 but POPFile uses EUC-JP encoding for Japanese. In this situation
     # lc() does not work correctly.
-
     my $language = $self->config->get('locale');
 
     if ($language =~ /^(Nihongo$|Korean$|Chinese)/) {
@@ -182,11 +173,8 @@ method start() {
     }
 
     # Pass in the current interface language for language specific parsing
-
     $parser->set_lang($language);
     $parser->mangle()->set_ui_language($language);
-    $unclassified = log(($self->config->get('unclassified_weight')));
-
     $buckets = Classifier::Buckets->new();
     return 0
         unless $self->db_connect();
@@ -199,7 +187,6 @@ method start() {
 
     if ($language eq 'Nihongo') {
         # Setup Nihongo (Japanese) parser.
-
         my $nihongo_parser = ($self->config->get('nihongo_parser'));
 
         $nihongo_parser = $parser->setup_nihongo_parser($nihongo_parser);
@@ -637,14 +624,12 @@ method echo_to_dot ($mail, $client, $file, $before) {
 
     while (my $line = $self->slurp($mail)) {
         # Check for an abort
-
         last if ($self->alive() == 0);
 
         # The termination has to be a single line with exactly a dot
         # on it and nothing else other than line termination
         # characters.  This is vital so that we do not mistake a line
         # beginning with . as the end of the block
-
         if ($line =~ /^\.(\r\n|\r|\n)$/) {
             $hit_dot = 1;
 
@@ -656,7 +641,6 @@ method echo_to_dot ($mail, $client, $file, $before) {
             # Note that there is no print FILE here.  This is correct
             # because we do no want the network terminator . to appear
             # in the file version of any message
-
             print $client $line if (defined($client));
             last;
         }
@@ -719,7 +703,6 @@ method valid_session_key($session) {
 
 #----------------------------------------------------------------------------
 #----------------------------------------------------------------------------
-
 =head2 get_session_key
 
 
@@ -813,7 +796,9 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
     return
         unless defined $userid;
 
-    $unclassified = log(($self->config->get('unclassified_weight')));
+    # Unclassified cutoff: top probability must be this many times greater
+    # than the second probability (default 100×)
+    my $unclassified = log($self->config()->get('unclassified_weight'));
 
     if (defined($file)) {
         return if (!-f $file);
@@ -822,12 +807,7 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
             $self->config->get('message_cutoff'));
     }
 
-    # Get the list of buckets
-
     my @buckets = $self->get_buckets($session);
-
-    # If the user has not defined any buckets then we escape here
-    # return unclassified
 
     return "unclassified"
         unless @buckets;
@@ -837,17 +817,13 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
 
     # The score hash will contain the likelihood that the given
     # message is in each bucket, the buckets are the keys for score
-
     # Set up the initial score as P(bucket)
-
     my %score;
     my %matchcount;
 
     # Build up a list of the buckets that are OK to use for
     # classification (i.e.  that have at least one word in them).
-
     my @ok_buckets;
-
     for my $bucket (@buckets) {
         if (defined $bucket_start->{$userid}{$bucket} && $bucket_start->{$userid}{$bucket} != 0) {
             $score{$bucket} = $bucket_start->{$userid}{$bucket};
@@ -855,18 +831,14 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
             push @ok_buckets, ($bucket);
         }
     }
-
     @buckets = @ok_buckets;
 
-    # If the user does not have at least two buckets which contains
-    # some words then we escape here return unclassified
-
-    return "unclassified" if (@buckets < 2);
+    return "unclassified"
+        if (@buckets < 2);
 
     # For each word go through the buckets and calculate
     # P(word|bucket) and then calculate P(word|bucket) ^ word count
     # and multiply to the score
-
     my $word_count = 0;
 
     # The correction value is used to generate score displays variable
@@ -875,7 +847,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
     # a word which is unrepresented in a bucket zero.  This correction
     # affects only the values displayed in the display; it has no
     # effect on the classification process.
-
     my $correction = 0;
 
     # Classification against the database works in a sequence of steps
@@ -906,7 +877,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
     # same for all buckets and hence constitute a fixed scaling factor
     # on all the buckets which is irrelevant in deciding which the
     # winning bucket is.
-
     my @words = sort keys $parser->words()->%*;
 
     my ($id_list_ref, $idmap_ref) = $corpus->resolve_word_ids(
@@ -939,7 +909,8 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
                 $min_c = $c if $c < $min_c;
                 $max_c = $c if $c > $max_c;
             }
-            next if $all_present && $max_c / $min_c < $stopword_ratio;
+            next()
+                if $all_present && $max_c / $min_c < $stopword_ratio;
         }
         $word_count += 2;
         my $wmax = -10000;
@@ -966,19 +937,15 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
 
     # Now sort the scores to find the highest and return that bucket
     # as the classification
-
     my @ranking = sort {$score{$b} <=> $score{$a}} keys %score;
 
-    my %raw_score;
     my $base_score = defined $ranking[0] ? $score{$ranking[0]} : 0;
     my $total = 0;
 
     # If the first and second bucket are too close in their
     # probabilities, call the message unclassified.  Also if there are
     # fewer than 2 buckets.
-
     my $class = 'unclassified';
-
     if (@buckets > 1 && $score{$ranking[0]} > ($score{$ranking[1]} + $unclassified)) {
         $class = $ranking[0];
     }
@@ -987,9 +954,9 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
     # scores and probability estimate.  $total is always 1 after the
     # first loop iteration, so any additional term less than 2 ** -54
     # is insignificant, and need not be computed.
-
     my $ln2p_54 = -54 * log(2);
 
+    my %raw_score;
     for my $b (@ranking) {
         $raw_score{$b} = $score{$b};
         $score{$b} -= $base_score;
@@ -1055,7 +1022,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
             # it as .999999 instead.  We don't want to give the
             # impression that POPFile is ever completely sure of its
             # classification.
-
             if ($prob >= .999999) {
                 $probstr = sprintf("%12.6f", 0.999999);
             } else {
@@ -1100,7 +1066,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
 
             # If the word matrix is supposed to show probabilities,
             # compute them, saving the results in %wordprobs.
-
             if ($wmformat eq 'prob') {
                 for my $id (@id_list) {
                     my $sumfreq = 0;
@@ -1113,7 +1078,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
                     # If $sumfreq is still zero then this word didn't
                     # appear in any buckets so we shouldn't create
                     # wordprobs entries for it
-
                     if ($sumfreq != 0) {
                         for my $bucket (@ranking) {
                             $wordprobs{$bucket,$id} = $wval{$bucket} / $sumfreq;
@@ -1199,7 +1163,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
                     # which is the difference between the word scores
                     # for the top two buckets.  We later use this to
                     # draw a chart
-
                     if ($wmformat eq 'score') {
                         $chart{$idmap->{$id}} = ($score[0] || 0) - ($score[1] || 0);
                     }
@@ -1212,7 +1175,6 @@ method classify ($ctx, $session, $file, $templ = undef, $matrix = undef, $idmap 
             if ($wmformat eq 'score') {
                 # Draw a chart that shows how the decision between the top
                 # two buckets was made.
-
                 my @words = sort { $chart{$b} <=> $chart{$a} } keys %chart;
 
                 my @chart_data;
@@ -1322,36 +1284,29 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     # These two variables are used to control the insertion of the
     # X-POPFile-TimeoutPrevention header when downloading long or slow
     # emails
-
     my $last_timeout = time;
     my $timeout_count = 0;
 
     # Indicates whether the first time through the receive loop we got
     # the full body, this will happen on small emails
-
     my $got_full_body = 0;
 
     # The size of the message downloaded so far.
-
     my $message_size = 0;
 
     # The classification for this message
-
     my $classification = '';
 
     # Whether we are currently reading the mail headers or not
-
     my $getting_headers = 1;
 
     # The maximum size of message to parse, or 0 for unlimited
-
     my $max_size = $self->config->get('message_cutoff');
     $max_size = 0 unless (defined($max_size) || ($max_size =~ /\D/));
 
     my $msg_file;
 
     # If we don't yet know the classification then start the parser
-
     $class = '' unless (defined($class));
     if ($class eq '') {
         $parser->start_parse();
@@ -1363,7 +1318,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     # We append .TMP to the filename for the MSG file so that if we are in
     # middle of downloading a message and we refresh the history we do not
     # get class file errors
-
     my $msg;
     if (!$nosave) {
         open $msg, '>', $msg_file or $self->log_msg(WARN => "Could not open $msg_file : $!");
@@ -1376,18 +1330,15 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
         # CR LF and allow Perl to decide on the local system EOL which
         # it will expand out of \n when this gets written to the temp
         # file
-
         $fileline = $line;
         $fileline =~ s/[\r\n]//g;
         $fileline .= "\n";
 
         # Check for an abort
-
         last if ($self->alive() == 0);
 
         # The termination of a message is a line consisting of exactly
         # .CRLF so we detect that here exactly
-
         if ($line =~ /^\.(\r\n|\r|\n)$/) {
             $got_full_body = 1;
             last;
@@ -1395,7 +1346,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
         if ($getting_headers)  {
             # Kill header lines containing only whitespace (Exim does this)
-
             next if ($line =~ /^[ \t]+(\r\n|\r|\n)$/i);
 
             if ($line !~ /^(\r\n|\r|\n)$/i) {
@@ -1404,7 +1354,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
                 # If there is no echoing occuring, it doesn't matter
                 # what we do to these
-
                 if ($echo) {
                     if ($line =~ /^Subject:(.*)/i)  {
                         $msg_subject = $1;
@@ -1417,7 +1366,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
                     # Strip out the X-Text-Classification header that
                     # is in an incoming message
-
                     next
                         if ($line =~ /^X-Text-Classification:/i);
                     next
@@ -1432,7 +1380,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
                     # headers terminate from causing the XPL and XTC
                     # headers to be inserted in places some clients
                     # can't detect
-
                     if ($line =~ /^[ \t]/ && $in_subject_header) {
                         $line =~ s/(\012|\015)//g;
                         $msg_subject .= $crlf . $line;
@@ -1448,7 +1395,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
                         $msg_head_q = '';
                     } else {
                         # Gather up any header lines that are questionable
-
                         $self->log_msg(INFO => "Found odd email header: $line");
                         $msg_head_q .= $line;
                     }
@@ -1466,7 +1412,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
         # Check to see if too much time has passed and we need to keep
         # the mail client happy
-
         if (time > ($last_timeout + 2)) {
             print $client "X-POPFile-TimeoutPrevention: $timeout_count$crlf" if ($echo);
             $timeout_count += 1;
@@ -1489,7 +1434,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # Do the text classification and update the counter for that
     # bucket that we just downloaded an email of that type
-
     $classification = ($class ne '')
         ? $class
         : $pipeline->classify($self, $session, undef);
@@ -1503,7 +1447,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
 
     # Add the Subject line modification or the original line back again
     # Don't add the classification unless it is not present
-
     my $original_msg_subject = $msg_subject;
 
     if ($subject_modification) {
@@ -1529,17 +1472,14 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     }
 
     # Add LF if $msg_head_after ends with CR to avoid header concatination
-
     $msg_head_after =~ s/\015\z/$crlf/;
 
     # Add the XTC header
-
     if ($xtc_insertion && !$quarantine) {
         $msg_head_after .= "X-Text-Classification: $classification$crlf";
     }
 
     # Add the XPL header
-
     my $host = $self->config('GLOBAL')->get('local') // 1
         ? ($self->config->get('localhostname')) || '127.0.0.1'
         : $hostname;
@@ -1557,12 +1497,10 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     $msg_head_after .= $crlf if (!$getting_headers);
 
     # Echo the text of the message to the client
-
     if ($echo) {
         # If the bucket is quarantined then we'll treat it specially
         # by changing the message header to contain information from
         # POPFile and wrapping the original message in a MIME encoding
-
        if ($quarantine) {
        my ($orig_from, $orig_to, $orig_subject) = ($parser->get_header('from'), $parser->get_header('to'), $parser->get_header('subject'));
        my ($encoded_from, $encoded_to) = ($orig_from, $orig_to);
@@ -1643,23 +1581,19 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
     # here to remove any extra stuff the POP3 server is sending Make
     # sure to supress output if we are not echoing, and to save to
     # file if not echoing and saving
-
     unless ($nosave || $echo) {
         # if we're saving (not nosave) and not echoing, we can safely
         # unload this into the temp file
-
         if (open FLUSH, ">$msg_file.flush") {
             binmode FLUSH;
 
             # TODO: Do this in a faster way (without flushing to one
             # file then copying to another) (perhaps a select on $mail
             # to predict if there is flushable data)
-
             $self->flush_extra($mail, \*FLUSH, 0);
             close FLUSH;
 
             # append any data we got to the actual temp file
-
             if (((-s "$msg_file.flush") > 0) && (open FLUSH, "<$msg_file.flush")) {
                 binmode FLUSH;
                 if (open TEMP, ">>$msg_file") {
@@ -1668,14 +1602,12 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
                     # The only time we get data here is if it is after
                     # a CRLF.CRLF We have to re-create it to avoid
                     # data-loss
-
                     print TEMP ".$crlf";
 
                     print TEMP $_ while (<FLUSH>);
 
                     # NOTE: The last line flushed MAY be a CRLF.CRLF,
                     # which isn't actually part of the message body
-
                     close TEMP;
                 }
                 close FLUSH;
@@ -1686,7 +1618,6 @@ method classify_and_modify ($session, $mail, $client, $nosave, $class, $slot, $e
         # if we are echoing, the client can make sure we have no data
         # loss otherwise, the data can be discarded (not saved and not
         # echoed)
-
         $self->flush_extra($mail, $client, $echo?0:1);
     }
 
@@ -2309,7 +2240,6 @@ method add_messages_to_bucket ($session, $bucket, @files) {
 
     # This is done to clear out the word list because in the loop
     # below we are going to not reset the word list on each parse
-
     $parser->start_parse();
     $parser->stop_parse();
 
@@ -2609,5 +2539,4 @@ method set_history($h) {
 }
 
 # end class Classifier::Bayes
-
 1;
