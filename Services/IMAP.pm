@@ -1137,7 +1137,7 @@ method watched_folders (@new_folders) {
     my $rows = $dbh->selectcol_arrayref(
         'SELECT folder_name FROM imap_watched_folders WHERE userid = ? ORDER BY id',
         undef, $userid);
-    return @$rows
+    return $rows ? $rows->@* : ()
 }
 
 =head2 folder_mappings()

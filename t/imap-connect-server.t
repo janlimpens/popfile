@@ -100,4 +100,22 @@ subtest 'two consecutive polls reuse the existing connection' => sub {
     is($client_calls, 1, 'connection created only once across two polls');
 };
 
+subtest 'first connect sets uid_next to 1, not server UIDNEXT' => sub {
+    my ($imap, $config) = make_imap();
+    $imap->watched_folders('INBOX');
+
+    my $stub = StubIMAPClient->new();
+    $stub->{uid_validity} = {};
+    $stub->{uid_next} = {};
+    $stub->{status_result} = { UIDNEXT => 41867, UIDVALIDITY => 99 };
+    no warnings 'redefine';
+    local *StubIMAPClient::status = sub { shift->{status_result} };
+    local *Services::IMAP::new_imap_client = sub { $stub };
+    local *Services::IMAP::scan_folder     = sub {};
+
+    $imap->_run_poll_work();
+
+    is($stub->uid_next('INBOX'), 1, 'uid_next set to 1 on first connect, not server UIDNEXT');
+};
+
 done_testing;
