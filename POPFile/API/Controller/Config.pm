@@ -83,6 +83,17 @@ sub update_config($self) {
         my ($mod, $param) = CFG->{$key}->@*;
         $data->{$mod}{$param} = $body->{$key};
     }
+    my %known_ns = map { CFG->{$_}->[0] => 1 } keys CFG->%*;
+    my @schema_ns = keys %known_ns;
+    for my $ns (@schema_ns) {
+        next
+            unless ref $data->{$ns} eq 'HASH';
+        my %known_params = map { CFG->{$_}->[1] => 1 }
+            grep { CFG->{$_}->[0] eq $ns } keys CFG->%*;
+        delete $data->{$ns}{$_}
+            for grep { !$known_params{$_} } keys $data->{$ns}->%*;
+    }
+    delete $data->{$_} for grep { $_ ne 'version' && !$known_ns{$_} } keys $data->%*;
     POPFile::Config->validate_doc($data);
     POPFile::ConfigFile->new()->save($path, $data);
     if (grep { /^logger_/ } keys $body->%*) {

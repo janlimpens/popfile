@@ -53,6 +53,7 @@ method load_file($path) {
         unless -e $path;
     require POPFile::ConfigFile;
     my $data = POPFile::ConfigFile->new()->load($path);
+    $self->_strip_unknown($data, _load_schema()->{properties});
     $self->_coerce_types($data, _load_schema()->{properties});
     my $result = $self->_validate($data);
     die "POPFile::Config: invalid $path\n" . join("\n", $result->@*)
@@ -115,6 +116,21 @@ method _validate($data) {
     return \@messages
 }
 
+method _strip_unknown($data, $schema_node) {
+    return
+        unless ref $data eq 'HASH' && ref $schema_node eq 'HASH';
+    my %known_ns = map { $_ => 1 } grep { $_ ne 'version' } keys $schema_node->%*;
+    delete $data->{$_}
+        for grep { !$known_ns{$_} } keys $data->%*;
+    for my $ns (keys %known_ns) {
+        next
+            unless ref $data->{$ns} eq 'HASH' && ref $schema_node->{$ns}{properties} eq 'HASH';
+        my $ns_schema = $schema_node->{$ns}{properties};
+        delete $data->{$ns}{$_}
+            for grep { !exists $ns_schema->{$_} } keys $data->{$ns}->%*;
+    }
+}
+
 =head2 validate_doc
 
     my @errors = POPFile::Config->validate_doc($data)->@*;
@@ -127,6 +143,7 @@ Used by the API controller before saving config changes.
 method validate_doc :common ($data) {
     my $doc = +{version => 2, %{ $data // {} }};
     my $tmp = POPFile::Config->new();
+    $tmp->_strip_unknown($doc, _load_schema()->{properties});
     $tmp->_coerce_types($doc, _load_schema()->{properties});
     my $result = $tmp->_validate($doc);
     die "POPFile::Config: invalid config\n" . join("\n", $result->@*)
