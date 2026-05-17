@@ -110,9 +110,6 @@ Called to set up the Bayes module's parameters
 
 method initialize() {
     $hostname = hostname;
-    $self->mq_register('COMIT', $self);
-    $self->mq_register('RELSE', $self);
-
     return 1;
 }
 
@@ -163,6 +160,8 @@ method start() {
     # Pass in the current interface language for language specific parsing
     $parser->set_lang($language);
     $parser->mangle()->set_ui_language($language);
+    $self->mq_register('COMIT', $self);
+    $self->mq_register('RELSE', $self);
     $buckets = Classifier::Buckets->new();
     return 0
         unless $self->db_connect();
