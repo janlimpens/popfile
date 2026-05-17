@@ -205,6 +205,8 @@ Settings_SSLChainServer SSL 체인 서버
 Settings_SaveChanges 변경 사항 저장
 Settings_Saved 저장됨
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving 저장 중...
 Settings_Search 설정 검색...
 Settings_SectionClassifier 분류기

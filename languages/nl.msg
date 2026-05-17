@@ -208,6 +208,8 @@ Settings_SSLChainServer SSL-ketenserver
 Settings_SaveChanges Wijzigingen opslaan
 Settings_Saved Opgeslagen
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Opslaan...
 Settings_Search Instellingen zoeken...
 Settings_SectionClassifier Classificator

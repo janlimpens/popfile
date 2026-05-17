@@ -183,6 +183,8 @@ Settings_SSLChainServer SSL Chain Server
 Settings_SaveChanges Save Changes
 Settings_Saved Saved
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Saving...
 Settings_Search Search settings...
 Settings_SectionClassifier Classifier

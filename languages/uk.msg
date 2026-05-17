@@ -205,6 +205,8 @@ Settings_SSLChainServer Сервер SSL-ланцюга
 Settings_SaveChanges Зберегти зміни
 Settings_Saved Збережено
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Збереження...
 Settings_Search Пошук налаштувань...
 Settings_SectionClassifier Класифікатор

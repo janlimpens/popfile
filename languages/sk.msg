@@ -206,6 +206,8 @@ Settings_SSLChainServer Server SSL reťazca
 Settings_SaveChanges Uložiť zmeny
 Settings_Saved Uložené
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Ukladám...
 Settings_Search Hľadať nastavenia...
 Settings_SectionClassifier Klasifikátor

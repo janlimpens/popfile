@@ -204,6 +204,8 @@ Settings_SSLChainServer SSL チェーンサーバー
 Settings_SaveChanges 変更を保存
 Settings_Saved 保存しました
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving 保存中...
 Settings_Search 設定を検索...
 Settings_SectionClassifier 分類器

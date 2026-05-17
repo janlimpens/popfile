@@ -192,6 +192,8 @@ Settings_SSLChainServer SSL-Chain-Server
 Settings_SaveChanges Änderungen speichern
 Settings_Saved Gespeichert
 Settings_RestartNeeded Neustart erforderlich, damit Änderungen wirksam werden.
+Settings_RestartNow Jetzt neu starten
+Settings_ConfirmRestart POPFile jetzt neu starten?
 Settings_Saving Speichere...
 Settings_Search Einstellungen suchen...
 Settings_SectionClassifier Klassifizierer

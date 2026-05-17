@@ -218,6 +218,12 @@
 
   function mark() { dirty = true; status = ''; }
 
+  async function doRestart() {
+    if (!confirm(t('Settings_ConfirmRestart') || 'Restart POPFile now?')) return;
+    try { await fetch('/api/v1/restart', { method: 'POST' }); } catch (e) { /* connection lost during restart */ }
+    setTimeout(() => { window.location.reload(); }, 2000);
+  }
+
   onMount(load);
 </script>
 
@@ -397,6 +403,11 @@
       <button class="btn-save" onclick={save} disabled={!dirty || saving}>
         {saving ? t('Settings_Saving') : t('Settings_SaveChanges')}
       </button>
+      {#if restartNeeded}
+        <button class="btn-restart" onclick={doRestart}>
+          <span class="icon">restart_alt</span> {t('Settings_RestartNow')}
+        </button>
+      {/if}
     </footer>
   </div>
 </div>
@@ -607,6 +618,9 @@
   }
   .btn-save:disabled { opacity: 0.45; cursor: default; }
   .btn-save:not(:disabled):hover { opacity: 0.88; }
+
+  .btn-restart { margin-left: 0.5rem; padding: 0.3rem 0.8rem; background: var(--warning, #e6a817); color: #fff; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; }
+  .btn-restart:hover { opacity: 0.85; }
 
   .msg-ok   { font-size: 0.85rem; color: var(--success); font-weight: 500; }
   .msg-restart { font-size: 0.8rem; color: var(--warning, #e6a817); font-weight: 500; margin-left: 0.5rem; }

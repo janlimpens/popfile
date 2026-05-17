@@ -285,6 +285,7 @@ method build_app ($svc, $session = undef) {
 
     $r->get('/api/v1/config')->to('Config#get_config');
     $r->put('/api/v1/config')->to('Config#update_config');
+    $r->post('/api/v1/restart')->to('Config#restart');
     $r->get('/api/v1/status')->to('Config#get_status');
 
     $r->get('/api/v1/imap/folders')->to('IMAP#get_folders');

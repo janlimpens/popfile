@@ -206,6 +206,8 @@ Settings_SSLChainServer Сервер SSL-цепочки
 Settings_SaveChanges Сохранить изменения
 Settings_Saved Сохранено
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Сохранение...
 Settings_Search Поиск настроек...
 Settings_SectionClassifier Классификатор

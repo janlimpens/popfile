@@ -205,6 +205,8 @@ Settings_SSLChainServer שרת שרשרת SSL
 Settings_SaveChanges שמור שינויים
 Settings_Saved נשמר
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving שומר...
 Settings_Search חפש הגדרות...
 Settings_SectionClassifier מסווג

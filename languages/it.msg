@@ -206,6 +206,8 @@ Settings_SSLChainServer Server SSL a catena
 Settings_SaveChanges Salva modifiche
 Settings_Saved Salvato
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Salvataggio...
 Settings_Search Cerca impostazioni...
 Settings_SectionClassifier Classificatore

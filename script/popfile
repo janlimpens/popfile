@@ -5,6 +5,7 @@
 
 BEGIN {
     $| = 1;
+    $ENV{POPFILE_SCRIPT} = $0;
     $SIG{__WARN__} = sub {
         return if $_[0] =~ /^Can't locate .+\/XS\.pm/;
         return if $_[0] =~ /^Can't locate Class\/XSAccessor\.pm/;

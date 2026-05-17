@@ -208,6 +208,8 @@ Settings_SSLChainServer SSL-kjedeserver
 Settings_SaveChanges Lagre endringer
 Settings_Saved Lagret
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Lagrer...
 Settings_Search Søk i innstillinger...
 Settings_SectionClassifier Klassifikator

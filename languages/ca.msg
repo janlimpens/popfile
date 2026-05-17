@@ -204,6 +204,8 @@ Settings_SSLChainServer Servidor SSL en cadena
 Settings_SaveChanges Desa els canvis
 Settings_Saved Desat
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Desant...
 Settings_Search Cerca configuració...
 Settings_SectionClassifier Classificador

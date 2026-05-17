@@ -98,6 +98,8 @@ Settings_SSLChainServer Servidor SSL em cadeia
 Settings_SaveChanges Salvar alterações
 Settings_Saved Salvo
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Salvando...
 Settings_Search Pesquisar configurações...
 Settings_SectionLogging Log

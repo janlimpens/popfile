@@ -205,6 +205,8 @@ Settings_SSLChainServer SSL-kedjansserver
 Settings_SaveChanges Spara ändringar
 Settings_Saved Sparat
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_RestartNow Restart Now
+Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Sparar...
 Settings_Search Sök i inställningar...
 Settings_SectionClassifier Klassificerare
