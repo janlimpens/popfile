@@ -98,10 +98,9 @@ $POPFile->set_verbose($noserver ? 0 : 1);
 $POPFile->CORE_loader_init();
 $POPFile->CORE_signals();
 unless ($noserver) {
-    my $user = $ENV{POPFILE_USER} // $ENV{POPFILE_ROOT} // '.';
-    $user =~ s{[\\/]+$}{};
+    require POPFile::Config;
     print "\nPOPFile " . $POPFile->CORE_version() . "\n";
-    print "Config: " . File::Spec->rel2abs("$user/config.json") . "\n";
+    print "Config: " . POPFile::Config->resolve_path() . "\n";
 }
 $POPFile->CORE_load($noserver);
 $POPFile->CORE_initialize();
