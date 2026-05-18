@@ -53,6 +53,7 @@ method load_file($path) {
         unless -e $path;
     require POPFile::ConfigFile;
     my $data = POPFile::ConfigFile->new()->load($path);
+    $self->_migrate_logger_level($data);
     $self->_strip_unknown($data, _load_schema()->{properties});
     $self->_coerce_types($data, _load_schema()->{properties});
     my $result = $self->_validate($data);
@@ -77,6 +78,15 @@ method _apply_defaults($node, $schema_node) {
             $node->{$key} //= $prop->{default};
         }
     }
+}
+
+my %_level_int_to_name = (0 => 'error', 1 => 'warn', 2 => 'info', 3 => 'debug', 4 => 'trace');
+
+method _migrate_logger_level($data) {
+    my $raw = $data->{logger}{level};
+    return
+        unless defined $raw && $raw =~ /^\d+$/;
+    $data->{logger}{level} = $_level_int_to_name{$raw} // 'info';
 }
 
 method _coerce_types($node, $schema_node) {

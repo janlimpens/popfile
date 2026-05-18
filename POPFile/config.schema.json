@@ -87,7 +87,7 @@
       "additionalProperties": false,
       "properties": {
         "logdir":        { "type": "string",  "default": "" },
-        "level":         { "type": "integer", "minimum": 0, "maximum": 4, "default": 2 },
+        "level":         { "type": "string", "enum": ["error", "warn", "info", "debug", "trace"], "default": "info" },
         "log_to_stdout": { "type": "boolean", "default": false },
         "log_sql":       { "type": "boolean", "default": false },
         "format":        { "type": "string",  "default": "default" }

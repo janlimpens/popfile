@@ -13,6 +13,14 @@ use POPFile::Role::Config;
 
 my $seconds_per_day = 60 * 60 * 24;
 
+my %_name_to_order = (
+    trace => 4,
+    debug => 3,
+    info  => 2,
+    warn  => 1,
+    error => 0,
+);
+
 class POPFile::Logger
     :isa(POPFile::Module)
     :does(POPFile::Role::Config);
@@ -154,12 +162,22 @@ method reconfigure() {
     $self->_reconfigure_adapter()
 }
 
+method _popfile_level($raw) {
+    return 2
+        unless defined $raw;
+    return $_name_to_order{lc $raw}
+        if exists $_name_to_order{lc $raw};
+    return $raw
+        if $raw =~ /^\d+$/;
+    return 2
+}
+
 method _reconfigure_adapter() {
     POPFile::Log::Adapter->configure(
         to_file => 1,
         to_stdout => ($self->config->get('log_to_stdout')) ? 1 : 0,
         filename => $debug_filename,
-        popfile_level => ($self->config->get('level')) // 0,
+        popfile_level => $self->_popfile_level($self->config->get('level')),
         log_sql => ($self->config->get('log_sql')) ? 1 : 0,
         format => ($self->config->get('format')) // 'default',
     );
@@ -185,18 +203,7 @@ method remove_debug_files() {
     }
 }
 
-=head2 debug($level, $message)
 
-Compatibility shim for legacy callers that use POPFile's numeric level
-convention (0 = error, 1 = info, 2 = debug).  Emits C<$message> at info
-level if C<$level> is within the configured C<level> threshold.
-
-=cut
-
-method debug ($level, $message) {
-    Log::Any->get_logger(category => 'POPFile')->info($message)
-        if $level <= (($self->config->get('level')) // 0);
-}
 
 =head2 debug_filename()
 

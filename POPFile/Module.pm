@@ -184,7 +184,7 @@ method slurp ($handle, $timeout = undef) {
     if ($self->can_read($handle, $timeout)) {
         while ((sysread($handle, $c, 160) // 0) > 0) {
             $slurp_data{"$handle"}{data} .= $c;
-            $self->log_msg(DEBUG => "Read slurp data $c");
+            $self->log_msg(TRACE => "Read slurp data $c");
             $result = $self->flush_slurp_data($handle);
             return $result if $result ne '';
         }

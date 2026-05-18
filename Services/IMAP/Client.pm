@@ -127,7 +127,7 @@ method connect() {
     $self->log_msg(INFO => "Connected to $hostname:$port timeout $timeout");
     my $buf = $self->slurp($imap);
     return unless defined $buf;
-    $self->log_msg(INFO => ">> $buf");
+    $self->log_msg(TRACE => ">> $buf");
     $socket = $imap;
     return 1
 }
@@ -292,16 +292,16 @@ method get_response() {
         if ($count_octets) {
             $octet_count += length $buf;
             $count_octets = 0 if $octet_count >= $count_octets;
-            $self->log_msg(DEBUG => ">> $buf");
+            $self->log_msg(TRACE => ">> $buf");
         }
         if ($count_octets == 0) {
             if ($buf =~ /^$actual_tag (OK|BAD|NO)/) {
-                $self->log_msg($1 ne 'OK' ? 'WARN' : 'DEBUG', ">> $buf");
+                $self->log_msg($1 ne 'OK' ? 'WARN' : 'TRACE', ">> $buf");
                 last;
             }
             if ($buf =~ /^\* (.+)/) {
                 my $untagged = $1;
-                $self->log_msg(DEBUG => ">> $buf");
+                $self->log_msg(TRACE => ">> $buf");
                 if ($untagged =~ /UIDVALIDITY/
                      && $last_command !~ /^SELECT/
                      && $last_command !~ /^STATUS/) {

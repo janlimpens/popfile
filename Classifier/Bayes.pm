@@ -525,7 +525,7 @@ method add_words_to_bucket ($session, $bucket, $subtract) {
         $self->log_msg(INFO => "add_words_to_bucket: no words parsed for user=$userid bucket=$bucket; skipping");
         return
     }
-    $self->log_msg(5, "add_words_to_bucket: user=$userid bucket=$bucket bucketid=$bucketid words=" . scalar(keys $parser->words()->%*));
+    $self->log_msg(DEBUG => "add_words_to_bucket: user=$userid bucket=$bucket bucketid=$bucketid words=" . scalar(keys $parser->words()->%*));
     $corpus->add_words($self->get_handle(), $bucketid, $subtract, $parser->words()->%*)
 }
 
@@ -1862,7 +1862,7 @@ method add_message_to_bucket ($session, $bucket, $file) {
     }
 
     my $result = $self->add_messages_to_bucket($session, $bucket, $file);
-    $self->log_msg(5, "add_message_to_bucket: user=$userid bucket=$bucket file=" . ($file // 'undef') . " result=" . (defined $result ? $result : 'undef'));
+    $self->log_msg(DEBUG => "add_message_to_bucket: user=$userid bucket=$bucket file=" . ($file // 'undef') . " result=" . (defined $result ? $result : 'undef'));
     return $result;
 }
 

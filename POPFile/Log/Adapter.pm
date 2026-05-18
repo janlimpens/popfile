@@ -29,8 +29,8 @@ replaced with C<XXXXXX>, and non-printable bytes are escaped as C<[XX]>.
 A rolling ten-line ring buffer of recent output is maintained and exposed via
 C<ring()> for the web UI.
 
-The adapter maps Log::Any severity levels to POPFile's numeric level scale
-(0 = error, 1 = info/notice/warning, 2 = debug/trace) and suppresses messages
+The adapter maps Log::Any severity levels to POPFile's ordered scale
+(trace=4, debug=3, info=2, warn=1, error=0) and suppresses messages
 below the configured C<popfile_level>.
 
 =head1 METHODS
@@ -47,7 +47,8 @@ Class method.  Updates the adapter's runtime configuration.  Accepted keys:
 
 =item C<filename> — path of the log file to append to
 
-=item C<popfile_level> — minimum POPFile severity level to emit (0–2)
+=item C<popfile_level> — minimum severity to emit.  Accepts a level name
+(C<error>, C<warn>, C<info>, C<debug>, C<trace>) or a number 0–4.
 
 =item C<log_sql> — include C<[SQL]> messages in the log stream (boolean); without this they are silently dropped regardless of C<to_file>/C<to_stdout>
 
@@ -71,24 +72,40 @@ my %cfg = (
     ring => [],
 );
 
-my %_required_popfile_level = (
-    trace => 2,
-    debug => 2,
-    info => 1,
-    notice => 1,
-    warning => 1,
-    error => 0,
+my %_severity_order = (
+    trace    => 4,
+    debug    => 3,
+    info     => 2,
+    notice   => 2,
+    warning  => 1,
+    error    => 0,
     critical => 0,
-    alert => 0,
+    alert    => 0,
     emergency => 0,
 );
 
-sub configure($, %args) { $cfg{$_} = $args{$_} for keys %args }
+my %_name_to_order = (
+    trace => 4,
+    debug => 3,
+    info  => 2,
+    warn  => 1,
+    error => 0,
+);
+
+sub configure($, %args) {
+    for my $k (keys %args) {
+        if ($k eq 'popfile_level' && $args{$k} !~ /^\d+$/) {
+            $cfg{$k} = $_name_to_order{lc $args{$k}} // 2;
+        } else {
+            $cfg{$k} = $args{$k};
+        }
+    }
+}
 
 sub ring() { $cfg{ring} }
 
 for my $method (logging_methods()) {
-    my $min_level = $_required_popfile_level{$method} // 0;
+    my $min_level = $_severity_order{$method} // 0;
     no strict 'refs';
     *{$method} = sub($self, $msg) {
         return unless $cfg{to_file} || $cfg{to_stdout};
