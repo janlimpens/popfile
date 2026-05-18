@@ -221,6 +221,7 @@ is the magnet used (or C<undef>).
 =cut
 
 method commit_slot ($session, $slot, $bucket, $magnet) {
+    $self->log_msg(INFO => "commit_slot: slot=$slot bucket=$bucket magnet=" . ($magnet // 'undef'));
     return $self->mq_post('COMIT', $session, $slot, $bucket, $magnet);
 }
 

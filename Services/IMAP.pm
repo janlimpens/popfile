@@ -261,6 +261,9 @@ method poll() {
             delete $pending_folder_moves{$_} for $result->{moved_hashes}->@*;
             delete $_uid_next_override{$_} for $result->{consumed_uid_overrides}->@*;
             $self->mq()->post('IMAP_DONE', $result->{trained} // 0);
+            if ($classifier && $classifier->can('db_update_cache')) {
+                $classifier->db_update_cache($self->api_session());
+            }
         }
     );
     $poll_pid = ref $sp ? $sp->pid() : undef;
@@ -959,7 +962,11 @@ method insert_message_into_bucket ($folder, $msg, $bucket) {
 }
 
 method _flush_history() {
-    $self->mq()->service();
+    if (ref $self->mq()) {
+        $self->mq()->service();
+    } else {
+        $self->log_msg(WARN => '_flush_history: mq is not an object, skipping service()');
+    }
     $history->commit_history() if ref $history;
 }
 
