@@ -122,10 +122,12 @@
     watched = [...watched, f];
     newWatch = '';
     foldersDirty = true;
+    ondirty();
   }
   function removeWatched(f) {
     watched = watched.filter(w => w !== f);
     foldersDirty = true;
+    ondirty();
   }
 
   // ── Bucket mapping helpers ─────────────────────────────────────────────
@@ -136,10 +138,12 @@
     newMapBucket = '';
     newMapFolder = '';
     foldersDirty = true;
+    ondirty();
   }
   function removeMapping(bucket) {
     mappings = mappings.filter(m => m.bucket !== bucket);
     foldersDirty = true;
+    ondirty();
   }
 
   let trainStatus = $state('');

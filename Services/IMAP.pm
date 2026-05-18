@@ -851,9 +851,14 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
                 $self->reclassify_message($folder, $msg, $old_bucket, $hash);
                 $emit->('info', 'Reclassified', "UID $msg: $old_bucket → $bucket");
             }
-            elsif (!ref $history || $history->get_slot_from_hash($hash) eq '') {
+            elsif ($self->_training_mode() == 1
+                && (!ref $history || $history->get_slot_from_hash($hash) eq '')) {
                 $self->insert_message_into_bucket($folder, $msg, $bucket);
                 $emit->('info', 'Trained', "UID $msg → $bucket");
+            }
+            else {
+                $self->log_msg(INFO => "Skipping message $msg in output folder $folder (not in history, training mode off).");
+                $emit->('info', 'Skipped', "UID $msg — output folder, not in history, training off");
             }
             next;
         }
