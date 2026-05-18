@@ -576,7 +576,7 @@
     gap: 2rem;
     margin-bottom: 1rem;
   }
-  .page-header h2 { margin: 0 0 0.25rem; }
+  .page-header h2 { margin: 0 0 0.25rem; font-size: 1.25rem; font-weight: 600; }
   .page-header p  { margin: 0; font-size: 0.875rem; }
 
   /* ── Advanced toggle ── */
