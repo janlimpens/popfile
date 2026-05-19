@@ -420,13 +420,7 @@ method add_line ($bigline, $encoded, $prefix) {
  my $from = $1;
  my $to = $entityhash{$2};
  if (defined($to)) {
- # HTML entities confilict with DBCS and EUC-JP
- # chars. Replace entities with blanks.
- if ($lang =~ /^(Korean|Nihongo)$/) {
- $to = ' ';
- } else {
- $to = chr($to);
- }
+ $to = ($lang =~ /^(Korean|Nihongo)$/) ? ' ' : chr($to);
  $line =~ s/$from/$to/g;
  $ut =~ s/$from/$to/g;
  $self->log_msg(DEBUG => "$from -> $to");
