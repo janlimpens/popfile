@@ -253,11 +253,12 @@ log.  Calls C<bail_out()> if the write fails.  Returns 1.
 
 method say ($command) {
     $last_command = $command;
+    $last_command =~ s/(LOGIN ").+?" ".+?(")/$1xxxxx" "xxxxx$2/;
     my $cmdstr = sprintf "A%05d %s%s", $tag, $command, $eol;
-    unless (print { $socket } $cmdstr) {
-        $self->bail_out("Lost connection while I tried to say '$cmdstr'.");
-    }
     (my $logged = $cmdstr) =~ s/^(A\d+) LOGIN ".+?" ".+"(.+)/$1 LOGIN "xxxxx" "xxxxx"$2/;
+    unless (print { $socket } $cmdstr) {
+        $self->bail_out("Lost connection while I tried to say '$logged'.");
+    }
     $self->log_msg(DEBUG => "<< $logged");
     return 1
 }
