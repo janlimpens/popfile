@@ -334,22 +334,19 @@ pseudoword was accepted, 0 if filtered by a stopword.
 =cut
 
 method update_pseudoword ($prefix, $word, $encoded, $literal) {
- my $mword = $mangle->mangle("$prefix:$word", 1);
- if ($mword ne '') {
- if (defined($color_resolver)) {
- if ($encoded == 1) {
- $literal =~ s/</&lt;/g;
- $literal =~ s/>/&gt;/g;
- my $color = $self->get_color($mword);
- my $to = "<b><font color=\"$color\"><a title=\"$mword\">$literal</a></font></b>";
- $ut .= $to . ' ';
- }
- }
- $self->increment_word($mword);
- return 1;
- }
- return 0;
+    my $mword = $mangle->mangle("$prefix:$word", 1);
+    return 0
+        if $mword eq '';
+    if (defined($color_resolver) && $encoded == 1) {
+        $literal =~ s/</&lt;/g;
+        $literal =~ s/>/&gt;/g;
+        my $color = $self->get_color($mword);
+        $ut .= qq|<b><font color="$color"><a title="$mword">$literal</a></font></b> |;
+    }
+    $self->increment_word($mword);
+    return 1
 }
+
 
 =head2 update_word
 
