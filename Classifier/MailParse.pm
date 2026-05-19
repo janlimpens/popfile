@@ -377,7 +377,7 @@ Increments the raw frequency count for C<$word> without mangling or colorization
 =cut
 
 method increment_word ($word) {
-    $words{$word} += 1;
+    $words{$word}++;
     $msg_total    += 1;
     $self->log_msg(DEBUG => "--- $word ($words{$word})");
 }
@@ -516,7 +516,10 @@ method add_line ($bigline, $encoded, $prefix) {
             while ($line =~ s/(mailto:)?                               ([[:alpha:]0-9\-_\.]+?
                                @
                                ([[:alpha:]0-9\-_\.]+\.[[:alpha:]0-9\-_]+))
-                               ([\"\&\)\?\:\/ >\&\;]|$)//x) {                $self->update_word($2, $encoded, ($1 ? $1 : ''),                                    '[\&\?\:\/ >\&\;]', $prefix);                $self->add_url($3, $encoded, '\@', '[\&\?\:\/]', $prefix);
+                               ([\"\&\)\?\:\/ >\&\;]|$)//x) {
+                $self->update_word($2, $encoded, ($1 ? $1 : ''),
+                    '[\&\?\:\/ >\&\;]', $prefix);
+                $self->add_url($3, $encoded, '\@', '[\&\?\:\/]', $prefix);
             }
             # Grab domain names (gTLD)
             # http://en.wikipedia.org/wiki/List_of_Internet_top-level_domains
@@ -595,7 +598,7 @@ method add_line ($bigline, $encoded, $prefix) {
                 while ($line =~ s/^$euc_jp*?                                   ([A-Za-z][A-Za-z\']{2,44}|
                                     $non_symbol_euc_jp{2,45})
                                    (?:[_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
-                                  //ox) {                    if (($in_headers == 0) &&                         ($first20count < 20)) {                        $first20count += 1;
+                                  //ox) {                    if ((!$in_headers) &&                         ($first20count < 20)) {                        $first20count++;
                         $first20 .= " $1";
                     }
                     $self->update_word($1, $encoded, '',
@@ -613,9 +616,9 @@ method add_line ($bigline, $encoded, $prefix) {
                                         ([A-Za-z\']|$eksc){1,44})
                                         ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
                                       //x) {
-                        if (($in_headers == 0) &&
+                        if ((!$in_headers) &&
                              ($first20count < 20)) {
-                            $first20count += 1;
+                            $first20count++;
                             $first20 .= " $1";
                         }
                         $self->update_word($1, $encoded, '',
@@ -631,9 +634,9 @@ method add_line ($bigline, $encoded, $prefix) {
                     while ($line =~ s/([[:alpha:]][[:alpha:]\']{1,44})
                                        ([_\-,\.\"\'\)\?!:;\/& \t\n\r]{0,5}|$)
                                       //x) {
-                        if (($in_headers == 0) &&
+                        if ((!$in_headers) &&
                              ($first20count < 20)) {
-                            $first20count += 1;
+                            $first20count++;
                             $first20 .= " $1";
                         }
                         $self->update_word($1, $encoded, '',
@@ -787,13 +790,15 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
         # Tags with colors in them
         if (($attribute =~ /^color$/i) && ($tag =~ /^font$/i)) {
             $self->update_word($value, $encoded, $quote, $end_quote, '');
-            $self->update_pseudoword('html', "fontcolor$value",                                      $encoded, $original);            $htmlfontcolor = $self->map_color($value);
+            $self->update_pseudoword('html', "fontcolor$value", $encoded, $original);
+            $htmlfontcolor = $self->map_color($value);
             $self->compute_html_color_distance();
             $self->log_msg(DEBUG => "Set html font color to $htmlfontcolor");
             next;
         }
         if (($attribute =~ /^text$/i) && ($tag =~ /^body$/i)) {
-            $self->update_pseudoword('html', "fontcolor$value",                                      $encoded, $original);            $self->update_word($value, $encoded, $quote, $end_quote, '');
+            $self->update_pseudoword('html', "fontcolor$value", $encoded, $original);
+            $self->update_word($value, $encoded, $quote, $end_quote, '');
             $htmlfontcolor = $self->map_color($value);
             $self->compute_html_color_distance();
             $self->log_msg(DEBUG => "Set html font color to $htmlfontcolor");
@@ -802,17 +807,20 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
         # The width and height of images
         if (($attribute =~ /^(width|height)$/i) && ($tag =~ /^img$/i)) {
             $attribute = lc($attribute);
-            $self->update_pseudoword('html', "img$attribute$value",                                      $encoded, $original);            next;
+            $self->update_pseudoword('html', "img$attribute$value", $encoded, $original);
+            next;
         }
         # Font sizes
         if (($attribute =~ /^size$/i) && ($tag =~ /^font$/i)) {
             # TODO: unify font size scaling to use the same scale
             #       across size specifiers
-            $self->update_pseudoword('html', "fontsize$value",                                      $encoded, $original);            next;
+            $self->update_pseudoword('html', "fontsize$value", $encoded, $original);
+            next;
         }
         # Tags with background colors
         if (($attribute =~ /^(bgcolor|back)$/i) &&             ($tag =~ /^(td|table|body|tr|th|font)$/i)) {            $self->update_word($value, $encoded, $quote, $end_quote, '');
-            $self->update_pseudoword('html', "backcolor$value",                                      $encoded, $original);            $htmlbackcolor = $self->map_color($value);
+            $self->update_pseudoword('html', "backcolor$value", $encoded, $original);
+            $htmlbackcolor = $self->map_color($value);
             $self->log_msg(DEBUG => "Set html back color to $htmlbackcolor");
             if ($tag =~ /^body$/i) {
                 $htmlbodycolor = $htmlbackcolor
@@ -1338,7 +1346,8 @@ method stop_parse() {
     # bodyless message
     # TODO: Fix me
     if ($cur_header ne '') {
-        $self->parse_header($cur_header, $cur_argument,                             $cur_mime, $cur_encoding);        $cur_header = '';
+        $self->parse_header($cur_header, $cur_argument, $cur_mime, $cur_encoding);
+        $cur_header = '';
         $cur_argument = '';
     }
     $in_html_tag = 0;
@@ -1804,7 +1813,8 @@ method parse_header ($header, $argument, $mime, $encoding) {
         $self->log_msg(DEBUG => "Setting encoding to $encoding");
         my $compact_encoding = $encoding;
         $compact_encoding =~ s/[^A-Za-z0-9]//g;
-        $self->update_pseudoword('encoding', $compact_encoding,                                  0, $encoding);        return ($mime, $encoding);
+        $self->update_pseudoword('encoding', $compact_encoding, 0, $encoding);
+        return ($mime, $encoding);
     }
     return ($mime, $encoding)
         if ($header =~ /^(
