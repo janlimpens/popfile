@@ -493,7 +493,6 @@ method add_line ($bigline, $encoded, $prefix) {
  }
  }
  while ($line =~ m/(&#([\d]{1,3});)/g) {
- # Don't decode odd (nonprintable) characters or < >'s.
  if ((($2 < 255) && ($2 > 63)) || ($2 == 61) ||
  (($2 < 60) && ($2 > 31))) { my $from = $1;
  my $to = chr($2);
