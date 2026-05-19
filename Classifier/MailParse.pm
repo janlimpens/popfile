@@ -293,65 +293,24 @@ method compute_html_color_distance() {
 
 =head2 map_color
 
-Converts an HTML color value (name, C<#rrggbb>, or IE flex-hex) into
+Converts an HTML color value (name, C<#rrggbb>, or C<#rgb> shorthand) into
 its canonical lowercase C<rrggbb> hexadecimal form.
 
 =cut
 
 method map_color ($color) {
- # The canonical form is lowercase hexadecimal, so start by
- # lowercasing and stripping any initial #
- $color = lc($color);
- # Map color names to hexadecimal values
- if (defined($color_map{$color})) {
- return $color_map{$color};
- } else {
- # Do this after checking the color map, as there is no "#blue" color
- # TODO: The #, however, is optional in IE.. Do we pseudo-word this?
- $color =~ s/^#//;
- my $old_color = $color;
- # Due to a bug/feature in Microsoft Internet Explorer it's
- # possible to use invalid hexadecimal colors where the number
- # 0 is replaced by any other character and if the hex has an
- # uneven multiple of 3 number of characters it is padded on
- # the right with 0s and if the hex is too long, it is divided
- # into even triplets with the leftmost characters in the
- # triplets being significant. Short (1-char) triplets are
- # left-padded with 0's
- # We go one higher than the quotient if the length isn't an
- # even multiple of 3
- my $quotient = int ((length($color) + 2) / 3);
- # right-pad entire value to get past the next full multiple of
- # the quotient ("abc abc abc" needs at least one more
- # character to make three even triplets)
- $color .= "00" . "0" x $quotient;
- # even length RGB triplets
- my ($r, $g, $b) = ($color =~ /(.{$quotient})(.{$quotient})(.{$quotient})/);
- $self->log_msg(DEBUG => "$r $g $b");
- # left-trim very long triplets to 4 bytes
- $r =~ s/.*(.{8})$/$1/;
- $g =~ s/.*(.{8})$/$1/;
- $b =~ s/.*(.{8})$/$1/;
- # right-trim long triplets to get the first two bytes
- $r =~ s/(..).*/$1/;
- $g =~ s/(..).*/$1/;
- $b =~ s/(..).*/$1/;
- # left-pad short triplets (eg FFF -> 0F0F0F)
- $r = '0' . $r if (length($r) == 1);
- $g = '0' . $g if (length($g) == 1);
- $b = '0' . $b if (length($b) == 1);
- $color = "$r$g$b"; # here is our real color value
- # Any non-hex values remaining get 0'd out
- $color =~ s/[^0-9a-f]/0/g;
- $self->log_msg(DEBUG => "hex color $color");
- $self->log_msg(DEBUG => 'flex-hex detected')
- if $color ne $old_color;
- # Add pseudo-word anytime flex hex detected
- if ($color ne $old_color) {
- $self->update_pseudoword('trick:flexhex', $old_color, 0, '');
- }
- return $color;
- }
+    $color = lc($color);
+    return $color_map{$color}
+        if defined $color_map{$color};
+    $color =~ s/^#//;
+    return '000000'
+        unless $color =~ /^[0-9a-f]+$/;
+    $color =~ s/^(.)(.)(.)$/$1$1$2$2$3$3/
+        if length($color) == 3;
+    return substr($color, 0, 6)
+        if length($color) >= 6;
+    $color .= '0' x (6 - length($color));
+    return $color
 }
 
 =head2 increment_word
