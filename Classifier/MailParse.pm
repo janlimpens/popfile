@@ -1054,7 +1054,7 @@ block. Returns 1 if the parser is still inside an unclosed HTML tag.
 method parse_html ($line, $encoded) {
  my $found = 1;
  $line =~ s/[\r\n]+/ /gm;
- print "parse_html: [$line] " . $in_html_tag . "\n" if $debug;
+ $self->log_msg(DEBUG => "parse_html: [$line] " . $in_html_tag);
  # Remove HTML comments and other tags that begin !
  while ($line =~ s/(<!.*?>)//) {
  $self->update_pseudoword('html', 'comment', $encoded, $1);
