@@ -293,7 +293,7 @@ method compute_rgb_distance ($left, $right) {
 
     my $distance = int(sqrt($r*$r + $g*$g + $b*$b));
 
-    print "rgb distance: $left -> $right = $distance" if $debug;
+    $self->log_msg(DEBUG => "rgb distance: $left -> $right = $distance");
 
     return $distance;
 }
@@ -361,7 +361,7 @@ method map_color ($color) {
 
         # even length RGB triplets
         my ($r, $g, $b) =            ($color =~ /(.{$quotient})(.{$quotient})(.{$quotient})/);
-        print "$r $g $b\n" if $debug;
+        $self->log_msg(DEBUG => "$r $g $b");
 
         # left-trim very long triplets to 4 bytes
         $r =~ s/.*(.{8})$/$1/;
@@ -383,9 +383,9 @@ method map_color ($color) {
         # Any non-hex values remaining get 0'd out
         $color =~ s/[^0-9a-f]/0/g;
 
-        if ($debug) {            print "hex color $color\n";
-            print "flex-hex detected\n" if ($color ne $old_color);
-        }
+        $self->log_msg(DEBUG => "hex color $color");
+        $self->log_msg(DEBUG => 'flex-hex detected')
+            if $color ne $old_color;
         # Add pseudo-word anytime flex hex detected
 
         if ($color ne $old_color) {
@@ -406,7 +406,7 @@ method increment_word ($word) {
     $words{$word} += 1;
     $msg_total    += 1;
 
-    print "--- $word ($words{$word})\n" if $debug;
+    $self->log_msg(DEBUG => "--- $word ($words{$word})");
 }
 
 =head2 update_pseudoword
@@ -465,7 +465,7 @@ method update_word ($word, $encoded, $before, $after, $prefix) {
             if ($encoded == 0) {
                 $after = '&' if ($after eq '>');
                 if ($ut !~ s/($before)\Q$word\E($after)/$1<b><font color="$color">$word<\/font><\/b>$2/x) {
-                    print "Could not find $word for colorization\n" if $debug;
+                    $self->log_msg(DEBUG => "Could not find $word for colorization");
                 }
             } else {
                 $ut .= "<font color=\"$color\">$word<\/font> ";
@@ -489,7 +489,7 @@ method add_line ($bigline, $encoded, $prefix) {
 
     return unless defined $bigline;
 
-    print "add_line: [$bigline]\n" if $debug;
+    $self->log_msg(DEBUG => "add_line: [$bigline]");
 
     # If the line is really long then split at every 1k and feed it to
     # the parser below
@@ -535,7 +535,7 @@ method add_line ($bigline, $encoded, $prefix) {
                     }
                     $line         =~ s/$from/$to/g;
                     $ut =~ s/$from/$to/g;
-                    print "$from -> $to\n" if $debug;
+                    $self->log_msg(DEBUG => "$from -> $to");
                 }
             }
 
@@ -549,7 +549,7 @@ method add_line ($bigline, $encoded, $prefix) {
                     if (defined($to) && ($to ne '')) {
                         $line         =~ s/$from/$to/g;
                         $ut =~ s/$from/$to/g;
-                        print "$from -> $to\n" if $debug;
+                        $self->log_msg(DEBUG => "$from -> $to");
                         $self->update_pseudoword('html', 'numericentity', $encoded, $from);                    }
                 }
             }
@@ -631,9 +631,9 @@ method add_line ($bigline, $encoded, $prefix) {
                                ([ ]|\3|[!\?,]|$)/ /x) {
                 my $original = "$1$2$4";
                 my $word = $2;
-                print "$word ->" if $debug;
+                $self->log_msg(DEBUG => "$word ->");
                 $word =~ s/[^A-Z]//gi;
-                print "$word\n" if $debug;
+                $self->log_msg(DEBUG => "$word");
                 $self->update_word($word, $encoded, ' ', ' ', $prefix);
                 $self->update_pseudoword('trick', 'spacedout',
                                           $encoded, $original);
@@ -737,7 +737,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
     $tag =~ s/[\r\n]//g;
     $arg =~ s/[\r\n]//g;
 
-    print "HTML " . ($end_tag ? "closing" : '') . " tag $tag with argument $arg\n" if $debug;
+    $self->log_msg(DEBUG => "HTML " . ($end_tag ? 'closing' : '') . " tag $tag with argument $arg");
 
     # End tags do not require any argument decoding but we do look at
     # them to make sure that we handle /font to change the font color
@@ -762,7 +762,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
             $self->compute_html_color_distance();
 
-            print "CSS back color reset to $htmlbackcolor (tag closed: $tag)\n" if $debug;
+            $self->log_msg(DEBUG => "CSS back color reset to $htmlbackcolor (tag closed: $tag)");
         }
 
         if (lc($tag) eq $cssfontcolortag) {
@@ -771,7 +771,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
             $self->compute_html_color_distance();
 
-            print "CSS font color reset to $htmlfontcolor (tag closed: $tag)\n" if $debug;
+            $self->log_msg(DEBUG => "CSS font color reset to $htmlfontcolor (tag closed: $tag)");
         }
 
         return;
@@ -809,12 +809,12 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             $end_quote = $4;
         }
 
-        print "   attribute $attribute with value $quote$value$quote\n" if $debug;
+        $self->log_msg(DEBUG => "   attribute $attribute with value $quote$value$quote");
 
         # Remove leading whitespace and leading value-less attributes
 
         if ($arg =~ s/^(([ \t]*(\w+)[\t ]+)+)([^=])/$4/) {
-            print "   attribute(s) $1 with no value\n" if $debug;
+            $self->log_msg(DEBUG => "   attribute(s) $1 with no value");
         }
 
         # Toggle for parsing script URI's.
@@ -907,7 +907,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             $self->update_word($value, $encoded, $quote, $end_quote, '');
             $self->update_pseudoword('html', "fontcolor$value",                                      $encoded, $original);            $htmlfontcolor = $self->map_color($value);
             $self->compute_html_color_distance();
-            print "Set html font color to $htmlfontcolor\n" if $debug;
+            $self->log_msg(DEBUG => "Set html font color to $htmlfontcolor");
             next;
         }
 
@@ -915,7 +915,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             $self->update_pseudoword('html', "fontcolor$value",                                      $encoded, $original);            $self->update_word($value, $encoded, $quote, $end_quote, '');
             $htmlfontcolor = $self->map_color($value);
             $self->compute_html_color_distance();
-            print "Set html font color to $htmlfontcolor\n" if $debug;
+            $self->log_msg(DEBUG => "Set html font color to $htmlfontcolor");
             next;
         }
 
@@ -939,7 +939,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         if (($attribute =~ /^(bgcolor|back)$/i) &&             ($tag =~ /^(td|table|body|tr|th|font)$/i)) {            $self->update_word($value, $encoded, $quote, $end_quote, '');
             $self->update_pseudoword('html', "backcolor$value",                                      $encoded, $original);            $htmlbackcolor = $self->map_color($value);
-            print "Set html back color to $htmlbackcolor\n" if $debug;
+            $self->log_msg(DEBUG => "Set html back color to $htmlbackcolor");
 
             if ($tag =~ /^body$/i) {
                 $htmlbodycolor = $htmlbackcolor
@@ -961,17 +961,11 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
         if (!exists($HTML::Tagset::emptyElement->{ lc($tag) }) &&
              ($attribute =~ /^style$/i)) {
-            print "      Inline style tag found in $tag: $attribute=$value\n" if $debug;
+            $self->log_msg(DEBUG => "      Inline style tag found in $tag: $attribute=$value");
 
             my $style = $self->parse_css_style($value);
 
-            if ($debug) {
-                print "      CSS properties: ";
-                for my $key (keys($style->%*)) {
-                    print "$key($style->{$key}), ";
-                }
-                print "\n";
-            }
+            $self->log_msg(DEBUG => 'CSS properties: ' . join(', ', map { "$_($style->{$_})" } sort keys $style->%*));
             # CSS font sizing
             if (defined($style->{'font-size'})) {
                 my $size = $style->{'font-size'};
@@ -986,7 +980,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                                 xx-large)/x) {
                     $self->update_pseudoword('html', "cssfontsize$size",
                                               $encoded, $original);
-                    print "     CSS font-size set to: $size\n" if $debug;
+                    $self->log_msg(DEBUG => "     CSS font-size set to: $size");
                 }
             }
 
@@ -1006,7 +1000,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
             if (defined($style->{'color'})) {
                 my $color = $style->{'color'};
 
-                print "      CSS color: $color\n" if $debug;
+                $self->log_msg(DEBUG => "      CSS color: $color");
 
                 $color = $self->parse_css_color($color);
 
@@ -1014,7 +1008,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                     $htmlfontcolor = $color;
                     $self->compute_html_color_distance();
 
-                    print "      CSS set html font color to $htmlfontcolor\n" if $debug;
+                    $self->log_msg(DEBUG => "      CSS set html font color to $htmlfontcolor");
                     $self->update_pseudoword('html', "cssfontcolor$htmlfontcolor",
                         $encoded, $original);
                     $cssfontcolortag = lc($tag);
@@ -1030,7 +1024,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                 if ($background_color ne "error") {
                     $htmlbackcolor = $background_color;
                     $self->compute_html_color_distance();
-                    print "       CSS set html back color to $htmlbackcolor\n" if $debug;
+                    $self->log_msg(DEBUG => "       CSS set html back color to $htmlbackcolor");
 
                     $htmlbodycolor = $background_color
                         if ($tag =~ /^body$/i);
@@ -1054,7 +1048,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                     # and examine each expression individually
 
                     $expression = $1;
-                    print "       CSS expression $expression in background property\n" if $debug;
+                    $self->log_msg(DEBUG => "       CSS expression $expression in background property");
 
                     my $background_color =                        $self->parse_css_color($expression);
                     # to see if it is a color
@@ -1062,7 +1056,7 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
                     if ($background_color ne "error") {
                         $htmlbackcolor = $background_color;
                         $self->compute_html_color_distance();
-                        print "       CSS set html back color to $htmlbackcolor\n" if $debug;
+                        $self->log_msg(DEBUG => "       CSS set html back color to $htmlbackcolor");
 
                         if ($tag =~ /^body$/i) {
                             $htmlbodycolor = $background_color;
@@ -1254,7 +1248,7 @@ method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
     }
 
     if (!defined $host || $host eq '') {
-        print "no hostname found: [$temp_url]\n" if $debug;
+        $self->log_msg(DEBUG => "no hostname found: [$temp_url]");
         return '';
     }
 
@@ -1325,7 +1319,7 @@ method parse_html ($line, $encoded) {
 
     while ($line =~ s/(<!.*?>)//) {
         $self->update_pseudoword('html', 'comment', $encoded, $1);
-        print "$line\n" if $debug;
+        $self->log_msg(DEBUG => "$line");
     }
 
     # Remove invalid tags.  This finds tags of the form [a-z0-9]+ with
@@ -1338,7 +1332,7 @@ method parse_html ($line, $encoded) {
     # Content-Type header and only process mails of type text/html.
 
     while ($line =~ s/(<\/?(?!(?:$spacing_tags|$non_spacing_tags)\W)                        [a-z0-9]+(?:\s+.*?)?\/?>)//iox) {        $self->update_pseudoword('html', 'invalidtag', $encoded, $1);
-        print "html:invalidtag: $1\n" if $debug;
+        $self->log_msg(DEBUG => "html:invalidtag: $1");
     }
 
     # Remove pairs of non-spacing tags without content such as <b></b>
@@ -1348,7 +1342,7 @@ method parse_html ($line, $encoded) {
 
     while ($line =~ s/(<($non_spacing_tags)(?:\s+[^>]*?)?><\/\2>)//io) {
         $self->update_pseudoword('html', 'emptypair', $encoded, $1);
-        print "html:emptypair: $1\n" if $debug;
+        $self->log_msg(DEBUG => "html:emptypair: $1");
     }
 
     while ($found && ($line ne '')) {
@@ -1648,7 +1642,7 @@ method parse_line ($read) {
 
             next unless defined $line;
 
-            print ">>> $line" if $debug;
+            $self->log_msg(DEBUG => ">>> $line");
 
             # Decode quoted-printable
 
@@ -1706,7 +1700,7 @@ method parse_line ($read) {
                     $ut .= "<a name=\"message_body\" />";
 
                     $in_headers = 0;
-                    print "Header parsing complete.\n" if $debug;
+                    $self->log_msg(DEBUG => "Header parsing complete.");
 
                     next;
                 }
@@ -1752,7 +1746,7 @@ method parse_line ($read) {
                     # a boundary, so now we have a new part of the
                     # document, hence we need to look for new headers
 
-                    print "Hit MIME boundary --$1\n" if $debug;
+                    $self->log_msg(DEBUG => "Hit MIME boundary --$1");
 
                     $self->clear_out_qp();
 
@@ -1767,7 +1761,7 @@ method parse_line ($read) {
 
                     my $boundary = $1;
 
-                    print "Hit MIME boundary terminator --$1--\n" if $debug;
+                    $self->log_msg(DEBUG => "Hit MIME boundary terminator --$1--");
 
                     # Escape to match escaped boundary characters
 
@@ -1792,7 +1786,7 @@ method parse_line ($read) {
 
                     $cur_mime = $temp_mime;
 
-                    print "MIME boundary list now $cur_mime\n" if $debug;
+                    $self->log_msg(DEBUG => "MIME boundary list now $cur_mime");
                 }
 
                 next;
@@ -1836,7 +1830,7 @@ method clear_out_base64() {
         $ut = '' if (defined($color_resolver));
         $base64 =~ s/ //g;
 
-        print "Base64 data: " . $base64 . "\n" if $debug;
+        $self->log_msg(DEBUG => "Base64 data: " . $base64);
 
         $decoded = decode_base64($base64);
 
@@ -1849,7 +1843,7 @@ method clear_out_base64() {
 
         $self->parse_html($decoded, 1);
 
-        print "Decoded: " . $decoded . "\n" if $debug;
+        $self->log_msg(DEBUG => "Decoded: " . $decoded);
 
         if (defined($color_resolver)) {
             $ut = "<b>Found in encoded data:</b> " . $ut;
@@ -1997,7 +1991,7 @@ updated) C<$mime> and C<$encoding> values.
 =cut
 
 method parse_header ($header, $argument, $mime, $encoding) {
-    print "Header ($header) ($argument)\n" if $debug;
+    $self->log_msg(DEBUG => "Header ($header) ($argument)");
 
     # After a discussion with Tim Peters and some looking at emails
     # I'd received I discovered that the header names (case sensitive)
@@ -2153,7 +2147,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
         }
 
         if ($argument =~ /^(.*?)(;)/) {
-            print "Set content type to $1\n" if $debug;
+            $self->log_msg(DEBUG => "Set content type to $1");
             $content_type = $1;
         }
 
@@ -2176,7 +2170,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
                 } else {
                     $mime = $boundary;
                 }
-                print "Set mime boundary to $mime\n" if $debug;
+                $self->log_msg(DEBUG => "Set mime boundary to $mime");
                 return ($mime, $encoding);
             }
         }
@@ -2194,7 +2188,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
 
     if ($header =~ /^Content-Transfer-Encoding$/i) {
         $encoding = $argument;
-        print "Setting encoding to $encoding\n" if $debug;
+        $self->log_msg(DEBUG => "Setting encoding to $encoding");
         my $compact_encoding = $encoding;
         $compact_encoding =~ s/[^A-Za-z0-9]//g;
         $self->update_pseudoword('encoding', $compact_encoding,                                  0, $encoding);        return ($mime, $encoding);
@@ -2339,11 +2333,11 @@ method parse_css_color ($color) {
             $error = 1;
         }
 
-        print "        CSS rgb($r, $g, $b) percent: $ispercent\n" if $debug;
+        $self->log_msg(DEBUG => "        CSS rgb($r, $g, $b) percent: $ispercent");
     }
     if ($color =~ /^#(([0-9a-f]{3})|([0-9a-f]{6}))$/i) {
         # #rgb or #rrggbb
-        print "        CSS numeric form: $color\n" if $debug;
+        $self->log_msg(DEBUG => "        CSS numeric form: $color");
 
         $color = $2 || $3;
 
@@ -2361,7 +2355,7 @@ method parse_css_color ($color) {
     if ($color =~ /^(aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|                      olive|purple|red|silver|teal|white|yellow)$/i) {
         # these are the only CSS defined colours
 
-        print "       CSS textual color form: $color\n" if $debug;
+        $self->log_msg(DEBUG => "       CSS textual color form: $color");
 
         my $new_color = $self->map_color($color);
 
@@ -2444,7 +2438,7 @@ C<mimename:*> and C<mimeextension:*> pseudo-words.
 
 method add_attachment_filename ($filename) {
     if (defined($filename) && ($filename ne '')) {
-        print "Add filename $filename\n" if $debug;
+        $self->log_msg(DEBUG => "Add filename $filename");
 
         # Decode the filename
         $filename = $self->decode_string($filename);
