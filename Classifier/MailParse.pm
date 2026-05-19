@@ -14,58 +14,42 @@ use MIME::QuotedPrint;
 use HTML::Tagset;
 use Lingua::Identify;
 
-# Korean characters definition
-
+# Korean characters
 my $ksc5601_sym = '(?:[\xA1-\xAC][\xA1-\xFE])';
 my $ksc5601_han = '(?:[\xB0-\xC8][\xA1-\xFE])';
 my $ksc5601_hanja = '(?:[\xCA-\xFD][\xA1-\xFE])';
 my $ksc5601 = "(?:$ksc5601_sym|$ksc5601_han|$ksc5601_hanja)";
+my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])";
 
-my $eksc = "(?:$ksc5601|[\x81-\xC6][\x41-\xFE])"; #extended ksc
-
-# These are used for Japanese support
-
-my %encoding_candidates = ('Nihongo' => [ 'cp932', 'euc-jp', '7bit-jis' ]
-);
-my $ascii = '[\x00-\x7F]';                                      # ASCII chars
-my $two_bytes_euc_jp = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';                   # 2bytes EUC-JP chars
-my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';                   # 3bytes EUC-JP chars
-my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)"; # EUC-JP chars
+# Japanese character class definitions
+my %encoding_candidates = ('Nihongo' => [ 'cp932', 'euc-jp', '7bit-jis' ]);
+my $ascii = '[\x00-\x7F]';
+my $two_bytes_euc_jp = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';
+my $three_bytes_euc_jp = '(?:\x8F[\xA1-\xFE][\xA1-\xFE])';
+my $euc_jp = "(?:$ascii|$two_bytes_euc_jp|$three_bytes_euc_jp)";
 
 # Symbols in EUC-JP chars which cannot be considered a part of words
-
 my $symbol_row1_euc_jp = '(?:[\xA1][\xA1-\xBB\xBD-\xFE])';
 my $symbol_row2_euc_jp = '(?:[\xA2][\xA1-\xFE])';
 my $symbol_row8_euc_jp = '(?:[\xA8][\xA1-\xFE])';
 my $symbol_euc_jp = "(?:$symbol_row1_euc_jp|$symbol_row2_euc_jp|$symbol_row8_euc_jp)";
 
-# Cho-on kigou(symbol in Japanese), a special symbol which can appear
-# in middle of words
-
+# Cho-on kigou, a special symbol which can appear in middle of words
 my $cho_on_symbol = '(?:\xA1\xBC)';
 
 # Non-symbol EUC-JP chars
-
 my $non_symbol_two_bytes_euc_jp = '(?:[\x8E\xA3-\xA7\xB0-\xFE][\xA1-\xFE])';
 my $non_symbol_euc_jp = "(?:$non_symbol_two_bytes_euc_jp|$three_bytes_euc_jp|$cho_on_symbol)";
 
-# Constants for the internal wakachigaki parser.
-# Kind of EUC-JP chars
-my $euc_jp_symbol = '[\xA1\xA2\xA6-\xA8\xAD\xF9-\xFC][\xA1-\xFE]';                # The symbols make a word of one character.
-my $euc_jp_alphanum = '(?:\xA3[\xB0-\xB9\xC1-\xDA\xE1-\xFA])+';                     # One or more alphabets and numbers
-my $euc_jp_hiragana = '(?:(?:\xA4[\xA1-\xF3])+(?:\xA1[\xAB\xAC\xB5\xB6\xBC])*)+';   # One or more Hiragana characters
-my $euc_jp_katakana = '(?:(?:\xA5[\xA1-\xF6])+(?:\xA1[\xA6\xBC\xB3\xB4])*)+';       # One or more Katakana characters
-my $euc_jp_hkatakana = '(?:\x8E[\xA6-\xDF])+';                                       # One or more Half-width Katakana characters
-my $euc_jp_kanji = '[\xB0-\xF4][\xA1-\xFE](?:[\xB0-\xF4][\xA1-\xFE]|\xA1\xB9)?'; # One or two Kanji characters
+# Kind of EUC-JP chars — each symbol makes a word of one character
+my $euc_jp_symbol = '[\xA1\xA2\xA6-\xA8\xAD\xF9-\xFC][\xA1-\xFE]';
+my $euc_jp_alphanum = '(?:\xA3[\xB0-\xB9\xC1-\xDA\xE1-\xFA])+';
+my $euc_jp_hiragana = '(?:(?:\xA4[\xA1-\xF3])+(?:\xA1[\xAB\xAC\xB5\xB6\xBC])*)+';
+my $euc_jp_katakana = '(?:(?:\xA5[\xA1-\xF6])+(?:\xA1[\xA6\xBC\xB3\xB4])*)+';
+my $euc_jp_hkatakana = '(?:\x8E[\xA6-\xDF])+';
+my $euc_jp_kanji = '[\xB0-\xF4][\xA1-\xFE](?:[\xB0-\xF4][\xA1-\xFE]|\xA1\xB9)?';
 
-my $euc_jp_word = '(' .    $euc_jp_alphanum .     '|' . 
-    $euc_jp_hiragana .     '|' . 
-    $euc_jp_katakana .     '|' . 
-    $euc_jp_hkatakana .    '|' . 
-    $euc_jp_kanji .        '|' . 
-    $euc_jp_symbol .       '|' . 
-    $ascii .              '+|' .
-    $three_bytes_euc_jp . ')';
+my $euc_jp_word = '(' . $euc_jp_alphanum . '|' . $euc_jp_hiragana . '|' . $euc_jp_katakana . '|' . $euc_jp_hkatakana . '|' . $euc_jp_kanji . '|' . $euc_jp_symbol . '|' . $ascii . '+|' . $three_bytes_euc_jp . ')';
 # HTML entity to character code mapping
 my %entityhash = (
     'aacute' => 225, 'Aacute' => 193, 'Acirc' => 194, 'acirc' => 226,
