@@ -217,9 +217,24 @@ sub rss_kb {
 sub run_scenario($label, %cfg) {
 
     my ($config, $mq, $tmpdir) = TestHelper::setup();
+
+    # Write scenario config before module start so values are read by
+    # WordMangle->start() (stemming) and MailParse->parse_file() (auto_detect)
+    {
+        my $path = "$tmpdir/config.json";
+        $ENV{POPFILE_PATH} = $path;
+        require POPFile::ConfigFile;
+        my $cf = POPFile::ConfigFile->new();
+        $cf->save($path, {
+            version => 2,
+            wordmangle => {
+                stemming => $cfg{stemming} // 0,
+                auto_detect_language => $cfg{auto_detect_language} // 0,
+            },
+        });
+    }
+
     my ($wm, $bayes) = TestHelper::setup_bayes($config, $mq);
-    $wm->config('stemming',             $cfg{stemming}             // 0);
-    $wm->config('auto_detect_language', $cfg{auto_detect_language} // 0);
     $wm->set_language('en');
 
     my $session = TestHelper::reset_db($bayes, $config);
