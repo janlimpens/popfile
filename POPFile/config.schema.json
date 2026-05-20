@@ -11,8 +11,6 @@
         "password":      { "type": "string",  "default": "" },
         "static_dir":    { "type": "string",  "default": "public" },
         "local":         { "type": "boolean", "default": true },
-        "page_size":     { "type": "integer", "minimum": 1, "default": 25 },
-        "word_page_size":{ "type": "integer", "minimum": 1, "default": 50 },
         "session_dividers": { "type": "boolean", "default": true },
         "wordtable_format": { "type": "string",  "default": "" },
         "locale":        { "type": "string",  "default": "" },

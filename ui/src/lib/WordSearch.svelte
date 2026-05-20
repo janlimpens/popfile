@@ -8,7 +8,7 @@
   let sort = $state('word');
   let dir = $state('asc');
   let page = $state(1);
-  let perPage = $state(50);
+  let perPage = $state(25);
   let words = $state([]);
   let buckets = $state([]);
   let total = $state(0);
@@ -16,7 +16,7 @@
   let stopwords = $state([]);
   let stopwordsOpen = $state(false);
 
-  const PAGE_SIZES = [25, 50, 100, 200];
+  const PAGE_SIZES = [25, 50, 100, 500];
 
   async function search() {
     page = 1;
@@ -91,6 +91,11 @@
   }
 
   onMount(() => {
+    const stored = localStorage.getItem('paging_size');
+    if (stored) {
+      const val = parseInt(stored);
+      if (PAGE_SIZES.includes(val)) perPage = val;
+    }
     loadStopwords();
     loadWords();
   });
@@ -107,7 +112,7 @@
       onkeydown={e => e.key === 'Enter' && search()}
     />
     <button onclick={search}>{t('WordSearch_Search')}</button>
-    <select value={perPage} onchange={e => { perPage = parseInt(e.target.value); search(); }}>
+    <select value={perPage} onchange={e => { perPage = parseInt(e.target.value); localStorage.setItem('paging_size', String(perPage)); page = 1; search(); }}>
       {#each PAGE_SIZES as n}
         <option value={n}>{n}</option>
       {/each}

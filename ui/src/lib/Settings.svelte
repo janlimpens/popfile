@@ -19,8 +19,6 @@
       settings: [
         { key: 'api_port', label: t('Settings_HTTPPort'), type: 'number',
           desc: t('Settings_DescHTTPPort') },
-        { key: 'api_page_size', label: t('Settings_ItemsPerPage'), type: 'number',
-          desc: t('Settings_DescItemsPerPage') },
         { key: 'api_open_browser', label: t('Settings_OpenBrowser'), type: 'bool',
           desc: t('Settings_DescOpenBrowser') },
         { key: 'api_session_dividers', label: t('Settings_SessionDividers'), type: 'bool',

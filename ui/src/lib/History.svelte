@@ -23,33 +23,22 @@
   let bulkBucket = $state('');
   let bulkBusy = $state(false);
 
-  const PAGE_SIZES = [25, 50, 100, 200];
+  const PAGE_SIZES = [25, 50, 100, 500];
   let pageSize = $state(25);
   let ready = $state(false);
 
-  async function loadPageSize() {
-    const stored = sessionStorage.getItem('history_page_size');
+  function loadPageSize() {
+    const stored = localStorage.getItem('paging_size');
     if (stored) {
-      pageSize = parseInt(stored) || 25;
-      return;
-    }
-    const res = await fetch('/api/v1/config');
-    if (res.ok) {
-      const cfg = await res.json();
-      const saved = parseInt(cfg.api_page_size) || 25;
-      pageSize = PAGE_SIZES.includes(saved) ? saved : 25;
+      const val = parseInt(stored);
+      pageSize = PAGE_SIZES.includes(val) ? val : 25;
     }
   }
 
-  async function changePageSize(val) {
+  function changePageSize(val) {
     pageSize = val;
     page = 1;
-    sessionStorage.setItem('history_page_size', String(val));
-    fetch('/api/v1/config', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ api_page_size: String(val) }),
-    });
+    localStorage.setItem('paging_size', String(val));
   }
 
   function allChecked() {
@@ -181,8 +170,8 @@
 
   let pollTimer;
 
-  onMount(async () => {
-    await loadPageSize();
+  onMount(() => {
+    loadPageSize();
     ready = true;
   });
 
