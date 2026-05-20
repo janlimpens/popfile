@@ -1,73 +1,38 @@
 package POPFile::API::Controller::Config;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
 
-use constant CFG => {
-    api_port => [api => 'port'],
-    api_password => [api => 'password'],
-    api_local => [api => 'local'],
-    api_open_browser => [api => 'open_browser'],
-    api_page_size => [api => 'page_size'],
-    api_word_page_size => [api => 'word_page_size'],
-    api_session_dividers => [api => 'session_dividers'],
-    api_wordtable_format => [api => 'wordtable_format'],
-    api_locale => [api => 'locale'],
-    pop3_enabled => [pop3 => 'enabled'],
-    pop3_port => [pop3 => 'port'],
-    pop3_separator => [pop3 => 'separator'],
-    pop3_local => [pop3 => 'local'],
-    pop3_force_fork => [pop3 => 'force_fork'],
-    pop3_toptoo => [pop3 => 'toptoo'],
-    pop3_secure_server => [pop3 => 'secure_server'],
-    pop3_secure_port => [pop3 => 'secure_port'],
-    smtp_enabled => [smtp => 'enabled'],
-    smtp_port => [smtp => 'port'],
-    smtp_chain_server => [smtp => 'chain_server'],
-    smtp_chain_port => [smtp => 'chain_port'],
-    smtp_local => [smtp => 'local'],
-    smtp_force_fork => [smtp => 'force_fork'],
-    nntp_enabled => [nntp => 'enabled'],
-    nntp_port => [nntp => 'port'],
-    nntp_separator => [nntp => 'separator'],
-    nntp_local => [nntp => 'local'],
-    nntp_force_fork => [nntp => 'force_fork'],
-    nntp_headtoo => [nntp => 'headtoo'],
-    bayes_hostname => [bayes => 'hostname'],
-    bayes_message_cutoff => [bayes => 'message_cutoff'],
-    bayes_unclassified_weight => [bayes => 'unclassified_weight'],
-    bayes_subject_mod_left => [bayes => 'subject_mod_left'],
-    bayes_subject_mod_right => [bayes => 'subject_mod_right'],
-    bayes_subject_mod_pos => [bayes => 'subject_mod_pos'],
-    bayes_sqlite_fast_writes => [bayes => 'sqlite_fast_writes'],
-    bayes_sqlite_backup => [bayes => 'sqlite_backup'],
-    bayes_sqlite_journal_mode => [bayes => 'sqlite_journal_mode'],
-    wordmangle_stemming => [wordmangle => 'stemming'],
-    wordmangle_auto_detect_language => [wordmangle => 'auto_detect_language'],
-    history_history_days => [history => 'history_days'],
-    history_archive => [history => 'archive'],
-    history_archive_dir => [history => 'archive_dir'],
-    history_archive_classes => [history => 'archive_classes'],
-    logger_level => [logger => 'level'],
-    logger_logdir => [logger => 'logdir'],
-    logger_log_to_stdout => [logger => 'log_to_stdout'],
-    global_log_sql => [GLOBAL => 'log_sql'],
-    imap_enabled => [imap => 'enabled'],
-    imap_hostname => [imap => 'hostname'],
-    imap_port => [imap => 'port'],
-    imap_login => [imap => 'login'],
-    imap_password => [imap => 'password'],
-    imap_use_ssl => [imap => 'use_ssl'],
-    imap_update_interval => [imap => 'update_interval'],
-    imap_expunge => [imap => 'expunge'],
-    imap_training_mode => [imap => 'training_mode'],
-    imap_training_error => [imap => 'training_error'],
-    imap_training_limit => [imap => 'training_limit'],
-};
+use POPFile::Config;
+
+# Keys accepted by PUT but never returned by GET.
+my %API_WRITE_ONLY = (
+    bayes => { map { $_ => 1 } qw(dbauth) },
+    imap  => { map { $_ => 1 } qw(password) },
+);
+
+# Build flat API-key → {ns, key, wo} map from schema.
+# wo=1 keys are accepted by PUT but excluded from GET.
+sub _api_config_map() {
+    state $map;
+    return $map
+        if $map;
+    my $props = POPFile::Config->schema_properties();
+    for my $ns (sort keys $props->%*) {
+        next if $ns eq 'version';
+        my $keys = $props->{$ns}{properties};
+        for my $key (sort keys $keys->%*) {
+            $map->{"${ns}_$key"} = { ns => $ns, key => $key, wo => $API_WRITE_ONLY{$ns}{$key} };
+        }
+    }
+    return $map
+}
 
 sub get_config($self) {
+    my $map = _api_config_map();
     my %result;
-    for my $key (keys %{CFG()}) {
-        my ($mod, $param) = CFG->{$key}->@*;
-        $result{$key} = POPFile::Config->instance()->get($mod, $param) // '';
+    for my $flat_key (keys $map->%*) {
+        next if $map->{$flat_key}{wo};
+        my $entry = $map->{$flat_key};
+        $result{$flat_key} = POPFile::Config->instance()->get($entry->{ns}, $entry->{key}) // '';
     }
     $self->render(json => \%result)
 }
@@ -77,23 +42,24 @@ sub update_config($self) {
     my $body = $self->req->json // {};
     my $path = POPFile::Config->resolve_path();
     my $data = POPFile::ConfigFile->new()->load($path);
-    for my $key (keys $body->%*) {
+    my $map = _api_config_map();
+    for my $flat_key (keys $body->%*) {
         next
-            unless exists CFG->{$key};
-        my ($mod, $param) = CFG->{$key}->@*;
-        $data->{$mod}{$param} = $body->{$key};
+            unless exists $map->{$flat_key};
+        my $entry = $map->{$flat_key};
+        $data->{$entry->{ns}}{$entry->{key}} = $body->{$flat_key};
     }
-    my %known_ns = map { CFG->{$_}->[0] => 1 } keys CFG->%*;
-    my @schema_ns = keys %known_ns;
-    for my $ns (@schema_ns) {
+    my $props = POPFile::Config->schema_properties();
+    for my $ns (keys $props->%*) {
+        next if $ns eq 'version';
         next
             unless ref $data->{$ns} eq 'HASH';
-        my %known_params = map { CFG->{$_}->[1] => 1 }
-            grep { CFG->{$_}->[0] eq $ns } keys CFG->%*;
+        my $keys = $props->{$ns}{properties};
         delete $data->{$ns}{$_}
-            for grep { !$known_params{$_} } keys $data->{$ns}->%*;
+            for grep { !exists $keys->{$_} } keys $data->{$ns}->%*;
     }
-    delete $data->{$_} for grep { $_ ne 'version' && !$known_ns{$_} } keys $data->%*;
+    delete $data->{$_}
+        for grep { $_ ne 'version' && !exists $props->{$_} } keys $data->%*;
     POPFile::Config->validate_doc($data);
     POPFile::ConfigFile->new()->save($path, $data);
     if (grep { /^logger_/ } keys $body->%*) {

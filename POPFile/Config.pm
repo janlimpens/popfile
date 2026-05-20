@@ -27,6 +27,10 @@ sub _load_schema() {
     return $SCHEMA
 }
 
+method schema_properties :common () {
+    return _load_schema()->{properties}
+}
+
 method instance :common () {
     return $instance
         if $instance;
