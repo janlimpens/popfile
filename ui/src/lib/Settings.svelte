@@ -3,6 +3,7 @@
   import { initLocale, t } from './locale.svelte.js';
   import IMAP from './IMAP.svelte';
 
+  /** @type {Record<string, any>} */
   let config = $state({});
   let active = $state('ui');
   let status = $state('');
@@ -21,11 +22,6 @@
           desc: t('Settings_DescHTTPPort') },
         { key: 'api_open_browser', label: t('Settings_OpenBrowser'), type: 'bool',
           desc: t('Settings_DescOpenBrowser') },
-        { key: 'api_session_dividers', label: t('Settings_SessionDividers'), type: 'bool',
-          desc: t('Settings_DescSessionDividers') },
-        { key: 'api_wordtable_format', label: t('Settings_WordTable'), type: 'select',
-          options: [['', t('Settings_OptHidden')], ['freq', t('Settings_OptFrequencies')], ['prob', t('Settings_OptProbabilities')], ['score', t('Settings_OptLogScores')]],
-          desc: t('Settings_DescWordTable') },
         { key: 'api_locale', label: t('Configuration_Language'), type: 'locale',
           desc: t('Settings_DescLanguage') },
       ],
@@ -208,7 +204,7 @@
       restartNeeded = body.restart_needed || false;
       dirty = false;
       setTimeout(() => { status = ''; }, 5000);
-      await initLocale(config.api_locale || '');
+      await initLocale(config['api_locale'] || '');
     } else {
       status = 'error';
     }
@@ -281,7 +277,7 @@
                         type="checkbox"
                         checked={config[f.key] == 1}
                         disabled={f.disabledWhen?.(config)}
-                        onchange={(e) => { config[f.key] = e.target.checked ? 1 : 0; mark(); }}
+                        onchange={(e) => { config[f.key] = /** @type {HTMLInputElement} */ (e.target).checked ? 1 : 0; mark(); }}
                       />
                       <span class="track"></span>
                     </label>
@@ -346,7 +342,7 @@
                           type="checkbox"
                           checked={config[f.key] == 1}
                           disabled={f.disabledWhen?.(config)}
-                          onchange={(e) => { config[f.key] = e.target.checked ? 1 : 0; mark(); }}
+                          onchange={(e) => { config[f.key] = /** @type {HTMLInputElement} */ (e.target).checked ? 1 : 0; mark(); }}
                         />
                         <span class="track"></span>
                       </label>
@@ -430,7 +426,7 @@
     gap: 2px;
   }
   .panel-search-wrap { position: relative; display: flex; align-items: center; margin-bottom: 1.5rem; }
-  .panel-search { width: 100%; padding: 0.45rem 2rem 0.45rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font-size: 0.875rem; box-sizing: border-box; -webkit-appearance: none; }
+  .panel-search { width: 100%; padding: 0.45rem 2rem 0.45rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font-size: 0.875rem; box-sizing: border-box; appearance: none; -webkit-appearance: none; }
   .panel-search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
   .panel-search::-webkit-search-cancel-button { display: none; }
   .clear-btn { position: absolute; right: 0.5rem; background: none; border: none; color: var(--text-muted); font-size: 1rem; line-height: 1; padding: 0 0.2rem; cursor: pointer; }

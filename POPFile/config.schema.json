@@ -11,8 +11,6 @@
         "password":      { "type": "string",  "default": "" },
         "static_dir":    { "type": "string",  "default": "public" },
         "local":         { "type": "boolean", "default": true },
-        "session_dividers": { "type": "boolean", "default": true },
-        "wordtable_format": { "type": "string",  "default": "" },
         "locale":        { "type": "string",  "default": "" },
         "open_browser":  { "type": "boolean", "default": true }
       }
