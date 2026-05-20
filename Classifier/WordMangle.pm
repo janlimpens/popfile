@@ -8,8 +8,7 @@ use Object::Pad;
 use locale;
 use Lingua::Stem::Snowball;
 use Lingua::StopWords;
-
-# These are used for Japanese support
+use POPFile::Role::Config;
 
 my $ascii = '[\x00-\x7F]';
 my $two_bytes_euc_jp = '(?:[\x8E\xA1-\xFE][\xA1-\xFE])';
@@ -27,18 +26,15 @@ my %ui_to_iso = (
     Romanian => 'ro', Russian => 'ru', Turkish => 'tr',
 );
 
-use POPFile::Role::Config;
 
 class Classifier::WordMangle
     :isa(POPFile::Module)
     :does(POPFile::Role::Config);
 
 
-    field $stemming :reader = 0;
+field $stemming :reader = 0;
 
-method _set_stemming($val) { $stemming = $val }
-
-field %stop__;
+field %stop;
 field $language = 'en';
 field $stemmer = undef;
 
@@ -87,9 +83,9 @@ parameters.  Returns 1.
 
 =cut
 
-    method initialize() {
-        return 1
-    }
+method initialize() {
+    return 1
+}
 
 =head2 start
 
@@ -98,22 +94,25 @@ the current language.  Returns 1.
 
 =cut
 
-    method start() {
-        $stemming = $self->config->get('stemming');
-        $self->_init_language($language);
-        return 1
-    }
+method start() {
+    $stemming = $self->config->get('stemming');
+    $self->_init_language($language);
+    return 1
+}
 
-    method _init_language ($lang) {
-        $language = $lang;
-        $stemmer = undef;
-        if ($stemming && $snowball_languages{$lang}) {
-            $stemmer = Lingua::Stem::Snowball->new(lang => $lang, encoding => 'UTF-8');
-        }
-        %stop__ = ();
-        my $sw = Lingua::StopWords::getStopWords($lang, 'UTF-8') // {};
-        $stop__{$_} = 1 for keys $sw->%*;
+method _init_language ($lang, $stem = undef) {
+    $language = $lang;
+    $stemmer = undef;
+    my $do_stem = defined $stem ? $stem : $stemming;
+    if ($do_stem && $snowball_languages{$lang}) {
+        $stemmer = Lingua::Stem::Snowball->new(lang => $lang, encoding => 'UTF-8');
     }
+    %stop = ();
+    my $sw = Lingua::StopWords::getStopWords($lang, 'UTF-8') // {};
+    $stop{$_} = 1
+        for keys $sw->%*;
+    return
+}
 
 =head2 set_language($lang)
 
@@ -122,9 +121,10 @@ C<'de'>).  Reinitialises the stemmer and stop-word list accordingly.
 
 =cut
 
-    method set_language ($lang) {
-        $self->_init_language($lang);
-    }
+method set_language ($lang) {
+    $self->_init_language($lang);
+    return
+}
 
 =head2 set_ui_language($ui_name)
 
@@ -134,9 +134,10 @@ L</set_language>.
 
 =cut
 
-    method set_ui_language ($ui_name) {
-        $self->_init_language($ui_to_iso{$ui_name} // 'en');
-    }
+method set_ui_language ($ui_name) {
+    $self->_init_language($ui_to_iso{$ui_name} // 'en');
+    return
+}
 
 =head2 get_language
 
@@ -144,7 +145,7 @@ Returns the current ISO 639-1 language code.
 
 =cut
 
-    method get_language() { $language }
+method get_language() { return $language }
 
 =head2 mangle($word, $allow_colon, $ignore_stops)
 
@@ -183,39 +184,34 @@ word contains no colon, applies the Snowball stemmer.
 
 =cut
 
-    method mangle ($word, $allow_colon = undef, $ignore_stops = undef) {
-        my $lcword = lc($word);
-
-        return '' unless $lcword;
-
-        return '' if (($stop__{$lcword} || $stop__{$word})
-                       && !defined($ignore_stops));
-
-        $lcword =~ s/(\+|\/|\?|\*|\||\(|\)|\[|\]|\{|\}|\^|\$|\.|\\)/\./g;
-
-        return '' if length($lcword) > 45;
-
-        return '' if $lcword =~ /^[A-F0-9]{8,}$/i;
-
-        return '' if $lcword =~ /^html:(?:css|fontcolor|backcolor|fontsize|imgwidth|imgheight)/;
-        return '' if $lcword eq 'html:comment';
-
-        return '' if $lcword eq 'zwnj' || $lcword eq 'zwj';
-
-        return '' if !defined($allow_colon)
-            && ( $lcword =~ /^(?:hg|bk|dk)/ || $lcword =~ /jk/ );
-
-        $lcword =~ s/://g unless defined $allow_colon;
-
-        my $result = ($lcword =~ /:/) ? $word : $lcword;
-
-        if (defined $stemmer && $result !~ /:/) {
-            my $stemmed = $stemmer->stem($result);
-            $result = $stemmed if defined $stemmed && $stemmed ne '';
-        }
-
-        return $result
+method mangle ($word, $allow_colon = undef, $ignore_stops = undef) {
+    my $lcword = lc($word);
+    return ''
+        unless $lcword;
+    return ''
+        if (($stop{$lcword} || $stop{$word}) && !defined($ignore_stops));
+    $lcword =~ s/(\+|\/|\?|\*|\||\(|\)|\[|\]|\{|\}|\^|\$|\.|\\)/\./g;
+    return ''
+        if length($lcword) > 45;
+    return ''
+        if $lcword =~ /^[A-F0-9]{8,}$/i;
+    return ''
+        if $lcword =~ /^html:(?:css|fontcolor|backcolor|fontsize|imgwidth|imgheight)/;
+    return ''
+        if $lcword eq 'html:comment';
+    return ''
+        if $lcword eq 'zwnj' || $lcword eq 'zwj';
+    return ''
+        if !defined($allow_colon)
+        && ( $lcword =~ /^(?:hg|bk|dk)/ || $lcword =~ /jk/ );
+    $lcword =~ s/://g unless defined $allow_colon;
+    my $result = ($lcword =~ /:/) ? $word : $lcword;
+    if (defined $stemmer && $result !~ /:/) {
+        my $stemmed = $stemmer->stem($result);
+        $result = $stemmed if defined $stemmed && $stemmed ne '';
     }
+    return $result
+}
 
 =head2 mangle_words($word)
 
@@ -228,16 +224,17 @@ Returns a (possibly empty) list of mangled tokens.
 
 =cut
 
-    method mangle_words ($word) {
-        my @parts = split /(?<!:):(?!:)/, $word;
-        return grep { $_ ne '' } map { $self->mangle($_) } @parts
-    }
+method mangle_words ($word) {
+    my @parts = split /(?<!:):(?!:)/, $word;
+    return grep { $_ ne '' } map { $self->mangle($_) } @parts
+}
 
 =head2 stopwords
 
 Returns the list of current stop words.  If C<$value> is a hashref, replaces the list.
 
 =cut
-    method stopwords($value = undef) { keys %stop__ }
+
+method stopwords($value = undef) { keys %stop }
 
 1;
