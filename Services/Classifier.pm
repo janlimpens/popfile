@@ -66,7 +66,7 @@ method deliver ($type, @message) {
 
 method backup_database() {
     return
-        unless $classifier->config('sqlite_backup');
+        unless $classifier->config()->get('sqlite_backup');
     POPFile::Database->instance()->backup($classifier->db_name());
 }
 

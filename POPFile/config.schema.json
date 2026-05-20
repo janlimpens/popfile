@@ -39,7 +39,6 @@
         "hostname":            { "type": "string",  "default": "" },
         "localhostname":       { "type": "string",  "default": "" },
         "bayes_magnets_enabled": { "type": "boolean", "default": true },
-        "nihongo_parser":      { "type": "string",  "default": "kakasi" },
         "locale":              { "type": "string",  "default": "" },
         "message_cutoff":      { "type": "integer", "default": 100000 }
       }

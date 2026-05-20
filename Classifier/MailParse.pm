@@ -328,7 +328,7 @@ The parser handles:
 
 =item * URL tokenisation (scheme, host, path components)
 
-=item * Japanese text via optional Kakasi or MeCab tokenisers
+=item * Japanese text via a built-in EUC-JP character-class tokeniser
 
 =item * Pseudo-words derived from message headers, MIME structure, and attachment filenames
 
@@ -371,7 +371,6 @@ field %words;
  field $first20 = '';
  field $first20count = 0;
  field $prev = '';
- field %nihongo_parser;
  field $cur_mime = '';
  field $cur_encoding = '';
  field $cur_header = '';
@@ -381,8 +380,6 @@ field %words;
  field $colorized = '';
  field $charset = '';
  field $debug = 0;
- field $need_kakasi_mutex = 0;
- field $kakasi_mutex = undef;
 
 =head2 get_color__
 
@@ -1336,7 +1333,7 @@ method parse_file ($file, $max_size = undef, $reset = undef) {
         $self->log_msg(WARN => "parse_file: file not found: " . ($file // 'undef'));
         return ''
     }
-    if (defined $mangle && $mangle->config('auto_detect_language')) {
+    if (defined $mangle && $mangle->config()->get('auto_detect_language')) {
         open my $sample_fh, '<', $file;
         my ($sample, $in_body) = ('', 0);
         while (<$sample_fh>) {
@@ -1438,17 +1435,6 @@ method start_parse ($reset = undef) {
         if (defined($color_resolver));
     # Clear the character set to avoid using the wrong charsets
     $charset = '';
-    if ($lang eq 'Nihongo') {
-        # Since Text::Kakasi is not thread-safe, we use it under the
-        # control of a Mutex to avoid a crash if we are running on
-        # Windows.
-        if ($need_kakasi_mutex) {
-            require POPFile::Mutex;
-            $kakasi_mutex->acquire();
-        }
-        # Initialize Nihongo (Japanese) parser
-        $nihongo_parser{init}($self);
-    }
 }
 
 =head2 stop_parse()
@@ -1479,14 +1465,6 @@ method stop_parse() {
         $cur_argument = '';
     }
     $in_html_tag = 0;
-    if ($lang eq 'Nihongo') {
-        # Close Nihongo (Japanese) parser
-        $nihongo_parser{close}($self);
-        if ($need_kakasi_mutex) {
-            require POPFile::Mutex;
-            $kakasi_mutex->release();
-        }
-    }
 }
 
 =head2 parse_line($line)
@@ -1529,7 +1507,7 @@ method parse_line ($read) {
                 $line = convert_encoding(
                 $line, $charset, 'euc-jp', '7bit-jis',
                 $encoding_candidates{ $lang }->@*);
-                $line = $nihongo_parser{parse}($self, $line);
+                $line = $self->parse_line_with_internal_parser($line);
             }
             if (defined($color_resolver)) {
                 if (!$in_html_tag) {
@@ -1652,7 +1630,7 @@ method clear_out_base64() {
             $decoded = convert_encoding(
             $decoded, $charset, 'euc-jp', '7bit-jis',
             $encoding_candidates{ $lang }->@*);
-            $decoded = $nihongo_parser{parse}($self, $decoded);
+            $decoded = $self->parse_line_with_internal_parser($decoded);
         }
         $self->parse_html($decoded, 1);
         $self->log_msg(DEBUG => "Decoded: " . $decoded);
@@ -1685,7 +1663,7 @@ method clear_out_qp() {
             $line = convert_encoding(
             $line, $charset, 'euc-jp', '7bit-jis',
             $encoding_candidates{ $lang }->@*);
-            $line = $nihongo_parser{parse}($self, $line);
+            $line = $self->parse_line_with_internal_parser($line);
         }
         $ut .= $self->splitline($line, '');
         $self->parse_html($line, 0);
@@ -1854,7 +1832,7 @@ method parse_header ($header, $argument, $mime, $encoding) {
         $argument = $self->decode_string($argument, $lang);
         if ($subject eq '') {
             # In Japanese mode, parse subject with Nihongo (Japanese) parser
-            $argument = $nihongo_parser{parse}($self, $argument)
+            $argument = $self->parse_line_with_internal_parser($argument)
             if (($lang eq 'Nihongo') && ($argument ne ''));
             $subject = $argument;
             $subject =~ s/[\t\r\n]//g;
@@ -2271,43 +2249,6 @@ sub convert_encoding($string, $from, $to, $default, @candidates) {
     return $string;
 }
 
-=head2 parse_line_with_kakasi
-
- my $spaced = $self->parse_line_with_kakasi($line);
-
-Splits Japanese text in C<$line> into space-separated words using Kakasi
-(Wakachigaki mode). Returns the line unchanged if it contains no Japanese
-characters.
-
-=cut
-
-method parse_line_with_kakasi ($line) {
-    # If the line does not contain Japanese characters, do nothing
-    return $line if ($line =~ /^[\x00-\x7F]*$/);
-    # Split Japanese line into words using Kakasi Wakachigaki mode
-    $line = Text::Kakasi::do_kakasi($line);
-    return $line;
-}
-
-=head2 parse_line_with_mecab
-
- my $spaced = $self->parse_line_with_mecab($line);
-
-Splits Japanese text in C<$line> into space-separated words using MeCab.
-Returns the line unchanged if it contains no Japanese characters.
-
-=cut
-
-method parse_line_with_mecab ($line) {
-    # If the line does not contain Japanese characters, do nothing
-    return $line if ($line =~ /^[\x00-\x7F]*$/);
-    # Split Japanese line into words using MeCab
-    $line = $nihongo_parser{obj_mecab}->parse($line);
-    # Remove the unnecessary white spaces
-    $line =~ s/([\x00-\x1f\x21-\x7f]) (?=[\x00-\x1f\x21-\x7f])/$1/g;
-    return $line;
-}
-
 =head2 parse_line_with_internal_parser
 
  my $spaced = $self->parse_line_with_internal_parser($line);
@@ -2324,105 +2265,6 @@ method parse_line_with_internal_parser ($line) {
     # Split Japanese line into words by the kind of characters
     $line =~ s/\G$euc_jp_word/$1 /og;
     return $line;
-}
-
-# init_kakasi
-#
-# Open the kanwa dictionary and initialize the parameter of Kakasi.
-sub init_kakasi {
-    # Initialize Kakasi with Wakachigaki mode(-w is passed to
-    # Kakasi as argument). Both input and ouput encoding are
-    # EUC-JP.
-    Text::Kakasi::getopt_argv('kakasi', '-w', '-ieuc', '-oeuc');
-}
-
-=head2 init_mecab
-
-Creates and stores a new MeCab parser object.
-
-=cut
-
-method init_mecab() {
-    # Initialize MeCab (-F %M\s -U %M\s -E \n is passed to MeCab as argument).
-    # Insert white spaces after words.
-    $nihongo_parser{obj_mecab} = MeCab::Tagger->new('-F %M\s -U %M\s -E \n');
-}
-# close_kakasi
-#
-# Close the kanwa dictionary of Kakasi.
-sub close_kakasi {
-    Text::Kakasi::close_kanwadict();
-}
-
-=head2 close_mecab
-
-Releases the MeCab parser object.
-
-=cut
-
-method close_mecab() {
-    $nihongo_parser{obj_mecab} = undef;
-}
-
-=head2 setup_nihongo_parser
-
- $self->setup_nihongo_parser($parser_name);
-
-Detects which Japanese parser is available (C<kakasi>, C<mecab>, or
-C<internal>) and wires the appropriate C<parse> and C<close> callbacks into
-the C<%nihongo_parser> dispatch table.
-
-=cut
-
-method setup_nihongo_parser ($nihongo_parser) {
-    # If MeCab is installed, use MeCab.
-    if ($nihongo_parser eq 'mecab') {
-        my $has_mecab = 0;
-        for my $prefix (@INC) {
-            my $realfilename = "$prefix/MeCab.pm";
-            if (-f $realfilename) {
-                $has_mecab = 1;
-                last;
-            }
-        }
-        # If MeCab is not installed, try to use Text::Kakasi.
-        $nihongo_parser = 'kakasi' if (!$has_mecab);
-    }
-    # If Text::Kakasi is installed, use Text::Kakasi.
-    if ($nihongo_parser eq 'kakasi') {
-        my $has_kakasi = 0;
-        for my $prefix (@INC) {
-            my $realfilename = "$prefix/Text/Kakasi.pm";
-            if (-f $realfilename) {
-                $has_kakasi = 1;
-                last;
-            }
-        }
-        # If Kakasi is not installed, use the internal parser.
-        $nihongo_parser = 'internal' if (!$has_kakasi);
-    }
-    # Setup perser's subroutines
-    if ($nihongo_parser eq 'mecab') {
-        # Import MeCab module
-        require MeCab;
-        MeCab->import();
-        $nihongo_parser{init} = \&init_mecab;
-        $nihongo_parser{parse} = \&parse_line_with_mecab;
-        $nihongo_parser{close} = \&close_mecab;
-    } elsif ($nihongo_parser eq 'kakasi') {
-        # Import Text::Kakasi module
-        require Text::Kakasi;
-        Text::Kakasi->import();
-        $nihongo_parser{init} = \&init_kakasi;
-        $nihongo_parser{parse} = \&parse_line_with_kakasi;
-        $nihongo_parser{close} = \&close_kakasi;
-    } else {
-        # Require no external modules
-        $nihongo_parser{init} = sub { }; # Needs no initialization
-        $nihongo_parser{parse} = \&parse_line_with_internal_parser;
-        $nihongo_parser{close} = sub { };
-    }
-    return $nihongo_parser;
 }
 
 

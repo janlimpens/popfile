@@ -172,15 +172,6 @@ method start() {
     $corpus = Classifier::Corpus->new();
     $stopwords = Classifier::Stopwords->new();
 
-    if ($language eq 'Nihongo') {
-        # Setup Nihongo (Japanese) parser.
-        my $nihongo_parser = ($self->config->get('nihongo_parser'));
-
-        $nihongo_parser = $parser->setup_nihongo_parser($nihongo_parser);
-
-        $self->log_msg(DEBUG => "Use Nihongo (Japanese) parser : $nihongo_parser");
-    }
-
     return 1;
 }
 
