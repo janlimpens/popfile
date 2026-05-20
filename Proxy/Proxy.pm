@@ -78,7 +78,7 @@ Returns 0 if the server cannot be started; 1 on success.
 
     method start() {
         require Mojo::IOLoop;
-        $self->log_msg(INFO => "Opening listening socket on port " . ($self->config->get('port')) . '.');
+        $self->log_msg(INFO => "Opening listening socket on port " . ($self->config->get('port') // 0) . '.');
 
         my $local = (($self->config->get('local')) // 0) == 1;
         my %listen_args = (port => $self->config->get('port'));
