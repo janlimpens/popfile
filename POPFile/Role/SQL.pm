@@ -65,7 +65,7 @@ method validate_sql_prepare_and_execute ($sql_or_sth, @args) {
         $arg = $self->check_for_nullbytes($arg);
     }
     my $execute_result = $sth->execute(@args);
-    if ($self->config('logger')->get('log_sql')) {
+    if ($self->config('GLOBAL')->get('log_sql')) {
         my @vals = @args;
         (my $logged = $sth->{Statement} // '') =~ s/\?/do { my $v = shift @vals; defined $v ? "'$v'" : 'NULL' }/ge;
         $self->log_msg(INFO => "[SQL] $logged");

@@ -50,7 +50,8 @@
         "timeout":         { "type": "integer", "minimum": 1, "default": 60 },
         "msgdir":          { "type": "string",  "default": "messages/" },
         "message_cutoff":  { "type": "integer", "minimum": 1, "default": 100000 },
-        "debug":           { "type": "integer", "minimum": 0, "maximum": 3, "default": 0 }
+        "debug":           { "type": "integer", "minimum": 0, "maximum": 3, "default": 0 },
+        "log_sql":         { "type": "boolean", "default": false }
       }
     },
     "history": {
@@ -88,7 +89,6 @@
         "logdir":        { "type": "string",  "default": "" },
         "level":         { "type": "string", "enum": ["error", "warn", "info", "debug", "trace"], "default": "info" },
         "log_to_stdout": { "type": "boolean", "default": false },
-        "log_sql":       { "type": "boolean", "default": false },
         "format":        { "type": "string",  "default": "default" }
       }
     },
