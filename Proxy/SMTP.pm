@@ -104,8 +104,6 @@ method child($client) {
     $self->log_msg(WARN => "SMTP proxy done");
 }
 
-# ─── Command dispatch ─────────────────────────────────────────────────
-
 my $ENVELOPE_RE = qr/MAIL FROM:|RCPT TO:|VRFY|EXPN|NOOP|HELP|RSET/i;
 
 method _dispatch($mail, $client, $command, $count_ref) {
@@ -116,8 +114,6 @@ method _dispatch($mail, $client, $command, $count_ref) {
         || $self->_handle_quit($mail, $client, $command)
         || $self->_handle_unknown($mail, $client, $command);
 }
-
-# ─── Command handlers ─────────────────────────────────────────────────
 
 method _handle_helo($mail, $client, $command) {
     return
