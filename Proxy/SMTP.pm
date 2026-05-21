@@ -6,7 +6,6 @@ package Proxy::SMTP;
 use Object::Pad;
 use locale;
 
-# A handy variable containing the value of an EOL for networks
 my $eol = "\015\012";
 
 class Proxy::SMTP :isa(Proxy::Proxy);
@@ -28,7 +27,7 @@ Disabled by default (C<enabled = 0>).
 
 =head1 METHODS
 
-=head2 initialize()
+=head2 initialize
 
 Registers SMTP-specific configuration parameters: C<port> (default 25),
 C<chain_server>, C<chain_port>, C<local>, and C<welcome_string>.  Forces
@@ -37,20 +36,19 @@ C<enabled> to 0 after calling C<< Proxy::Proxy->initialize() >>.
 =cut
 
 BUILD {
-        $self->set_name('smtp');
-        $self->set_connection_timeout_error('554 Transaction failed');
-        $self->set_connection_failed_error('554 Transaction failed, can\'t connect to');
-        $self->set_good_response('^[23]');
-    }
+    $self->set_name('smtp');
+    $self->set_connection_timeout_error('554 Transaction failed');
+    $self->set_connection_failed_error('554 Transaction failed, can\'t connect to');
+    $self->set_good_response('^[23]');
+}
 
-    # ----------------------------------------------------------------------------
-    method initialize() {
-        return 0
-            unless $self->SUPER::initialize();
-        return 1;
-    }
+method initialize() {
+    return 0
+        unless $self->SUPER::initialize();
+    return 1;
+}
 
-=head2 start()
+=head2 start
 
 Skips startup (returns 2) if the C<enabled> config flag is 0.  Otherwise
 refreshes the C<welcome_string> if it still contains the old version token,
@@ -58,15 +56,15 @@ then calls C<< Proxy::Proxy->start() >> to open the listening socket.
 
 =cut
 
-    method start() {
-        $self->set_welcome_string("SMTP POPFile (" . $self->version() . ") welcome");
+method start() {
+    $self->set_welcome_string("SMTP POPFile (" . $self->version() . ") welcome");
 
-        if (($self->config->get('enabled')) == 0) {
-            return 2;
-        }
-
-        return $self->SUPER::start();
+    if (($self->config->get('enabled')) == 0) {
+        return 2;
     }
+
+    return $self->SUPER::start();
+}
 
 =head2 child($client)
 
@@ -78,97 +76,118 @@ C<BINARYMIME>, C<XEXCH50>) from C<EHLO> responses.
 
 =cut
 
-    method child ($client) {
-        my $count = 0;
-        my $mail;
+method child($client) {
+    my $count = 0;
+    my $mail;
 
-        $self->tee($client, "220 " . $self->welcome_string() . "$eol");
+    $self->tee($client, "220 " . $self->welcome_string() . "$eol");
 
-        while (<$client>) {
-            my $command = $_;
-            $command =~ s/(\015|\012)//g;
-            $self->log_msg(DEBUG => "Command: --$command--");
+    while (<$client>) {
+        my $command = $_;
+        $command =~ s/(\015|\012)//g;
+        $self->log_msg(DEBUG => "Command: --$command--");
 
-            if ($command =~ /HELO/i) {
-                if ($self->config->get('chain_server')) {
-                    if ($mail = $self->verify_connected($mail, $client,
-                            $self->config->get('chain_server'),
-                            $self->config->get('chain_port'))) {
-                        $self->smtp_echo_response($mail, $client, $command);
-                    } else {
-                        last;
-                    }
-                } else {
-                    $self->tee($client, "421 service not available$eol");
-                }
-                next;
-            }
-
-            if ($command =~ /EHLO/i) {
-                if ($self->config->get('chain_server')) {
-                    if ($mail = $self->verify_connected($mail, $client,
-                            $self->config->get('chain_server'),
-                            $self->config->get('chain_port'))) {
-                        my $unsupported = qr/250\-CHUNKING|BINARYMIME|XEXCH50/;
-                        $self->smtp_echo_response($mail, $client, $command, $unsupported);
-                    } else {
-                        last;
-                    }
-                } else {
-                    $self->tee($client, "421 service not available$eol");
-                }
-                next;
-            }
-
-            if (($command =~ /MAIL FROM:/i) ||
-                 ($command =~ /RCPT TO:/i)   ||
-                 ($command =~ /VRFY/i)        ||
-                 ($command =~ /EXPN/i)        ||
-                 ($command =~ /NOOP/i)        ||
-                 ($command =~ /HELP/i)        ||
-                 ($command =~ /RSET/i)) {
-                $self->smtp_echo_response($mail, $client, $command);
-                next;
-            }
-
-            if ($command =~ /DATA/i) {
-                if ($self->smtp_echo_response($mail, $client, $command)) {
-                    $count += 1;
-                    my ($class, $history_file) = $self->set_classifier_service()->classify_message(
-                        $client, $mail, 0, '', 0, undef, $eol);
-                    my $response = $self->slurp($mail);
-                    $self->tee($client, $response);
-                    next;
-                }
-            }
-
-            if ($command =~ /QUIT/i) {
-                if ($mail) {
-                    $self->smtp_echo_response($mail, $client, $command);
-                    close $mail;
-                } else {
-                    $self->tee($client, "221 goodbye$eol");
-                }
-                last;
-            }
-
-            if ($mail && $mail->connected) {
-                $self->smtp_echo_response($mail, $client, $command);
-                next;
-            } else {
-                $self->tee($client, "500 unknown command or bad syntax$eol");
-                last;
-            }
-        }
-
-        if (defined($mail)) {
-            $self->done_slurp($mail);
-            close $mail;
-        }
-
-        close $client;
-        $self->log_msg(WARN => "SMTP proxy done");
+        my ($new_mail, $action) = $self->_dispatch($mail, $client, $command, \$count);
+        $mail = $new_mail
+            if defined $new_mail;
+        last
+            if $action eq 'last';
+        next
+            if $action eq 'next';
     }
+
+    $self->done_slurp($mail)
+        if defined $mail;
+    close $mail
+        if defined $mail;
+    close $client;
+    $self->log_msg(WARN => "SMTP proxy done");
+}
+
+# ─── Command dispatch ─────────────────────────────────────────────────
+
+my $ENVELOPE_RE = qr/MAIL FROM:|RCPT TO:|VRFY|EXPN|NOOP|HELP|RSET/i;
+
+method _dispatch($mail, $client, $command, $count_ref) {
+    return $self->_handle_helo($mail, $client, $command)
+        || $self->_handle_ehlo($mail, $client, $command)
+        || $self->_handle_envelope($mail, $client, $command)
+        || $self->_handle_data($mail, $client, $command, $count_ref)
+        || $self->_handle_quit($mail, $client, $command)
+        || $self->_handle_unknown($mail, $client, $command);
+}
+
+# ─── Command handlers ─────────────────────────────────────────────────
+
+method _handle_helo($mail, $client, $command) {
+    return
+        unless $command =~ /^HELO/i;
+    return (undef, 'next')
+        unless $self->config->get('chain_server');
+    $mail = $self->verify_connected($mail, $client,
+        $self->config->get('chain_server'),
+        $self->config->get('chain_port'));
+    return (undef, 'last')
+        unless $mail;
+    $self->smtp_echo_response($mail, $client, $command);
+    return ($mail, 'next')
+}
+
+method _handle_ehlo($mail, $client, $command) {
+    return
+        unless $command =~ /^EHLO/i;
+    return (undef, 'next')
+        unless $self->config->get('chain_server');
+    $mail = $self->verify_connected($mail, $client,
+        $self->config->get('chain_server'),
+        $self->config->get('chain_port'));
+    return (undef, 'last')
+        unless $mail;
+    $self->smtp_echo_response($mail, $client, $command,
+        qr/250\-CHUNKING|BINARYMIME|XEXCH50/);
+    return ($mail, 'next')
+}
+
+method _handle_envelope($mail, $client, $command) {
+    return
+        unless $command =~ $ENVELOPE_RE;
+    $self->smtp_echo_response($mail, $client, $command);
+    return (undef, 'next')
+}
+
+method _handle_data($mail, $client, $command, $count_ref) {
+    return
+        unless $command =~ /^DATA/i;
+    return (undef, 'next')
+        unless $self->smtp_echo_response($mail, $client, $command);
+    $$count_ref += 1;
+    $self->set_classifier_service()->classify_message(
+        $client, $mail, 0, '', 0, undef, $eol);
+    my $response = $self->slurp($mail);
+    $self->tee($client, $response);
+    return (undef, 'next')
+}
+
+method _handle_quit($mail, $client, $command) {
+    return
+        unless $command =~ /^QUIT/i;
+    if ($mail) {
+        $self->smtp_echo_response($mail, $client, $command);
+        close $mail;
+    } else {
+        $self->tee($client, "221 goodbye$eol");
+    }
+    return (undef, 'last')
+}
+
+method _handle_unknown($mail, $client, $command) {
+    if ($mail && $mail->connected) {
+        $self->smtp_echo_response($mail, $client, $command);
+        return ($mail, 'next')
+    }
+    $self->tee($client, "500 unknown command or bad syntax$eol");
+    return (undef, 'last')
+}
 
 =head2 smtp_echo_response($mail, $client, $command, $suppress)
 
@@ -179,13 +198,13 @@ Returns true if the response matched C<$good_response>.
 
 =cut
 
-    method smtp_echo_response ($mail, $client, $command, $suppress = undef) {
-        my ($response, $ok) = $self->get_response($mail, $client, $command);
-        if ($response =~ /^\d\d\d-/) {
-            $self->echo_to_regexp($mail, $client, qr/^\d\d\d /, 1, $suppress);
-        }
-        return ($response =~ /$self->good_response()/);
+method smtp_echo_response($mail, $client, $command, $suppress = undef) {
+    my ($response, $ok) = $self->get_response($mail, $client, $command);
+    if ($response =~ /^\d\d\d-/) {
+        $self->echo_to_regexp($mail, $client, qr/^\d\d\d /, 1, $suppress);
     }
+    return ($response =~ /$self->good_response()/);
+}
 
 
 1;
