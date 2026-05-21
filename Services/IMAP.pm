@@ -61,27 +61,14 @@ field @pending_train_buckets;
 field %_uid_next_override;
 field %hash_to_mid;
 field %pending_direct_moves;
-field $training_mode = 0;
-field $training_error = '';
+field $training_mode :reader = 0;
+field $training_error :reader = '';
 
 my $cfg_separator = "-->";
 
 BUILD {
     $self->set_name('imap');
 }
-
-method _host()       { $self->config->get('hostname') }
-method _port()       { $self->config->get('port') }
-method _login()      { $self->config->get('login') }
-method _password()   { $self->config->get('password') }
-method _interval()   { $self->config->get('update_interval') }
-method _expunge()    { $self->config->get('expunge') }
-method _use_ssl()    { $self->config->get('use_ssl') }
-method _enabled()    { $self->config->get('enabled') }
-method _training_limit() { $self->config->get('training_limit') }
-
-method _training_mode() { $training_mode }
-method _training_error() { $training_error }
 
 
 =head2 initialize()
@@ -94,7 +81,7 @@ C<enabled> (0), C<training_mode> (0).  Returns 1.
 =cut
 
 method initialize() {
-    $last_update = time - $self->_interval();
+    $last_update = time - $self->config->get('update_interval');
     return 1
 }
 
@@ -141,12 +128,12 @@ method start() {
         $self->log_msg(WARN => "IMAP folder table setup skipped: $e")
             unless $e =~ /unable to open/i;
     }
-    my $interval = $self->_interval();
+    my $interval = $self->config->get('update_interval');
     $timer_id = Mojo::IOLoop->recurring($interval => sub { $self->poll() });
-    if ($self->_enabled() && defined $activity) {
-        my $host = $self->_host() || 'not configured';
-        my $port = $self->_port() || 143;
-        my $ssl = $self->_use_ssl() ? ' (SSL)' : '';
+    if ($self->config->get('enabled') && defined $activity) {
+        my $host = $self->config->get('hostname') || 'not configured';
+        my $port = $self->config->get('port') || 143;
+        my $ssl = $self->config->get('use_ssl') ? ' (SSL)' : '';
         $activity->add_event({
             level => 'info',
             module => 'imap',
@@ -215,11 +202,11 @@ method poll() {
         }
         $training_mode = 1;
     }
-    return if $self->_enabled() == 0
-           && $self->_training_mode() == 0;
+    return if $self->config->get('enabled') == 0
+           && $self->training_mode == 0;
     if ($poll_running) {
         my $age = $self->_poll_age();
-        my $limit = $self->_interval() * 3;
+        my $limit = $self->config->get('update_interval') * 3;
         if ($age > $limit) {
             $self->log_msg(WARN => "IMAP poll watchdog: subprocess hung for ${age}s, resetting.");
             $poll_running = 0;
@@ -333,7 +320,7 @@ method _run_poll_work($subprocess = undef) {
     try {
         local $SIG{PIPE} = 'IGNORE';
         local $SIG{__DIE__};
-        if ($self->_training_mode() == 1) {
+        if ($self->training_mode) {
             $result->{trained} = $self->train_on_archive();
             $result->{training_done} = 1;
         }
@@ -398,7 +385,7 @@ method _run_poll_work($subprocess = undef) {
         $result->{error} = $msg;
         $emit->('error', 'IMAP Error', $msg)
             if defined $subprocess;
-        if ($self->_training_mode() == 1) {
+        if ($self->training_mode) {
             $result->{training_done} = -1;
         }
     }
@@ -549,7 +536,7 @@ method _drain_direct_moves ($result) {
             if ($destination ne $folder) {
                 $self->log_msg(WARN => "Direct move: UID $uids[0] from $folder to $destination.");
                 $imap->move_message($uids[0], $destination);
-                $imap->expunge() if $self->_expunge();
+                $imap->expunge() if $self->config->get('expunge');
             }
             push $result->{direct_moved_hashes}->@*, $hash;
             last;
@@ -851,7 +838,7 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
                 $self->reclassify_message($folder, $msg, $old_bucket, $hash);
                 $emit->('info', 'Reclassified', "UID $msg: $old_bucket → $bucket");
             }
-            elsif ($self->_training_mode() == 1
+            elsif ($self->training_mode
                 && (!ref $history || $history->get_slot_from_hash($hash) eq '')) {
                 $self->insert_message_into_bucket($folder, $msg, $bucket);
                 $emit->('info', 'Trained', "UID $msg → $bucket");
@@ -864,7 +851,7 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
         }
         $self->log_msg(DEBUG => "Ignoring message $msg");
     }
-    $imap->expunge() if $moved_message && $self->_expunge();
+    $imap->expunge() if $moved_message && $self->config->get('expunge');
     $emit->('info', 'Scan done', "$folder: " . ($moved_message ? "$moved_message moved" : scalar(@uids) . ' checked, no moves'));
     return $moved_message
 }
@@ -1190,7 +1177,7 @@ method train_on_archive() {
         return 0
     }
     $self->connect_server();
-    my $limit = $self->_training_limit() || 0;
+    my $limit = $self->config->get('training_limit') || 0;
     my $batch_size = $limit > 0 ? $limit : 50;
     my $total_msgs = 0;
     my $total_folders = 0;

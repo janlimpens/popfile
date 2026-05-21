@@ -59,7 +59,7 @@ $svc->create_bucket('spam');
 $svc->add_message_to_bucket('ham', $_) for @ham_files[0..7];
 $svc->add_message_to_bucket('spam', $_) for @spam_files[0..6];
 $svc->bayes()->db_update_cache($svc->session());
-$svc->bayes()->config('unclassified_weight', 0.000001);
+TestHelper::set_config($config, bayes_unclassified_weight => 0.000001);
 
 sub _pop3_fetch ($msg_num) {
     my $sock = IO::Socket::INET->new(

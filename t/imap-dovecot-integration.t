@@ -30,11 +30,19 @@ my @spam_files = sort glob "$fixture_dir/spam/*.eml";
 sub _slurp($p) { open my $f, '<:raw', $p; local $/; my $d = <$f>; close $f; $d }
 sub _clear($f) { return unless $imap->exists($f); $imap->select($f); my @u = $imap->search('ALL'); $imap->delete_message(@u) if @u; $imap->expunge() }
 
-sub _setup(%extra) {
+sub _setup() {
     my ($config, $mq) = TestHelper::setup();
     TestHelper::configure_db($config);
-    $config->parameter('imap_enabled', 1);
-    $config->parameter('imap_update_interval', 3600);
+    TestHelper::set_config($config,
+        imap_enabled => 1,
+        imap_update_interval => 3600,
+        imap_hostname => $host,
+        imap_port => $port,
+        imap_login => 'test',
+        imap_password => 'test',
+        imap_use_ssl => 0,
+        imap_watched_folders => 'INBOX',
+        imap_bucket_folder_mappings => 'ham-->POPfile.ham-->spam-->POPfile.spam-->');
     $config->set_started(1);
 
     require POPFile::History;
@@ -53,14 +61,6 @@ sub _setup(%extra) {
     $srv->initialize();
     $srv->set_classifier($bayes);
     $srv->set_history($history);
-    $srv->config('hostname', $host);
-    $srv->config('port', $port);
-    $srv->config('login', 'test');
-    $srv->config('password', 'test');
-    $srv->config('use_ssl', 0);
-    $srv->config('watched_folders', 'INBOX');
-    $srv->config('bucket_folder_mappings', 'ham-->POPfile.ham-->spam-->POPfile.spam-->');
-    $srv->config('training_mode', $extra{training_mode} // 0);
     $srv->start();
     return ($srv, $config, $mq, $bayes, $history)
 }
@@ -74,7 +74,10 @@ subtest 'train classifier from IMAP output folders' => sub {
     $imap->select('POPfile.spam');
     $imap->append('POPfile.spam', _slurp($spam_files[0]));
 
-    my ($srv, $config, $mq, $bayes, $history) = _setup(training_mode => 1);
+    my ($srv, $config, $mq, $bayes, $history) = _setup();
+    my $user_dir = $config->popfile_user();
+    open my $fh1, '>', "$user_dir/popfile.train.ham"; close $fh1;
+    open my $fh2, '>', "$user_dir/popfile.train.spam"; close $fh2;
     my $session = $bayes->get_session_key('admin', '');
     $bayes->create_bucket($session, 'ham');
     $bayes->create_bucket($session, 'spam');
@@ -103,7 +106,7 @@ subtest 'classify watched-folder message (move needs Dovecot expunge debug)' => 
     $bayes->add_message_to_bucket($session, 'ham', $_)  for @ham_files[0..6];
     $bayes->add_message_to_bucket($session, 'spam', $_) for @spam_files[0..5];
     $bayes->db_update_cache($session);
-    $bayes->config('unclassified_weight', 0.000001);
+    TestHelper::set_config($config, bayes_unclassified_weight => 0.000001);
 
     $imap->select('INBOX');
     $imap->append('INBOX', _slurp($ham_files[7]));
