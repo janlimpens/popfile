@@ -12,6 +12,7 @@ use MIME::Base64;
 use MIME::QuotedPrint;
 
 use HTML::Tagset;
+use HTML::Entities;
 use Lingua::Identify;
 
 # Korean characters
@@ -50,114 +51,6 @@ my $euc_jp_hkatakana = '(?:\x8E[\xA6-\xDF])+';
 my $euc_jp_kanji = '[\xB0-\xF4][\xA1-\xFE](?:[\xB0-\xF4][\xA1-\xFE]|\xA1\xB9)?';
 
 my $euc_jp_word = '(' . $euc_jp_alphanum . '|' . $euc_jp_hiragana . '|' . $euc_jp_katakana . '|' . $euc_jp_hkatakana . '|' . $euc_jp_kanji . '|' . $euc_jp_symbol . '|' . $ascii . '+|' . $three_bytes_euc_jp . ')';
-# HTML entity to character code mapping
-my %entityhash = (
-    aacute => 225,
-    Aacute => 193,
-    Acirc => 194,
-    acirc => 226,
-    acute => 180,
-    AElig => 198,
-    aelig => 230,
-    Agrave => 192,
-    agrave => 224,
-    amp => 38,
-    Aring => 197,
-    aring => 229,
-    atilde => 227,
-    Atilde => 195,
-    Auml => 196,
-    auml => 228,
-    brvbar => 166,
-    ccedil => 231,
-    Ccedil => 199,
-    cedil => 184,
-    cent => 162,
-    copy => 169,
-    curren => 164,
-    deg => 176,
-    divide => 247,
-    Eacute => 201,
-    eacute => 233,
-    ecirc => 234,
-    Ecirc => 202,
-    Egrave => 200,
-    egrave => 232,
-    ETH => 208,
-    eth => 240,
-    Euml => 203,
-    euml => 235,
-    frac12 => 189,
-    frac14 => 188,
-    frac34 => 190,
-    iacute => 237,
-    Iacute => 205,
-    icirc => 238,
-    Icirc => 206,
-    iexcl => 161,
-    igrave => 236,
-    Igrave => 204,
-    iquest => 191,
-    iuml => 239,
-    Iuml => 207,
-    laquo => 171,
-    macr => 175,
-    micro => 181,
-    middot => 183,
-    nbsp => 160,
-    not => 172,
-    ntilde => 241,
-    Ntilde => 209,
-    oacute => 243,
-    Oacute => 211,
-    Ocirc => 212,
-    ocirc => 244,
-    Ograve => 210,
-    ograve => 242,
-    ordf => 170,
-    ordm => 186,
-    oslash => 248,
-    Oslash => 216,
-    Otilde => 213,
-    otilde => 245,
-    Ouml => 214,
-    ouml => 246,
-    para => 182,
-    plusmn => 177,
-    pound => 163,
-    raquo => 187,
-    reg => 174,
-    sect => 167,
-    shy => 173,
-    sup1 => 185,
-    sup2 => 178,
-    sup3 => 179,
-    szlig => 223,
-    thorn => 254,
-    THORN => 222,
-    times => 215,
-    Uacute => 218,
-    uacute => 250,
-    ucirc => 251,
-    Ucirc => 219,
-    ugrave => 249,
-    Ugrave => 217,
-    uml => 168,
-    Uuml => 220,
-    uuml => 252,
-    Yacute => 221,
-    yacute => 253,
-    yen => 165,
-    yuml => 255 );
-
-# All known
-# HTML tags divided into
-# two groups: tags that generate
-# whitespace as in 'foo<br></br>bar' and tags that don't such as
-# 'foo<b></b>bar'.  The first case shouldn't count as an empty pair
-# because it breaks the line.  The second case doesn't have any visual
-# impact and it treated as 'foobar' with an empty pair.
-
 my $spacing_tags = join '|', qw(address applet area base basefont bdo bgsound blockquote body br button caption center col colgroup dd dir div dl dt embed fieldset form frame frameset h1 h2 h3 h4 h5 h6 head hr html iframe ilayer input isindex label legend li link listing map menu meta multicol nobr noembed noframes nolayer noscript object ol optgroup option p param plaintext pre script select spacer style table tbody td textarea tfoot th thead title tr ul wbr xmp);
 my $non_spacing_tags = join '|', qw(a abbr acronym b big blink cite code del dfn em font i img ins kbd q s samp small span strike strong sub sup tt u var);
 my $eol = "\015\012";
@@ -564,12 +457,13 @@ method add_line ($bigline, $encoded, $prefix) {
             # without using the encoded content printer or modifying $ut
             while ($line =~ m/(&(\w{3,6});)/g) {
                 my $from = $1;
-                my $to = $entityhash{$2};
-                if (defined($to)) {
-                    $to = ($lang =~ /^(Korean|Nihongo)$/) ? ' ' : chr($to);
-                    $line =~ s/$from/$to/g;
-                    $ut =~ s/$from/$to/g;
-                    $self->log_msg(DEBUG => "$from -> $to");
+                my $char = $HTML::Entities::entity2char{$2};
+                if (defined $char) {
+                    $char = ' '
+                        if $lang =~ /^(Korean|Nihongo)$/;
+                    $line =~ s/\Q$from\E/$char/g;
+                    $ut =~ s/\Q$from\E/$char/g;
+                    $self->log_msg(DEBUG => "$from -> $char");
                 }
             }
             while ($line =~ m/(&#([\d]{1,3});)/g) {
