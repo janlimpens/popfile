@@ -1059,168 +1059,144 @@ method update_tag ($tag, $arg, $end_tag, $encoded) {
 
 =head2 add_url
 
-Parses a URL or domain, decomposes it into host/path/query, and adds the
-hostname and its sub-domains as words. Returns the extracted hostname, or
-an empty string when none is found. Pass C<$noadd> to parse without
-updating word frequencies.
+Parses a URL or domain name using the official RFC 3986 URI regex, then
+decomposes it into host, path, query, and fragment. Host and subdomain
+parts are tokenized as classifier words.
+
+Three anti-spam countermeasures are applied before tokenization:
+
+=over 4
+
+=item *
+
+Percent-encoding detection — percent-encoded octets in the authority are
+decoded and counted; any hit creates an C<html:encodedurl> pseudoword.
+
+=item *
+
+Authorization detection — a C<userinfo@> prefix in the authority creates
+an C<html:authorization> pseudoword.
+
+=item *
+
+Obfuscated IP normalization — hex, octal, and single-decimal IP
+notations (e.g. C<0x7f000001>) are converted to standard dotted-quad
+form via L</_normalize_ip> so they match the canonical IP added by the
+dotted-quad grabber in L</add_line>.
+
+=back
 
 =cut
 
+my $URI_RE = qr|(?:([^:/?\#]+):)?(?://([^/?\#]*))?([^?\#]*)(?:\?([^\#]*))?(?:\#(.*))?|;
+
 method add_url ($url, $encoded, $before, $after, $prefix, $noadd = undef) {
-    my $temp_url = $url;
-    my $temp_before;
-    my $temp_after;
-    my $hostform; #ip or name
-    # parts of a URL, from left to right
-    my $protocol;
-    my $authinfo;
-    my $host;
-    my $port;
-    my $path;
-    my $query;
-    my $hash;
-    return unless defined $url;
-    # Strip the protocol part of a URL (e.g. http://)
-    $protocol = $1 if ($url =~ s/^([^:]*)\:\/\///);
-    # Remove any URL encoding (protocol may not be URL encoded)
+    return
+        unless defined $url;
     my $oldurl = $url;
-    my $percents = ($url =~ s/(%([0-9A-Fa-f]{2}))/chr(hex("0x$2"))/ge);
-    if (($percents > 0) && !defined($noadd)) {
-        $self->update_pseudoword('html', 'encodedurl', $encoded, $oldurl);
-    }
-    # Extract authorization information from the URL
-    # (e.g. http://foo@bar.com)
-    if ($url =~ s/^(([[:alpha:]0-9\-_\.\;\:\&\=\+\$\,]+)(\@|\%40))+//) {
+    my ($scheme, $authority, $path, $query, $fragment) = "//$url" =~ $URI_RE;
+    return
+        unless $authority;
+    my $percents = ($authority =~ s/(%([0-9A-Fa-f]{2}))/chr(hex("0x$2"))/ge);
+    $self->update_pseudoword('html', 'encodedurl', $encoded, $oldurl)
+        if $percents && !defined $noadd;
+    my $authinfo;
+    if ($authority =~ s/^([^@]+)\@//) {
         $authinfo = $1;
-        if ($authinfo ne '') {
-            $self->update_pseudoword('html', 'authorization',  $encoded, $oldurl);
-        }
+        $self->update_pseudoword('html', 'authorization', $encoded, $oldurl);
     }
-    if ($url =~
-        s/^(([[:alpha:]0-9\-_]+\.)+)
-        (aero|arpa|asia|biz|cat|com|coop|edu|gov|info|
-        int|jobs|mil|mobi|museum|name|net|org|pro|tel|
-        travel|xxx|[a-z]{2})
-        ([^[:alpha:]0-9\-_\.]|$)/$4/ix) {
-        $host = "$1$3";
-        $hostform = "name";
+    my ($host, $port, $hostform);
+    if ($authority =~ s/^\[([^\]]+)\]//) {
+        $host = $1;
+        $hostform = 'ip';
     } else {
-        if ($url =~ /(([^:\/])+)/) {
-            # Some other hostname format found, maybe
-            # Read here for reference: http://www.pc-help.org/obscure.htm
-            # Go here for comparison: http://www.samspade.org/t/url
-            # save the possible hostname
-            my $host_candidate = $1;
-            # stores discovered IP address
-            my %quads;
-            # temporary values
-            my $quad = 1;
-            my $number;
-            # iterate through the possible hostname, build dotted quad
-            # format
-            while ($host_candidate =~ s/\G^((0x)[0-9A-Fa-f]+|0[0-7]+|[0-9]+)(\.)?//) {
-                my $hex = $2;
-                # possible IP quad(s)
-                my $quad_candidate = $1;
-                my $more_dots = $3;
-                if (defined $hex) {
-                    # hex number
-                    # trim arbitrary octets that are greater than most
-                    # significant bit
-                    $quad_candidate =~ s/.*(([0-9A-F][0-9A-F]){4})$/$1/i;
-                    $number = hex($quad_candidate);
-                } else {
-                    if ($quad_candidate =~ /^0([0-7]+)/) {
-                        # octal number
-                        $number = oct($1);
-                    } else {
-                        # assume decimal number
-                        # deviates from the obscure.htm document here,
-                        # no current browsers overflow
-                        $number = int($quad_candidate);
-                    }
-                }
-                # No more IP dots?
-                unless (defined $more_dots) {
-                    # Expand final decimal/octal/hex to extra quads
-                    while ($quad <= 4) {
-                        my $shift = ((4 - $quad) * 8);
-                        $quads{$quad} = ($number & (hex("0xFF") << $shift))
-                        >> $shift;
-                        $quad += 1;
-                    }
-                } else {
-                    # Just plug the quad in, no overflow allowed
-                    $quads{$quad} = $number if ($number < 256);
-                    $quad += 1;
-                }
-                last if ($quad > 4);
-            }
-            $host_candidate =~ s/\r|\n|$//g;
-            if (($host_candidate eq '')
-                && defined($quads{1})
-                && defined($quads{2})
-                && defined($quads{3})
-                && defined($quads{4})
-                && !defined($quads{5})) {
-                # we did actually find an IP address, and not some fake
-                $hostform = "ip";
-                $host = "$quads{1}.$quads{2}.$quads{3}.$quads{4}";
-                $url =~ s/(([^:\/])+)//;
-            }
-        }
-    }
-    if (!defined $host || $host eq '') {
-        $self->log_msg(DEBUG => "no hostname found: [$temp_url]");
-        return '';
+        ($host) = $authority =~ /^([^:]+)/;
+        $hostform = ($host && $host =~ /^\d+\.\d+\.\d+\.\d+$/) ? 'ip' : 'name';
     }
     $port = $1
-        if ($url =~ s/^\:(\d+)//);
-    $path = $1
-        if ($url =~ s/^([\\\/][^\#\?\n]*)($)?//);
-    $query = $1
-        if ($url =~ s/^[\?]([^\#\n]*|$)?//);
-    $hash = $1
-        if ($url =~ s/^[\#](.*)$//);
-    if (!defined $protocol || $protocol =~ /^(http|https)$/) {
-        $temp_before = $before;
-        $temp_before = "\:\/\/"
-            if (defined $protocol);
-        $temp_before = "[\@]"
-            if (defined $authinfo);
-        $temp_after = $after;
-        $temp_after = "[\#]"
-            if (defined $hash);
-        $temp_after = "[\?]"
-            if (defined $query);
-        $temp_after = "[\\\\\/]"
-            if (defined $path);
-        $temp_after = "[\:]"
-            if (defined $port);
-        # add the entire domain
-        $self->update_word($host, $encoded, $temp_before, $temp_after, $prefix)
-            unless defined $noadd;
-        # decided not to care about tld's beyond the verification
-        # performed when grabbing $host special subTLD's can just get
-        # their own classification weight (eg, .bc.ca)
-        # http://www.0dns.org has a good reference of ccTLD's and
-        # their sub-tld's if desired
-        if ($hostform eq 'name') {
-            # recursively add the roots of the domain
-            while ($host =~ s/^([^\.]+\.)?(([^\.]+\.?)*)(\.[^\.]+)$/$2$4/) {
-                unless (defined $1) {
-                    $self->update_word($4, $encoded, $2, '[<]', $prefix)
+        if $authority =~ s/^:(\d+)//;
+    return
+        unless $host;
+    if ($hostform ne 'name' && $host !~ /^\d+\.\d+\.\d+\.\d+$/) {
+        my $normalized = $self->_normalize_ip($host);
+        $host = $normalized
+            if defined $normalized;
+    }
+    my $temp_before = $before;
+    $temp_before = "\@"
+        if defined $authinfo;
+    my $temp_after = $after;
+    $temp_after = "[\#]"
+        if defined $fragment;
+    $temp_after = "[\?]"
+        if defined $query;
+    $temp_after = "[\\\\/]"
+        if defined $path && $path ne '';
+    $temp_after = "[:]"
+        if defined $port;
+    $self->update_word($host, $encoded, $temp_before, $temp_after, $prefix)
+        unless defined $noadd;
+    if ($hostform eq 'name') {
+        while ($host =~ s/^([^\.]+\.)?(([^\.]+\.?)*)(\.[^\.]+)$/$2$4/) {
+            unless (defined $1) {
+                $self->update_word($4, $encoded, $2, '[<]', $prefix)
                     unless defined $noadd;
-                    last;
-                }
-                $self->update_word($host, $encoded, $1 || $2, '[<]', $prefix)
-                unless defined $noadd;
+                last;
             }
+            $self->update_word($host, $encoded, $1 || $2, '[<]', $prefix)
+                unless defined $noadd;
         }
     }
-    # $protocol $authinfo $host $port $query $hash may be processed
-    # below if desired
-    return $host;
+    return $host
+}
+
+=head2 _normalize_ip
+
+Converts hex, octal, and single-decimal IP notations to standard
+dotted-quad form.  For example, C<0x7f000001> becomes C<127.0.0.1>.
+
+Returns the normalized IP string, or C<undef> if the candidate does not
+resolve to a valid 4-octet address.
+
+=cut
+
+method _normalize_ip ($candidate) {
+    my %quads;
+    my $quad = 1;
+    my $number;
+    while ($candidate =~ s/\G^((0x)[0-9A-Fa-f]+|0[0-7]+|[0-9]+)(\.)?//) {
+        my $hex = $2;
+        my $quad_candidate = $1;
+        my $more_dots = $3;
+        if (defined $hex) {
+            $quad_candidate =~ s/.*(([0-9A-F][0-9A-F]){4})$/$1/i;
+            $number = hex($quad_candidate);
+        } elsif ($quad_candidate =~ /^0([0-7]+)/) {
+            $number = oct($1);
+        } else {
+            $number = int($quad_candidate);
+        }
+        unless (defined $more_dots) {
+            while ($quad <= 4) {
+                my $shift = ((4 - $quad) * 8);
+                $quads{$quad} = ($number & (hex("0xFF") << $shift)) >> $shift;
+                $quad += 1;
+            }
+        } else {
+            $quads{$quad} = $number
+                if $number < 256;
+            $quad += 1;
+        }
+        last
+            if $quad > 4;
+    }
+    $candidate =~ s/\r|\n|$//g;
+    return
+        unless $candidate eq ''
+        && defined $quads{1}
+        && defined $quads{4}
+        && !defined $quads{5};
+    return "$quads{1}.$quads{2}.$quads{3}.$quads{4}"
 }
 
 =head2 parse_html
