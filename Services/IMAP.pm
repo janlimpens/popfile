@@ -188,8 +188,7 @@ method _find_train_flags() {
     return defined $pattern ? glob($pattern) : ()
 }
 
-method _now()      { time() }
-method _poll_age() { $self->_now() - $poll_started_at }
+method _poll_age() { time() - $poll_started_at }
 
 method poll() {
     my @flags = $self->_find_train_flags();
@@ -216,7 +215,7 @@ method poll() {
             return;
         }
     }
-    $poll_started_at = $self->_now();
+    $poll_started_at = time();
     $poll_running = 1;
     my $activity = $self->activity();
     my %local_to_real;
@@ -277,9 +276,9 @@ Returns 1 if the poll completed, 0 on timeout.
 
 method poll_sync ($timeout = 30) {
     $self->poll();
-    my $deadline = $self->_now() + $timeout;
+    my $deadline = time() + $timeout;
     my $timer = Mojo::IOLoop->recurring(0.1 => sub {
-        return if $poll_running && $self->_now() < $deadline;
+        return if $poll_running && time() < $deadline;
         Mojo::IOLoop->stop();
     });
     Mojo::IOLoop->start()
