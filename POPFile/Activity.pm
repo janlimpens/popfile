@@ -94,6 +94,8 @@ method add_event($event) {
         return
             unless $self->_event_exists($parent_id);
     }
+    utf8::decode($event->{message}) if defined $event->{message};
+    utf8::decode($event->{task}) if defined $event->{task};
     $event->{id} = ++$next_id;
     $event->{ts} = time();
     push $events->@*, $event;
@@ -149,6 +151,10 @@ method remove_sse_client($tx) {
 
 method _broadcast_sse($event) {
     return unless @sse_clients;
+    my $message = $event->{message};
+    utf8::decode($message) if defined $message;
+    my $task = $event->{task};
+    utf8::decode($task) if defined $task;
     my $payload = {
         type => 'activity',
         text => encode_json({
@@ -157,8 +163,8 @@ method _broadcast_sse($event) {
             ts => $event->{ts},
             level => $event->{level},
             module => $event->{module},
-            task => $event->{task},
-            message => $event->{message} }),
+            task => $task,
+            message => $message }),
         id => $event->{id} };
     for my $tx (@sse_clients) {
         try {
