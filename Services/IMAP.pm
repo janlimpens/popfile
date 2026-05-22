@@ -272,7 +272,7 @@ method _handle_activity_progress($raw) {
     delete $event{type};
     utf8::decode($event{message}) if defined $event{message};
     utf8::decode($event{task}) if defined $event{task};
-    $self->log_msg(INFO => sprintf('handle_activity: msg=%s flag=%d bytes=%v', $event{message}, utf8::is_utf8($event{message}), $event{message}));
+    $self->log_msg(INFO => sprintf('handle_activity: msg=%s flag=%d bytes=%vd', $event{message}, utf8::is_utf8($event{message}), $event{message}));
     $activity->add_event(\%event);
 }
 
@@ -345,10 +345,10 @@ method _run_poll_work($subprocess = undef) {
     my $emit = sub ($level, $task, $message, $parent_local_id = undef) {
         return unless defined $subprocess;
         $local_id++;
-        utf8::decode($task);
-        utf8::decode($message);
-        $self->log_msg(INFO => sprintf('emit: task=%s flag=%d bytes=%v', $task, utf8::is_utf8($task), $task));
-        $self->log_msg(INFO => sprintf('emit: msg=%s flag=%d bytes=%v', $message, utf8::is_utf8($message), $message));
+        my $ok_task = utf8::decode($task);
+        my $ok_msg = utf8::decode($message);
+        $self->log_msg(INFO => sprintf('emit: task=%s ok=%d flag=%d bytes=%vd', $task, $ok_task, utf8::is_utf8($task), $task));
+        $self->log_msg(INFO => sprintf('emit: msg=%s ok=%d flag=%d bytes=%vd', $message, $ok_msg, utf8::is_utf8($message), $message));
         $subprocess->progress(
             type => 'activity',
             level => $level,
