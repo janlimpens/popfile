@@ -53,9 +53,8 @@ field $api_session = '';
 field $imap_error = '';
 field $last_update = 0;
 field $timer_id = undef;
-field $poll_pid = undef;
-field $poll_running :reader = 0;
-field $poll_started_at :reader = 0;
+field $imap_worker = undef;
+field $poll_trigger = undef;
 field @pending_train_flags;
 field @pending_train_buckets;
 field %_uid_next_override;
@@ -63,6 +62,9 @@ field %hash_to_mid;
 field %pending_direct_moves;
 field $training_mode :reader = 0;
 field $training_error :reader = '';
+field $poll_result_received = 0;
+
+use Cpanel::JSON::XS ();
 
 my $cfg_separator = "-->";
 
@@ -128,6 +130,24 @@ method start() {
         $self->log_msg(WARN => "IMAP folder table setup skipped: $e")
             unless $e =~ /unable to open/i;
     }
+    pipe(my $child_reader, my $parent_writer);
+    $parent_writer->autoflush(1);
+    $imap_worker = Mojo::IOLoop->subprocess(
+        sub ($subprocess) {
+            $self->_imap_worker_loop($subprocess, $child_reader);
+        },
+        sub {
+            $self->log_msg(WARN => "IMAP worker exited unexpectedly");
+            $imap_worker = undef;
+        }
+    );
+    $imap_worker->on(progress => sub {
+        my ($sp, %raw) = @_;
+        return if $raw{type} && $raw{type} eq 'poll_result'
+            && $self->_handle_poll_result(\%raw);
+        $self->_handle_activity_progress(\%raw);
+    });
+    $poll_trigger = $parent_writer;
     my $interval = $self->config->get('update_interval');
     $timer_id = Mojo::IOLoop->recurring($interval => sub { $self->poll() });
     if ($self->config->get('enabled') && defined $activity) {
@@ -154,11 +174,11 @@ via C<disconnect_folders()>.
 method stop() {
     Mojo::IOLoop->remove($timer_id) if defined $timer_id;
     $timer_id = undef;
-    if (defined $poll_pid) {
-        kill 'TERM', $poll_pid;
-        $poll_pid = undef;
+    if (defined $poll_trigger) {
+        syswrite($poll_trigger, "quit\n");
     }
-    $self->disconnect_folders();
+    $poll_trigger = undef;
+    $imap_worker = undef;
 }
 
 =head2 service()
@@ -183,16 +203,9 @@ C<IMAP_DONE> to the MQ.
 
 =cut
 
-method _find_train_flags() {
-    my $pattern = $self->get_user_path('popfile.train*', 0);
-    return defined $pattern ? glob($pattern) : ()
-}
-
-method _poll_age() { time() - $poll_started_at }
-
 method poll() {
     my @flags = $self->_find_train_flags();
-    if (@flags && !$poll_running) {
+    if (@flags) {
         @pending_train_flags = @flags;
         @pending_train_buckets = ();
         for my $flag (@flags) {
@@ -203,67 +216,94 @@ method poll() {
     }
     return if $self->config->get('enabled') == 0
            && $self->training_mode == 0;
-    if ($poll_running) {
-        my $age = $self->_poll_age();
-        my $limit = $self->config->get('update_interval') * 3;
-        if ($age > $limit) {
-            $self->log_msg(WARN => "IMAP poll watchdog: subprocess hung for ${age}s, resetting.");
-            $poll_running = 0;
-        }
-        else {
-            $self->log_msg(INFO => "IMAP poll skipped: previous poll still running (${age}s).");
-            return;
+    return unless defined $poll_trigger;
+    my $msg = Cpanel::JSON::XS->new->encode({
+        cmd => 'poll',
+        training_mode => $training_mode,
+        train_buckets => \@pending_train_buckets,
+        pending_folder_moves => \%pending_folder_moves,
+        pending_direct_moves => \%pending_direct_moves,
+        uid_next_overrides => \%_uid_next_override,
+        hash_to_mid => \%hash_to_mid,
+        folder_change_flag => $folder_change_flag,
+    });
+    syswrite($poll_trigger, $msg . "\n")
+        or $self->log_msg(WARN => "IMAP poll trigger failed: $!");
+}
+
+method _find_train_flags() {
+    my $pattern = $self->get_user_path('popfile.train*', 0);
+    return defined $pattern ? glob($pattern) : ()
+}
+
+method _handle_poll_result($result) {
+    return unless defined $result;
+    if ($result->{error}) {
+        $self->log_msg(WARN => $result->{error});
+        if (($result->{training_done} // 0) == -1) {
+            $training_error = $result->{error};
+            $training_mode = 0;
         }
     }
-    $poll_started_at = time();
-    $poll_running = 1;
+    if ($result->{training_done}) {
+        unlink @pending_train_flags;
+        @pending_train_flags = ();
+        @pending_train_buckets = ();
+        $training_mode = 0;
+    }
+    $hash_to_mid{$_} = $result->{hash_to_mid}{$_}
+        for keys $result->{hash_to_mid}->%*;
+    delete $pending_direct_moves{$_} for $result->{direct_moved_hashes}->@*;
+    delete $pending_folder_moves{$_} for $result->{moved_hashes}->@*;
+    delete $_uid_next_override{$_} for $result->{consumed_uid_overrides}->@*;
+    $self->mq()->post('IMAP_DONE', $result->{trained} // 0);
+    if ($classifier && $classifier->can('db_update_cache')) {
+        $classifier->db_update_cache($self->api_session());
+    }
+    $poll_result_received = 1;
+    return 1
+}
+
+method _handle_activity_progress($raw) {
     my $activity = $self->activity();
-    my %local_to_real;
-    my $sp = Mojo::IOLoop->subprocess(
-        sub ($subprocess) { $self->_run_poll_work($subprocess) },
-        sub ($loop, $err, $result) {
-            $poll_pid = undef;
-            $poll_running = 0;
-            if ($err || !ref $result) {
-                $self->log_msg(WARN => "IMAP subprocess error: " . ($err // 'no result'));
-                return;
-            }
-            if ($result->{error}) {
-                $self->log_msg(WARN => $result->{error});
-                if ($result->{training_done} == -1) {
-                    $training_error = $result->{error};
-                    $training_mode = 0;
-                }
-            }
-            if ($result->{training_done}) {
-                unlink @pending_train_flags;
-                @pending_train_flags = ();
-                @pending_train_buckets = ();
-                $training_mode = 0;
-            }
-            $hash_to_mid{$_} = $result->{hash_to_mid}{$_}
-                for keys $result->{hash_to_mid}->%*;
-            delete $pending_direct_moves{$_} for $result->{direct_moved_hashes}->@*;
-            delete $pending_folder_moves{$_} for $result->{moved_hashes}->@*;
-            delete $_uid_next_override{$_} for $result->{consumed_uid_overrides}->@*;
-            $self->mq()->post('IMAP_DONE', $result->{trained} // 0);
-            if ($classifier && $classifier->can('db_update_cache')) {
-                $classifier->db_update_cache($self->api_session());
-            }
+    return unless defined $activity && ref $activity;
+    return unless $raw->{type} && $raw->{type} eq 'activity';
+    my %event = %{$raw};
+    delete $event{type};
+    $activity->add_event(\%event);
+}
+
+method _imap_worker_loop($subprocess, $reader) {
+    while (1) {
+        my $line = <$reader>;
+        last unless defined $line;
+        $line =~ s/\s+$//;
+        last if $line eq 'quit';
+        my $msg;
+        try {
+            $msg = Cpanel::JSON::XS->new->decode($line);
         }
-    );
-    $poll_pid = ref $sp ? $sp->pid() : undef;
-    return unless $poll_pid;
-    $sp->on(progress => sub ($sp, %raw) {
-        return unless defined $activity && ref $activity;
-        my $local_id = delete $raw{local_id};
-        my $parent_local = delete $raw{parent_local_id};
-        $raw{parent_id} = $local_to_real{$parent_local}
-            if defined $parent_local;
-        my $event = $activity->add_event(\%raw);
-        $local_to_real{$local_id} = $event->{id}
-            if defined $local_id && defined $event;
-    });
+        catch ($e) {
+            $self->log_msg(WARN => "IMAP worker: bad message: $e");
+            next;
+        }
+        next unless $msg->{cmd} && $msg->{cmd} eq 'poll';
+        $training_mode = $msg->{training_mode};
+        @pending_train_buckets = $msg->{train_buckets}->@*
+            if ref $msg->{train_buckets} eq 'ARRAY';
+        %pending_folder_moves = $msg->{pending_folder_moves}->%*
+            if ref $msg->{pending_folder_moves} eq 'HASH';
+        %pending_direct_moves = $msg->{pending_direct_moves}->%*
+            if ref $msg->{pending_direct_moves} eq 'HASH';
+        %_uid_next_override = $msg->{uid_next_overrides}->%*
+            if ref $msg->{uid_next_overrides} eq 'HASH';
+        %hash_to_mid = $msg->{hash_to_mid}->%*
+            if ref $msg->{hash_to_mid} eq 'HASH';
+        $folder_change_flag = $msg->{folder_change_flag} // 0;
+        @mailboxes = () if $folder_change_flag;
+        my $result = $self->_run_poll_work($subprocess);
+        $subprocess->progress(type => 'poll_result', %{$result});
+    }
 }
 
 =head2 poll_sync($timeout)
@@ -275,16 +315,18 @@ Returns 1 if the poll completed, 0 on timeout.
 =cut
 
 method poll_sync ($timeout = 30) {
+    $poll_result_received = 0;
     $self->poll();
+    return 1 unless defined $imap_worker;
     my $deadline = time() + $timeout;
-    my $timer = Mojo::IOLoop->recurring(0.1 => sub {
-        return if $poll_running && time() < $deadline;
+    my $timer_id = Mojo::IOLoop->recurring(0.1 => sub {
+        return if !$poll_result_received && time() < $deadline;
         Mojo::IOLoop->stop();
     });
     Mojo::IOLoop->start()
         unless Mojo::IOLoop->is_running();
-    Mojo::IOLoop->remove($timer);
-    return !$poll_running ? 1 : 0
+    Mojo::IOLoop->remove($timer_id) if defined $timer_id;
+    return $poll_result_received ? 1 : 0
 }
 
 method _run_poll_work($subprocess = undef) {
@@ -301,6 +343,7 @@ method _run_poll_work($subprocess = undef) {
         return unless defined $subprocess;
         $local_id++;
         $subprocess->progress(
+            type => 'activity',
             level => $level,
             module => 'imap',
             task => $task,
@@ -377,7 +420,11 @@ method _run_poll_work($subprocess = undef) {
         }
     }
     catch ($err) {
-        $self->disconnect_folders();
+        for my $folder (keys %folders) {
+            delete $folders{$folder}{imap}
+                if exists $folders{$folder}{imap}
+                && !$folders{$folder}{imap}->connected();
+        }
         my $msg = $err =~ /^POPFILE-IMAP-EXCEPTION: (.+\)\))/s
             ? $1
             : "Unexpected IMAP error: $err";
@@ -625,15 +672,19 @@ if a connection cannot be established.
 method connect_server(%uid_state) {
     my $imap;
     for my $folder (keys %folders) {
-        next if exists $folders{$folder}{imap};
+        next if exists $folders{$folder}{imap}
+             && $folders{$folder}{imap}->connected();
         if (exists $folders{$folder}{output}
              && !exists $folders{$folder}{watched}
              && $classifier->is_pseudo_bucket($self->api_session(), $folders{$folder}{output})) {
             next;
         }
         unless (defined $imap) {
-            $imap = $self->new_imap_client(%uid_state)
-                or die "POPFILE-IMAP-EXCEPTION: Could not connect: $imap_error " . __FILE__ . '(' . __LINE__ . '))';
+            $imap = $self->_find_alive_client();
+            unless (defined $imap) {
+                $imap = $self->new_imap_client(%uid_state)
+                    or die "POPFILE-IMAP-EXCEPTION: Could not connect: $imap_error " . __FILE__ . '(' . __LINE__ . '))';
+            }
         }
         @mailboxes = $imap->get_mailbox_list() unless @mailboxes;
         my $info = $imap->status($folder);
@@ -679,7 +730,16 @@ Logs out of every open IMAP connection and clears C<%folders>.
 
 =cut
 
-method disconnect_folders() {
+method _find_alive_client() {
+    for my $folder (keys %folders) {
+        return $folders{$folder}{imap}
+            if exists $folders{$folder}{imap}
+            && $folders{$folder}{imap}->connected();
+    }
+    return
+}
+
+=head2 disconnect_folders() {
     $self->log_msg(INFO => "Trying to disconnect all connections.");
     for my $folder (keys %folders) {
         my $imap = $folders{$folder}{imap};

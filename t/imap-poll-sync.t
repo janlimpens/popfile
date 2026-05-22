@@ -30,18 +30,9 @@ sub make_imap(%extra) {
     return ($srv, $config, $mq, $tmpdir)
 }
 
-subtest 'poll_sync completes when poll is not running' => sub {
+subtest 'poll_sync returns quickly when poll triggers worker' => sub {
     my ($srv) = make_imap();
-    ok(!$srv->poll_running(), 'not running before poll_sync');
     ok($srv->poll_sync(5), 'poll_sync returns true');
-    ok(!$srv->poll_running(), 'not running after poll_sync');
-    $srv->stop();
-};
-
-subtest 'poll_running is reader-accessible' => sub {
-    my ($srv) = make_imap();
-    ok(defined $srv->poll_running(), 'poll_running readable');
-    is($srv->poll_running(), 0, 'poll_running starts false');
     $srv->stop();
 };
 

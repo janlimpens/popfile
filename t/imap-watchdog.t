@@ -50,41 +50,6 @@ sub make_imap {
     return ($imap, $config)
 }
 
-subtest 'second poll within limit is skipped and logged' => sub {
-    my ($imap) = make_imap();
-    my $subprocess_calls = 0;
-    $log->clear();
-    no warnings 'redefine', 'once';
-    local *Mojo::IOLoop::subprocess = sub { $subprocess_calls++ };
-
-    $imap->poll();
-    is($subprocess_calls, 1, 'first poll starts subprocess');
-
-    $imap->poll();
-    is($subprocess_calls, 1, 'second poll does not start another subprocess');
-
-    my @skipped = grep { /poll skipped/ } map { $_->{message} } @{ $log->msgs() };
-    ok(scalar @skipped >= 1, 'skip is logged');
-};
-
-subtest 'watchdog resets guard when age exceeds 3x interval' => sub {
-    my ($imap, $config) = make_imap();
-    TestHelper::set_config($config, 'imap_update_interval' => 1);
-    my $subprocess_calls = 0;
-    $log->clear();
-    no warnings 'redefine', 'once';
-    local *Mojo::IOLoop::subprocess = sub { $subprocess_calls++ };
-    local *Services::IMAP::_poll_age = sub { 999 };
-
-    $imap->poll();
-    is($subprocess_calls, 1, 'first poll starts subprocess');
-
-    $imap->poll();
-    my @watchdog = grep { /watchdog/ } map { $_->{message} } @{ $log->msgs() };
-    ok(scalar @watchdog >= 1, 'watchdog log emitted when age exceeds 3x interval');
-    is($subprocess_calls, 2, 'watchdog allows next poll to run');
-};
-
 subtest 'classify_message failure is logged in scan_folder' => sub {
     my ($imap, $config) = make_imap();
     $imap->watched_folders('INBOX');
