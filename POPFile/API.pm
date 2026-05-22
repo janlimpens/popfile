@@ -22,6 +22,7 @@ use Object::Pad;
 use utf8;
 use POPFile::Features;
 
+use Path::Tiny ();
 use POPFile::Role::Config;
 use Scalar::Util qw(looks_like_number);
 use Data::Page;
@@ -67,7 +68,7 @@ method _find_free_port() {
         LocalPort => 0,
         ReuseAddr => 1 );
     $socket_args{LocalAddr} = '127.0.0.1'
-        if $self->config->get('local');
+        if $self->config()->get('local');
     my $sock = IO::Socket::INET->new(
         %socket_args );
     my $port = $sock->sockport();
@@ -77,12 +78,13 @@ method _find_free_port() {
 
 method start() {
     require Mojo::Server::Daemon;
-    my $resolved = $self->config->get('port');
+    my $resolved = $self->config()->get('port');
     $resolved = $self->_find_free_port()
         if $resolved == 0;
     $port = $resolved;
-    my $app = $self->build_app($classifier_service, undef);
-    my $host = $self->config->get('local')
+    my $base_path = $self->config()->get('base_path');
+    my $app = $self->build_app($classifier_service, undef, $base_path);
+    my $host = $self->config()->get('local')
         ? '127.0.0.1'
         : '*';
     my $daemon = Mojo::Server::Daemon->new(
@@ -92,9 +94,9 @@ method start() {
     $daemon->start();
     $daemon_ref = $daemon;
     $self->log_msg(WARN => "POPFile::API: listening on port $resolved");
-    if (($self->config->get('open_browser')) && !$ENV{HARNESS_ACTIVE}) {
+    if (($self->config()->get('open_browser')) && !$ENV{HARNESS_ACTIVE}) {
         require Browser::Open;
-        my $url = "http://localhost:$resolved/";
+        my $url = "http://localhost:$resolved$base_path/";
         Browser::Open::open_browser($url)
             if $url =~ /^https?:\/\/localhost(?::\d+)?\/?$/;
     }
@@ -177,16 +179,33 @@ by all request handlers.
 
 =cut
 
-method build_app ($svc, $session = undef) {
+method build_app ($svc, $session = undef, $base_path = '') {
     require Mojolicious;
     require Mojo::Path;
 
-    my $static = $self->get_root_path($self->config->get('static_dir'));
+    my $static = $self->get_root_path($self->config()->get('static_dir'));
     require Cwd;
     $static = Cwd::realpath($static) // $static;
     my $app = Mojolicious->new();
     $app->max_request_size(10_000_000);  # 10 MB
     $app->log->level('warn');
+
+    if ($base_path) {
+        $base_path =~ s{/+$}{};
+        $app->hook(before_dispatch => sub ($c) {
+            my $path = $c->req()->url()->path()->to_string();
+            return
+                unless $path =~ s{^\Q$base_path\E}{};
+            $path ||= '/';
+            $c->req()->url()->path()->parse($path);
+            $c->req()->url()->base()->path($base_path . '/');
+            return
+                unless $path eq '/';
+            my $html = path($static, 'index.html')->slurp_utf8();
+            $html =~ s{<head>}{<head><base href="$base_path/">};
+            $c->render(text => $html, format => 'html');
+        });
+    }
 
     $app->hook(after_dispatch => sub ($c) {
         $c->res->headers->header('X-Content-Type-Options' => 'nosniff');
@@ -212,23 +231,15 @@ method build_app ($svc, $session = undef) {
         }
     });
 
-    # Fall back to index.html for any non-API path (SPA routing)
-    $app->hook(before_dispatch => sub ($c) {
-        my $path = $c->req->url->path->to_string;
-        return if $path =~ m{^/api/};
-        return if $path =~ m{\.\w+$};   # has an extension → real asset
-        $c->req->url->path(Mojo::Path->new('/index.html'));
-    });
-
     # API authentication — when password is set:
     #   local=1: GET/HEAD exempt, mutating requests require X-POPFile-Token
     #   local=0: all API requests require X-POPFile-Token
     $app->hook(before_dispatch => sub ($c) {
         my $path = $c->req->url->path->to_string;
         return unless $path =~ m{^/api/};
-        my $password = $self->config->get('password') // '';
+        my $password = $self->config()->get('password') // '';
         return if $password eq '';
-        my $local = $self->config->get('local') // 1;
+        my $local = $self->config()->get('local') // 1;
         return if $local && $c->req->method eq 'GET';
         return if $local && $c->req->method eq 'HEAD';
         my $token = $c->req->headers->header('X-POPFile-Token') // '';
@@ -301,6 +312,8 @@ method build_app ($svc, $session = undef) {
 
     $r->get('/api/v1/logs/tail')->to('logs#tail');
     $r->get('/api/v1/logs/download')->to('logs#download');
+
+    $r->get('/')->to('UI#index');
 
     return $app
 }

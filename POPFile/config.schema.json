@@ -12,7 +12,8 @@
         "static_dir":    { "type": "string",  "default": "public" },
         "local":         { "type": "boolean", "default": true },
         "locale":        { "type": "string",  "default": "" },
-        "open_browser":  { "type": "boolean", "default": true }
+        "open_browser":  { "type": "boolean", "default": true },
+        "base_path":     { "type": "string",  "default": "" }
       }
     },
     "bayes": {
