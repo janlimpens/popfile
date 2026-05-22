@@ -238,6 +238,22 @@
     font-feature-settings: 'liga' 1;
   }
 
+  :global(.material-symbols-outlined) {
+    font-family: 'Material Symbols Outlined Variable', sans-serif;
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'liga';
+  }
+
   :global(table) { border-collapse: collapse; width: 100%; }
   :global(th, td) {
     padding: 0.45rem 0.8rem;
