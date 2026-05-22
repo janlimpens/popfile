@@ -168,16 +168,18 @@ method _broadcast_sse($event) {
         utf8::decode($task)
             or $task = Encode::decode('iso-8859-1', $task);
     }
+    my $payload_text = encode_json({
+        id => $event->{id},
+        parent_id => $event->{parent_id},
+        ts => $event->{ts},
+        level => $event->{level},
+        module => $event->{module},
+        task => $task,
+        message => $message });
+    utf8::decode($payload_text);
     my $payload = {
         type => 'activity',
-        text => encode_json({
-            id => $event->{id},
-            parent_id => $event->{parent_id},
-            ts => $event->{ts},
-            level => $event->{level},
-            module => $event->{module},
-            task => $task,
-            message => $message }),
+        text => $payload_text,
         id => $event->{id} };
     for my $tx (@sse_clients) {
         try {
