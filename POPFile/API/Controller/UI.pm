@@ -2,7 +2,7 @@
 # Copyright (C) 2026 Jan Limpens
 package POPFile::API::Controller::UI;
 use Mojo::Base 'Mojolicious::Controller', -signatures;
-use Path::Tiny ();
+use Path::Tiny;
 
 =head1 NAME
 
