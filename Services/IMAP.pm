@@ -272,6 +272,7 @@ method _handle_activity_progress($raw) {
     delete $event{type};
     utf8::decode($event{message}) if defined $event{message};
     utf8::decode($event{task}) if defined $event{task};
+    $self->log_msg(DEBUG => sprintf('handle_activity: msg=%s flag=%d bytes=%v', $event{message}, utf8::is_utf8($event{message}), $event{message}));
     $activity->add_event(\%event);
 }
 
@@ -346,6 +347,8 @@ method _run_poll_work($subprocess = undef) {
         $local_id++;
         utf8::decode($task);
         utf8::decode($message);
+        $self->log_msg(DEBUG => sprintf('emit: task=%s flag=%d bytes=%v', $task, utf8::is_utf8($task), $task));
+        $self->log_msg(DEBUG => sprintf('emit: msg=%s flag=%d bytes=%v', $message, utf8::is_utf8($message), $message));
         $subprocess->progress(
             type => 'activity',
             level => $level,
