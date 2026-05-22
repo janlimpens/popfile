@@ -22,7 +22,7 @@ use Object::Pad;
 use utf8;
 use POPFile::Features;
 
-use Path::Tiny ();
+use Path::Tiny;
 use POPFile::Role::Config;
 use Scalar::Util qw(looks_like_number);
 use Data::Page;
