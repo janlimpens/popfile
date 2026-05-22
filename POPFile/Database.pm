@@ -42,7 +42,7 @@ method instance :common (%config) {
 }
 
 method configure(%config) {
-    %$_config = (%$_config, %config);
+    $_config->%* = ($_config->%*, %config);
     undef $_dbh;
 }
 
@@ -79,7 +79,7 @@ method backup($db_path) {
 }
 
 method _connect(%overrides) {
-    my %c = (%$_config, %overrides);
+    my %c = ($_config->%*, %overrides);
     my $dbconnect = $c{dbconnect} || 'dbi:SQLite:dbname=$dbname';
     my $sqlite = ($dbconnect =~ /sqlite/i);
     my $mysql = ($dbconnect =~ /mysql/i);
@@ -90,15 +90,6 @@ method _connect(%overrides) {
         my $mojo = Mojo::SQLite->new($dbname);
         $_mojo_db = $mojo->db();
         $_is_sqlite = 1;
-        $_mojo_db->{Callbacks}{ChildCallbacks}{fetch} = sub {
-            my ($dbh, $row) = @_;
-            return $row unless $row;
-            for my $val (@$row) {
-                next unless defined $val && !ref $val && !utf8::is_utf8($val);
-                $val = Encode::decode('iso-8859-1', $val);
-            }
-            return $row
-        };
     } elsif ($mysql) {
         my $user = $c{dbuser} // '';
         my $auth = $c{dbauth} // '';
@@ -113,8 +104,24 @@ method _connect(%overrides) {
         my $mojo = Mojo::Pg->new("postgresql://$user:$auth\@localhost/$dbname");
         $_mojo_db = $mojo->db();
     }
-    $_mojo_db->ping();
-    return $_mojo_db->dbh()
+    return $self->_install_fetch_callback($_mojo_db)
+}
+
+method _install_fetch_callback($dbh) {
+    $dbh->ping();
+    my $raw = $dbh->dbh();
+    $raw->{Callbacks}{ChildCallbacks}{fetch} = sub {
+        my ($h, $row) = @_;
+        return
+            unless $row;
+        for my $val ($row->@*) {
+            next
+                unless defined $val && !ref $val && !utf8::is_utf8($val);
+            $val = Encode::decode('iso-8859-1', $val);
+        }
+        return
+    };
+    return $raw
 }
 
 1;

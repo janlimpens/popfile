@@ -144,7 +144,8 @@ method start() {
     );
     $imap_worker->on(progress => sub {
         my ($sp, %raw) = @_;
-        return if $raw{type} && $raw{type} eq 'poll_result'
+        return
+            if $raw{type} && $raw{type} eq 'poll_result'
             && $self->_handle_poll_result(\%raw);
         $self->_handle_activity_progress(\%raw);
     });
@@ -217,7 +218,8 @@ method poll() {
     }
     return if $self->config->get('enabled') == 0
            && $self->training_mode == 0;
-    return unless defined $poll_trigger;
+    return
+        unless defined $poll_trigger;
     my $msg = Cpanel::JSON::XS->new->encode({
         cmd => 'poll',
         training_mode => $training_mode,
@@ -238,7 +240,8 @@ method _find_train_flags() {
 }
 
 method _handle_poll_result($result) {
-    return unless defined $result;
+    return
+        unless defined $result;
     if ($result->{error}) {
         $self->log_msg(WARN => $result->{error});
         if (($result->{training_done} // 0) == -1) {
@@ -267,9 +270,11 @@ method _handle_poll_result($result) {
 
 method _handle_activity_progress($raw) {
     my $activity = $self->activity();
-    return unless defined $activity && ref $activity;
-    return unless $raw->{type} && $raw->{type} eq 'activity';
-    my %event = %{$raw};
+    return
+        unless defined $activity && ref $activity;
+    return
+        unless $raw->{type} && $raw->{type} eq 'activity';
+    my %event = $raw->%*;
     delete $event{type};
     if (defined $event{message}) {
         utf8::decode($event{message})
@@ -285,9 +290,11 @@ method _handle_activity_progress($raw) {
 method _imap_worker_loop($subprocess, $reader) {
     while (1) {
         my $line = <$reader>;
-        last unless defined $line;
+        last
+            unless defined $line;
         $line =~ s/\s+$//;
-        last if $line eq 'quit';
+        last
+            if $line eq 'quit';
         my $msg;
         try {
             $msg = Cpanel::JSON::XS->new->decode($line);
@@ -296,7 +303,8 @@ method _imap_worker_loop($subprocess, $reader) {
             $self->log_msg(WARN => "IMAP worker: bad message: $e");
             next;
         }
-        next unless $msg->{cmd} && $msg->{cmd} eq 'poll';
+        next
+            unless $msg->{cmd} && $msg->{cmd} eq 'poll';
         $training_mode = $msg->{training_mode};
         @pending_train_buckets = $msg->{train_buckets}->@*
             if ref $msg->{train_buckets} eq 'ARRAY';
@@ -309,9 +317,10 @@ method _imap_worker_loop($subprocess, $reader) {
         %hash_to_mid = $msg->{hash_to_mid}->%*
             if ref $msg->{hash_to_mid} eq 'HASH';
         $folder_change_flag = $msg->{folder_change_flag} // 0;
-        @mailboxes = () if $folder_change_flag;
+        @mailboxes = ()
+            if $folder_change_flag;
         my $result = $self->_run_poll_work($subprocess);
-        $subprocess->progress(type => 'poll_result', %{$result});
+        $subprocess->progress(type => 'poll_result', $result->%*);
     }
 }
 
@@ -326,15 +335,18 @@ Returns 1 if the poll completed, 0 on timeout.
 method poll_sync ($timeout = 30) {
     $poll_result_received = 0;
     $self->poll();
-    return 1 unless defined $imap_worker;
+    return 1
+        unless defined $imap_worker;
     my $deadline = time() + $timeout;
-    my $timer_id = Mojo::IOLoop->recurring(0.1 => sub {
-        return if !$poll_result_received && time() < $deadline;
+    my $sync_timer = Mojo::IOLoop->recurring(0.1 => sub {
+        return
+            if !$poll_result_received && time() < $deadline;
         Mojo::IOLoop->stop();
     });
     Mojo::IOLoop->start()
         unless Mojo::IOLoop->is_running();
-    Mojo::IOLoop->remove($timer_id) if defined $timer_id;
+    Mojo::IOLoop->remove($sync_timer)
+        if defined $sync_timer;
     return $poll_result_received ? 1 : 0
 }
 
