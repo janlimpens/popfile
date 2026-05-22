@@ -239,6 +239,7 @@ ADJUST {
 # not padded:
 field $foo :param=123 :reader;
 field $barbaz :param=true :reader :writer;
+field $private = 'xyz'; # not $_private, we usually don't require private readers
 
 method first_method($param, %args) { # greedy %args
     return $self->second_method()

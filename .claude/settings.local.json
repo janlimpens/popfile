@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(/home/jan/perl5/**)",
+      "Edit(/home/jan/Entwicklung/popfile/**)",
+      "Write(/home/jan/Entwicklung/popfile/**)"
+    ]
+  }
+}
