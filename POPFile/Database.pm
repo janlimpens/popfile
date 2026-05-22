@@ -3,6 +3,7 @@
 use Object::Pad;
 use POPFile::Features;
 use File::Copy qw(copy);
+use Encode ();
 
 my $_instance;
 
@@ -87,9 +88,17 @@ method _connect(%overrides) {
     if ($sqlite) {
         require Mojo::SQLite;
         my $mojo = Mojo::SQLite->new($dbname);
-        $mojo->options({sqlite_unicode => 1});
         $_mojo_db = $mojo->db();
         $_is_sqlite = 1;
+        $_mojo_db->{Callbacks}{ChildCallbacks}{fetch} = sub {
+            my ($dbh, $row) = @_;
+            return $row unless $row;
+            for my $val (@$row) {
+                next unless defined $val && !ref $val && !utf8::is_utf8($val);
+                $val = Encode::decode('iso-8859-1', $val);
+            }
+            return $row
+        };
     } elsif ($mysql) {
         my $user = $c{dbuser} // '';
         my $auth = $c{dbauth} // '';
