@@ -5,6 +5,7 @@ use feature 'try';
 no warnings 'experimental::try';
 use Fcntl ();
 use Mojo::IOLoop;
+use Encode ();
 use Services::IMAP::Client;
 use Services::IMAP::Folder;
 use POPFile::Role::DBConnect;
@@ -270,8 +271,14 @@ method _handle_activity_progress($raw) {
     return unless $raw->{type} && $raw->{type} eq 'activity';
     my %event = %{$raw};
     delete $event{type};
-    utf8::decode($event{message}) if defined $event{message};
-    utf8::decode($event{task}) if defined $event{task};
+    if (defined $event{message}) {
+        utf8::decode($event{message})
+            or $event{message} = Encode::decode('iso-8859-1', $event{message});
+    }
+    if (defined $event{task}) {
+        utf8::decode($event{task})
+            or $event{task} = Encode::decode('iso-8859-1', $event{task});
+    }
     $self->log_msg(INFO => sprintf('handle_activity: msg=%s flag=%d bytes=%vd', $event{message}, utf8::is_utf8($event{message}), $event{message}));
     $activity->add_event(\%event);
 }
@@ -345,8 +352,10 @@ method _run_poll_work($subprocess = undef) {
     my $emit = sub ($level, $task, $message, $parent_local_id = undef) {
         return unless defined $subprocess;
         $local_id++;
-        my $ok_task = utf8::decode($task);
-        my $ok_msg = utf8::decode($message);
+        my $ok_task = utf8::decode($task)
+            || do { $task = Encode::decode('iso-8859-1', $task); 1 };
+        my $ok_msg = utf8::decode($message)
+            || do { $message = Encode::decode('iso-8859-1', $message); 1 };
         $self->log_msg(INFO => sprintf('emit: task=%s ok=%d flag=%d bytes=%vd', $task, $ok_task, utf8::is_utf8($task), $task));
         $self->log_msg(INFO => sprintf('emit: msg=%s ok=%d flag=%d bytes=%vd', $message, $ok_msg, utf8::is_utf8($message), $message));
         $subprocess->progress(

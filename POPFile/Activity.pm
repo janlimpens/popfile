@@ -50,6 +50,7 @@ memory — the real log files are the canonical record.
 =cut
 
 use Mojo::JSON qw(encode_json);
+use Encode ();
 
 use constant DEFAULT_BUFFER_SIZE => 500;
 
@@ -94,8 +95,14 @@ method add_event($event) {
         return
             unless $self->_event_exists($parent_id);
     }
-    utf8::decode($event->{message}) if defined $event->{message};
-    utf8::decode($event->{task}) if defined $event->{task};
+    if (defined $event->{message}) {
+        utf8::decode($event->{message})
+            or $event->{message} = Encode::decode('iso-8859-1', $event->{message});
+    }
+    if (defined $event->{task}) {
+        utf8::decode($event->{task})
+            or $event->{task} = Encode::decode('iso-8859-1', $event->{task});
+    }
     $self->log_msg(INFO => sprintf('add_event: msg=%s flag=%d', $event->{message} // 'undef', utf8::is_utf8($event->{message})));
     $event->{id} = ++$next_id;
     $event->{ts} = time();
@@ -153,9 +160,15 @@ method remove_sse_client($tx) {
 method _broadcast_sse($event) {
     return unless @sse_clients;
     my $message = $event->{message};
-    utf8::decode($message) if defined $message;
+    if (defined $message) {
+        utf8::decode($message)
+            or $message = Encode::decode('iso-8859-1', $message);
+    }
     my $task = $event->{task};
-    utf8::decode($task) if defined $task;
+    if (defined $task) {
+        utf8::decode($task)
+            or $task = Encode::decode('iso-8859-1', $task);
+    }
     $self->log_msg(INFO => sprintf('broadcast_sse: msg=%s flag=%d bytes=%v', $message, utf8::is_utf8($message), $message));
     my $payload = {
         type => 'activity',
