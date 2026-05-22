@@ -217,7 +217,7 @@ method poll() {
     return if $self->config->get('enabled') == 0
            && $self->training_mode == 0;
     return unless defined $poll_trigger;
-    my $msg = Cpanel::JSON::XS->new->encode({
+    my $msg = Cpanel::JSON::XS->new->utf8->encode({
         cmd => 'poll',
         training_mode => $training_mode,
         train_buckets => \@pending_train_buckets,
@@ -281,7 +281,7 @@ method _imap_worker_loop($subprocess, $reader) {
         last if $line eq 'quit';
         my $msg;
         try {
-            $msg = Cpanel::JSON::XS->new->decode($line);
+            $msg = Cpanel::JSON::XS->new->utf8->decode($line);
         }
         catch ($e) {
             $self->log_msg(WARN => "IMAP worker: bad message: $e");
