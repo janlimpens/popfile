@@ -103,7 +103,6 @@ method add_event($event) {
         utf8::decode($event->{task})
             or $event->{task} = Encode::decode('iso-8859-1', $event->{task});
     }
-    $self->log_msg(INFO => sprintf('add_event: msg=%s flag=%d', $event->{message} // 'undef', utf8::is_utf8($event->{message})));
     $event->{id} = ++$next_id;
     $event->{ts} = time();
     push $events->@*, $event;
@@ -169,7 +168,6 @@ method _broadcast_sse($event) {
         utf8::decode($task)
             or $task = Encode::decode('iso-8859-1', $task);
     }
-    $self->log_msg(INFO => sprintf('broadcast_sse: msg=%s flag=%d bytes=%v', $message, utf8::is_utf8($message), $message));
     my $payload = {
         type => 'activity',
         text => encode_json({

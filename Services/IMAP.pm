@@ -279,7 +279,6 @@ method _handle_activity_progress($raw) {
         utf8::decode($event{task})
             or $event{task} = Encode::decode('iso-8859-1', $event{task});
     }
-    $self->log_msg(INFO => sprintf('handle_activity: msg=%s flag=%d bytes=%vd', $event{message}, utf8::is_utf8($event{message}), $event{message}));
     $activity->add_event(\%event);
 }
 
@@ -356,8 +355,6 @@ method _run_poll_work($subprocess = undef) {
             || do { $task = Encode::decode('iso-8859-1', $task); 1 };
         my $ok_msg = utf8::decode($message)
             || do { $message = Encode::decode('iso-8859-1', $message); 1 };
-        $self->log_msg(INFO => sprintf('emit: task=%s ok=%d flag=%d bytes=%vd', $task, $ok_task, utf8::is_utf8($task), $task));
-        $self->log_msg(INFO => sprintf('emit: msg=%s ok=%d flag=%d bytes=%vd', $message, $ok_msg, utf8::is_utf8($message), $message));
         $subprocess->progress(
             type => 'activity',
             level => $level,
