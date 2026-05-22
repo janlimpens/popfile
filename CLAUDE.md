@@ -151,10 +151,13 @@ When you reply be friendly, precise and to the point. Don't gratulate youself to
 - One empty line between methods/functions
 - One empty line between blocks of use/class/package/(group of) field statements
 - {} for scopes has a closing `}` at a newline, for hashes with a space in front at the last line with values.
+- use cuddled else / elsif
+- prefer '&&' and '||' to 'and' and 'or'
 
 ### Method Calls
 - Always use parentheses on method calls, even if empty
-- Example: `$obj->method()` not `$obj->method` and not `$onj->method->something_else()`
+- Example: `$obj->method()` and `$obj->reader()->method()`, not `$obj->method` and not `$obj->reader->method`
+- This also applies to functions like `next()`, `last()`, `return()` — never bare `next;` or `last;`
 - optional arguments usually as an %args hash
 - use fields :reader :writer shortcuts where possible
 
@@ -176,13 +179,29 @@ $count += $_->@*
 die 'error message'
     unless $required;
 ```
-- Postfix if/unless/for must have line break and indentation
+- Postfix if/unless/for must have line break and indentation — NEVER on the same line as the statement
 - prefer positive booleans `unless ( $stuff eq '' )`
+
+### Flow control keywords
+- `next()` and `last()` are functions — always use parentheses, never bare `next;` or `last;`
+- `return` at end of method has no semicolon; return without braces
+
+### Redundant checks
+- Don't check `defined` when truthiness is sufficient: `if ($x)` not `if (defined $x)`
+- Don't check both truthy and non-empty: `if ($x)` not `if ($x && $x ne '')`
+- Exception: keep `defined` when `0` or `''` is a valid, meaningful value
+
+### String construction
+- Prefer `sprintf` over string concatenation for multi-part messages:
+```perl
+# good
+sprintf('Training on %d messages in %s.', $count, $folder)
+# avoid
+"Training on " . $count . " messages in " . $folder . '.';
 ```
-  do() if $so
-  # or
-  do() unless $so
-```
+
+### Booleans
+- Use `use builtin qw(true false);` and `return true;` / `return false;` instead of `return 1;` / `return 0;`
 
 ### if elsif else
 - prefer trinary if feasible and possible to keep it 3 or even 1 line(s) if it fits within 74 chars
