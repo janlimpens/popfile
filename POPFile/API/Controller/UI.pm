@@ -20,7 +20,7 @@ sub index ($self) {
     my $api = $self->popfile_api();
     my $base_path = $api->config()->get('base_path');
     my $static_dir = $api->config()->get('static_dir');
-    my $html_file = $api->get_root_path($static_dir, 'index.html');
+    my $html_file = $api->get_root_path($static_dir) . '/index.html';
     my $html = path($html_file)->slurp_utf8();
     if ($base_path) {
         $base_path =~ s{/+$}{};
