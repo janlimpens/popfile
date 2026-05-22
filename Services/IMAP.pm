@@ -270,6 +270,8 @@ method _handle_activity_progress($raw) {
     return unless $raw->{type} && $raw->{type} eq 'activity';
     my %event = %{$raw};
     delete $event{type};
+    utf8::decode($event{message}) if defined $event{message};
+    utf8::decode($event{task}) if defined $event{task};
     $activity->add_event(\%event);
 }
 
@@ -342,8 +344,8 @@ method _run_poll_work($subprocess = undef) {
     my $emit = sub ($level, $task, $message, $parent_local_id = undef) {
         return unless defined $subprocess;
         $local_id++;
-        utf8::upgrade($task);
-        utf8::upgrade($message);
+        utf8::decode($task);
+        utf8::decode($message);
         $subprocess->progress(
             type => 'activity',
             level => $level,
