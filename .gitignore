@@ -27,3 +27,5 @@ popfile.db.backup
 tools/cleanup.pl
 popfile.port
 bin/*
+popfile.db-shm
+popfile.db-wal

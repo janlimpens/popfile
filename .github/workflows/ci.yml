@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, 'feat/**' ]
+    branches: [main, "feat/**"]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -26,7 +26,7 @@ jobs:
       - name: Set up Perl 5.40
         uses: shogo82148/actions-setup-perl@v1
         with:
-          perl-version: '5.40'
+          perl-version: "5.40"
 
       - name: Install Carton
         run: cpanm --notest Carton
@@ -36,6 +36,9 @@ jobs:
 
       - name: Run tests
         run: carton exec prove -l t/
+
+      - name: Base path integration test
+        run: carton exec t/basepath-test.sh
 
       - name: Syntax check all modules
         run: |
