@@ -11,11 +11,11 @@ carton check 2>&1 | grep -q "satisfied" || {
 }
 
 # Verify carton bundle is self-contained (no system module fallback)
-SELF=$(PERL5LIB="local/lib/perl5" perl -MObject::Pad -MPath::Tiny -MMojo::JSON -MCpanel::JSON::XS -MEncode -MDBI -MDBD::SQLite -MMojolicious -MIO::Socket::SSL -E 'say "ok"' 2>&1)
+SELF=$(carton exec perl -Ilib -I. -MObject::Pad -MPath::Tiny -MMojo::JSON -MCpanel::JSON::XS -MEncode -MDBI -MDBD::SQLite -MMojolicious -MIO::Socket::SSL -E 'say "ok"' 2>&1)
 if [ "$SELF" = "ok" ]; then
 	echo "PASS: carton bundle self-contained"
 else
-	echo "FAIL: some modules leak from system — check Docker build"
+	echo "FAIL: some modules not available: $SELF"
 	exit 1
 fi
 
@@ -26,25 +26,25 @@ export POPFILE_USER="$TMPDIR/user"
 export POPFILE_PATH="$POPFILE_USER/config.json"
 mkdir -p "$POPFILE_USER/messages"
 
-cat >"$POPFILE_PATH" <<'EOF'
-{"version":2,"api":{"port":0,"base_path":"/popfile","local":false,"open_browser":false,"static_dir":"public"}}
-EOF
+# Use random port, unlikely to collide in CI
+PORT=$(( ($$ % 10000) + 50000 ))
+
+cat >"$POPFILE_PATH" <<EOFCONFIG
+{"version":2,"api":{"port":$PORT,"base_path":"/popfile","local":false,"open_browser":false,"static_dir":"public"}}
+EOFCONFIG
 
 echo "=== Starting POPFile ==="
 carton exec perl script/popfile start &
 SERVER_PID=$!
 
-echo "→ Waiting for server..."
-PORT=""
+echo "→ Waiting for server on port $PORT..."
 for _ in $(seq 1 30); do
-	PORT=$(ss -tlnp 2>/dev/null | grep "$SERVER_PID" | grep -oP ':\K\d+' | head -1 || echo "")
-	if [ -n "$PORT" ] && curl -skf "http://localhost:$PORT/api/v1/health" >/dev/null 2>&1; then
+	if curl -skf "http://localhost:$PORT/api/v1/health" >/dev/null 2>&1; then
 		break
 	fi
 	sleep 1
-	PORT=""
 done
-if [ -z "$PORT" ]; then
+if ! curl -skf "http://localhost:$PORT/api/v1/health" >/dev/null 2>&1; then
 	echo "FAIL: Server did not start"
 	exit 1
 fi
