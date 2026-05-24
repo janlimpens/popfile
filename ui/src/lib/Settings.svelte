@@ -3,6 +3,8 @@
   import { initLocale, t } from './locale.svelte.js';
   import IMAP from './IMAP.svelte';
 
+  let timezones = $state([]);
+
   /** @type {Record<string, any>} */
   let config = $state({});
   let active = $state('ui');
@@ -161,6 +163,8 @@
         { key: 'logger_format', label: t('Settings_LogFormat'), type: 'select',
           options: [['default', 'Default'], ['tabbed', 'Tabbed'], ['csv', 'CSV'], ['plain', 'Plain']],
           desc: t('Settings_DescLogFormat') },
+        { key: 'GLOBAL_timezone', label: t('Settings_Timezone'), type: 'timezone',
+          desc: t('Settings_DescTimezone') },
       ],
     },
   ]);
@@ -186,12 +190,14 @@
 
   // ─── Load / save ────────────────────────────────────────────────────────
   async function load() {
-    const [cfgRes, localeRes] = await Promise.all([
+    const [cfgRes, localeRes, tzRes] = await Promise.all([
       fetch('api/v1/config'),
       fetch('api/v1/languages'),
+      fetch('api/v1/timezones'),
     ]);
     if (cfgRes.ok) config = await cfgRes.json();
     if (localeRes.ok) availableLocales = await localeRes.json();
+    if (tzRes.ok) timezones = await tzRes.json();
   }
 
   async function save() {
@@ -340,6 +346,20 @@
                         <option value={l.code}>{l.name}</option>
                       {/each}
                     </select>
+                  {:else if f.type === 'timezone'}
+                    <input
+                      id={f.key}
+                      type="text"
+                      list="tz-list"
+                      bind:value={config[f.key]}
+                      oninput={mark}
+                      placeholder="UTC"
+                    />
+                    <datalist id="tz-list">
+                      {#each timezones as tz}
+                        <option value={tz} />
+                      {/each}
+                    </datalist>
                   {:else}
                     <input
                       id={f.key}

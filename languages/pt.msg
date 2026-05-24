@@ -195,6 +195,8 @@ Settings_SQLiteJournalMode Modo de diário SQLite
 Settings_SSLChainPort Porto SSL de cadeia
 Settings_SSLChainServer Servidor SSL de cadeia
 Settings_SaveChanges Guardar alterações
+Settings_Timezone Timezone
+Settings_DescTimezone IANA timezone for log timestamps and date display (e.g. America/Sao_Paulo). Requires restart.
 Settings_Saved Guardado
 Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Restarting Restartingu2026

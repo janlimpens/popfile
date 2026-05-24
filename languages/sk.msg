@@ -205,6 +205,8 @@ Settings_SQLiteTweaks Vylepšenia SQLite
 Settings_SSLChainPort Port SSL reťazca
 Settings_SSLChainServer Server SSL reťazca
 Settings_SaveChanges Uložiť zmeny
+Settings_Timezone Timezone
+Settings_DescTimezone IANA timezone for log timestamps and date display (e.g. America/Sao_Paulo). Requires restart.
 Settings_Saved Uložené
 Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Restarting Restartingu2026

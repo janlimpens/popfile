@@ -207,6 +207,8 @@ Settings_SQLiteTweaks SQLite-optimalisaties
 Settings_SSLChainPort SSL-ketenpoort
 Settings_SSLChainServer SSL-ketenserver
 Settings_SaveChanges Wijzigingen opslaan
+Settings_Timezone Timezone
+Settings_DescTimezone IANA timezone for log timestamps and date display (e.g. America/Sao_Paulo). Requires restart.
 Settings_Saved Opgeslagen
 Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Restarting Restartingu2026

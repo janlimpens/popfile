@@ -176,4 +176,26 @@ sub restart($self) {
     exec($^X, $script, 'start')
 }
 
+sub get_timezones($self) {
+    require File::Find;
+    my $base = '/usr/share/zoneinfo';
+    return $self->render(json => ['UTC'])
+        unless -d $base;
+    my @zones;
+    File::Find::find(
+        { wanted => sub {
+            return if -d $_;
+            my $rel = $File::Find::name;
+            $rel =~ s{^\Q$base/\E}{};
+            return if $rel =~ m{^right/|^posix/};
+            return if $rel eq 'localtime' || $rel =~ /\.(?:tab|list|zi)$/ || $rel eq 'leapseconds';
+            return if $rel eq 'posixrules';
+            push @zones, $rel;
+        }, no_chdir => 1 },
+        $base);
+    @zones = sort @zones;
+    unshift @zones, 'UTC';
+    $self->render(json => \@zones);
+}
+
 1;

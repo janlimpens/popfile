@@ -191,6 +191,8 @@ Settings_SQLiteJournalMode SQLite-Journalmodus
 Settings_SSLChainPort SSL-Chain-Port
 Settings_SSLChainServer SSL-Chain-Server
 Settings_SaveChanges Änderungen speichern
+Settings_Timezone Timezone
+Settings_DescTimezone IANA timezone for log timestamps and date display (e.g. America/Sao_Paulo). Requires restart.
 Settings_Saved Gespeichert
 Settings_RestartNeeded Neustart erforderlich, damit Änderungen wirksam werden.
 Settings_Restarting Restartingu2026

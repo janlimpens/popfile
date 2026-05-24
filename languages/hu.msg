@@ -205,6 +205,8 @@ Settings_SQLiteTweaks SQLite finomhangolás
 Settings_SSLChainPort SSL lánc port
 Settings_SSLChainServer SSL lánc kiszolgáló
 Settings_SaveChanges Változtatások mentése
+Settings_Timezone Timezone
+Settings_DescTimezone IANA timezone for log timestamps and date display (e.g. America/Sao_Paulo). Requires restart.
 Settings_Saved Mentve
 Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Restarting Restartingu2026

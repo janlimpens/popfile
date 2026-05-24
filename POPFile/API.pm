@@ -298,6 +298,7 @@ method build_app ($svc, $session = undef, $base_path = '') {
     $r->put('/api/v1/config')->to('Config#update_config');
     $r->post('/api/v1/restart')->to('Config#restart');
     $r->get('/api/v1/status')->to('Config#get_status');
+    $r->get('/api/v1/timezones')->to('Config#get_timezones');
 
     $r->get('/api/v1/imap/folders')->to('IMAP#get_folders');
     $r->put('/api/v1/imap/folders')->to('IMAP#update_folders');

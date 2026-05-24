@@ -65,6 +65,7 @@ method load_file($path) {
         unless $result->@* == 0;
     delete $data->{version};
     $self->_apply_defaults($data, _load_schema()->{properties});
+    $ENV{TZ} = $data->{GLOBAL}{timezone} // 'UTC';
     %store = $data->%*;
 }
 
