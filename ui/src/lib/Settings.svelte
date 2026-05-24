@@ -7,6 +7,7 @@
   let config = $state({});
   let active = $state('ui');
   let status = $state('');
+  let errorDetail = $state('');
   let restartNeeded = $state(false);
   let dirty = $state(false);
   let saving = $state(false);
@@ -194,6 +195,7 @@
   async function save() {
     saving = true;
     status = '';
+    errorDetail = '';
     const res = await fetch('api/v1/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -205,10 +207,11 @@
       status = 'ok';
       restartNeeded = body.restart_needed || false;
       dirty = false;
-      setTimeout(() => { status = ''; }, 5000);
+      setTimeout(() => { status = ''; errorDetail = ''; }, 5000);
       await initLocale(config['api_locale'] || '');
     } else {
       status = 'error';
+      errorDetail = (await res.text()) || t('Settings_ErrorSaving');
     }
   }
 
@@ -394,7 +397,7 @@
           <span class="msg-restart"><span class="icon">restart_alt</span> {t('Settings_RestartNeeded')}</span>
         {/if}
       {:else if status === 'error'}
-        <span class="msg-err"><span class="icon">close</span> {t('Settings_ErrorSaving')}</span>
+        <span class="msg-err"><span class="icon">close</span> {errorDetail || t('Settings_ErrorSaving')}</span>
       {/if}
       <button class="btn-save" onclick={save} disabled={!dirty || saving}>
         {saving ? t('Settings_Saving') : t('Settings_SaveChanges')}
