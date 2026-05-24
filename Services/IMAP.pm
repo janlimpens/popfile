@@ -84,7 +84,7 @@ C<enabled> (0), C<training_mode> (0).  Returns 1.
 =cut
 
 method initialize() {
-    $last_update = time - $self->config->get('update_interval');
+    $last_update = time - ($self->config->get('update_interval') // 300);
     return 1
 }
 
