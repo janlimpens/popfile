@@ -187,6 +187,7 @@ Settings_OpenBrowser Avaa selain
 Settings_OptDebug Virheenkorjaus
 Settings_OptEnd Loppu
 Settings_OptErrorsOnly Vain virheet
+Settings_OptTrace Trace
 Settings_OptFrequencies Frekvenssit
 Settings_OptFront Etusivu
 Settings_OptHidden Piilotettu

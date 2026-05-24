@@ -188,6 +188,7 @@ Settings_OpenBrowser Άνοιγμα περιηγητή
 Settings_OptDebug Αποσφαλμάτωση
 Settings_OptEnd Τέλος
 Settings_OptErrorsOnly Μόνο σφάλματα
+Settings_OptTrace Trace
 Settings_OptFrequencies Συχνότητες
 Settings_OptFront Μπροστά
 Settings_OptHidden Κρυφό

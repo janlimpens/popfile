@@ -29,3 +29,5 @@ popfile.port
 bin/*
 popfile.db-shm
 popfile.db-wal
+# Local Pi runtime state
+.atl/

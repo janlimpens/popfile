@@ -149,7 +149,7 @@
       id: 'logging', label: t('Settings_SectionLogging'), icon: 'assignment',
       settings: [
         { key: 'logger_level', label: t('Settings_LogLevel'), type: 'select',
-          options: [['0', t('Settings_OptErrorsOnly')], ['1', t('Settings_OptWarnings')], ['2', t('Settings_OptInfo')], ['3', t('Settings_OptDebug')]],
+          options: [['error', t('Settings_OptErrorsOnly')], ['warn', t('Settings_OptWarnings')], ['info', t('Settings_OptInfo')], ['debug', t('Settings_OptDebug')], ['trace', t('Settings_OptTrace')]],
           desc: t('Settings_DescLogLevel') },
         { key: 'logger_logdir', label: t('Settings_LogDirectory'), type: 'text',
           desc: t('Settings_DescLogDirectory') },

@@ -188,6 +188,7 @@ Settings_OpenBrowser Otevřít prohlížeč
 Settings_OptDebug Ladění
 Settings_OptEnd Konec
 Settings_OptErrorsOnly Pouze chyby
+Settings_OptTrace Trace
 Settings_OptFrequencies Četnosti
 Settings_OptFront Vpředu
 Settings_OptHidden Skrytý

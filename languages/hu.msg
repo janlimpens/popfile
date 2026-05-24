@@ -189,6 +189,7 @@ Settings_OpenBrowser Böngésző megnyitása
 Settings_OptDebug Hibakeresés
 Settings_OptEnd Vége
 Settings_OptErrorsOnly Csak hibák
+Settings_OptTrace Trace
 Settings_OptFrequencies Gyakoriságok
 Settings_OptFront Elöl
 Settings_OptHidden Rejtett

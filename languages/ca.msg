@@ -187,6 +187,7 @@ Settings_OpenBrowser Obrir navegador
 Settings_OptDebug Depuració
 Settings_OptEnd Final
 Settings_OptErrorsOnly Només errors
+Settings_OptTrace Trace
 Settings_OptFrequencies Freqüències
 Settings_OptFront Davant
 Settings_OptHidden Ocult

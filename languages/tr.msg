@@ -187,6 +187,7 @@ Settings_OpenBrowser Tarayıcıyı aç
 Settings_OptDebug Hata ayıklama
 Settings_OptEnd Son
 Settings_OptErrorsOnly Yalnızca hatalar
+Settings_OptTrace Trace
 Settings_OptFrequencies Sıklıklar
 Settings_OptFront Ön
 Settings_OptHidden Gizli

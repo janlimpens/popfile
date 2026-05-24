@@ -189,6 +189,7 @@ Settings_OpenBrowser Otvoriť prehliadač
 Settings_OptDebug Ladenie
 Settings_OptEnd Koniec
 Settings_OptErrorsOnly Iba chyby
+Settings_OptTrace Trace
 Settings_OptFrequencies Frekvencie
 Settings_OptFront Vpredu
 Settings_OptHidden Skrytý

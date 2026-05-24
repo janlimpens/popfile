@@ -176,6 +176,7 @@ Settings_OpenBrowser Browser beim Start öffnen
 Settings_OptDebug Debug
 Settings_OptEnd Ende
 Settings_OptErrorsOnly Nur Fehler
+Settings_OptTrace Trace
 Settings_OptFrequencies Häufigkeiten
 Settings_OptFront Vorne
 Settings_OptHidden Versteckt

@@ -188,6 +188,7 @@ Settings_OpenBrowser 브라우저 열기
 Settings_OptDebug 디버그
 Settings_OptEnd 끝
 Settings_OptErrorsOnly 오류만
+Settings_OptTrace Trace
 Settings_OptFrequencies 빈도
 Settings_OptFront 앞
 Settings_OptHidden 숨김

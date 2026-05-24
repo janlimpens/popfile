@@ -167,6 +167,7 @@ Settings_OpenBrowser Open browser on start
 Settings_OptDebug Debug
 Settings_OptEnd End
 Settings_OptErrorsOnly Errors only
+Settings_OptTrace Trace
 Settings_OptFrequencies Frequencies
 Settings_OptFront Front
 Settings_OptHidden Hidden

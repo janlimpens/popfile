@@ -180,6 +180,7 @@ Settings_OpenBrowser Abrir navegador ao iniciar
 Settings_OptDebug Depuração
 Settings_OptEnd Fim
 Settings_OptErrorsOnly Apenas erros
+Settings_OptTrace Trace
 Settings_OptFrequencies Frequências
 Settings_OptFront Frente
 Settings_OptHidden Oculto

@@ -187,6 +187,7 @@ Settings_OpenBrowser 打開瀏覽器
 Settings_OptDebug 除錯
 Settings_OptEnd 末尾
 Settings_OptErrorsOnly 僅錯誤
+Settings_OptTrace Trace
 Settings_OptFrequencies 頻率
 Settings_OptFront 前部
 Settings_OptHidden 隱藏

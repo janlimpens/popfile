@@ -188,6 +188,7 @@ Settings_OpenBrowser Відкрити браузер
 Settings_OptDebug Відладка
 Settings_OptEnd Кінець
 Settings_OptErrorsOnly Лише помилки
+Settings_OptTrace Trace
 Settings_OptFrequencies Частоти
 Settings_OptFront Спереду
 Settings_OptHidden Прихований

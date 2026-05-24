@@ -188,6 +188,7 @@ Settings_OpenBrowser פתח דפדפן
 Settings_OptDebug ניפוי באגים
 Settings_OptEnd סוף
 Settings_OptErrorsOnly שגיאות בלבד
+Settings_OptTrace Trace
 Settings_OptFrequencies תדרים
 Settings_OptFront קדמה
 Settings_OptHidden מוסתר

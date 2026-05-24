@@ -188,6 +188,7 @@ Settings_OpenBrowser Otwórz przeglądarkę
 Settings_OptDebug Debugowanie
 Settings_OptEnd Koniec
 Settings_OptErrorsOnly Tylko błędy
+Settings_OptTrace Trace
 Settings_OptFrequencies Częstości
 Settings_OptFront Przód
 Settings_OptHidden Ukryty

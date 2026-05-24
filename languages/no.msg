@@ -191,6 +191,7 @@ Settings_OpenBrowser Åpne nettleser
 Settings_OptDebug Feilsøking
 Settings_OptEnd Slutt
 Settings_OptErrorsOnly Bare feil
+Settings_OptTrace Trace
 Settings_OptFrequencies Frekvenser
 Settings_OptFront Forside
 Settings_OptHidden Skjult

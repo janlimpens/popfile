@@ -189,6 +189,7 @@ Settings_OpenBrowser Apri browser
 Settings_OptDebug Debug
 Settings_OptEnd Fine
 Settings_OptErrorsOnly Solo errori
+Settings_OptTrace Trace
 Settings_OptFrequencies Frequenze
 Settings_OptFront Davanti
 Settings_OptHidden Nascosto

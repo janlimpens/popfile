@@ -187,6 +187,7 @@ Settings_OpenBrowser ブラウザを開く
 Settings_OptDebug デバッグ
 Settings_OptEnd 末尾
 Settings_OptErrorsOnly エラーのみ
+Settings_OptTrace Trace
 Settings_OptFrequencies 頻度
 Settings_OptFront 先頭
 Settings_OptHidden 非表示

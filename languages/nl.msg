@@ -191,6 +191,7 @@ Settings_OpenBrowser Browser openen
 Settings_OptDebug Debug
 Settings_OptEnd Einde
 Settings_OptErrorsOnly Alleen fouten
+Settings_OptTrace Trace
 Settings_OptFrequencies Frequenties
 Settings_OptFront Voorkant
 Settings_OptHidden Verborgen
