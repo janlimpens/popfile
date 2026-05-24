@@ -926,7 +926,15 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
                 if ($history->can('touch_slot')) {
                     $history->touch_slot($slot);
                 }
-                $emit->('info', 'Reappeared', "UID $msg was previously $old_bucket, re-added to history");
+                my $destination = $self->folder_for_bucket($old_bucket);
+                if ($destination && $destination ne $folder) {
+                    $imap->move_message($msg, $destination);
+                    $moved_message++;
+                    $emit->('info', 'Reappeared', "UID $msg was previously $old_bucket, moved to $destination");
+                }
+                else {
+                    $emit->('info', 'Reappeared', "UID $msg was previously $old_bucket");
+                }
             }
             next();        }
         if (my $bucket = $is_output) {

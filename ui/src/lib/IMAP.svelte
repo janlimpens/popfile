@@ -136,6 +136,13 @@
     foldersDirty = true;
     ondirty();
   }
+  async function rescanFolder(f) {
+    await fetch('api/v1/imap/rescan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder: f }),
+    });
+  }
 
   // ── Bucket mapping helpers ─────────────────────────────────────────────
   function addMapping() {
@@ -373,6 +380,7 @@
       {#each watched as f (f)}
         <li>
           <span class="tag">{f}</span>
+          <button class="btn-rescan" onclick={() => rescanFolder(f)} title="Rescan"><span class="icon">refresh</span></button>
           <button class="btn-remove" onclick={() => removeWatched(f)} title={t('Remove')}><span class="icon">close</span></button>
         </li>
       {/each}
@@ -785,6 +793,18 @@
     transition: color .15s, background .15s;
   }
   .btn-remove:hover { color: var(--danger); background: rgba(247,118,142,.12); }
+  .btn-rescan {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0 0.2rem;
+    line-height: 1;
+    border-radius: 3px;
+    transition: color .15s;
+  }
+  .btn-rescan:hover { color: var(--accent); }
   .btn-train { font-size: 0.78rem; padding: 0.15rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; background: var(--bg); color: var(--text); }
   .btn-train:hover { border-color: var(--accent); color: var(--accent); }
   .row-actions { display: flex; gap: 0.4rem; align-items: center; }
