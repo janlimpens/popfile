@@ -3,7 +3,7 @@
   import { fade } from 'svelte/transition';
   import { flip } from 'svelte/animate';
   import BucketSelect from './BucketSelect.svelte';
-  import { t } from './locale.svelte.js';
+  import { t, getLocaleCode } from './locale.svelte.js';
 
   let { buckets } = $props();
 
@@ -147,7 +147,8 @@
 
   function formatDate(ts) {
     if (!ts) return '—';
-    return new Date(ts * 1000).toLocaleString(undefined, {
+    const locale = getLocaleCode() || undefined;
+    return new Date(ts * 1000).toLocaleString(locale, {
       year: 'numeric', month: '2-digit', day: '2-digit',
       hour: '2-digit', minute: '2-digit',
     });
