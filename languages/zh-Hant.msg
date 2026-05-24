@@ -260,3 +260,6 @@ WordView_Remove 刪除
 WordView_SelectBucket 選擇類別
 WordView_Title 詞語準確率
 WordView_Words 詞語
+
+Settings_BasePath Base URL Path
+Settings_DescBasePath Prefix for reverse proxy sub-path deployment (e.g. /popfile). Requires restart.

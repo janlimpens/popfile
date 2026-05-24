@@ -261,3 +261,6 @@ WordView_Remove Usuń
 WordView_SelectBucket wybierz kategorię
 WordView_Title Dokładność słów
 WordView_Words słowa
+
+Settings_BasePath Base URL Path
+Settings_DescBasePath Prefix for reverse proxy sub-path deployment (e.g. /popfile). Requires restart.

@@ -111,3 +111,6 @@ Update Alterar
 Wizard_Encryption Criptografia
 Wizard_Username Usuário
 Wizard_Welcome Seja bem-vindo! POPFile te ajuda a organizar sua caixa de entrada. Comece digitando seu nome de usuário — geralmente seu email.
+
+Settings_BasePath Base URL Path
+Settings_DescBasePath Prefix for reverse proxy sub-path deployment (e.g. /popfile). Requires restart.
