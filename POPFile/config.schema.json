@@ -75,8 +75,7 @@
         "expunge":         { "type": "boolean", "default": false },
         "update_interval": { "type": "integer", "minimum": 0, "default": 300 },
         "training_limit":  { "type": "integer", "minimum": 0, "default": 0 },
-        "watched_folders":        { "type": "string", "default": "" },
-        "bucket_folder_mappings": { "type": "string", "default": "" }
+        "watched_folders":        { "type": "string", "default": "" }
       }
     },
     "logger": {

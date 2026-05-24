@@ -78,7 +78,7 @@ BUILD {
 
 Registers all IMAP configuration parameters with their defaults: C<hostname>,
 C<port> (143), C<login>, C<password>, C<update_interval> (20 s), C<expunge>,
-C<use_ssl>, C<watched_folders>, C<bucket_folder_mappings>,
+C<use_ssl>, C<watched_folders>,
 C<enabled> (0), C<training_mode> (0).  Returns 1.
 
 =cut
@@ -509,9 +509,9 @@ method _ensure_folder_tables() {
 
 =head2 _migrate_folder_config()
 
-Migrates legacy C<watched_folders> and C<bucket_folder_mappings> config
-strings to the new database tables.  Idempotent: does nothing if the
-DB tables already contain data or the config keys are not present.
+Migrates legacy C<watched_folders> config strings to the new
+database table.  Idempotent: does nothing if the DB table already
+contains data or the config key is not present.
 
 =cut
 
@@ -532,17 +532,6 @@ method _migrate_folder_config() {
                 'INSERT INTO imap_watched_folders (userid, folder_name) VALUES (?, ?)');
             $sth->execute($userid, $_)
                 for @folders;
-        }
-    }
-    my $mapping_raw = $self->config->get('bucket_folder_mappings');
-    if ($mapping_raw) {
-        my %mapping = split /$sep/, $mapping_raw;
-        if (%mapping) {
-            my $sth = $dbh->prepare(
-                'INSERT INTO imap_folder_mappings (userid, bucket_name, folder_name)
-                 VALUES (?, ?, ?)');
-            $sth->execute($userid, $_, $mapping{$_})
-                for keys %mapping;
         }
     }
 }

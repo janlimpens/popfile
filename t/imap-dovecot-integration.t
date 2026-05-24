@@ -41,8 +41,7 @@ sub _setup() {
         imap_login => 'test',
         imap_password => 'test',
         imap_use_ssl => 0,
-        imap_watched_folders => 'INBOX',
-        imap_bucket_folder_mappings => 'ham-->POPfile.ham-->spam-->POPfile.spam-->');
+        imap_watched_folders => 'INBOX');
     $config->set_started(1);
 
     require POPFile::History;
@@ -62,6 +61,12 @@ sub _setup() {
     $srv->set_classifier($bayes);
     $srv->set_history($history);
     $srv->start();
+    my $dbh = POPFile::Database->instance()->get_handle();
+    for my $mapping (['ham', 'POPfile.ham'], ['spam', 'POPfile.spam']) {
+        $dbh->do(
+            'INSERT INTO imap_folder_mappings (userid, bucket_name, folder_name) VALUES (?, ?, ?)',
+            undef, 1, $mapping->@*);
+    }
     return ($srv, $config, $mq, $bayes, $history)
 }
 
