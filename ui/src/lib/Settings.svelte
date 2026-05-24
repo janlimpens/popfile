@@ -10,6 +10,7 @@
   let errorDetail = $state('');
   let fieldErrors = $state({});
   let restartNeeded = $state(false);
+  let restarting = $state(false);
   let dirty = $state(false);
   let saving = $state(false);
   let settingsSearch = $state('');
@@ -209,7 +210,6 @@
       status = 'ok';
       restartNeeded = body.restart_needed || false;
       dirty = false;
-      setTimeout(() => { status = ''; errorDetail = ''; }, 5000);
       await initLocale(config['api_locale'] || '');
     } else {
       status = 'error';
@@ -237,8 +237,20 @@
 
   async function doRestart() {
     if (!confirm(t('Settings_ConfirmRestart') || 'Restart POPFile now?')) return;
-    try { await fetch('api/v1/restart', { method: 'POST' }); } catch (e) { /* connection lost during restart */ }
-    setTimeout(() => { window.location.reload(); }, 2000);
+    restarting = true;
+    status = '';
+    errorDetail = '';
+    try { await fetch('api/v1/restart', { method: 'POST' }); } catch (e) { /* connection lost */ }
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 1000));
+      try {
+        const res = await fetch('api/v1/config');
+        if (res.ok) { window.location.reload(); return; }
+      } catch (e) { /* server not ready */ }
+    }
+    restarting = false;
+    status = 'error';
+    errorDetail = t('Settings_RestartTimeout') || 'Server did not respond after restart.';
   }
 
   onMount(load);
@@ -415,7 +427,9 @@
     {/if}
 
     <footer class="section-footer">
-      {#if status === 'ok'}
+      {#if restarting}
+        <span class="msg-restart"><span class="icon">restart_alt</span> {t('Settings_Restarting') || 'Restarting…'}</span>
+      {:else if status === 'ok'}
         <span class="msg-ok"><span class="icon">check</span> {t('Settings_Saved')}</span>
         {#if restartNeeded}
           <span class="msg-restart"><span class="icon">restart_alt</span> {t('Settings_RestartNeeded')}</span>

@@ -193,6 +193,8 @@ Settings_SSLChainServer SSL-Chain-Server
 Settings_SaveChanges Änderungen speichern
 Settings_Saved Gespeichert
 Settings_RestartNeeded Neustart erforderlich, damit Änderungen wirksam werden.
+Settings_Restarting Restartingu2026
+Settings_RestartTimeout Server did not respond after restart.
 Settings_RestartNow Jetzt neu starten
 Settings_ConfirmRestart POPFile jetzt neu starten?
 Settings_Saving Speichere...

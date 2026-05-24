@@ -209,6 +209,8 @@ Settings_SSLChainServer SSL-ketenserver
 Settings_SaveChanges Wijzigingen opslaan
 Settings_Saved Opgeslagen
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_Restarting Restartingu2026
+Settings_RestartTimeout Server did not respond after restart.
 Settings_RestartNow Restart Now
 Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Opslaan...

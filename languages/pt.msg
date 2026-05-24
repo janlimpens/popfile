@@ -197,6 +197,8 @@ Settings_SSLChainServer Servidor SSL de cadeia
 Settings_SaveChanges Guardar alterações
 Settings_Saved Guardado
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_Restarting Restartingu2026
+Settings_RestartTimeout Server did not respond after restart.
 Settings_RestartNow Restart Now
 Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving A guardar...

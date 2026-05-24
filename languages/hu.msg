@@ -207,6 +207,8 @@ Settings_SSLChainServer SSL lánc kiszolgáló
 Settings_SaveChanges Változtatások mentése
 Settings_Saved Mentve
 Settings_RestartNeeded Restart required for changes to take effect.
+Settings_Restarting Restartingu2026
+Settings_RestartTimeout Server did not respond after restart.
 Settings_RestartNow Restart Now
 Settings_ConfirmRestart Restart POPFile now?
 Settings_Saving Mentés...
