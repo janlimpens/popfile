@@ -377,10 +377,16 @@
     <div class="add-row">
       <input
         type="text"
-        placeholder="INBOX.Folder"
+        list="watched-folder-list"
+        placeholder="INBOX"
         bind:value={newWatch}
         onkeydown={(e) => e.key === 'Enter' && addWatched()}
       />
+      <datalist id="watched-folder-list">
+        {#each serverFolders.filter(f => !watched.includes(f)) as f}
+          <option value={f} />
+        {/each}
+      </datalist>
       <button class="btn" onclick={addWatched} disabled={!newWatch.trim()}>{t('Add')}</button>
     </div>
   </section>

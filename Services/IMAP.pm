@@ -534,6 +534,13 @@ method _migrate_folder_config() {
                 for @folders;
         }
     }
+    my $still_empty = $dbh->selectrow_array(
+        'SELECT count(*) FROM imap_watched_folders WHERE userid = ?',
+        undef, $userid);
+    $dbh->do(
+        'INSERT INTO imap_watched_folders (userid, folder_name) VALUES (?, ?)',
+        undef, $userid, 'INBOX')
+        unless $still_empty;
 }
 
 =head2 _load_uid_state($dbh)
