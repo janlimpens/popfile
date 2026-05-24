@@ -74,7 +74,7 @@ carton install --deployment
 echo "→ Starting POPFile…"
 POPFILE_ROOT=. POPFILE_USER=. carton exec perl script/popfile start &
 
-echo "→ POPFile is running — check the console output for the port."
+echo "→ POPFile is running  --  check the console output for the port."
 echo "  UI:     http://localhost:<port>/ (see output above)"
 echo "  Data:   $DEST (your config, database, and messages are here)"
 echo "  Stop:   ~/.popfile/bin/popfile stop"

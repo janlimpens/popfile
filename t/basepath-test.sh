@@ -27,7 +27,7 @@ export POPFILE_PATH="$POPFILE_USER/config.json"
 mkdir -p "$POPFILE_USER/messages"
 
 # Use random port, unlikely to collide in CI
-PORT=$(( ($$ % 10000) + 50000 ))
+PORT=$((($$ % 10000) + 50000))
 
 cat >"$POPFILE_PATH" <<EOFCONFIG
 {"version":2,"api":{"port":$PORT,"base_path":"/popfile","local":false,"open_browser":false,"static_dir":"public"}}

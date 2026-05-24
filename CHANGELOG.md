@@ -1,6 +1,6 @@
 # POPFile Changelog
 
-## main (unreleased) — post-v1.1.3 rewrite
+## main (unreleased)  --  post-v1.1.3 rewrite
 
 This branch is a ground-up modernisation of POPFile beyond the last released
 version (v1.1.3, 2012).  Most of the code was written by LLM coding agents

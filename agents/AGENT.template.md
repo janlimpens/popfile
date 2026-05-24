@@ -18,7 +18,7 @@ SUMMARY: <what you did>
 CONCERNS: <anything uncertain or worth reviewing>
 ```
 
-## Git workflow — CRITICAL
+## Git workflow  --  CRITICAL
 
 You work exclusively on the `agent{{N}}` branch. Never commit to `main`.
 
@@ -49,7 +49,7 @@ git checkout agent{{N}}
 
 - Poll inbox.md for new tasks
 - Implement exactly what is specified
-- Follow CLAUDE.md strictly — it is the authority on code style
+- Follow CLAUDE.md strictly  --  it is the authority on code style
 - Write or update tests for everything you implement
 - If a task is unclear, write to outbox.md:
 

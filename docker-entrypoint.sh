@@ -1,5 +1,5 @@
 #!/bin/sh
-# Docker entrypoint — set defaults if no config exists
+# Docker entrypoint  --  set defaults if no config exists
 POPFILE_USER="${POPFILE_USER:-/data}"
 POPFILE_ROOT="${POPFILE_ROOT:-/app}"
 mkdir -p "$POPFILE_USER/messages"

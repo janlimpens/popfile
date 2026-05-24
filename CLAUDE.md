@@ -47,10 +47,10 @@ perl insert.pl <bucket-name> <message-file>
 
 ### Runtime files (gitignored)
 
-- `popfile.cfg` — generated configuration
-- `popfile.db` — SQLite database (corpus + history)
-- `messages/` — cached message files
-- `*.pid`, `*.log` — runtime state
+- `popfile.cfg`  --  generated configuration
+- `popfile.db`  --  SQLite database (corpus + history)
+- `messages/`  --  cached message files
+- `*.pid`, `*.log`  --  runtime state
 
 ## Architecture
 
@@ -58,10 +58,10 @@ perl insert.pl <bucket-name> <message-file>
 
 All POPFile components inherit from `POPFile::Module` and follow a strict lifecycle:
 
-1. `initialize()` — set defaults, register config parameters
-2. `start()` — open connections, start workers
-3. `service()` — called in a loop by the main process; do per-tick work
-4. `stop()` — clean up
+1. `initialize()`  --  set defaults, register config parameters
+2. `start()`  --  open connections, start workers
+3. `service()`  --  called in a loop by the main process; do per-tick work
+4. `stop()`  --  clean up
 
 `POPFile::Loader` discovers, loads, links, and drives all modules through this lifecycle. The main entry point (`script/popfile`) delegates entirely to `POPFile::Loader`.
 
@@ -71,7 +71,7 @@ All POPFile components inherit from `POPFile::Module` and follow a strict lifecy
 |-----------|------|
 | `POPFile::` | Core infrastructure: `Loader`, `Module` (base), `Configuration`, `History`, `MQ` (message queue), `Mutex`, `Logger`, `API` |
 | `Classifier::` | `Bayes` (Naive Bayes engine), `MailParse` (MIME/email parsing), `WordMangle` (word normalization) |
-| `Proxy::` | `Proxy` (base), `POP3`, `SMTP`, `NNTP` — sit between mail client and server |
+| `Proxy::` | `Proxy` (base), `POP3`, `SMTP`, `NNTP`  --  sit between mail client and server |
 | `UI::` | `Mocolicious Web API` |
 | `Services`| `mainly IMAP Implementation` |
 
@@ -157,7 +157,7 @@ When you reply be friendly, precise and to the point. Don't gratulate youself to
 ### Method Calls
 - Always use parentheses on method calls, even if empty
 - Example: `$obj->method()` and `$obj->reader()->method()`, not `$obj->method` and not `$obj->reader->method`
-- This also applies to functions like `next()`, `last()`, `return()` — never bare `next;` or `last;`
+- This also applies to functions like `next()`, `last()`, `return()`  --  never bare `next;` or `last;`
 - optional arguments usually as an %args hash
 - use fields :reader :writer shortcuts where possible
 
@@ -179,11 +179,11 @@ $count += $_->@*
 die 'error message'
     unless $required;
 ```
-- Postfix if/unless/for must have line break and indentation — NEVER on the same line as the statement
+- Postfix if/unless/for must have line break and indentation  --  NEVER on the same line as the statement
 - prefer positive booleans `unless ( $stuff eq '' )`
 
 ### Flow control keywords
-- `next()` and `last()` are functions — always use parentheses, never bare `next;` or `last;`
+- `next()` and `last()` are functions  --  always use parentheses, never bare `next;` or `last;`
 - `return` at end of method has no semicolon; return without braces
 
 ### Redundant checks
