@@ -205,7 +205,8 @@ Settings_SSLChainPort Θύρα αλυσίδας SSL
 Settings_SSLChainServer Διακομιστής αλυσίδας SSL
 Settings_SaveChanges Αποθήκευση αλλαγών
 Settings_Timezone Timezone
-Settings_DescTimezone IANA timezone for log timestamps and date display (e.g. America/Sao_Paulo). Requires restart.
+Settings_TimezonePrefix Region
+Settings_DescTimezone IANA timezone for log timestamps and date display. Requires restart.
 Settings_Saved Αποθηκεύτηκε
 Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Restarting Restartingu2026

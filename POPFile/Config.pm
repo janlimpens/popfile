@@ -65,8 +65,23 @@ method load_file($path) {
         unless $result->@* == 0;
     delete $data->{version};
     $self->_apply_defaults($data, _load_schema()->{properties});
-    $ENV{TZ} = $data->{GLOBAL}{timezone} // 'UTC';
+    $ENV{TZ} = $data->{GLOBAL}{timezone} || POPFile::Config->_detect_host_timezone() || 'UTC';
     %store = $data->%*;
+}
+
+method _detect_host_timezone :common () {
+    my $tz;
+    if (open my $fh, '<', '/etc/timezone') {
+        chomp($tz = <$fh>);
+        close $fh;
+        return $tz
+            if $tz;
+    }
+    my $link = readlink('/etc/localtime');
+    if ($link && $link =~ m{/zoneinfo/(.+)$}) {
+        return $1;
+    }
+    return
 }
 
 method _apply_defaults($node, $schema_node) {

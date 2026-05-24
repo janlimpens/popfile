@@ -4,6 +4,12 @@
   import IMAP from './IMAP.svelte';
 
   let timezones = $state([]);
+  let hostTimezone = $state('UTC');
+  let tzPrefix = $state('');
+  let tzPrefixes = $derived([...new Set(timezones.map(tz => tz.includes('/') ? tz.split('/')[0] : tz))].sort());
+  let tzFiltered = $derived(tzPrefix
+    ? timezones.filter(tz => tz === tzPrefix || tz.startsWith(tzPrefix + '/'))
+    : []);
 
   /** @type {Record<string, any>} */
   let config = $state({});
@@ -197,7 +203,11 @@
     ]);
     if (cfgRes.ok) config = await cfgRes.json();
     if (localeRes.ok) availableLocales = await localeRes.json();
-    if (tzRes.ok) timezones = await tzRes.json();
+    if (tzRes.ok) {
+      const data = await tzRes.json();
+      timezones = data.zones || [];
+      hostTimezone = data.host || 'UTC';
+    }
   }
 
   async function save() {
@@ -347,19 +357,26 @@
                       {/each}
                     </select>
                   {:else if f.type === 'timezone'}
-                    <input
-                      id={f.key}
-                      type="text"
-                      list="tz-list"
-                      bind:value={config[f.key]}
-                      oninput={mark}
-                      placeholder="UTC"
-                    />
-                    <datalist id="tz-list">
-                      {#each timezones as tz}
-                        <option value={tz} />
+                    <select
+                      class="tz-prefix"
+                      value={tzPrefix}
+                      onchange={(e) => { tzPrefix = /** @type {HTMLSelectElement} */ (e.target).value; config[f.key] = ''; }}
+                    >
+                      <option value="">{t('Settings_TimezonePrefix')}</option>
+                      {#each tzPrefixes as p}
+                        <option value={p}>{p}</option>
                       {/each}
-                    </datalist>
+                    </select>
+                    <select
+                      id={f.key}
+                      bind:value={config[f.key]}
+                      onchange={mark}
+                    >
+                      <option value="">{hostTimezone}</option>
+                      {#each tzFiltered as tz}
+                        <option value={tz}>{tz.includes('/') ? tz.split('/')[1] : tz}</option>
+                      {/each}
+                    </select>
                   {:else}
                     <input
                       id={f.key}
@@ -605,6 +622,7 @@
     flex-shrink: 0;
     width: 220px;
   }
+  .tz-prefix { width: 100px; margin-right: 0.4rem; }
   .field-err { font-size: 0.78rem; color: var(--danger); margin-top: 0.25rem; display: block; }
 
   input[type="text"],

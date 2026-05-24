@@ -205,7 +205,8 @@ Settings_SSLChainPort SSL 체인 포트
 Settings_SSLChainServer SSL 체인 서버
 Settings_SaveChanges 변경 사항 저장
 Settings_Timezone Timezone
-Settings_DescTimezone IANA timezone for log timestamps and date display (e.g. America/Sao_Paulo). Requires restart.
+Settings_TimezonePrefix Region
+Settings_DescTimezone IANA timezone for log timestamps and date display. Requires restart.
 Settings_Saved 저장됨
 Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Restarting Restartingu2026

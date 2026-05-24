@@ -207,7 +207,8 @@ Settings_SSLChainPort Puerto SSL en cadena
 Settings_SSLChainServer Servidor SSL en cadena
 Settings_SaveChanges Guardar cambios
 Settings_Timezone Timezone
-Settings_DescTimezone IANA timezone for log timestamps and date display (e.g. America/Sao_Paulo). Requires restart.
+Settings_TimezonePrefix Region
+Settings_DescTimezone IANA timezone for log timestamps and date display. Requires restart.
 Settings_Saved Guardado
 Settings_RestartNeeded Restart required for changes to take effect.
 Settings_Restarting Restartingu2026

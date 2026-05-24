@@ -31,3 +31,5 @@ popfile.db-shm
 popfile.db-wal
 # Local Pi runtime state
 .atl/
+.pi/
+popfile_test

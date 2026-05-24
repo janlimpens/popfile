@@ -182,20 +182,23 @@ sub get_timezones($self) {
     return $self->render(json => ['UTC'])
         unless -d $base;
     my @zones;
-    File::Find::find(
-        { wanted => sub {
+    File::Find::find({
+        wanted => sub {
             return if -d $_;
-            my $rel = $File::Find::name;
-            $rel =~ s{^\Q$base/\E}{};
+            (my $rel = $File::Find::name) =~ s{^\Q$base/\E}{};
             return if $rel =~ m{^right/|^posix/};
-            return if $rel eq 'localtime' || $rel =~ /\.(?:tab|list|zi)$/ || $rel eq 'leapseconds';
-            return if $rel eq 'posixrules';
+            my $is_metadata = $rel eq 'localtime'
+                || $rel eq 'posixrules'
+                || $rel eq 'leapseconds'
+                || $rel =~ /\.(?:tab|list|zi)$/;
+            return if $is_metadata;
             push @zones, $rel;
-        }, no_chdir => 1 },
-        $base);
+        },
+        no_chdir => 1 }, $base);
     @zones = sort @zones;
     unshift @zones, 'UTC';
-    $self->render(json => \@zones);
+    my $host = POPFile::Config->_detect_host_timezone();
+    $self->render(json => { zones => \@zones, host => $host });
 }
 
 1;
