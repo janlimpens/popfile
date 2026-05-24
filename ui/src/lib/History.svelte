@@ -62,7 +62,7 @@
   async function load() {
     loading = true;
     try {
-      const params = new URLSearchParams({ page, per_page: pageSize, search, bucket });
+      const params = new URLSearchParams({ page: String(page), per_page: String(pageSize), search, bucket });
       const res = await fetch('api/v1/history?' + params);
       if (res.ok) {
         const data = await res.json();
@@ -76,7 +76,7 @@
   }
 
   async function pollRefresh() {
-    const params = new URLSearchParams({ page, per_page: pageSize, search, bucket });
+    const params = new URLSearchParams({ page: String(page), per_page: String(pageSize), search, bucket });
     const res = await fetch('api/v1/history?' + params);
     if (!res.ok) return;
     const data = await res.json();
@@ -217,7 +217,7 @@
     {t('History_PerPage')}
     <select
       value={pageSize}
-      onchange={e => changePageSize(parseInt(e.target.value))}
+      onchange={e => changePageSize(parseInt(/** @type {HTMLSelectElement} */ (e.target).value))}
     >
       {#each PAGE_SIZES as n}
         <option value={n}>{n}</option>
