@@ -110,7 +110,7 @@ C<start()> is called.
 
 =cut
 
-method daemon() { $daemon_ref }
+method daemon() { return $daemon_ref }
 
 =head2 url
 
@@ -120,8 +120,9 @@ C<http://localhost:7070/>), or an empty string before C<start()> is called.
 =cut
 
 method url() {
-    return '' unless defined $daemon_ref;
-    return 'http://localhost:' . $port . '/'
+    return ''
+        unless defined $daemon_ref;
+    return sprintf('http://localhost:%d/', $port)
 }
 
 =head2 stop
@@ -135,6 +136,7 @@ method stop() {
         $daemon_ref->stop();
         $daemon_ref = undef;
     }
+    return
 }
 
 =head2 service
@@ -152,19 +154,19 @@ Injects the C<Services::Classifier> facade used by the child for REST calls.
 =cut
 
 method set_classifier_service ($svc = undef) {
-    $classifier_service = $svc;
+    return $classifier_service = $svc
 }
 
 method set_imap ($svc = undef) {
-    $imap_service = $svc;
+    return $imap_service = $svc
 }
 
 method set_loader ($loader = undef) {
-    $loader_ref = $loader;
+    return $loader_ref = $loader
 }
 
 method set_activity ($mod = undef) {
-    $activity_module = $mod;
+    return $activity_module = $mod
 }
 
 
@@ -187,8 +189,8 @@ method build_app ($svc, $session = undef, $base_path = '') {
     require Cwd;
     $static = Cwd::realpath($static) // $static;
     my $app = Mojolicious->new();
-    $app->max_request_size(10_000_000);  # 10 MB
-    $app->log->level('warn');
+    $app->max_request_size(10_000_000);
+    $app->log()->level('warn');
 
     if ($base_path) {
         $base_path =~ s{/+$}{};
@@ -208,44 +210,49 @@ method build_app ($svc, $session = undef, $base_path = '') {
     }
 
     $app->hook(after_dispatch => sub ($c) {
-        $c->res->headers->header('X-Content-Type-Options' => 'nosniff');
-        $c->res->headers->header('X-Frame-Options'        => 'DENY');
-        $c->res->headers->header('Referrer-Policy'        => 'no-referrer');
-        $c->res->headers->header('Permissions-Policy'     => 'interest-cohort=()');
+        $c->res()->headers()->header('X-Content-Type-Options' => 'nosniff');
+        $c->res()->headers()->header('X-Frame-Options' => 'DENY');
+        $c->res()->headers()->header('Referrer-Policy' => 'no-referrer');
+        $c->res()->headers()->header('Permissions-Policy' => 'interest-cohort=()');
     });
 
-    # Serve the built Svelte bundle as static files
-    push $app->static->paths->@*, $static;
+    push $app->static()->paths->@*, $static;
 
-    # Rate limiting — 60 requests per second per IP for API endpoints
     my %rate_limit;
     $app->hook(before_dispatch => sub ($c) {
-        return unless $c->req->url->path->to_string =~ m{^/api/};
-        my $ip = $c->tx->remote_address // '127.0.0.1';
+        return unless $c->req()->url()->path()->to_string() =~ m{^/api/};
+        my $ip = $c->tx()->remote_address() // '127.0.0.1';
         my $now = time();
         my $window = $rate_limit{$ip} // [0, $now];
-        if ($now - $window->[1] > 1) { $window = [1, $now]; $rate_limit{$ip} = $window }
+        if ($now - $window->[1] > 1) {
+            $window = [1, $now];
+            $rate_limit{$ip} = $window;
+        }
         elsif (++$window->[0] > 60) {
             $c->render(status => 429, json => { error => 'Too many requests' });
             return;
         }
     });
 
-    # API authentication — when password is set:
-    #   local=1: GET/HEAD exempt, mutating requests require X-POPFile-Token
-    #   local=0: all API requests require X-POPFile-Token
     $app->hook(before_dispatch => sub ($c) {
-        my $path = $c->req->url->path->to_string;
-        return unless $path =~ m{^/api/};
+        my $path = $c->req()->url()->path()->to_string();
+        return
+            unless $path =~ m{^/api/};
         my $password = $self->config()->get('password') // '';
-        return if $password eq '';
+        return
+            if $password eq '';
         my $local = $self->config()->get('local') // 1;
-        return if $local && $c->req->method eq 'GET';
-        return if $local && $c->req->method eq 'HEAD';
-        my $token = $c->req->headers->header('X-POPFile-Token') // '';
-        return if $token eq $password;
-        $c->render(status => 403, json => { error => 'Forbidden' });
-        return;
+        return
+            if $local && $c->req()->method() eq 'GET';
+        return
+            if $local && $c->req()->method() eq 'HEAD';
+        my $token = $c->req()->headers()->header('X-POPFile-Token') // '';
+        return
+            if $token eq $password;
+        $c->render(
+            status => 403,
+            json => { error => 'Forbidden' });
+        return();
     });
 
     my $r = $app->routes;
@@ -261,58 +268,59 @@ method build_app ($svc, $session = undef, $base_path = '') {
     $app->helper(popfile_lang_dir => sub ($c) { $languages_dir });
     $app->helper(popfile_activity => sub ($c) { $activity_module });
 
-    $r->get('/api/v1/buckets')->to('corpus#list_buckets');
-    $r->post('/api/v1/buckets')->to('corpus#create_bucket');
-    $r->get('/api/v1/buckets/:id')->to('corpus#get_bucket');
-    $r->delete('/api/v1/buckets/:id')->to('corpus#delete_bucket');
-    $r->put('/api/v1/buckets/:id/rename')->to('corpus#rename_bucket');
-    $r->get('/api/v1/buckets/:id/words')->to('corpus#get_bucket_words');
-    $r->get('/api/v1/buckets/:id/words/accuracy')->to('corpus#list_bucket_words_with_accuracy');
-    $r->delete('/api/v1/buckets/:id/words')->to('corpus#clear_bucket_words');
-    $r->put('/api/v1/buckets/:id/params')->to('corpus#update_bucket_params');
-    $r->delete('/api/v1/buckets/:id/word_id/:word_id')->to('corpus#remove_bucket_word');
-    $r->post('/api/v1/buckets/:id/word_id/:word_id/move')->to('corpus#move_bucket_word');
+    my $api = $r->under('/api/v1');
+    $api->get('/buckets')->to('corpus#list_buckets');
+    $api->post('/buckets')->to('corpus#create_bucket');
+    $api->get('/buckets/:id')->to('corpus#get_bucket');
+    $api->delete('/buckets/:id')->to('corpus#delete_bucket');
+    $api->put('/buckets/:id/rename')->to('corpus#rename_bucket');
+    $api->get('/buckets/:id/words')->to('corpus#get_bucket_words');
+    $api->get('/buckets/:id/words/accuracy')->to('corpus#list_bucket_words_with_accuracy');
+    $api->delete('/buckets/:id/words')->to('corpus#clear_bucket_words');
+    $api->put('/buckets/:id/params')->to('corpus#update_bucket_params');
+    $api->delete('/buckets/:id/word_id/:word_id')->to('corpus#remove_bucket_word');
+    $api->post('/buckets/:id/word_id/:word_id/move')->to('corpus#move_bucket_word');
 
-    $r->get('/api/v1/stopwords')->to('corpus#list_stopwords');
-    $r->get('/api/v1/stopword-candidates')->to('corpus#list_stopword_candidates');
-    $r->get('/api/v1/words/search')->to('corpus#search_words');
+    $api->get('/stopwords')->to('corpus#list_stopwords');
+    $api->get('/stopword-candidates')->to('corpus#list_stopword_candidates');
+    $api->get('/words/search')->to('corpus#search_words');
 
-    $r->get('/api/v1/history')->to('history#list_history');
-    $r->post('/api/v1/history/reclassify-unclassified')->to('history#reclassify_unclassified');
-    $r->post('/api/v1/history/bulk-reclassify')->to('history#bulk_reclassify');
-    $r->post('/api/v1/history/:slot/reclassify')->to('history#reclassify_item');
-    $r->get('/api/v1/history/:slot')->to('history#get_history_item');
+    $api->get('/history')->to('history#list_history');
+    $api->post('/history/reclassify-unclassified')->to('history#reclassify_unclassified');
+    $api->post('/history/bulk-reclassify')->to('history#bulk_reclassify');
+    $api->post('/history/:slot/reclassify')->to('history#reclassify_item');
+    $api->get('/history/:slot')->to('history#get_history_item');
 
-    $r->get('/api/v1/magnet-types')->to('magnets#list_magnet_types');
-    $r->get('/api/v1/magnets')->to('magnets#list_magnets');
-    $r->post('/api/v1/magnets')->to('magnets#create_magnet');
-    $r->delete('/api/v1/magnets')->to('magnets#delete_magnet');
+    $api->get('/magnet-types')->to('magnets#list_magnet_types');
+    $api->get('/magnets')->to('magnets#list_magnets');
+    $api->post('/magnets')->to('magnets#create_magnet');
+    $api->delete('/magnets')->to('magnets#delete_magnet');
 
-    $r->get('/api/v1/i18n')->to('Locale#list_locales');
-    $r->get('/api/v1/languages')->to('Locale#list_languages');
-    $r->get('/api/v1/i18n/:locale')->to('Locale#get_locale');
+    $api->get('/i18n')->to('Locale#list_locales');
+    $api->get('/languages')->to('Locale#list_languages');
+    $api->get('/i18n/:locale')->to('Locale#get_locale');
 
-    $r->get('/api/v1/health')->to('Health#get_health');
+    $api->get('/health')->to('Health#get_health');
 
-    $r->get('/api/v1/config')->to('Config#get_config');
-    $r->put('/api/v1/config')->to('Config#update_config');
-    $r->post('/api/v1/restart')->to('Config#restart');
-    $r->get('/api/v1/status')->to('Config#get_status');
-    $r->get('/api/v1/timezones')->to('Config#get_timezones');
+    $api->get('/config')->to('Config#get_config');
+    $api->put('/config')->to('Config#update_config');
+    $api->post('/restart')->to('Config#restart');
+    $api->get('/status')->to('Config#get_status');
+    $api->get('/timezones')->to('Config#get_timezones');
 
-    $r->get('/api/v1/imap/folders')->to('IMAP#get_folders');
-    $r->put('/api/v1/imap/folders')->to('IMAP#update_folders');
-    $r->get('/api/v1/imap/server-folders')->to('IMAP#get_server_folders');
-    $r->post('/api/v1/imap/test-connection')->to('IMAP#test_connection');
-    $r->post('/api/v1/imap/train')->to('IMAP#trigger_training');
-    $r->get('/api/v1/imap/train')->to('IMAP#training_status');
-    $r->post('/api/v1/imap/rescan')->to('IMAP#rescan_folder');
+    $api->get('/imap/folders')->to('IMAP#get_folders');
+    $api->put('/imap/folders')->to('IMAP#update_folders');
+    $api->get('/imap/server-folders')->to('IMAP#get_server_folders');
+    $api->post('/imap/test-connection')->to('IMAP#test_connection');
+    $api->post('/imap/train')->to('IMAP#trigger_training');
+    $api->get('/imap/train')->to('IMAP#training_status');
+    $api->post('/imap/rescan')->to('IMAP#rescan_folder');
 
-    $r->get('/api/v1/activity')->to('activity#recent');
-    $r->get('/api/v1/activity/stream')->to('activity#stream');
+    $api->get('/activity')->to('activity#recent');
+    $api->get('/activity/stream')->to('activity#stream');
 
-    $r->get('/api/v1/logs/tail')->to('logs#tail');
-    $r->get('/api/v1/logs/download')->to('logs#download');
+    $api->get('/logs/tail')->to('logs#tail');
+    $api->get('/logs/download')->to('logs#download');
 
     $r->get('/')->to('UI#index');
 
