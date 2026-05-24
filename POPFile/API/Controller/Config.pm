@@ -60,7 +60,10 @@ sub update_config($self) {
     }
     delete $data->{$_}
         for grep { $_ ne 'version' && !exists $props->{$_} } keys $data->%*;
-    POPFile::Config->validate_doc($data);
+    my $result = POPFile::Config->try_validate($data);
+    if ($result->@*) {
+        return $self->render(status => 422, json => { error => join("\n", $result->@*) });
+    }
     POPFile::ConfigFile->new()->save($path, $data);
     if (grep { /^logger_/ } keys $body->%*) {
         my $loader = $self->popfile_loader();

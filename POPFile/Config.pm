@@ -155,7 +155,7 @@ Used by the API controller before saving config changes.
 =cut
 
 method validate_doc :common ($data) {
-    my $doc = +{version => 2, %{ $data // {} }};
+    my $doc = +{version => 2, ($data // {})->%*};
     my $tmp = POPFile::Config->new();
     $tmp->_strip_unknown($doc, _load_schema()->{properties});
     $tmp->_coerce_types($doc, _load_schema()->{properties});
@@ -163,6 +163,14 @@ method validate_doc :common ($data) {
     die "POPFile::Config: invalid config\n" . join("\n", $result->@*)
         unless $result->@* == 0;
     return
+}
+
+method try_validate :common ($data) {
+    my $doc = +{version => 2, ($data // {})->%*};
+    my $tmp = POPFile::Config->new();
+    $tmp->_strip_unknown($doc, _load_schema()->{properties});
+    $tmp->_coerce_types($doc, _load_schema()->{properties});
+    return $tmp->_validate($doc)
 }
 
 method get($ns, $key) {
