@@ -59,20 +59,27 @@
     !cfgDirty
   );
 
+  let loading = $state(true);
   // ── Load ──────────────────────────────────────────────────────────────
   async function load() {
-    const [cfgRes, folRes, bucketRes] = await Promise.all([
-      fetch('api/v1/config'),
-      fetch('api/v1/imap/folders'),
-      fetch('api/v1/buckets'),
-    ]);
-    if (cfgRes.ok) cfg = await cfgRes.json();
-    if (folRes.ok) {
-      const data = await folRes.json();
-      watched  = data.watched  ?? [];
-      mappings = data.mappings ?? [];
+    loading = true;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const [cfgRes, folRes, bucketRes] = await Promise.all([
+        fetch('api/v1/config'),
+        fetch('api/v1/imap/folders'),
+        fetch('api/v1/buckets'),
+      ]);
+      if (cfgRes.ok && folRes.ok && bucketRes.ok) {
+        cfg = await cfgRes.json();
+        const data = await folRes.json();
+        watched  = data.watched  ?? [];
+        mappings = data.mappings ?? [];
+        loadedBuckets = await bucketRes.json();
+        break;
+      }
+      if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
     }
-    if (bucketRes.ok) loadedBuckets = await bucketRes.json();
+    loading = false;
     if (cfg.imap_hostname && cfg.imap_port) fetchServerFolders();
   }
 
@@ -369,7 +376,9 @@
           <button class="btn-remove" onclick={() => removeWatched(f)} title={t('Remove')}><span class="icon">close</span></button>
         </li>
       {/each}
-      {#if watched.length === 0}
+      {#if loading}
+        <li class="empty">Loading...</li>
+      {:else if watched.length === 0}
         <li class="empty">{t('Imap_NoFoldersWatched')}</li>
       {/if}
     </ul>
@@ -408,7 +417,11 @@
     <p class="hint">{t('Imap_MappingsHint')}</p>
     {#if fetchError}<p class="msg-err">{fetchError}</p>{/if}
 
-    {#if mappings.length > 0}
+    {#if loading}
+      <p class="empty">Loading...</p>
+    {:else if mappings.length === 0}
+      <p class="empty">{t('Imap_NoMappings')}</p>
+    {:else}
       <table>
         <thead>
           <tr><th>Bucket</th><th>{t('Imap_IMAFFolder')}</th><th></th></tr>
@@ -434,8 +447,6 @@
           {/each}
         </tbody>
       </table>
-    {:else}
-      <p class="empty">{t('Imap_NoMappings')}</p>
     {/if}
 
     {#if mappings.length > 0}
