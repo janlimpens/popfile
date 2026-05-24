@@ -24,6 +24,8 @@
           desc: t('Settings_DescOpenBrowser') },
         { key: 'api_locale', label: t('Configuration_Language'), type: 'locale',
           desc: t('Settings_DescLanguage') },
+        { key: 'api_base_path', label: t('Settings_BasePath'), type: 'text',
+          desc: t('Settings_DescBasePath') },
       ],
     },
     {

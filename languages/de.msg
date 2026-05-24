@@ -243,3 +243,6 @@ WordSearch_Search Search
 WordSearch_StopwordList Stopwords
 WordSearch_Title Word Search
 WordSearch_Total words
+
+Settings_BasePath Basis-URL-Pfad
+Settings_DescBasePath Präfix für Reverse-Proxy Sub-Pfad (z.B. /popfile). Neustart erforderlich.
