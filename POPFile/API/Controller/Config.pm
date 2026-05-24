@@ -62,7 +62,15 @@ sub update_config($self) {
         for grep { $_ ne 'version' && !exists $props->{$_} } keys $data->%*;
     my $result = POPFile::Config->try_validate($data);
     if ($result->@*) {
-        return $self->render(status => 422, json => { error => join("\n", $result->@*) });
+        my @fields;
+        for my $msg ($result->@*) {
+            my (undef, $detail) = split(/: /, $msg, 2);
+            my $path = (split(/: /, $msg, 2))[0];
+            $path =~ s{^/}{};
+            $path =~ s{/}{.}g;
+            push @fields, { path => $path, message => $detail // $msg };
+        }
+        return $self->render(status => 422, json => { error => join("\n", $result->@*), fields => \@fields });
     }
     POPFile::ConfigFile->new()->save($path, $data);
     if (grep { /^logger_/ } keys $body->%*) {

@@ -125,7 +125,8 @@ method _validate($data) {
         if $result->{valid};
     my @messages;
     for my $e ($result->{errors}->@*) {
-        push @messages, $e->{instanceLocation} . ': ' . $e->{error};
+        my $loc = $e->{instanceLocation} || $e->{absoluteKeywordLocation} || '/';
+        push @messages, "$loc: $e->{error}";
     }
     return \@messages
 }
