@@ -8,6 +8,7 @@
   let active = $state('ui');
   let status = $state('');
   let errorDetail = $state('');
+  let fieldErrors = $state({});
   let restartNeeded = $state(false);
   let dirty = $state(false);
   let saving = $state(false);
@@ -196,6 +197,7 @@
     saving = true;
     status = '';
     errorDetail = '';
+    fieldErrors = {};
     const res = await fetch('api/v1/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -211,11 +213,27 @@
       await initLocale(config['api_locale'] || '');
     } else {
       status = 'error';
-      errorDetail = (await res.text()) || t('Settings_ErrorSaving');
+      try {
+        const body = await res.json();
+        errorDetail = body.error || t('Settings_ErrorSaving');
+        if (body.fields) {
+          for (const f of body.fields) {
+            fieldErrors[f.path] = f.message;
+          }
+        }
+      } catch (_) {
+        errorDetail = t('Settings_ErrorSaving');
+      }
     }
   }
 
-  function mark() { dirty = true; status = ''; }
+  function mark() { dirty = true; status = ''; fieldErrors = {}; }
+  function sectionKeys(s) {
+    return s.settings ? s.settings.map(f => f.key) : [];
+  }
+  function sectionHasError(s) {
+    return sectionKeys(s).some(k => fieldErrors[k]);
+  }
 
   async function doRestart() {
     if (!confirm(t('Settings_ConfirmRestart') || 'Restart POPFile now?')) return;
@@ -241,6 +259,9 @@
           <span class="nav-label">{s.label}</span>
           {#if s.serviceKey}
             <span class="nav-status" class:on={config[s.serviceKey] == 1}></span>
+          {/if}
+          {#if sectionHasError(s)}
+            <span class="nav-error" title={t('Settings_ErrorSaving')}></span>
           {/if}
         </button>
       {/if}
@@ -316,6 +337,9 @@
                     />
                   {/if}
                 </div>
+                {#if fieldErrors[f.key]}
+                  <span class="field-err">{fieldErrors[f.key]}</span>
+                {/if}
               </div>
             {/each}
           </div>
@@ -397,7 +421,14 @@
           <span class="msg-restart"><span class="icon">restart_alt</span> {t('Settings_RestartNeeded')}</span>
         {/if}
       {:else if status === 'error'}
-        <span class="msg-err"><span class="icon">close</span> {errorDetail || t('Settings_ErrorSaving')}</span>
+        <div class="field-err-list">
+          {#each Object.entries(fieldErrors) as [key, msg]}
+            <span class="field-err-item">{key}: {msg}</span>
+          {/each}
+        </div>
+        {#if errorDetail}
+          <span class="msg-err"><span class="icon">close</span> {errorDetail}</span>
+        {/if}
       {/if}
       <button class="btn-save" onclick={save} disabled={!dirty || saving}>
         {saving ? t('Settings_Saving') : t('Settings_SaveChanges')}
@@ -471,6 +502,7 @@
     transition: background 0.2s;
   }
   .nav-status.on { background: var(--success); }
+  .nav-error { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--danger); }
 
   /* ── Panel ── */
   .panel {
@@ -539,6 +571,7 @@
     flex-shrink: 0;
     width: 220px;
   }
+  .field-err { font-size: 0.78rem; color: var(--danger); margin-top: 0.25rem; display: block; }
 
   input[type="text"],
   input[type="number"],

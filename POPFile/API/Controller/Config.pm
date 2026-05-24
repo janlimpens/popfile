@@ -67,7 +67,7 @@ sub update_config($self) {
             my (undef, $detail) = split(/: /, $msg, 2);
             my $path = (split(/: /, $msg, 2))[0];
             $path =~ s{^/}{};
-            $path =~ s{/}{.}g;
+            $path =~ s{/}{_}g;
             push @fields, { path => $path, message => $detail // $msg };
         }
         return $self->render(status => 422, json => { error => join("\n", $result->@*), fields => \@fields });
