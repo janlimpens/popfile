@@ -12,13 +12,13 @@
   let status = $state('');
 
   async function refresh() {
-    const res = await fetch('/api/v1/buckets');
+    const res = await fetch('api/v1/buckets');
     if (res.ok) buckets = await res.json();
   }
 
   async function createBucket() {
     if (!newName.trim()) return;
-    const res = await fetch('/api/v1/buckets', {
+    const res = await fetch('api/v1/buckets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: newName.trim(), color: newColor }),
@@ -36,14 +36,14 @@
 
   async function deleteBucket(id, name) {
     if (!confirm(`Delete bucket "${name}"?`)) return;
-    const res = await fetch(`/api/v1/buckets/${id}`, { method: 'DELETE' });
+    const res = await fetch(`api/v1/buckets/${id}`, { method: 'DELETE' });
     status = res.ok ? `Deleted "${name}"` : 'Error';
     refresh();
   }
 
   async function renameBucket() {
     if (!renameFrom || !renameTo.trim()) return;
-    const res = await fetch(`/api/v1/buckets/${renameFrom}/rename`, {
+    const res = await fetch(`api/v1/buckets/${renameFrom}/rename`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ new_name: renameTo.trim() }),
@@ -55,13 +55,13 @@
 
   async function clearBucket(id, name) {
     if (!confirm(`Clear all words from "${name}"?`)) return;
-    const res = await fetch(`/api/v1/buckets/${id}/words`, { method: 'DELETE' });
+    const res = await fetch(`api/v1/buckets/${id}/words`, { method: 'DELETE' });
     status = res.ok ? `Cleared "${name}"` : 'Error';
     refresh();
   }
 
   async function setColor(id, color) {
-    await fetch(`/api/v1/buckets/${id}/params`, {
+    await fetch(`api/v1/buckets/${id}/params`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ color }),

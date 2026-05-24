@@ -33,7 +33,7 @@
       per_page: String(perPage),
     });
     if (bucket) params.set('bucket', bucket);
-    const res = await fetch(`/api/v1/words/search?${params}`);
+    const res = await fetch(`api/v1/words/search?${params}`);
     if (res.ok) {
       const data = await res.json();
       words = data.words ?? [];
@@ -64,12 +64,12 @@
   }
 
   async function loadStopwords() {
-    const res = await fetch('/api/v1/stopwords');
+    const res = await fetch('api/v1/stopwords');
     if (res.ok) stopwords = await res.json();
   }
 
   async function addStopword(word) {
-    const res = await fetch('/api/v1/stopwords', {
+    const res = await fetch('api/v1/stopwords', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ word }),
@@ -81,7 +81,7 @@
   }
 
   async function removeStopword(word) {
-    await fetch(`/api/v1/stopwords/${encodeURIComponent(word)}`, { method: 'DELETE' });
+    await fetch(`api/v1/stopwords/${encodeURIComponent(word)}`, { method: 'DELETE' });
     await loadStopwords();
     loadWords();
   }

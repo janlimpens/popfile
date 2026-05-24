@@ -40,7 +40,7 @@
     if (!name) { err = t('BucketSelect_NameRequired'); return; }
     if (!NAME_RE.test(name)) { err = t('BucketSelect_InvalidName'); return; }
     busy = true;
-    const res = await fetch('/api/v1/buckets', {
+    const res = await fetch('api/v1/buckets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),

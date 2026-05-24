@@ -14,8 +14,8 @@
 
   async function load() {
     const [typesRes, bucketsWithRes] = await Promise.all([
-      fetch('/api/v1/magnet-types'),
-      fetch('/api/v1/magnets'),
+      fetch('api/v1/magnet-types'),
+      fetch('api/v1/magnets'),
     ]);
     if (typesRes.ok) magnetTypes = await typesRes.json();
     if (bucketsWithRes.ok) byBucket = await bucketsWithRes.json();
@@ -23,7 +23,7 @@
 
   async function create() {
     if (!newBucket || !newType || !newText.trim()) return;
-    const res = await fetch('/api/v1/magnets', {
+    const res = await fetch('api/v1/magnets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bucket: newBucket, type: newType, value: newText.trim() }),
@@ -34,7 +34,7 @@
   }
 
   async function remove(bucket, type, value) {
-    const res = await fetch('/api/v1/magnets', {
+    const res = await fetch('api/v1/magnets', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bucket, type, value }),

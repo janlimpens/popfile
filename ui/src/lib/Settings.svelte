@@ -184,8 +184,8 @@
   // ─── Load / save ────────────────────────────────────────────────────────
   async function load() {
     const [cfgRes, localeRes] = await Promise.all([
-      fetch('/api/v1/config'),
-      fetch('/api/v1/languages'),
+      fetch('api/v1/config'),
+      fetch('api/v1/languages'),
     ]);
     if (cfgRes.ok) config = await cfgRes.json();
     if (localeRes.ok) availableLocales = await localeRes.json();
@@ -194,7 +194,7 @@
   async function save() {
     saving = true;
     status = '';
-    const res = await fetch('/api/v1/config', {
+    const res = await fetch('api/v1/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config),
@@ -216,7 +216,7 @@
 
   async function doRestart() {
     if (!confirm(t('Settings_ConfirmRestart') || 'Restart POPFile now?')) return;
-    try { await fetch('/api/v1/restart', { method: 'POST' }); } catch (e) { /* connection lost during restart */ }
+    try { await fetch('api/v1/restart', { method: 'POST' }); } catch (e) { /* connection lost during restart */ }
     setTimeout(() => { window.location.reload(); }, 2000);
   }
 

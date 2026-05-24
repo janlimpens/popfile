@@ -38,7 +38,7 @@ function triggerOffline(body) {
 
 async function probe() {
     try {
-        const res = await originalFetch('/api/v1/buckets');
+        const res = await originalFetch('api/v1/buckets');
         if (res.status < 500) {
             clearState();
         } else {

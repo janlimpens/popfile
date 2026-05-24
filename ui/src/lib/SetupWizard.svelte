@@ -46,7 +46,7 @@
 
   async function testConnection() {
     testing = true;
-    const res = await fetch('/api/v1/imap/test-connection', {
+    const res = await fetch('api/v1/imap/test-connection', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hostname: server, port, login, password, use_ssl: encryption === 'SSL' ? 1 : 0 }),
@@ -57,7 +57,7 @@
 
   async function fetchFolders() {
     // Save config first — server-folders reads from stored config
-    await fetch('/api/v1/config', {
+    await fetch('api/v1/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -72,7 +72,7 @@
       return
     }
     fetchingFolders = true;
-    const res = await fetch('/api/v1/imap/server-folders');
+    const res = await fetch('api/v1/imap/server-folders');
     fetchingFolders = false;
     if (res.ok) {
       const all = await res.json();
@@ -109,7 +109,7 @@
   }
 
   async function applySettings() {
-    await fetch('/api/v1/config', {
+    await fetch('api/v1/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -128,12 +128,12 @@
     const selected = [...folderSelected];
     const mappings = selected.map(f => ({ bucket: folderToBucket(f), folder: f }));
     for (const m of mappings) {
-      await fetch('/api/v1/buckets', {
+      await fetch('api/v1/buckets', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: m.bucket }),
       });
     }
-    await fetch('/api/v1/imap/folders', {
+    await fetch('api/v1/imap/folders', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ watched: [], mappings }),

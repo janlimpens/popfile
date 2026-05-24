@@ -32,12 +32,12 @@
   }
 
   async function loadInitialEvents() {
-    const res = await fetch('/api/v1/activity?since=0');
+    const res = await fetch('api/v1/activity?since=0');
     if (res.ok) events = await res.json();
   }
 
   function connectSSE() {
-    const es = new EventSource('/api/v1/activity/stream');
+    const es = new EventSource('api/v1/activity/stream');
     es.addEventListener('activity', (msg) => {
       const event = JSON.parse(msg.data);
       if (paused) return;
@@ -50,7 +50,7 @@
 
   async function loadLogs() {
     try {
-      const res = await fetch('/api/v1/logs/tail?lines=200');
+      const res = await fetch('api/v1/logs/tail?lines=200');
       if (!res.ok) { logError = 'Cannot load logs'; return }
       const data = await res.json();
       logLines = data.lines || [];
@@ -60,7 +60,7 @@
   }
 
   function downloadLogs() {
-    window.open('/api/v1/logs/download', '_blank');
+    window.open('api/v1/logs/download', '_blank');
   }
 
   function checkScroll() {

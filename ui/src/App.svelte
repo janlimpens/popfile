@@ -33,8 +33,8 @@
 
   onMount(async () => {
     const [bucketsRes, cfgRes] = await Promise.all([
-      fetch('/api/v1/buckets'),
-      fetch('/api/v1/config'),
+      fetch('api/v1/buckets'),
+      fetch('api/v1/config'),
     ]);
     if (bucketsRes.ok) buckets = await bucketsRes.json();
     const cfg = cfgRes.ok ? await cfgRes.json() : {};

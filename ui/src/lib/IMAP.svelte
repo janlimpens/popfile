@@ -62,9 +62,9 @@
   // ── Load ──────────────────────────────────────────────────────────────
   async function load() {
     const [cfgRes, folRes, bucketRes] = await Promise.all([
-      fetch('/api/v1/config'),
-      fetch('/api/v1/imap/folders'),
-      fetch('/api/v1/buckets'),
+      fetch('api/v1/config'),
+      fetch('api/v1/imap/folders'),
+      fetch('api/v1/buckets'),
     ]);
     if (cfgRes.ok) cfg = await cfgRes.json();
     if (folRes.ok) {
@@ -79,7 +79,7 @@
   // ── Save connection settings ──────────────────────────────────────────
   async function saveCfg() {
     saving = true;
-    const res = await fetch('/api/v1/config', {
+    const res = await fetch('api/v1/config', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cfg),
@@ -98,14 +98,14 @@
 
   async function doRestart() {
     if (!confirm(t('Settings_ConfirmRestart') || 'Restart POPFile now?')) return;
-    try { await fetch('/api/v1/restart', { method: 'POST' }); } catch (e) {}
+    try { await fetch('api/v1/restart', { method: 'POST' }); } catch (e) {}
     setTimeout(() => { window.location.reload(); }, 2000);
   }
 
   // ── Save folder config ────────────────────────────────────────────────
   async function saveFolders() {
     saving = true;
-    const res = await fetch('/api/v1/imap/folders', {
+    const res = await fetch('api/v1/imap/folders', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ watched, mappings }),
@@ -149,7 +149,7 @@
   let trainStatus = $state('');
   async function triggerTrain(allBuckets) {
     const body = allBuckets.length ? { buckets: allBuckets } : { all: true };
-    const res = await fetch('/api/v1/imap/train', {
+    const res = await fetch('api/v1/imap/train', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -161,7 +161,7 @@
   async function fetchServerFolders() {
     fetchingFolders = true;
     fetchError = '';
-    const res = await fetch('/api/v1/imap/server-folders');
+    const res = await fetch('api/v1/imap/server-folders');
     fetchingFolders = false;
     if (res.ok) {
       serverFolders = await res.json();
@@ -173,7 +173,7 @@
   async function testConnection() {
     testing = true;
     testStatus = null;
-    const res = await fetch('/api/v1/imap/test-connection', {
+    const res = await fetch('api/v1/imap/test-connection', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -211,7 +211,7 @@
     wizardDone = [];
     wizardOpen = true;
     wizardLoading = true;
-    const res = await fetch('/api/v1/imap/server-folders');
+    const res = await fetch('api/v1/imap/server-folders');
     wizardLoading = false;
     if (!res.ok) { wizardOpen = false; return }
     const allFolders = await res.json();
@@ -238,7 +238,7 @@
     for (const folder of selected) {
       const bucket = folderToBucket(folder);
       if (!allBuckets.find(b => b.name === bucket)) {
-        await fetch('/api/v1/buckets', {
+        await fetch('api/v1/buckets', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: bucket }),
         });
@@ -255,7 +255,7 @@
 
   async function trainWizardFolders() {
     const names = wizardDone.map(d => d.bucket);
-    await fetch('/api/v1/imap/train', {
+    await fetch('api/v1/imap/train', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ buckets: names }),

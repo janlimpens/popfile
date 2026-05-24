@@ -63,7 +63,7 @@
     loading = true;
     try {
       const params = new URLSearchParams({ page, per_page: pageSize, search, bucket });
-      const res = await fetch('/api/v1/history?' + params);
+      const res = await fetch('api/v1/history?' + params);
       if (res.ok) {
         const data = await res.json();
         items = data.items;
@@ -77,7 +77,7 @@
 
   async function pollRefresh() {
     const params = new URLSearchParams({ page, per_page: pageSize, search, bucket });
-    const res = await fetch('/api/v1/history?' + params);
+    const res = await fetch('api/v1/history?' + params);
     if (!res.ok) return;
     const data = await res.json();
     const incoming = new Map(data.items.map(i => [i.slot, i]));
@@ -102,7 +102,7 @@
     }
     detailLoading = true;
     selected = { slot };
-    const res = await fetch(`/api/v1/history/${slot}`);
+    const res = await fetch(`api/v1/history/${slot}`);
     if (res.ok) {
       const data = await res.json();
       selected = { slot, body: data.body, word_colors: data.word_colors };
@@ -114,7 +114,7 @@
   }
 
   async function reclassify(slot, bucket) {
-    await fetch(`/api/v1/history/${slot}/reclassify`, {
+    await fetch(`api/v1/history/${slot}/reclassify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bucket }),
@@ -124,7 +124,7 @@
 
   async function reclassifyAll() {
     reclassifying = true;
-    const res = await fetch('/api/v1/history/reclassify-unclassified', { method: 'POST' });
+    const res = await fetch('api/v1/history/reclassify-unclassified', { method: 'POST' });
     reclassifying = false;
     if (res.ok) {
       const data = await res.json();
@@ -135,7 +135,7 @@
   async function bulkReclassify() {
     if (!bulkBucket || checkedSlots.size === 0) return;
     bulkBusy = true;
-    await fetch('/api/v1/history/bulk-reclassify', {
+    await fetch('api/v1/history/bulk-reclassify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ slots: [...checkedSlots], bucket: bulkBucket }),

@@ -10,7 +10,7 @@ export function getLocale() {
 }
 
 export async function loadLocale(name) {
-    const res = await fetch(`/api/v1/i18n/${encodeURIComponent(name)}`);
+    const res = await fetch(`api/v1/i18n/${encodeURIComponent(name)}`);
     if (!res.ok) return;
     const data = await res.json();
     for (const key of Object.keys(strings)) delete strings[key];
@@ -19,7 +19,7 @@ export async function loadLocale(name) {
 }
 
 export async function initLocale(override) {
-    const res = await fetch('/api/v1/i18n');
+    const res = await fetch('api/v1/i18n');
     if (!res.ok) return [];
     const available = await res.json();
     const target = override && available.find(l => l.name === override)
