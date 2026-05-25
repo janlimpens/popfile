@@ -4,6 +4,7 @@ use Object::Pad;
 use POPFile::Features;
 use File::Copy qw(copy);
 use Encode ();
+use POPFile::Mutex;
 
 my $_instance;
 
@@ -33,6 +34,7 @@ field $_is_sqlite = 0;
 field $_mojo_db = undef;
 field $_dbh = undef;
 field $_config = {};
+field $write_mutex = undef;
 
 method instance :common (%config) {
     $_instance //= __PACKAGE__->new();
@@ -55,6 +57,9 @@ method get_handle(%overrides) {
 }
 
 method txn($coderef) {
+    $write_mutex //= POPFile::Mutex->new('db_write');
+    $write_mutex->acquire(30)
+        or die 'Could not acquire database write lock';
     my $dbh = $self->get_handle();
     $dbh->begin_work();
     try {
@@ -63,6 +68,8 @@ method txn($coderef) {
     } catch ($e) {
         $dbh->rollback();
         die $e;
+    } finally {
+        $write_mutex->release();
     }
 }
 
