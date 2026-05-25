@@ -349,14 +349,20 @@ method poll_sync ($timeout = 30) {
     $self->poll();
     return 1
         unless defined $imap_worker;
+    if (Mojo::IOLoop->is_running()) {
+        my $deadline = time() + $timeout;
+        while (!$poll_result_received && time() < $deadline) {
+            Mojo::IOLoop->one_tick();
+        }
+        return $poll_result_received ? 1 : 0
+    }
     my $deadline = time() + $timeout;
     my $sync_timer = Mojo::IOLoop->recurring(0.1 => sub {
         return
             if !$poll_result_received && time() < $deadline;
         Mojo::IOLoop->stop();
     });
-    Mojo::IOLoop->start()
-        unless Mojo::IOLoop->is_running();
+    Mojo::IOLoop->start();
     Mojo::IOLoop->remove($sync_timer)
         if defined $sync_timer;
     return $poll_result_received ? 1 : 0

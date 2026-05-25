@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
-use POPFile::Features;
 use File::Copy qw(copy);
 use Encode ();
 use POPFile::Mutex;
@@ -9,6 +8,8 @@ use POPFile::Mutex;
 my $_instance;
 
 class POPFile::Database;
+
+use POPFile::Features;
 
 =head1 NAME
 
