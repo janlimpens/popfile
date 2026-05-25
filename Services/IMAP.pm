@@ -228,11 +228,18 @@ method poll() {
         pending_folder_moves => \%pending_folder_moves,
         pending_direct_moves => \%pending_direct_moves,
         uid_next_overrides => \%_uid_next_override,
-        hash_to_mid => \%hash_to_mid,
         folder_change_flag => $folder_change_flag,
     });
-    syswrite($poll_trigger, $msg . "\n")
-        or $self->log_msg(WARN => "IMAP poll trigger failed: $!");
+    my $data = $msg . "\n";
+    my $written = 0;
+    while ($written < length($data)) {
+        my $n = syswrite($poll_trigger, $data, length($data) - $written, $written);
+        unless (defined $n) {
+            $self->log_msg(WARN => "IMAP poll trigger failed: $!");
+            return;
+        }
+        $written += $n;
+    }
 }
 
 method _find_train_flags() {
@@ -256,8 +263,6 @@ method _handle_poll_result($result) {
         @pending_train_buckets = ();
         $training_mode = 0;
     }
-    $hash_to_mid{$_} = $result->{hash_to_mid}{$_}
-        for keys $result->{hash_to_mid}->%*;
     delete $pending_direct_moves{$_}
         for $result->{direct_moved_hashes}->@*;
     delete $pending_folder_moves{$_}
@@ -317,8 +322,7 @@ method _imap_worker_loop($subprocess, $reader) {
             if ref $msg->{pending_direct_moves} eq 'HASH';
         %_uid_next_override = $msg->{uid_next_overrides}->%*
             if ref $msg->{uid_next_overrides} eq 'HASH';
-        %hash_to_mid = $msg->{hash_to_mid}->%*
-            if ref $msg->{hash_to_mid} eq 'HASH';
+        %hash_to_mid = ();
         $folder_change_flag = $msg->{folder_change_flag} // 0;
         @mailboxes = ()
             if $folder_change_flag;
@@ -442,9 +446,10 @@ method _run_poll_work($subprocess = undef) {
                 $emit->('info', 'IMAP Poll', $changes ? "$changes message(s) processed" : 'No changes', $poll_local_id);
             }
             $result->{moved_hashes} = [grep { !exists $pending_folder_moves{$_} } keys %pending_before];
-            $result->{hash_to_mid} = \%hash_to_mid;
-            my ($any_imap) = map { $_->{imap} }
-                grep { defined $_->{imap} } values %folders;
+            my ($any_imap) =
+                map { $_->{imap} }
+                grep { defined $_->{imap} }
+                values %folders;
             $self->_save_uid_state($dbh, $any_imap)
                 if defined $dbh && defined $any_imap;
         }
