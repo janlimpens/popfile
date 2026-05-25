@@ -77,7 +77,6 @@ Settings_DescLogSQLToStdout Incluir instruções SQL com valores vinculados na s
 Settings_DescLogToStdout Espelhar a saída de log no stdout além do arquivo de log.
 Settings_DescOpenBrowser Abrir o navegador padrão quando a interface web estiver pronta.
 Settings_DescSQLiteBackup Copiar o banco de dados para um arquivo .backup a cada hora.
-Settings_DescSQLiteFastWrites Desativar a sincronização de escrita SQLite para inserções mais rápidas. Risco mínimo de perda de dados em caso de falha.
 Settings_DescSSLChainPort Porta do servidor SSL POP3 upstream.
 Settings_DescSSLChainServer Nome do host do servidor SSL POP3 upstream para encadeamento SSL.
 Settings_DescSubjectTagLeft Prefixo inserido no cabeçalho Assunto, ex. [SPAM].

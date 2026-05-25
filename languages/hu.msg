@@ -157,7 +157,6 @@ Settings_DescRetentionDays Hány napig kell megőrizni az üzenetek előzményei
 Settings_DescSMTPLocalOnly Csak helyi géptől érkező SMTP-kapcsolatok fogadása.
 Settings_DescSMTPPort A POPFile által SMTP-hez figyelt port (alapértelmezett: 25).
 Settings_DescSQLiteBackup Adatbázis automatikus biztonsági mentése séma módosítása előtt.
-Settings_DescSQLiteFastWrites Adatbázis szinkronizáció letiltása (gyorsabb, kevésbé biztonságos).
 Settings_DescSQLiteJournal SQLite napló / WAL mód.
 Settings_DescSQLiteTweaks Bitmaszk: 1 = gyorsabb írások (kevésbé biztonságos), 2 = időszakos mentés.
 Settings_DescSSLChainPort A felsőbb szintű SSL POP3-kiszolgáló portja.
@@ -199,7 +198,6 @@ Settings_OptProbabilities Valószínűségek
 Settings_OptWarnings Figyelmeztetések
 Settings_RetentionDays Megőrzés (nap)
 Settings_SQLiteBackup SQLite biztonsági mentés
-Settings_SQLiteFastWrites SQLite gyors írás
 Settings_SQLiteJournalMode SQLite naplómód
 Settings_SQLiteTweaks SQLite finomhangolás
 Settings_SSLChainPort SSL lánc port

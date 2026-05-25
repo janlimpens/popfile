@@ -157,7 +157,6 @@ Settings_DescRetentionDays Nombre de jours de conservation de l'historique des m
 Settings_DescSMTPLocalOnly N'accepter que les connexions SMTP depuis localhost.
 Settings_DescSMTPPort Port sur lequel POPFile écoute pour SMTP (par défaut 25).
 Settings_DescSQLiteBackup Sauvegarder automatiquement la base avant les changements de schéma.
-Settings_DescSQLiteFastWrites Désactiver la synchronisation de la base (plus rapide, moins sûr).
 Settings_DescSQLiteJournal Mode journal SQLite / WAL.
 Settings_DescSQLiteTweaks Masque de bits : 1 = écritures plus rapides (moins sûr), 2 = sauvegarde périodique.
 Settings_DescSSLChainPort Port du serveur SSL POP3 en amont.
@@ -199,7 +198,6 @@ Settings_OptProbabilities Probabilités
 Settings_OptWarnings Avertissements
 Settings_RetentionDays Conservation (jours)
 Settings_SQLiteBackup Sauvegarde SQLite
-Settings_SQLiteFastWrites Écriture rapide SQLite
 Settings_SQLiteJournalMode Mode journal SQLite
 Settings_SQLiteTweaks Réglages SQLite
 Settings_SSLChainPort Port SSL de chaîne

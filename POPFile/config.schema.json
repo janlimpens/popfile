@@ -26,7 +26,7 @@
         "dbauth":              { "type": "string",  "default": "" },
         "corpus":              { "type": "string",  "default": "corpus" },
         "sqlite_backup":       { "type": "boolean", "default": false },
-        "sqlite_fast_writes":  { "type": "boolean", "default": false },
+        "sqlite_journal_mode": { "type": "string",  "default": "" },
         "unclassified_weight": { "type": "number", "default": 100 },
         "subject_mod_pos":     { "type": "boolean", "default": false },
         "subject_mod_left":    { "type": "string",  "default": "[" },

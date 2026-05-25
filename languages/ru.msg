@@ -157,7 +157,6 @@ Settings_DescRetentionDays Сколько дней хранить историю
 Settings_DescSMTPLocalOnly Принимать подключения SMTP только с локального хоста.
 Settings_DescSMTPPort Порт, на котором POPFile прослушивает SMTP (по умолчанию 25).
 Settings_DescSQLiteBackup Автоматически создавать резервную копию БД перед изменениями схемы.
-Settings_DescSQLiteFastWrites Отключить синхронизацию БД (быстрее, менее безопасно).
 Settings_DescSQLiteJournal Режим журнала SQLite / WAL.
 Settings_DescSQLiteTweaks Битовая маска: 1 = более быстрая запись (менее безопасно), 2 = периодическое резервное копирование.
 Settings_DescSSLChainPort Порт вышестоящего SSL POP3-сервера.
@@ -199,7 +198,6 @@ Settings_OptProbabilities Вероятности
 Settings_OptWarnings Предупреждения
 Settings_RetentionDays Хранение (дни)
 Settings_SQLiteBackup Резервная копия SQLite
-Settings_SQLiteFastWrites Быстрая запись SQLite
 Settings_SQLiteJournalMode Режим журнала SQLite
 Settings_SQLiteTweaks Настройки SQLite
 Settings_SSLChainPort Порт SSL-цепочки

@@ -352,7 +352,8 @@ method CORE_link_components() {
             dbconnect => $dbconnect,
             database => $database,
             dbuser => POPFile::Config->instance()->get(bayes => 'dbuser'),
-            dbauth => POPFile::Config->instance()->get(bayes => 'dbauth'));
+            dbauth => POPFile::Config->instance()->get(bayes => 'dbauth'),
+            sqlite_journal_mode => POPFile::Config->instance()->get(bayes => 'sqlite_journal_mode') // '');
     }
 }
 

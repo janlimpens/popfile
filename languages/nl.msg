@@ -159,7 +159,6 @@ Settings_DescRetentionDays Hoeveel dagen berichtgeschiedenis bewaren.
 Settings_DescSMTPLocalOnly Alleen SMTP-verbindingen van localhost accepteren.
 Settings_DescSMTPPort Poort waarop POPFile luistert voor SMTP (standaard 25).
 Settings_DescSQLiteBackup Automatisch back-up maken van database voor schema-wijzigingen.
-Settings_DescSQLiteFastWrites Database synchronisatie uitschakelen (sneller, minder veilig).
 Settings_DescSQLiteJournal SQLite-journaalmodus / WAL.
 Settings_DescSQLiteTweaks Bitmasker: 1 = snellere schrijfacties (minder veilig), 2 = periodieke back-up.
 Settings_DescSSLChainPort Poort van de stroomopwaartse SSL POP3-server.
@@ -201,7 +200,6 @@ Settings_OptProbabilities Kansen
 Settings_OptWarnings Waarschuwingen
 Settings_RetentionDays Bewaring (dagen)
 Settings_SQLiteBackup SQLite back-up
-Settings_SQLiteFastWrites SQLite snel schrijven
 Settings_SQLiteJournalMode SQLite-journaalmodus
 Settings_SQLiteTweaks SQLite-optimalisaties
 Settings_SSLChainPort SSL-ketenpoort

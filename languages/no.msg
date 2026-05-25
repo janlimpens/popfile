@@ -159,7 +159,6 @@ Settings_DescRetentionDays Hvor mange dager meldingshistorikk beholdes.
 Settings_DescSMTPLocalOnly Godta kun SMTP-forbindelser fra localhost.
 Settings_DescSMTPPort Port som POPFile lytter på for SMTP (standard 25).
 Settings_DescSQLiteBackup Ta automatisk sikkerhetskopi av database før skjemaendringer.
-Settings_DescSQLiteFastWrites Deaktiver databasesynkronisering (raskere, mindre sikkert).
 Settings_DescSQLiteJournal SQLite-journal / WAL-modus.
 Settings_DescSQLiteTweaks Bitmaske: 1 = raskere skriving (mindre sikker), 2 = periodisk sikkerhetskopiering.
 Settings_DescSSLChainPort Port for den overordnede SSL POP3-serveren.
@@ -201,7 +200,6 @@ Settings_OptProbabilities Sannsynligheter
 Settings_OptWarnings Advarsler
 Settings_RetentionDays Oppbevaring (dager)
 Settings_SQLiteBackup SQLite sikkerhetskopi
-Settings_SQLiteFastWrites SQLite rask skriving
 Settings_SQLiteJournalMode SQLite-journalmodus
 Settings_SQLiteTweaks SQLite-justeringer
 Settings_SSLChainPort SSL-kjedeport

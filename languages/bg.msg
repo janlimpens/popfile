@@ -157,7 +157,6 @@ Settings_DescRetentionDays Брой дни за съхранение на ист
 Settings_DescSMTPLocalOnly Приемай SMTP връзки само от локален хост.
 Settings_DescSMTPPort Порт, на който POPFile слуша за SMTP (по подразбиране 25).
 Settings_DescSQLiteBackup Автоматично архивиране на базата данни преди промени в схемата.
-Settings_DescSQLiteFastWrites Деактивиране на синхронизацията на базата данни (по-бързо, по-малко сигурно).
 Settings_DescSQLiteJournal Режим на SQLite журнал / WAL.
 Settings_DescSQLiteTweaks Битова маска: 1 = по-бърз запис (по-малко безопасно), 2 = периодичен архив.
 Settings_DescSSLChainPort Порт на upstream SSL POP3 сървър.
@@ -199,7 +198,6 @@ Settings_OptProbabilities Вероятности
 Settings_OptWarnings Предупреждения
 Settings_RetentionDays Съхранение (дни)
 Settings_SQLiteBackup SQLite резервно копие
-Settings_SQLiteFastWrites Бърз запис SQLite
 Settings_SQLiteJournalMode Режим на SQLite журнал
 Settings_SQLiteTweaks Настройки на SQLite
 Settings_SSLChainPort SSL chain порт

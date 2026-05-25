@@ -90,6 +90,11 @@ method _connect(%overrides) {
         my $mojo = Mojo::SQLite->new($dbname);
         $_mojo_db = $mojo->db();
         $_is_sqlite = 1;
+        $_mojo_db->query('PRAGMA journal_mode=WAL');
+        $_mojo_db->query('PRAGMA synchronous=NORMAL');
+        my $jm = $c{sqlite_journal_mode} // '';
+        $_mojo_db->query('PRAGMA journal_mode=' . $jm)
+            if $jm;
     } elsif ($mysql) {
         my $user = $c{dbuser} // '';
         my $auth = $c{dbauth} // '';

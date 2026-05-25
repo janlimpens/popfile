@@ -156,7 +156,6 @@ Settings_DescRetentionDays 메시지 기록 보관 일수.
 Settings_DescSMTPLocalOnly 로컬 호스트에서만 SMTP 연결을 수락합니다.
 Settings_DescSMTPPort POPFile이 SMTP를 수신하는 포트 (기본값 25).
 Settings_DescSQLiteBackup 스키마 변경 전에 데이터베이스를 자동으로 백업합니다.
-Settings_DescSQLiteFastWrites 데이터베이스 동기화 비활성화 (더 빠르지만 덜 안전함).
 Settings_DescSQLiteJournal SQLite 저널 / WAL 모드.
 Settings_DescSQLiteTweaks 비트 마스크: 1=빠른 쓰기(덜 안전), 2=주기적 백업.
 Settings_DescSSLChainPort 업스트림 SSL POP3 서버 포트.
@@ -198,7 +197,6 @@ Settings_OptProbabilities 확률
 Settings_OptWarnings 경고
 Settings_RetentionDays 보관 기간 (일)
 Settings_SQLiteBackup SQLite 백업
-Settings_SQLiteFastWrites SQLite 빠른 쓰기
 Settings_SQLiteJournalMode SQLite 저널 모드
 Settings_SQLiteTweaks SQLite 조정
 Settings_SSLChainPort SSL 체인 포트

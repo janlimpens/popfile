@@ -155,7 +155,6 @@ Settings_DescRetentionDays Quants dies conservar l'historial de missatges.
 Settings_DescSMTPLocalOnly Accepta només connexions SMTP des de localhost.
 Settings_DescSMTPPort Port on POPFile escolta per a SMTP (predeterminat 25).
 Settings_DescSQLiteBackup Fer còpia de seguretat automàtica abans de canvis desperma.
-Settings_DescSQLiteFastWrites Desactivar la sincronització de la base de dades (més ràpid, menys segur).
 Settings_DescSQLiteJournal Mode de diari SQLite / WAL.
 Settings_DescSQLiteTweaks Màscara de bits: 1 = escriptures més ràpides (menys segures), 2 = còpia de seguretat periòdica.
 Settings_DescSSLChainPort Port del servidor SSL POP3 aigües amunt.
@@ -197,7 +196,6 @@ Settings_OptProbabilities Probabilitats
 Settings_OptWarnings Advertències
 Settings_RetentionDays Retenció (dies)
 Settings_SQLiteBackup Còpia de seguretat SQLite
-Settings_SQLiteFastWrites Escriptura ràpida SQLite
 Settings_SQLiteJournalMode Mode de diari SQLite
 Settings_SQLiteTweaks Ajustos de SQLite
 Settings_SSLChainPort Port SSL en cadena

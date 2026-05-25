@@ -155,7 +155,6 @@ Settings_DescRetentionDays Kuinka monta päivää viestihistoria säilytetään.
 Settings_DescSMTPLocalOnly Hyväksy vain SMTP-yhteydet paikalliselta isännältä.
 Settings_DescSMTPPort Portti, jota POPFile kuuntelee SMTP:tä varten (oletus 25).
 Settings_DescSQLiteBackup Varmuuskopioi tietokanta automaattisesti ennen skeemamuutoksia.
-Settings_DescSQLiteFastWrites Poista tietokannan synkronointi käytöstä (nopeampi, vähemmän turvallinen).
 Settings_DescSQLiteJournal SQLite-päiväkirja / WAL-tila.
 Settings_DescSQLiteTweaks Bittipeite: 1 = nopeammat kirjoitukset (vähemmän turvallinen), 2 = säännöllinen varmuuskopio.
 Settings_DescSSLChainPort Ylävirran SSL POP3 -palvelimen portti.
@@ -197,7 +196,6 @@ Settings_OptProbabilities Todennäköisyydet
 Settings_OptWarnings Varoitukset
 Settings_RetentionDays Säilytys (päivää)
 Settings_SQLiteBackup SQLite-varmuuskopio
-Settings_SQLiteFastWrites SQLite nopea kirjoitus
 Settings_SQLiteJournalMode SQLite-päiväkirjatila
 Settings_SQLiteTweaks SQLite-hienosäädöt
 Settings_SSLChainPort SSL-ketjuportti

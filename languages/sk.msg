@@ -157,7 +157,6 @@ Settings_DescRetentionDays Koľko dní uchovávať históriu správ.
 Settings_DescSMTPLocalOnly Prijímať pripojenia SMTP iba z lokálneho hostiteľa.
 Settings_DescSMTPPort Port, na ktorom POPFile počúva pre SMTP (predvolené 25).
 Settings_DescSQLiteBackup Automaticky zálohovať databázu pred zmenami schémy.
-Settings_DescSQLiteFastWrites Vypnúť synchronizáciu databázy (rýchlejšie, menej bezpečné).
 Settings_DescSQLiteJournal Režim denníka SQLite / WAL.
 Settings_DescSQLiteTweaks Bitová maska: 1 = rýchlejšie zápisy (menej bezpečné), 2 = pravidelná záloha.
 Settings_DescSSLChainPort Port nadriadeného SSL POP3 servera.
@@ -199,7 +198,6 @@ Settings_OptProbabilities Pravdepodobnosti
 Settings_OptWarnings Varovania
 Settings_RetentionDays Uchovávania (dni)
 Settings_SQLiteBackup Záloha SQLite
-Settings_SQLiteFastWrites Rýchly zápis SQLite
 Settings_SQLiteJournalMode Režim denníka SQLite
 Settings_SQLiteTweaks Vylepšenia SQLite
 Settings_SSLChainPort Port SSL reťazca

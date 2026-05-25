@@ -155,7 +155,6 @@ Settings_DescRetentionDays Mesaj geçmişinin kaç gün saklanacağı.
 Settings_DescSMTPLocalOnly Yalnızca localhost'tan SMTP bağlantılarını kabul et.
 Settings_DescSMTPPort POPFile'ın SMTP için dinlediği port (varsayılan 25).
 Settings_DescSQLiteBackup Şema değişikliklerinden önce veritabanını otomatik yedekle.
-Settings_DescSQLiteFastWrites Veritabanı senkronizasyonunu devre dışı bırak (daha hızlı, daha az güvenli).
 Settings_DescSQLiteJournal SQLite günlük / WAL modu.
 Settings_DescSQLiteTweaks Bit maskesi: 1 = daha hızlı yazma (daha az güvenli), 2 = periyodik yedekleme.
 Settings_DescSSLChainPort Yukarı akış SSL POP3 sunucu portu.
@@ -197,7 +196,6 @@ Settings_OptProbabilities Olasılıklar
 Settings_OptWarnings Uyarılar
 Settings_RetentionDays Saklama (gün)
 Settings_SQLiteBackup SQLite yedekleme
-Settings_SQLiteFastWrites SQLite hızlı yazma
 Settings_SQLiteJournalMode SQLite Günlük Modu
 Settings_SQLiteTweaks SQLite İnce Ayarları
 Settings_SSLChainPort SSL Zincir Portu

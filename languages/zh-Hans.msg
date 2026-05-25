@@ -155,7 +155,6 @@ Settings_DescRetentionDays 邮件历史保留天数。
 Settings_DescSMTPLocalOnly 仅接受本地主机的 SMTP 连接。
 Settings_DescSMTPPort POPFile 监听 SMTP 的端口（默认 25）。
 Settings_DescSQLiteBackup 在模式更改前自动备份数据库。
-Settings_DescSQLiteFastWrites 禁用数据库同步（更快，安全性较低）。
 Settings_DescSQLiteJournal SQLite 日志 / WAL 模式。
 Settings_DescSQLiteTweaks 位掩码：1=快速写入（安全性较低），2=定期备份。
 Settings_DescSSLChainPort 上游 SSL POP3 服务器端口。
@@ -197,7 +196,6 @@ Settings_OptProbabilities 概率
 Settings_OptWarnings 警告
 Settings_RetentionDays 保留天数
 Settings_SQLiteBackup SQLite 备份
-Settings_SQLiteFastWrites SQLite 快速写入
 Settings_SQLiteJournalMode SQLite 日志模式
 Settings_SQLiteTweaks SQLite 调整
 Settings_SSLChainPort SSL 链接端口

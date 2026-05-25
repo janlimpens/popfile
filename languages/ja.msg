@@ -155,7 +155,6 @@ Settings_DescRetentionDays メッセージ履歴の保存日数。
 Settings_DescSMTPLocalOnly ローカルホストからの SMTP 接続のみ受け入れます。
 Settings_DescSMTPPort POPFile が SMTP を待ち受けるポート（デフォルト 25）。
 Settings_DescSQLiteBackup スキーマ変更前にデータベースを自動バックアップ。
-Settings_DescSQLiteFastWrites データベース同期を無効にする（高速、安全性は低下）。
 Settings_DescSQLiteJournal SQLite ジャーナル / WAL モード。
 Settings_DescSQLiteTweaks ビットマスク: 1=高速書き込み（安全性低下）, 2=定期バックアップ。
 Settings_DescSSLChainPort 上流 SSL POP3 サーバーのポート。
@@ -197,7 +196,6 @@ Settings_OptProbabilities 確率
 Settings_OptWarnings 警告
 Settings_RetentionDays 保存期間（日）
 Settings_SQLiteBackup SQLite バックアップ
-Settings_SQLiteFastWrites SQLite 高速書き込み
 Settings_SQLiteJournalMode SQLite ジャーナルモード
 Settings_SQLiteTweaks SQLite チューニング
 Settings_SSLChainPort SSL チェーンポート

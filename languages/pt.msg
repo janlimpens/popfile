@@ -149,7 +149,6 @@ Settings_DescSMTP Proxy SMTP — fica entre seu cliente de email e o servidor SM
 Settings_DescSMTP Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
 Settings_DescSMTP Proxy SMTP — fica entre seu cliente de email e o servidor SMTP. Classifica mensagens enviadas e as encaminha ao servidor real. Aponte seu cliente de email para o host e porta onde o POPFile está rodando (padrão 25).
 Settings_DescSQLiteBackup Copiar a base de dados para um ficheiro .backup a cada hora.
-Settings_DescSQLiteFastWrites Desactivar a sincronização de escrita SQLite para inserções mais rápidas. Risco mínimo de perda de dados em caso de falha.
 Settings_DescSQLiteJournal Modo de diário SQLite / WAL.
 Settings_DescSSLChainPort Porto do servidor SSL POP3 a montante.
 Settings_DescSSLChainServer Nome do host do servidor SSL POP3 a montante para encadeamento SSL.
@@ -190,7 +189,6 @@ Settings_OptProbabilities Probabilidades
 Settings_OptWarnings Avisos
 Settings_RetentionDays Retenção (dias)
 Settings_SQLiteBackup SQLite: cópia de segurança periódica
-Settings_SQLiteFastWrites SQLite: escrita rápida (menos seguro)
 Settings_SQLiteJournalMode Modo de diário SQLite
 Settings_SSLChainPort Porto SSL de cadeia
 Settings_SSLChainServer Servidor SSL de cadeia

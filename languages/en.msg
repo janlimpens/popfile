@@ -136,7 +136,6 @@ Settings_DescPOP3 POP3 proxy — sits between your mail client and your POP3 ser
 Settings_DescRetentionDays How many days to keep message history.
 Settings_DescSMTP SMTP proxy — sits between your mail client and your SMTP server. It classifies outgoing messages and forwards them to the real server. Point your mail client at the host and port POPFile listens on (default 25).
 Settings_DescSQLiteBackup Copy the database to a .backup file every hour.
-Settings_DescSQLiteFastWrites Disable SQLite write-ahead sync for faster inserts. Risks minor data loss on crash.
 Settings_DescSQLiteJournal SQLite journal / WAL mode.
 Settings_DescSSLChainPort Upstream SSL POP3 server port.
 Settings_DescSSLChainServer Upstream SSL POP3 server hostname for SSL chaining.
@@ -177,7 +176,6 @@ Settings_OptProbabilities Probabilities
 Settings_OptWarnings Warnings
 Settings_RetentionDays Retention (days)
 Settings_SQLiteBackup SQLite: periodic backup
-Settings_SQLiteFastWrites SQLite: fast writes (less safe)
 Settings_SQLiteJournalMode SQLite Journal Mode
 Settings_SSLChainPort SSL Chain Port
 Settings_SSLChainServer SSL Chain Server

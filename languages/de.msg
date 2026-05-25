@@ -145,7 +145,6 @@ Settings_DescSMTP SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, kla
 Settings_DescSMTP SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
 Settings_DescSMTP SMTP-Proxy — sitzt zwischen Mail-Client und SMTP-Server, klassifiziert ausgehende Nachrichten und leitet sie weiter. Trage in deinem Mail-Client den Host und Port ein, auf dem POPFile läuft (Standard 25).
 Settings_DescSQLiteBackup Datenbank stündlich als .backup-Datei sichern.
-Settings_DescSQLiteFastWrites SQLite-Schreib-Sync deaktivieren für schnellere Einfügeoperationen. Geringes Datenverlustrisiko bei Absturz.
 Settings_DescSQLiteJournal SQLite Journal / WAL-Modus.
 Settings_DescSSLChainPort Port des vorgelagerten SSL POP3-Servers.
 Settings_DescSSLChainServer Hostname des vorgelagerten SSL POP3-Servers für SSL-Verkettung.
@@ -186,7 +185,6 @@ Settings_OptProbabilities Wahrscheinlichkeiten
 Settings_OptWarnings Warnungen
 Settings_RetentionDays Aufbewahrung (Tage)
 Settings_SQLiteBackup SQLite: regelmäßige Sicherung
-Settings_SQLiteFastWrites SQLite: schnelles Schreiben (weniger sicher)
 Settings_SQLiteJournalMode SQLite-Journalmodus
 Settings_SSLChainPort SSL-Chain-Port
 Settings_SSLChainServer SSL-Chain-Server

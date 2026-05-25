@@ -156,7 +156,6 @@ Settings_DescRetentionDays כמה ימים לשמור היסטוריית הוד�
 Settings_DescSMTPLocalOnly קבל חיבורי SMTP מ-localhost בלבד.
 Settings_DescSMTPPort היציאה שPOPFile מאזין עליה ל-SMTP (ברירת מחדל 25).
 Settings_DescSQLiteBackup גבה אוטומטית את מסד הנתונים לפני שינויי סכימה.
-Settings_DescSQLiteFastWrites השבת סנכרון מסד נתונים (מהיר יותר, פחות בטוח).
 Settings_DescSQLiteJournal מצב יומן/WAL של SQLite.
 Settings_DescSQLiteTweaks מסכת ביט: 1 = כתיבה מהירה יותר (פחות בטוח), 2 = גיבוי תקופתי.
 Settings_DescSSLChainPort יציאת שרת SSL POP3 במעלה.
@@ -198,7 +197,6 @@ Settings_OptProbabilities הסתברויות
 Settings_OptWarnings אזהרות
 Settings_RetentionDays שמירה (ימים)
 Settings_SQLiteBackup גיבוי SQLite
-Settings_SQLiteFastWrites כתיבה מהירה SQLite
 Settings_SQLiteJournalMode מצב יומן SQLite
 Settings_SQLiteTweaks כוונות SQLite
 Settings_SSLChainPort יציאת שרשרת SSL
