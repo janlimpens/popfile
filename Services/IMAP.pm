@@ -860,9 +860,9 @@ moved and C<expunge> is configured.
 method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
     my $local_seq = 0;
     my $emit = defined $emit_parent
-        ? sub ($level, $task, $msg) {
+        ? sub ($level, $task, $msg, $override_parent = undef) {
             $local_seq++;
-            $emit_parent->($level, $task, $msg, $parent_local_id);
+            return $emit_parent->($level, $task, $msg, $override_parent // $parent_local_id);
         }
         : sub {};
     my $is_watched = exists $folders{$folder}{watched} ? 1 : 0;
@@ -875,8 +875,9 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
     my @uids = $imap->get_new_message_list_unselected($folder);
     for my $msg (@uids) {
         $self->log_msg(INFO => "Found new message in folder $folder (UID: $msg)");
-        $emit->('info', 'Found', "UID $msg in $folder");
-        my ($hash, $mid) = $self->get_hash($folder, $msg);
+        my ($hash, $mid, $subject) = $self->get_hash($folder, $msg);
+        my $subject_str = $subject ? " ($subject)" : '';
+        my $found_id = $emit->('info', 'Found', "UID $msg in $folder$subject_str");
         $hash_to_mid{$hash} = $mid if $hash && $mid;
         $imap->uid_next($folder, $msg + 1);
         unless ($hash) {
@@ -930,10 +931,10 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
                 if ($destination && $destination ne $folder) {
                     $imap->move_message($msg, $destination);
                     $moved_message++;
-                    $emit->('info', 'Reappeared', "UID $msg was previously $old_bucket, moved to $destination");
+                    $emit->('info', 'Reappeared', "UID $msg → $destination$subject_str", $found_id);
                 }
                 else {
-                    $emit->('info', 'Reappeared', "UID $msg was previously $old_bucket");
+                    $emit->('info', 'Reappeared', "UID $msg was previously $old_bucket$subject_str", $found_id);
                 }
             }
             next();        }
@@ -1138,7 +1139,7 @@ method get_hash ($folder, $msg) {
     my $hash = $history->get_message_hash($mid, $date, $subject, $received);
     $self->log_msg(DEBUG => sprintf('Hashed message: %s.', $subject // 'undef'));
     $self->log_msg(DEBUG => "Message $msg has hash value $hash");
-    return ($hash, $mid)
+    return ($hash, $mid, $subject)
 }
 
 =head2 can_classify($hash)
