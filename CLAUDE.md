@@ -304,3 +304,7 @@ my $x = do {
 
 ## IMPORTANT:
 Reference AGENT.md for your role and information that pertain to you.
+GIT SAFETY: Before executing ANY git commit or git push command,
+check your memory for commit/push authorization rules.
+NEVER commit or push without explicit user permission using the
+words "commit" or "push" respectively.
