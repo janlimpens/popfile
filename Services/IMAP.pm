@@ -865,6 +865,10 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
             return $emit_parent->($level, $task, $msg, $override_parent // $parent_local_id);
         }
         : sub {};
+    my $in_subprocess = defined $emit_parent;
+    my $emit_batch = $in_subprocess
+        ? sub {}
+        : $emit;
     my $is_watched = exists $folders{$folder}{watched} ? 1 : 0;
     my $is_output = exists $folders{$folder}{output}  ? $folders{$folder}{output} : '';
     $self->log_msg(DEBUG => "Looking for new messages in folder $folder.");
@@ -877,12 +881,12 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
         $self->log_msg(INFO => "Found new message in folder $folder (UID: $msg)");
         my ($hash, $mid, $subject) = $self->get_hash($folder, $msg);
         my $subject_str = $subject ? " ($subject)" : '';
-        my $found_id = $emit->('info', 'Found', "UID $msg in $folder$subject_str");
+        my $found_id = $emit_batch->('info', 'Found', "UID $msg in $folder$subject_str");
         $hash_to_mid{$hash} = $mid if $hash && $mid;
         $imap->uid_next($folder, $msg + 1);
         unless ($hash) {
             $self->log_msg(WARN => "Skipping message $msg.");
-            $emit->('warn', 'Skipped', "UID $msg — could not hash");
+            $emit_batch->('warn', 'Skipped', "UID $msg — could not hash");
             next();
         }
         if (exists $pending_folder_moves{$hash}) {
@@ -892,7 +896,7 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
                 $self->log_msg(WARN => "UI reclassification: moving message $msg to $destination.");
                 $imap->move_message($msg, $destination);
                 $moved_message++;
-                $emit->('info', 'Reclassified', "UID $msg → $destination (UI)");
+                $emit_batch->('info', 'Reclassified', "UID $msg → $destination (UI)");
             }
             next();        }
         if (exists $hash_values{$hash}) {
@@ -910,11 +914,11 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
             my $result = $self->classify_message($msg, $hash, $folder, $mid);
             unless (defined $result) {
                 $self->log_msg(WARN => "classify_message failed for UID $msg in $folder — message left in place.");
-                $emit->('error', 'Classify failed', "UID $msg in $folder");
+                $emit_batch->('error', 'Classify failed', "UID $msg in $folder");
                 next();            }
             $moved_message++ if $result ne '';
             $hash_values{$hash} = $result ne '' ? $result : $folder;
-            $emit->('info', 'Classified', "UID $msg → " . ($result || $folder));
+            $emit_batch->('info', 'Classified', "UID $msg → " . ($result || $folder));
             next();        }
         if ($is_watched && ref $history && $history->can('get_slot_from_hash')) {
             my $slot = $history->get_slot_from_hash($hash);
@@ -931,26 +935,26 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
                 if ($destination && $destination ne $folder) {
                     $imap->move_message($msg, $destination);
                     $moved_message++;
-                    $emit->('info', 'Reappeared', "UID $msg → $destination$subject_str", $found_id);
+                    $emit_batch->('info', 'Reappeared', "UID $msg → $destination$subject_str", $found_id);
                 }
                 else {
-                    $emit->('info', 'Reappeared', "UID $msg was previously $old_bucket$subject_str", $found_id);
+                    $emit_batch->('info', 'Reappeared', "UID $msg was previously $old_bucket$subject_str", $found_id);
                 }
             }
             next();        }
         if (my $bucket = $is_output) {
             if (my $old_bucket = $self->can_reclassify($hash, $bucket)) {
                 $self->reclassify_message($folder, $msg, $old_bucket, $hash);
-                $emit->('info', 'Reclassified', "UID $msg: $old_bucket → $bucket");
+                $emit_batch->('info', 'Reclassified', "UID $msg: $old_bucket → $bucket");
             }
             elsif ($self->training_mode
                 && (!ref $history || $history->get_slot_from_hash($hash) eq '')) {
                 $self->insert_message_into_bucket($folder, $msg, $bucket);
-                $emit->('info', 'Trained', "UID $msg → $bucket");
+                $emit_batch->('info', 'Trained', "UID $msg → $bucket");
             }
             else {
                 $self->log_msg(INFO => "Skipping message $msg in output folder $folder (not in history, training mode off).");
-                $emit->('info', 'Skipped', "UID $msg — output folder, not in history, training off");
+                $emit_batch->('info', 'Skipped', "UID $msg — output folder, not in history, training off");
             }
             next();        }
         $self->log_msg(DEBUG => "Ignoring message $msg");
