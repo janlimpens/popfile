@@ -161,11 +161,13 @@ subtest '_drain_direct_moves moves message using SEARCH HEADER' => sub {
     $imap->scan_folder('INBOX');
     $imap->request_folder_move('deadbeef', 'work');
 
+    # Clear moves accumulated by scan_folder; only count _drain_direct_moves contributions
+    $stub->{moves} = [];
     my $result = { direct_moved_hashes => [] };
     $imap->_drain_direct_moves($result);
 
     ok(scalar @{ $result->{direct_moved_hashes} } == 1, 'drain adds hash to direct_moved_hashes');
-    ok(scalar @{ $stub->{moves} } <= 1, 'move_message called at most once');
+    ok(scalar @{ $stub->{moves} } <= 1, 'move_message called at most once during drain');
 };
 
 done_testing;

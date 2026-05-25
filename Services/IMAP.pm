@@ -712,10 +712,10 @@ method connect_server(%uid_state) {
         next()
             if exists $folders{$folder}{imap}
             && $folders{$folder}{imap}->connected();
-        if (exists $folders{$folder}{output}
-             && !exists $folders{$folder}{watched}
-             && $classifier->is_pseudo_bucket($self->api_session(), $folders{$folder}{output})) {
-            next();        }
+        next()
+            if exists $folders{$folder}{output}
+            && !exists $folders{$folder}{watched}
+            && $classifier->is_pseudo_bucket($self->api_session(), $folders{$folder}{output});
         unless ($imap) {
             $imap = $self->_find_alive_client();
             unless ($imap) {
