@@ -70,6 +70,8 @@ sub _setup() {
     return ($srv, $config, $mq, $bayes, $history)
 }
 
+local $SIG{__WARN__} = sub {};
+
 subtest 'train classifier from IMAP output folders' => sub {
     _clear($_) for qw(INBOX POPfile.ham POPfile.spam);
     $imap->create('POPfile.ham')  unless $imap->exists('POPfile.ham');
@@ -157,6 +159,11 @@ subtest 'IMAP folder rescan' => sub {
     $bayes->stop();
 };
 
-_clear($_) for qw(INBOX POPfile.ham POPfile.spam);
-$imap->logout();
-done_testing;
+{
+    local $SIG{__WARN__} = sub {};
+    _clear($_)
+        for qw(INBOX POPfile.ham POPfile.spam);
+    $imap->logout();
+}
+
+done_testing();
