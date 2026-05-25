@@ -92,6 +92,7 @@ method _connect(%overrides) {
         $_is_sqlite = 1;
         $_mojo_db->query('PRAGMA journal_mode=WAL');
         $_mojo_db->query('PRAGMA synchronous=NORMAL');
+        $_mojo_db->query('PRAGMA busy_timeout=10000');
         my $jm = $c{sqlite_journal_mode} // '';
         $_mojo_db->query('PRAGMA journal_mode=' . $jm)
             if $jm;
