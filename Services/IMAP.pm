@@ -64,6 +64,7 @@ field %pending_direct_moves;
 field $training_mode :reader = 0;
 field $training_error :reader = '';
 field $poll_result_received = 0;
+field $poll_running = 0;
 
 use Cpanel::JSON::XS ();
 
@@ -206,6 +207,9 @@ C<IMAP_DONE> to the MQ.
 =cut
 
 method poll() {
+    return
+        if $poll_running;
+    $poll_running = 1;
     my @flags = $self->_find_train_flags();
     if (@flags) {
         @pending_train_flags = @flags;
@@ -273,6 +277,7 @@ method _handle_poll_result($result) {
     if ($classifier && $classifier->can('db_update_cache')) {
         $classifier->db_update_cache($self->api_session());
     }
+    $poll_running = 0;
     $poll_result_received = 1;
     return 1
 }
