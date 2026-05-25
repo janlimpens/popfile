@@ -753,7 +753,7 @@ method connect_server(%uid_state) {
         }
         $folders{$folder}{imap} = $imap;
         if ($imap->uid_validity($folder)) {
-            if ($imap->check_uidvalidity($folder, $uidvalidity)) {
+            if ($imap->check_uid_validity($folder, $uidvalidity)) {
                 unless ($imap->uid_next($folder)) {
                     $self->log_msg(WARN => "Detected invalid UIDNEXT configuration value for folder $folder. Some new messages might have been skipped.");
                     $imap->uid_next($folder, $uidnext);

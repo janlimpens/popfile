@@ -1,18 +1,34 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Jan Limpens
 use Object::Pad;
-
 use POPFile::Role::Config;
+
+use Carp qw(confess);
+use Encode qw(decode);
+use IO::Socket::INET;
+use IO::Socket::SSL;
+use IO::Select;
+use MIME::Base64 qw(decode_base64);
+use Socket ();
 
 class Services::IMAP::Client
     :isa(POPFile::Module)
     :does(POPFile::Role::Config);
+
+use POPFile::Features;
 
 field $test_hostname;
 field $test_port;
 field $test_use_ssl;
 field $test_login;
 field $test_password;
+field $socket = undef;
+field $folder = undef;
+field $tag = 0;
+field $last_response = '';
+field $last_command = '';
+field %uid_next_cache;
+field %uid_validity_cache;
 
 method set_test_credentials(%args) {
     $test_hostname = $args{hostname};
@@ -23,14 +39,7 @@ method set_test_credentials(%args) {
     return
 }
 
-use Carp qw(confess);
-use Encode qw(decode);
-use feature 'signatures';
-use IO::Socket::INET;
-use IO::Socket::SSL;
-use IO::Select;
-use MIME::Base64 qw(decode_base64);
-use Socket ();
+
 
 =head1 NAME
 
@@ -52,14 +61,6 @@ C<POPFILE-IMAP-EXCEPTION> string that C<Services::IMAP::service()> catches.
 =head1 METHODS
 
 =cut
-
-field $socket = undef;
-field $folder = undef;
-field $tag = 0;
-field $last_response = '';
-field $last_command = '';
-field %_uid_next;
-field %_uid_validity;
 
 my $eol = "\015\012";
 
@@ -96,7 +97,7 @@ method connect() {
     $self->log_msg(INFO => "Connecting to $hostname:$port");
     unless ($hostname ne '' && $port ne '') {
         $self->log_msg(WARN => "Invalid port or hostname. Will not connect to server.");
-        return
+        return false
     }
     my $imap;
     if ($use_ssl) {
@@ -107,7 +108,7 @@ method connect() {
             PeerPort => $port,
             Timeout => $timeout,
             Domain => Socket::AF_INET(),
-) or $self->log_msg(WARN => "IO::Socket::SSL error: $@");
+        ) or $self->log_msg(WARN => "IO::Socket::SSL error: $@");
     }
     else {
         $imap = IO::Socket::INET->new(
@@ -115,21 +116,21 @@ method connect() {
             PeerAddr => $hostname,
             PeerPort => $port,
             Timeout => $timeout,
-) or $self->log_msg(WARN => "IO::Socket::INET error: $@");
+        ) or $self->log_msg(WARN => "IO::Socket::INET error: $@");
     }
     return unless $imap && $imap->connected();
     binmode $imap unless $use_ssl;
     my $selector = IO::Select->new($imap);
     unless (() = $selector->can_read($timeout)) {
         $self->log_msg(WARN => "Connection timed out for $hostname:$port");
-        return
+        return false
     }
     $self->log_msg(INFO => "Connected to $hostname:$port timeout $timeout");
     my $buf = $self->slurp($imap);
     return unless defined $buf;
     $self->log_msg(TRACE => ">> $buf");
     $socket = $imap;
-    return 1
+    return true
 }
 
 =head2 login()
@@ -161,9 +162,9 @@ method logout() {
         $socket->shutdown(2);
         $folder = undef;
         $socket = undef;
-        return 1
+        return true
     }
-    return 0
+    return false
 }
 
 =head2 noop()
@@ -260,7 +261,7 @@ method say ($command) {
         $self->bail_out("Lost connection while I tried to say '$logged'.");
     }
     $self->log_msg(DEBUG => "<< $logged");
-    return 1
+    return true
 }
 
 =head2 get_response()
@@ -344,7 +345,7 @@ method move_message ($msg, $destination) {
     else {
         $self->log_msg(WARN => "Could not copy message ($ok)!");
     }
-    return $ok ? 1 : 0
+    return $ok ? true : false
 }
 
 =head2 get_mailbox_list()
@@ -509,9 +510,9 @@ the database).  Both arguments are plain hashes keyed by folder name.
 =cut
 
 method load_uid_state (%args) {
-    %_uid_next = $args{nexts}->%*
+    %uid_next_cache = $args{nexts}->%*
         if ref $args{nexts} eq 'HASH';
-    %_uid_validity = $args{validities}->%*
+    %uid_validity_cache = $args{validities}->%*
         if ref $args{validities} eq 'HASH';
 }
 
@@ -522,8 +523,8 @@ the caller can persist the current state to the database.
 
 =cut
 
-method uid_nexts ()     { \%_uid_next }
-method uid_validities () { \%_uid_validity }
+method uid_nexts ()     { \%uid_next_cache }
+method uid_validities () { \%uid_validity_cache }
 
 =head2 uid_validity($folder_name, $uidval)
 
@@ -536,14 +537,14 @@ value and returns nothing.
 method uid_validity ($folder_name, $uidval = undef) {
     Carp::confess("gimme a folder!") unless $folder_name;
     if (defined $uidval) {
-        $_uid_validity{$folder_name} = $uidval;
+        $uid_validity_cache{$folder_name} = $uidval;
         $self->log_msg(DEBUG => "Updated UIDVALIDITY value for folder $folder_name to $uidval.");
         return
     }
     return
-        unless exists $_uid_validity{$folder_name};
-    return $_uid_validity{$folder_name} =~ /^\d+$/
-        ? $_uid_validity{$folder_name}
+        unless exists $uid_validity_cache{$folder_name};
+    return $uid_validity_cache{$folder_name} =~ /^\d+$/
+        ? $uid_validity_cache{$folder_name}
         : undef
 }
 
@@ -558,27 +559,27 @@ value and returns nothing.
 method uid_next ($folder_name, $uidnext = undef) {
     Carp::confess("I need a folder") unless $folder_name;
     if (defined $uidnext) {
-        $_uid_next{$folder_name} = $uidnext;
+        $uid_next_cache{$folder_name} = $uidnext;
         $self->log_msg(DEBUG => "Updated UIDNEXT value for folder $folder_name to $uidnext.");
         return
     }
-    return exists $_uid_next{$folder_name} && $_uid_next{$folder_name} =~ /^\d+$/
-        ? $_uid_next{$folder_name}
+    return exists $uid_next_cache{$folder_name} && $uid_next_cache{$folder_name} =~ /^\d+$/
+        ? $uid_next_cache{$folder_name}
         : undef
 }
 
-=head2 check_uidvalidity($folder_name, $new_val)
+=head2 check_uid_validity($folder_name, $new_val)
 
 Returns 1 if C<$new_val> matches the stored C<UIDVALIDITY> for
 C<$folder_name>, C<undef> otherwise.  Dies if either argument is missing.
 
 =cut
 
-method check_uidvalidity ($folder_name, $new_val) {
-    Carp::confess("check_uidvalidity needs a new uidvalidity!") unless defined $new_val;
-    Carp::confess("check_uidvalidity needs a folder name!")     unless defined $folder_name;
+method check_uid_validity ($folder_name, $new_val) {
+    Carp::confess("check_uid_validity needs a new uidvalidity!") unless defined $new_val;
+    Carp::confess("check_uid_validity needs a folder name!")     unless defined $folder_name;
     my $old_val = $self->uid_validity($folder_name);
-    return $new_val == $old_val ? 1 : undef
+    return $new_val == $old_val ? true : false
 }
 
 =head2 connected()
@@ -588,7 +589,7 @@ Returns 1 if the socket is open, C<undef> otherwise.
 =cut
 
 method connected() {
-    return $socket ? 1 : undef
+    return $socket ? true : false
 }
 
 =head2 bail_out($msg)
