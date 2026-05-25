@@ -94,6 +94,12 @@ sub get_status($self) {
             detail => 'IMAP is disabled. Enable it in Settings → IMAP.',
         }] });
     }
+    state $cached_result;
+    state $cached_at = 0;
+    my $now = time();
+    if ($cached_result && $now - $cached_at < 60) {
+        return $self->render(json => $cached_result);
+    }
     my $hostname = $cfg->get(imap => 'hostname') // '';
     my $port = $cfg->get(imap => 'port') // '';
     my $login = $cfg->get(imap => 'login') // '';
@@ -161,7 +167,10 @@ sub get_status($self) {
                     status => 'warn',
                     detail => "Training pending: $who" };
             }
-            $self->render(json => { checks => \@checks });
+            my $response = { checks => \@checks };
+            $cached_result = $response;
+            $cached_at = $now;
+            $self->render(json => $response);
         }
     );
 }
