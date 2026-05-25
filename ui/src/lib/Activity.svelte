@@ -107,7 +107,7 @@
       requestAnimationFrame(() => scrollLogToBottom());
     });
     logTimer = setInterval(() => {
-      if (!document.hidden) loadLogs();
+      if (!document.hidden && activeTab === 'logs') loadLogs();
     }, 3000);
     return () => {
       if (eventSource) eventSource.close();
