@@ -4,11 +4,9 @@ use Object::Pad;
 use POPFile::Role::Config;
 
 use Carp qw(confess);
-use Encode qw(decode);
 use IO::Socket::INET;
 use IO::Socket::SSL;
 use IO::Select;
-use MIME::Base64 qw(decode_base64);
 use Socket ();
 
 class Services::IMAP::Client
@@ -16,6 +14,8 @@ class Services::IMAP::Client
     :does(POPFile::Role::Config);
 
 use POPFile::Features;
+use Encode qw(decode);
+use MIME::Base64 qw(decode_base64);
 
 field $test_hostname;
 field $test_port;
