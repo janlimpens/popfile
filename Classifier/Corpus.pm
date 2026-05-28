@@ -128,7 +128,7 @@ method add_words($dbh, $bucketid, $subtract, %words) {
     my @sorted_words = sort keys %words;
     my @id_list;
     my %wordmap;
-    my $chunk_size = 500;
+    my $chunk_size = 2000;
     my @chunks = @sorted_words;
     while (@chunks) {
         my @chunk = splice @chunks, 0, $chunk_size;
@@ -405,7 +405,7 @@ method search_words_cross($dbh, $qb, $userid, $prefix, $bucket_filter,
     return (\@words, $total, {})
         unless @words;
     my %data;
-    my $chunk_size = 500;
+    my $chunk_size = 2000;
     my @remaining = @words;
     while (@remaining) {
         my @chunk = splice @remaining, 0, $chunk_size;
@@ -443,7 +443,7 @@ method search_words_cross($dbh, $qb, $userid, $prefix, $bucket_filter,
 method resolve_word_ids($dbh, $words) {
     my @id_list;
     my %idmap;
-    my $chunk_size = 500;
+    my $chunk_size = 2000;
     my @chunks = $words->@*;
     while (@chunks) {
         my @chunk = splice @chunks, 0, $chunk_size;
@@ -463,7 +463,7 @@ method fetch_matrix($dbh, $ids, $userid) {
     my %matrix;
     return \%matrix
         unless $ids->@*;
-    my $chunk_size = 500;
+    my $chunk_size = 2000;
     my @chunks = $ids->@*;
     while (@chunks) {
         my @chunk = splice @chunks, 0, $chunk_size;
