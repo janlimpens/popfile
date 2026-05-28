@@ -5,8 +5,11 @@ use FindBin qw($Bin);
 use lib "$Bin/lib", "$Bin/..", "$Bin/../vendor/perl-querybuilder/lib";
 
 use Test2::V0;
+use Cpanel::JSON::XS;
 use Mojo::IOLoop;
 use TestHelper;
+
+our $test_cache_called = 0;
 
 require Services::IMAP;
 
@@ -77,6 +80,53 @@ subtest 'IMAP_DONE is posted to MQ after poll completes' => sub {
     Mojo::IOLoop->start();
     my @imap_done = grep { $_->{type} eq 'IMAP_DONE' } $mq->{posted}->@*;
     ok(scalar(@imap_done) >= 1, 'IMAP_DONE posted to MQ after poll');
+    $imap->stop();
+};
+
+subtest 'worker loop calls db_update_cache before processing poll' => sub {
+    my ($imap, $config, $mq) = make_imap();
+    $test_cache_called = 0;
+    my $run_poll_called = 0;
+    {
+        package TestClassifier;
+        sub new { bless {}, shift }
+        sub get_session_key { 'test-session' }
+        sub get_all_buckets { ('spam', 'ham') }
+        sub is_pseudo_bucket { 0 }
+        sub db_update_cache { $main::test_cache_called++; return 1 }
+        sub can { 1 }
+    }
+    my $classifier = TestClassifier->new();
+    $imap->set_classifier($classifier);
+    pipe(my $reader, my $writer);
+    $writer->autoflush(1);
+    my $msg = Cpanel::JSON::XS::->new->encode({
+        cmd => 'poll',
+        training_mode => 0,
+        train_buckets => [],
+        pending_folder_moves => {},
+        pending_direct_moves => {},
+        uid_next_overrides => {},
+        folder_change_flag => 0,
+    });
+    syswrite($writer, $msg . "\n");
+    syswrite($writer, "quit\n");
+    close($writer);
+    my $fake_sub = bless {}, 'Mojo::Subprocess';
+    my $progress_called = 0;
+    my $cache_before_poll = 0;
+    no warnings 'redefine';
+    local *Services::IMAP::_run_poll_work = sub {
+        $run_poll_called++;
+        $cache_before_poll = $test_cache_called;
+        return { trained => 0, uid_nexts => {}, training_done => 0, error => undef };
+    };
+    local *Mojo::Subprocess::progress = sub { $progress_called++ };
+    $imap->_imap_worker_loop($fake_sub, $reader);
+    ok($test_cache_called > 0, 'db_update_cache was called in worker loop');
+    ok($cache_before_poll > 0, 'db_update_cache was called before _run_poll_work');
+    ok($run_poll_called > 0, '_run_poll_work was called');
+    ok($progress_called > 0, 'progress was emitted after poll');
     $imap->stop();
 };
 
