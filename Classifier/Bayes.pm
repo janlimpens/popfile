@@ -184,7 +184,8 @@ Called when POPFile is terminating
 method stop() {
     $self->db_disconnect();
     $db_bucketid = {};
-    $buckets->reset_parameters();
+    $buckets->reset_parameters()
+        if $buckets;
     $db_bucketcount = {};
     $db_bucketunique = {};
     $parser = Classifier::MailParse->new();
