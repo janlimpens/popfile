@@ -892,6 +892,8 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
     my $imap = $folders{$folder}{imap};
     $imap->noop();
     my $moved_message = 0;
+    my $reclassified = 0;
+    my $trained = 0;
     my @uids = $imap->get_new_message_list_unselected($folder);
     for my $msg (@uids) {
         $self->log_msg(INFO => "Found new message in folder $folder (UID: $msg)");
@@ -961,11 +963,13 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
         if (my $bucket = $is_output) {
             if (my $old_bucket = $self->can_reclassify($hash, $bucket)) {
                 $self->reclassify_message($folder, $msg, $old_bucket, $hash);
+                $reclassified++;
                 $emit_batch->('info', 'Reclassified', "UID $msg: $old_bucket → $bucket");
             }
             elsif ($self->training_mode
                 && (!ref $history || $history->get_slot_from_hash($hash) eq '')) {
                 $self->insert_message_into_bucket($folder, $msg, $bucket);
+                $trained++;
                 $emit_batch->('info', 'Trained', "UID $msg → $bucket");
             }
             else {
@@ -977,7 +981,17 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
     }
     $imap->expunge()
         if $moved_message && $self->config->get('expunge');
-    $emit->('info', 'Scan done', "$folder: " . ($moved_message ? "$moved_message moved" : scalar(@uids) . ' checked, no moves'));
+    my @summary_parts;
+    push @summary_parts, "$moved_message moved"
+        if $moved_message;
+    push @summary_parts, "$reclassified reclassified"
+        if $reclassified;
+    push @summary_parts, "$trained trained"
+        if $trained;
+    my $summary = @summary_parts
+        ? join(', ', @summary_parts)
+        : scalar(@uids) . ' checked, no action';
+    $emit->('info', 'Scan done', "$folder: $summary");
     return $moved_message
 }
 
