@@ -1129,6 +1129,7 @@ method reclassify_message ($folder, $msg, $old_bucket, $hash) {
         close $TMP;
     }
     my $slot = $history->get_slot_from_hash($hash);
+    $classifier->remove_message_from_bucket($self->api_session(), $old_bucket, $file);
     $classifier->add_message_to_bucket($self->api_session(), $new_bucket, $file);
     $classifier->reclassified($self->api_session(), $old_bucket, $new_bucket, 0);
     $history->change_slot_classification($slot, $new_bucket, $self->api_session(), 0);
