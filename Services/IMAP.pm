@@ -337,6 +337,9 @@ method _imap_worker_loop($subprocess, $reader) {
         $folder_change_flag = $msg->{folder_change_flag} // 0;
         @mailboxes = ()
             if $folder_change_flag;
+        if ($classifier && $classifier->can('db_update_cache')) {
+            $classifier->db_update_cache($self->api_session());
+        }
         my $result = $self->_run_poll_work($subprocess);
         $subprocess->progress(type => 'poll_result', $result->%*);
     }
