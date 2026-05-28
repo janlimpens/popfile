@@ -140,6 +140,7 @@ method start() {
         },
         sub {
             $self->log_msg(WARN => "IMAP worker exited unexpectedly");
+            $poll_running = 0;
             $imap_worker = undef;
         }
     );
@@ -220,11 +221,15 @@ method poll() {
         }
         $training_mode = 1;
     }
-    return
-        if $self->config->get('enabled') == 0
-        && $self->training_mode == 0;
-    return
-        unless defined $poll_trigger;
+    if ($self->config->get('enabled') == 0
+        && $self->training_mode == 0) {
+        $poll_running = 0;
+        return
+    }
+    unless (defined $poll_trigger) {
+        $poll_running = 0;
+        return
+    }
     my $msg = Cpanel::JSON::XS->new->encode({
         cmd => 'poll',
         training_mode => $training_mode,
@@ -240,6 +245,7 @@ method poll() {
         my $n = syswrite($poll_trigger, $data, length($data) - $written, $written);
         unless (defined $n) {
             $self->log_msg(WARN => "IMAP poll trigger failed: $!");
+            $poll_running = 0;
             return;
         }
         $written += $n;
@@ -828,8 +834,14 @@ method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
     my $source_folder = defined $source_bucket
         ? $self->folder_for_bucket($source_bucket)
         : undef;
-    $self->_reset_uid_next($source_folder)
-        if $source_folder;
+    if ($source_folder) {
+        $self->_reset_uid_next($source_folder);
+    }
+    else {
+        $self->log_msg(WARN => "No IMAP folder mapping for source bucket; resetting uid_next on all watched folders.");
+        $self->_reset_uid_next($_)
+            for $self->watched_folders();
+    }
 }
 
 =head2 cache_message_id($hash, $mid)

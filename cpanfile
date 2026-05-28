@@ -47,3 +47,4 @@ on 'develop' => sub {
     requires 'Test2::V0', '0';
 };
 requires 'JSON::Schema::Modern';
+requires 'List::MoreUtils', '0.428';
