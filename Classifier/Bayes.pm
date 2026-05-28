@@ -767,21 +767,16 @@ method classify ($ctx, $session, $file, $matrix = undef, $idmap = undef) {
     my @id_list = $id_list_ref->@*;
     my $not_likely_for_bucket = $not_likely->{$userid};
     my $stopword_ratio = ($self->config->get('stopword_ratio')) + 0;
+    my $stopword_ids = ($stopword_ratio > 0 && @buckets > 1)
+        ? $corpus->find_stopword_ids(
+            $self->get_handle(), $id_list_ref,
+            { map { $_ => $db_bucketid->{$userid}{$_}{id} } @buckets },
+            $stopword_ratio)
+        : {};
 
     for my $id (@id_list) {
-        if ($stopword_ratio > 0 && @buckets > 1) {
-            my $min_c = 'inf';
-            my $max_c = 0;
-            my $all_present = 1;
-            for my $bucket (@buckets) {
-                my $c = $$matrix{$id}{$bucket} // 0;
-                if ($c == 0) { $all_present = 0; last }
-                $min_c = $c if $c < $min_c;
-                $max_c = $c if $c > $max_c;
-            }
-            next()
-                if $all_present && $max_c / $min_c < $stopword_ratio;
-        }
+        next()
+            if exists $stopword_ids->{$id};
         my $count = $parser->words()->{$$idmap{$id}};
 
         for my $bucket (@buckets) {

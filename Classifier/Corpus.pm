@@ -514,4 +514,32 @@ method resolve_and_fetch_matrix($dbh, $words, $userid) {
     return (\@id_list, \%idmap, \%matrix)
 }
 
+method find_stopword_ids($dbh, $id_list, $bucket_ids, $stopword_ratio) {
+    my %stopwords;
+    return \%stopwords
+        unless $id_list->@* && keys %$bucket_ids >= 2;
+    my $bucket_count = scalar keys %$bucket_ids;
+    my @bucket_id_values = values %$bucket_ids;
+    my $chunk_size = 2000;
+    my @id_chunks = $id_list->@*;
+    while (@id_chunks) {
+        my @chunk = splice @id_chunks, 0, $chunk_size;
+        my $ph_ids = join(', ', ('?') x @chunk);
+        my $ph_buckets = join(', ', ('?') x @bucket_id_values);
+        my $sth = $dbh->prepare(
+            "SELECT wordid
+             FROM matrix
+             WHERE wordid IN ($ph_ids)
+               AND bucketid IN ($ph_buckets)
+             GROUP BY wordid
+             HAVING COUNT(DISTINCT bucketid) = ?
+                AND CAST(MAX(times) AS REAL) / MIN(times) < ?");
+        $sth->execute(@chunk, @bucket_id_values, $bucket_count, $stopword_ratio);
+        while (my $row = $sth->fetchrow_arrayref) {
+            $stopwords{$row->[0]} = 1;
+        }
+    }
+    return \%stopwords
+}
+
 1;
