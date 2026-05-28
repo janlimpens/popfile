@@ -482,4 +482,36 @@ method fetch_matrix($dbh, $ids, $userid) {
     return \%matrix
 }
 
+method resolve_and_fetch_matrix($dbh, $words, $userid) {
+    my @id_list;
+    my %idmap;
+    my %matrix;
+    return (\@id_list, \%idmap, \%matrix)
+        unless $words->@*;
+    my $chunk_size = 2000;
+    my @chunks = $words->@*;
+    while (@chunks) {
+        my @chunk = splice @chunks, 0, $chunk_size;
+        my $ph = join(', ', ('?') x @chunk);
+        my $sth = $dbh->prepare(
+            "SELECT w.id, w.word, m.times, b.name
+             FROM words w
+             LEFT JOIN matrix m ON m.wordid = w.id
+             LEFT JOIN buckets b ON b.id = m.bucketid AND b.userid = ?
+             WHERE w.word IN ($ph)
+             ORDER BY w.id");
+        $sth->execute($userid, @chunk);
+        while (my $row = $sth->fetchrow_arrayref) {
+            my ($id, $word, $times, $bucket) = $row->@*;
+            unless (exists $idmap{$id}) {
+                push @id_list, $id;
+                $idmap{$id} = $word;
+            }
+            $matrix{$id}{$bucket} = $times
+                if defined $bucket && defined $times && $times > 0;
+        }
+    }
+    return (\@id_list, \%idmap, \%matrix)
+}
+
 1;

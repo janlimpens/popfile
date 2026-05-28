@@ -752,15 +752,13 @@ method classify ($ctx, $session, $file, $matrix = undef, $idmap = undef) {
     # winning bucket is.
     my @words = sort keys $parser->words()->%*;
 
-    my ($id_list_ref, $idmap_ref) = $corpus->resolve_word_ids(
-        $self->get_handle(), \@words);
+    my ($id_list_ref, $idmap_ref, $matrix_ref) = $corpus->resolve_and_fetch_matrix(
+        $self->get_handle(), \@words, $userid);
     if (defined $idmap) {
         %$idmap = (%$idmap, %$idmap_ref);
     } else {
         $idmap = $idmap_ref;
     }
-    my $matrix_ref = $corpus->fetch_matrix(
-        $self->get_handle(), $id_list_ref, $userid);
     if (defined $matrix) {
         %$matrix = (%$matrix, %$matrix_ref);
     } else {
