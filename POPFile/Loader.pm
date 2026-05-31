@@ -138,11 +138,6 @@ exits with code 1.
 
 method CORE_die (@message) {
     return if $^S;
-    my $msg = "@message";
-    return if $msg =~ /^Can't locate .+\/XS\.pm/;
-    return if $msg =~ /^Can't locate Class\/XSAccessor\.pm/;
-    return if $msg =~ /^Can't locate List\/MoreUtils\.pm/;
-
     print STDERR @message;
 
     my $debug = POPFile::Config->instance()->get(GLOBAL => 'debug');
@@ -209,7 +204,13 @@ loadable module.  Has no side-effects on the component table.
 method load_module ($module) {
     return
         unless -f $self->root_path($module);
-    require $module;
+    try {
+        require $module;
+    }
+    catch ($e) {
+        Log::Any->get_logger(category => 'loader')->warn(sprintf('Failed to load %s: %s', $module, $e));
+        return;
+    }
     (my $class = $module) =~ s/\//::/g;
     $class =~ s/\.pm$//;
     return
@@ -244,7 +245,6 @@ method CORE_signals() {
     $SIG{ALRM} = 'IGNORE';
     $SIG{PIPE} = 'IGNORE';
     $SIG{__WARN__} = $warning;
-    $SIG{__DIE__}  = $die_cb;
 
     return $SIG;
 }

@@ -31,6 +31,7 @@ requires 'Net::SSLeay', '0';
 requires 'Object::Pad', '0.800';
 requires 'Path::Tiny', '0';
 requires 'Role::Tiny', '0';
+requires 'Type::Tiny::XS', '0.022';
 
 # carton exec cpanm -L local --notest Module::Name
 recommends 'DBD::mysql', '0';

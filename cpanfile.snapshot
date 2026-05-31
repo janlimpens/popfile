@@ -1771,6 +1771,15 @@ DISTRIBUTIONS
       Exporter::Tiny 1.006000
       ExtUtils::MakeMaker 6.17
       perl 5.008001
+  Type-Tiny-XS-0.025
+    pathname: T/TO/TOBYINK/Type-Tiny-XS-0.025.tar.gz
+    provides:
+      Type::Tiny::XS 0.025
+      Type::Tiny::XS::Util 0.025
+    requirements:
+      ExtUtils::MakeMaker 6.58
+      ExtUtils::ParseXS 3.16
+      perl 5.008005
   Types-Serialiser-1.01
     pathname: M/ML/MLEHMANN/Types-Serialiser-1.01.tar.gz
     provides:
