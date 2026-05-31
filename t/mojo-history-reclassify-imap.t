@@ -42,6 +42,9 @@ sub _make_msg_no_headers ($text_body) {
 my $file_with_mid = _make_msg_file('ham message', 'abc123@example.com');
 my $file_no_mid = _make_msg_file('ham message', undef);
 my $file_bad = _make_msg_no_headers('raw text');
+my $file_uncl1 = _make_msg_file('ham message for uncl1', 'mid-uncl1@example.com');
+my $file_uncl2 = _make_msg_file('spam message for uncl2', 'mid-uncl2@example.com');
+my $file_uncl3 = _make_msg_file('ham message for uncl3', undef);
 
 my %buckets = (ham => '#aaffaa', spam => '#ffaaaa', archive => '#cccccc');
 my %slots;
@@ -200,6 +203,62 @@ subtest 'reclassify without IMAP service still succeeds' => sub {
         ->status_is(200)
         ->json_is('/ok', 1);
     pass('reclassify succeeds without IMAP service');
+};
+
+sub _uncl_slots () {
+    %slots = (
+        10 => { fields => [10, 'alice@example.com', 'bob@example.com', '', 'Ham-U', '2024-06-01', 'uhash1', time(), 'unclassified', undef, 0, '', 150], file => $file_uncl1, bucket => 'unclassified' },
+        11 => { fields => [11, 'spammer@evil.com', 'bob@example.com', '', 'Spam-U', '2024-06-02', 'uhash2', time(), 'unclassified', undef, 0, '', 250], file => $file_uncl2, bucket => 'unclassified' },
+        12 => { fields => [12, 'bob@example.com', 'alice@example.com', '', 'No-MID-U', '2024-06-03', 'uhash3', time(), 'unclassified', undef, 0, '', 50], file => $file_uncl3, bucket => 'unclassified' });
+}
+
+subtest 'reclassify_unclassified trains messages and requests IMAP moves' => sub {
+    mock_reset();
+    _uncl_slots();
+    $t->post_ok('/api/v1/history/reclassify-unclassified')
+        ->status_is(200)
+        ->json_has('/total')
+        ->json_has('/updated');
+    my $adds = $mock_svc->{add_log};
+    is(scalar $adds->@*, 3, 'all three unclassified messages added to buckets');
+    my @buckets = sort map { $_->{bucket} } $adds->@*;
+    my @expected_buckets = qw(ham ham ham);
+    is(\@buckets, \@expected_buckets, 'all reclassified to ham via MockSvc->classify');
+    my $removes = $mock_svc->{remove_log};
+    is(scalar $removes->@*, 0, 'no remove_message_from_bucket calls for unclassified messages');
+    my $moves = $mock_imap->{move_requests};
+    is(scalar $moves->@*, 3, 'three IMAP moves requested');
+    my @move_hashes = sort map { $_->{hash} } $moves->@*;
+    my @expected_hashes = sort qw(uhash1 uhash2 uhash3);
+    is(\@move_hashes, \@expected_hashes, 'all three hashes triggered moves');
+    for my $move ($moves->@*) {
+        is($move->{target_bucket}, 'ham', 'target bucket is ham');
+        is($move->{source_bucket}, 'unclassified', 'source bucket is unclassified');
+    }
+    my $mids = $mock_hist->{mid_log};
+    is(scalar $mids->@*, 2, 'MIDs persisted for messages with Message-ID only');
+    my @mid_slots = sort map { $_->{slot} } $mids->@*;
+    my @expected_mid_slots = sort qw(10 11);
+    is(\@mid_slots, \@expected_mid_slots, 'MID persisted for slots 10 and 11');
+};
+
+subtest 'reclassify_unclassified without IMAP service still succeeds' => sub {
+    my $ui_no_imap = POPFile::API->new();
+    $ui_no_imap->set_configuration($config);
+    $ui_no_imap->set_mq($mq);
+    $ui_no_imap->initialize();
+    $ui_no_imap->set_classifier_service($mock_svc);
+    my $app2 = $ui_no_imap->build_app($mock_svc, 'test-session');
+    $app2->log->level('fatal');
+    my $t2 = Test::Mojo->new($app2);
+    mock_reset();
+    _uncl_slots();
+    $t2->post_ok('/api/v1/history/reclassify-unclassified')
+        ->status_is(200)
+        ->json_has('/updated');
+    my $adds = $mock_svc->{add_log};
+    is(scalar $adds->@*, 3, 'messages still added to buckets without IMAP');
+    pass('reclassify_unclassified succeeds without IMAP service');
 };
 
 done_testing;

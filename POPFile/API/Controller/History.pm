@@ -123,6 +123,22 @@ sub reclassify_unclassified ($self) {
         update => sub($slot, $bucket) { $hist->change_slot_classification($slot, $bucket, $session, 0) },
         get_slot => sub($row) { $row->[0] },
         get_file => sub($slot) { $hist->get_slot_file($slot) },
+        after_update => sub($slot, $new_bucket, $file) {
+            $svc->add_message_to_bucket($new_bucket, $file);
+            my @fields = $hist->get_slot_fields($slot);
+            my $hash = $fields[6];
+            return
+                unless defined $hash;
+            my $imap = $self->popfile_imap;
+            return
+                unless defined $imap;
+            my $mid = $self->_extract_message_id($file);
+            if (defined $mid) {
+                $hist->set_message_id($slot, $mid);
+                $imap->cache_message_id($hash, $mid);
+            }
+            $imap->request_folder_move($hash, $new_bucket, 'unclassified');
+        },
         done => sub($updated) {
             $self->render(json => { updated => $updated + 0, total => $total + 0 });
         }
@@ -257,6 +273,7 @@ sub _process_in_batches ($self, %args) {
     my $update = $args{update};
     my $get_slot = $args{get_slot};
     my $get_file = $args{get_file};
+    my $after_update = $args{after_update};
     my $done = $args{done};
     my $updated = 0;
     $self->render_later;
@@ -276,6 +293,8 @@ sub _process_in_batches ($self, %args) {
             next
                 unless defined $new_bucket && $new_bucket ne 'unclassified';
             $update->($slot, $new_bucket);
+            $after_update->($slot, $new_bucket, $file)
+                if $after_update;
             $updated++;
         }
         if ($rows->@*) {
