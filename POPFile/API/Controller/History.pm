@@ -101,6 +101,9 @@ sub list_history ($self) {
             $_->{from}    = decode_header($_->{from});
             $_->{subject} = decode_header($_->{subject});
             $_->{to}      = decode_header($_->{to});
+            if ($_->{usedtobe} && $_->{usedtobe} != 0) {
+                $_->{reclassified_from} = $svc->get_bucket_name($_->{usedtobe});
+            }
             $_
         }
         grep { $_ }

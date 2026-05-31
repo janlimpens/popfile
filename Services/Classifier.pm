@@ -157,6 +157,7 @@ method is_pseudo_bucket ($b){ $classifier->is_pseudo_bucket($session, $b) }
 method create_bucket ($b)   { $classifier->create_bucket($session, $b) }
 method delete_bucket ($b)   { $classifier->delete_bucket($session, $b) }
 method get_bucket_id ($b)   { $classifier->get_bucket_id($session, $b) }
+method get_bucket_name ($id) { $classifier->get_bucket_name($session, $id) }
 method rename_bucket ($old, $new) { $classifier->rename_bucket($session, $old, $new) }
 method clear_bucket ($b)    { $classifier->clear_bucket($session, $b) }
 

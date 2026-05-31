@@ -34,6 +34,22 @@ sub history_obj ($self)          { $self->{hist} }
 sub get_all_buckets ($self)       { keys $self->{buckets}->%* }
 sub is_bucket ($self, $n)         { exists $self->{buckets}{$n} }
 sub get_bucket_color ($self, $n)  { $self->{buckets}{$n} // '#666666' }
+sub get_bucket_id ($self, $name)  {
+    my $id = 1;
+    for my $n (sort keys $self->{buckets}->%*) {
+        return $id if $n eq $name;
+        $id++;
+    }
+    return
+}
+sub get_bucket_name ($self, $id) {
+    my $idx = 1;
+    for my $n (sort keys $self->{buckets}->%*) {
+        return $n if $idx == $id;
+        $idx++;
+    }
+    return ''
+}
 sub is_pseudo_bucket ($self, $n)  { 0 }
 sub get_bucket_word_count ($self, $n) { 0 }
 sub classify ($self, $file)       { 'ham' }

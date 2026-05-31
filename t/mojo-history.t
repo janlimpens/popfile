@@ -25,6 +25,7 @@ close $fh;
 my %slots = (
     1 => { fields => [1, 'alice@example.com', 'bob@example.com', '', 'Test', '2024-01-01', 'abc', time(), 'ham', undef, 1, '', 100], file => $fixture_file, bucket => 'ham' },
     2 => { fields => [2, 'spammer@evil.com',  'bob@example.com', '', 'Win', '2024-01-02', 'def', time(), 'unclassified', undef, 2, '', 200], file => $fixture_file, bucket => 'unclassified' },
+    3 => { fields => [3, 'reclassified@example.com', 'bob@example.com', '', 'Re', '2024-01-03', 'ghi', time(), 'ham', 2, 1, '', 300], file => $fixture_file, bucket => 'ham' },
 );
 
 my %buckets = (ham => '#aaffaa', spam => '#ffaaaa');
@@ -58,8 +59,8 @@ subtest 'GET /api/v1/history returns items and total' => sub {
       ->json_has('/items')
       ->json_has('/total');
     my $data = $t->tx->res->json;
-    is($data->{total}, 2, 'total matches slot count');
-    is(scalar $data->{items}->@*, 2, 'items count matches');
+    is($data->{total}, 3, 'total matches slot count');
+    is(scalar $data->{items}->@*, 3, 'items count matches');
 };
 
 subtest 'GET /api/v1/history items include correct bucket color' => sub {
@@ -78,7 +79,7 @@ subtest 'GET /api/v1/history pagination' => sub {
     $t->get_ok('/api/v1/history?page=1&per_page=1')
       ->status_is(200);
     my $data = $t->tx->res->json;
-    is($data->{total}, 2, 'total still 2');
+    is($data->{total}, 3, 'total still 3');
     is(scalar $data->{items}->@*, 1, 'per_page=1 returns 1 item');
 };
 
@@ -94,6 +95,18 @@ subtest 'GET /api/v1/history/:slot valid slot' => sub {
 subtest 'GET /api/v1/history/:slot invalid slot returns 404' => sub {
     $t->get_ok('/api/v1/history/999')
       ->status_is(404);
+};
+
+subtest 'GET /api/v1/history reclassified items include reclassified_from' => sub {
+    $t->get_ok('/api/v1/history')
+      ->status_is(200);
+    my $items = $t->tx->res->json->{items};
+    my ($reclass) = grep { $_->{slot} == 3 } $items->@*;
+    ok(defined $reclass, 'reclassified slot found');
+    is($reclass->{reclassified_from}, 'spam', 'reclassified_from is old bucket name');
+    is($reclass->{bucket}, 'ham', 'current bucket is new bucket');
+    my ($normal) = grep { $_->{slot} == 1 } $items->@*;
+    ok(!exists $normal->{reclassified_from}, 'non-reclassified item has no reclassified_from');
 };
 
 subtest 'POST /api/v1/history/:slot/reclassify changes bucket' => sub {
