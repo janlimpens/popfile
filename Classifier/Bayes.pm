@@ -391,7 +391,7 @@ method update_constants ($session) {
         my $total = $self->get_bucket_word_count($session, $bucket);
         if ($total != 0) {
             $bucket_start->{$userid}{$bucket} = log($total / $wc);
-            $not_likely->{$userid}{$bucket} = -log(10 * $total);
+            $not_likely->{$userid}{$bucket} = log(0.5 / $wc);
         } else {
             $bucket_start->{$userid}{$bucket} = 0;
             $not_likely->{$userid}{$bucket} = 0;

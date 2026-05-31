@@ -117,18 +117,16 @@ sub reclassify_unclassified ($self) {
     my $total = $hist->queries()->session_count($qid);
     my @rows = $hist->queries()->rows($qid, 1, $total);
     $hist->queries()->stop($qid);
-    my $updated = 0;
-    for my $row (@rows) {
-        next unless defined $row;
-        my $slot = $row->[0];
-        my $file = $hist->get_slot_file($slot);
-        next unless defined $file;
-        my $new_bucket = $svc->classify($file);
-        next unless defined $new_bucket && $new_bucket ne 'unclassified';
-        $hist->change_slot_classification($slot, $new_bucket, $session, 0);
-        $updated++;
-    }
-    $self->render(json => { updated => $updated + 0, total => $total + 0 });
+    $self->_process_in_batches(
+        rows => \@rows,
+        classify => sub($file) { $svc->classify($file) },
+        update => sub($slot, $bucket) { $hist->change_slot_classification($slot, $bucket, $session, 0) },
+        get_slot => sub($row) { $row->[0] },
+        get_file => sub($slot) { $hist->get_slot_file($slot) },
+        done => sub($updated) {
+            $self->render(json => { updated => $updated + 0, total => $total + 0 });
+        }
+    );
 }
 
 sub bulk_reclassify ($self) {
@@ -249,6 +247,44 @@ sub _extract_message_id ($self, $file) {
     }
     close $fh;
     return
+}
+
+my $RECLASSIFY_BATCH_SIZE = 25;
+
+sub _process_in_batches ($self, %args) {
+    my $rows = $args{rows};
+    my $classify = $args{classify};
+    my $update = $args{update};
+    my $get_slot = $args{get_slot};
+    my $get_file = $args{get_file};
+    my $done = $args{done};
+    my $updated = 0;
+    $self->render_later;
+    my $next;
+    $next = sub {
+        my $count = 0;
+        while ($count < $RECLASSIFY_BATCH_SIZE && $rows->@*) {
+            my $row = shift $rows->@*;
+            $count++;
+            next
+                unless defined $row;
+            my $slot = $get_slot->($row);
+            my $file = $get_file->($slot);
+            next
+                unless defined $file;
+            my $new_bucket = $classify->($file);
+            next
+                unless defined $new_bucket && $new_bucket ne 'unclassified';
+            $update->($slot, $new_bucket);
+            $updated++;
+        }
+        if ($rows->@*) {
+            Mojo::IOLoop->timer(0 => $next);
+        } else {
+            $done->($updated);
+        }
+    };
+    Mojo::IOLoop->timer(0 => $next);
 }
 
 1;
