@@ -141,6 +141,7 @@ method CORE_die (@message) {
     my $msg = "@message";
     return if $msg =~ /^Can't locate .+\/XS\.pm/;
     return if $msg =~ /^Can't locate Class\/XSAccessor\.pm/;
+    return if $msg =~ /^Can't locate List\/MoreUtils\.pm/;
 
     print STDERR @message;
 

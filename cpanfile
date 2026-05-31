@@ -20,6 +20,7 @@ requires 'JSON::XS', '0';
 requires 'Lingua::Identify', '0';
 requires 'Lingua::Stem::Snowball', '0';
 requires 'Lingua::StopWords', '0';
+requires 'List::MoreUtils', '0.428';
 requires 'Log::Any', '1.7';
 requires 'MIME::Base64', '0';
 requires 'MIME::QuotedPrint', '0';
