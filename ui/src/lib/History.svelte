@@ -270,7 +270,12 @@
           <td class="trunc">{item.subject}</td>
           <td>
             <span class="bucket-badge">
-              <span class="dot" style="background:{item.color}"></span>{item.bucket}
+              <span class="dot" style="background:{item.color}"></span>
+              {#if item.reclassified_from}
+                <span class="reclassified"><span class="old-bucket">{item.reclassified_from}</span> → {item.bucket}</span>
+              {:else}
+                {item.bucket}
+              {/if}
             </span>
           </td>
           <td onclick={e => e.stopPropagation()}>
@@ -332,6 +337,8 @@
   .date { white-space: nowrap; font-size: 0.85rem; color: var(--text-muted); }
   .bucket-badge { font-weight: 500; display: inline-flex; align-items: center; }
   .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; flex-shrink: 0; }
+  .reclassified { font-size: 0.8rem; }
+  .old-bucket { color: var(--text-muted); text-decoration: line-through; }
   .page-size-label { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.875rem; color: var(--text-muted); white-space: nowrap; }
   .page-size-label select { padding: 0.3rem 0.4rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); font-size: 0.875rem; }
   .pagination { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
