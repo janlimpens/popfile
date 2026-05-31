@@ -128,19 +128,27 @@ sub stop ($self, $qid) { delete $self->{_query_state}{$qid} }
 sub set_query ($self, $qid, $filter, $search, $sort, $not) {
     $self->{_query_state}{$qid}{filter} = $filter // '';
     $self->{_query_state}{$qid}{search} = $search // '';
+    $self->{_query_state}{$qid}{not} = $not;
 }
 
 sub session_count ($self, $qid) {
     my $filter = $self->{_query_state}{$qid}{filter} // '';
-    my @matching = grep { $filter eq '' || $self->{slots}{$_}{bucket} eq $filter }
-        keys $self->{slots}->%*;
+    my $not = $self->{_query_state}{$qid}{not};
+    my @matching = grep {
+        $filter eq ''
+            || ($not ? $self->{slots}{$_}{bucket} ne $filter
+                     : $self->{slots}{$_}{bucket} eq $filter)
+    } keys $self->{slots}->%*;
     return scalar @matching
 }
 
 sub rows ($self, $qid, $start, $count) {
     my $filter = $self->{_query_state}{$qid}{filter} // '';
+    my $not = $self->{_query_state}{$qid}{not};
     my @ids = sort { $a <=> $b } grep {
-        $filter eq '' || $self->{slots}{$_}{bucket} eq $filter
+        $filter eq ''
+            || ($not ? $self->{slots}{$_}{bucket} ne $filter
+                     : $self->{slots}{$_}{bucket} eq $filter)
     } keys $self->{slots}->%*;
     my @page = splice(@ids, $start - 1, $count);
     return map { $self->{slots}{$_}{fields} } @page

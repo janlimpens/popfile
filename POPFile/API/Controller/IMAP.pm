@@ -16,6 +16,7 @@ L<POPFile::API/build_app>: C<popfile_api> for configuration access.
 =cut
 
 use Mojo::Base 'Mojolicious::Controller', -signatures;
+use Mojo::IOLoop;
 use POPFile::Features;
 
 sub _make_test_client($self, $body) {
@@ -177,6 +178,87 @@ sub rescan_folder ($self) {
         unless $folder;
     $imap->request_folder_rescan($folder);
     $self->render(json => { queued => \1, folder => $folder });
+}
+
+sub verify_folder_placement ($self) {
+    my $imap = $self->popfile_imap;
+    return $self->render(status => 503, json => { error => 'IMAP not available' })
+        unless defined $imap;
+    my $svc = $self->popfile_svc;
+    my $hist = $svc->history_obj();
+    my $qid = $hist->queries()->start();
+    $hist->set_query($qid, 'unclassified', '', '-inserted', 1);
+    my $total = $hist->queries()->session_count($qid);
+    my @rows = $hist->queries()->rows($qid, 1, $total);
+    $hist->queries()->stop($qid);
+    $self->_verify_batched(
+        rows => \@rows,
+        hist => $hist,
+        imap => $imap,
+        total => $total,
+    );
+}
+
+my $VERIFY_BATCH_SIZE = 25;
+
+sub _verify_batched ($self, %args) {
+    my $rows = $args{rows};
+    my $hist = $args{hist};
+    my $imap = $args{imap};
+    my $total = $args{total};
+    my $processed = 0;
+    $self->render_later;
+    my $next;
+    $next = sub {
+        my $count = 0;
+        while ($count < $VERIFY_BATCH_SIZE && $rows->@*) {
+            my $row = shift $rows->@*;
+            $count++;
+            next
+                unless defined $row;
+            my $slot = $row->[0];
+            my $hash = $row->[6];
+            my $bucket = $row->[8];
+            next
+                unless defined $hash && defined $bucket && $bucket ne '';
+            my $file = $hist->get_slot_file($slot);
+            next
+                unless defined $file;
+            my $mid = $self->_extract_mid($file);
+            unless (defined $mid) {
+                $processed++;
+                next();
+            }
+            $imap->cache_message_id($hash, $mid);
+            $hist->set_message_id($slot, $mid);
+            $imap->request_folder_move($hash, $bucket);
+            $processed++;
+        }
+        if ($rows->@*) {
+            Mojo::IOLoop->timer(0 => $next);
+        } else {
+            $self->render(json => { processed => $processed + 0, total => $total + 0 });
+        }
+    };
+    Mojo::IOLoop->timer(0 => $next);
+}
+
+sub _extract_mid ($self, $file) {
+    return undef
+        unless defined $file && -f $file;
+    open my $fh, '<:raw', $file
+        or return undef;
+    while (my $line = <$fh>) {
+        last if $line =~ /^\r?\n$/;
+        if ($line =~ /^message-id:\s*(.+)/is) {
+            (my $mid = $1) =~ s/\r?\n//;
+            $mid =~ s/^<|>$//g;
+            close $fh;
+            return $mid
+        }
+    }
+    close $fh;
+    return
 }
 
 sub _imap_sep ($self) {
