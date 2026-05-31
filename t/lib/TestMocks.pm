@@ -175,6 +175,14 @@ sub request_folder_move ($self, $hash, $target_bucket, $source_bucket = undef) {
 
 sub request_folder_rescan ($self, $folder) { }
 
+sub folder_for_bucket ($self, $bucket) {
+    return {
+        ham => 'INBOX.ham',
+        spam => 'INBOX.spam',
+        archive => 'INBOX.archive',
+    }->{$bucket}
+}
+
 # ── StubMQ — no-op message queue ──
 
 package TestMocks::StubMQ;

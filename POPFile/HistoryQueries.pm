@@ -52,7 +52,8 @@ my @fields = (
     'usedtobe',
     'history.bucketid AS "bucket_id"',
     'magnets.val AS "magnet"',
-    'size');
+    'size',
+    'mid');
 
 my $fields_slot = join ', ', @fields;
 

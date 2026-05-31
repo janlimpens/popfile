@@ -51,9 +51,9 @@ my %slots;
 
 sub _reset_slots () {
     %slots = (
-        1 => { fields => [1, 'alice@example.com', 'bob@example.com', '', 'Test', '2024-01-01', 'hash1', time(), 'ham', undef, 1, '', 100], file => $file_with_mid, bucket => 'ham' },
-        2 => { fields => [2, 'spammer@evil.com', 'bob@example.com', '', 'Win', '2024-01-02', 'hash2', time(), 'spam', undef, 2, '', 200], file => $file_no_mid, bucket => 'spam' },
-        3 => { fields => [3, 'bad@evil.com', 'bob@example.com', '', 'Bad', '2024-01-03', 'hash3', time(), 'ham', undef, 3, '', 300], file => $file_bad, bucket => 'ham' });
+        1 => { fields => [1, 'alice@example.com', 'bob@example.com', '', 'Test', '2024-01-01', 'hash1', time(), 'ham', undef, 1, '', 100, 'abc123@example.com'], file => $file_with_mid, bucket => 'ham' },
+        2 => { fields => [2, 'spammer@evil.com', 'bob@example.com', '', 'Win', '2024-01-02', 'hash2', time(), 'spam', undef, 2, '', 200, undef], file => $file_no_mid, bucket => 'spam' },
+        3 => { fields => [3, 'bad@evil.com', 'bob@example.com', '', 'Bad', '2024-01-03', 'hash3', time(), 'ham', undef, 3, '', 300, undef], file => $file_bad, bucket => 'ham' });
 }
 _reset_slots();
 
@@ -207,16 +207,16 @@ subtest 'reclassify without IMAP service still succeeds' => sub {
 
 sub _uncl_slots () {
     %slots = (
-        10 => { fields => [10, 'alice@example.com', 'bob@example.com', '', 'Ham-U', '2024-06-01', 'uhash1', time(), 'unclassified', undef, 0, '', 150], file => $file_uncl1, bucket => 'unclassified' },
-        11 => { fields => [11, 'spammer@evil.com', 'bob@example.com', '', 'Spam-U', '2024-06-02', 'uhash2', time(), 'unclassified', undef, 0, '', 250], file => $file_uncl2, bucket => 'unclassified' },
-        12 => { fields => [12, 'bob@example.com', 'alice@example.com', '', 'No-MID-U', '2024-06-03', 'uhash3', time(), 'unclassified', undef, 0, '', 50], file => $file_uncl3, bucket => 'unclassified' });
+        10 => { fields => [10, 'alice@example.com', 'bob@example.com', '', 'Ham-U', '2024-06-01', 'uhash1', time(), 'unclassified', undef, 0, '', 150, 'mid-uncl1@example.com'], file => $file_uncl1, bucket => 'unclassified' },
+        11 => { fields => [11, 'spammer@evil.com', 'bob@example.com', '', 'Spam-U', '2024-06-02', 'uhash2', time(), 'unclassified', undef, 0, '', 250, 'mid-uncl2@example.com'], file => $file_uncl2, bucket => 'unclassified' },
+        12 => { fields => [12, 'bob@example.com', 'alice@example.com', '', 'No-MID-U', '2024-06-03', 'uhash3', time(), 'unclassified', undef, 0, '', 50, undef], file => $file_uncl3, bucket => 'unclassified' });
 }
 
 sub _classified_slots () {
     %slots = (
-        20 => { fields => [20, 'alice@example.com', 'bob@example.com', '', 'Ham-C', '2024-07-01', 'chash1', time(), 'ham', undef, 1, '', 150], file => $file_uncl1, bucket => 'ham' },
-        21 => { fields => [21, 'spammer@evil.com', 'bob@example.com', '', 'Spam-C', '2024-07-02', 'chash2', time(), 'spam', undef, 2, '', 250], file => $file_uncl2, bucket => 'spam' },
-        22 => { fields => [22, 'bob@example.com', 'alice@example.com', '', 'No-MID-C', '2024-07-03', 'chash3', time(), 'ham', undef, 3, '', 50], file => $file_uncl3, bucket => 'ham' });
+        20 => { fields => [20, 'alice@example.com', 'bob@example.com', '', 'Ham-C', '2024-07-01', 'chash1', time(), 'ham', undef, 1, '', 150, 'mid-uncl1@example.com'], file => $file_uncl1, bucket => 'ham' },
+        21 => { fields => [21, 'spammer@evil.com', 'bob@example.com', '', 'Spam-C', '2024-07-02', 'chash2', time(), 'spam', undef, 2, '', 250, 'mid-uncl2@example.com'], file => $file_uncl2, bucket => 'spam' },
+        22 => { fields => [22, 'bob@example.com', 'alice@example.com', '', 'No-MID-C', '2024-07-03', 'chash3', time(), 'ham', undef, 3, '', 50, undef], file => $file_uncl3, bucket => 'ham' });
 }
 
 subtest 'reclassify_unclassified trains messages and requests IMAP moves' => sub {
@@ -311,6 +311,65 @@ subtest 'verify_folder_placement returns 503 when IMAP not available' => sub {
     $app2->log->level('fatal');
     my $t2 = Test::Mojo->new($app2);
     $t2->post_ok('/api/v1/imap/verify-folders')
+        ->status_is(503);
+};
+
+subtest 'verify_folder_mismatches returns messages not belonging to folder' => sub {
+    mock_reset();
+    _classified_slots();
+    $t->get_ok('/api/v1/imap/verify-folders/INBOX.spam')
+        ->status_is(200)
+        ->json_is('/folder', 'INBOX.spam')
+        ->json_has('/messages')
+        ->json_has('/total');
+    my $msgs = $t->tx->res->json->{messages};
+    my @buckets = sort map { $_->{bucket} } $msgs->@*;
+    my @expected = qw(ham ham);
+    is(\@buckets, \@expected, 'ham messages flagged as not belonging to spam folder');
+    my @targets = sort map { $_->{target_folder} } $msgs->@*;
+    my @expected_targets = qw(INBOX.ham INBOX.ham);
+    is(\@targets, \@expected_targets, 'target folder is INBOX.ham');
+};
+
+subtest 'verify_folder_mismatches returns empty when all messages belong' => sub {
+    mock_reset();
+    _classified_slots();
+    $t->get_ok('/api/v1/imap/verify-folders/INBOX.ham')
+        ->status_is(200)
+        ->json_is('/total', 1);
+};
+
+subtest 'move_messages queues moves for selected messages' => sub {
+    mock_reset();
+    _classified_slots();
+    $t->post_ok('/api/v1/imap/move-messages', json => {
+        moves => [
+            { hash => 'chash1', bucket => 'ham', mid => 'mid-uncl1@example.com' },
+            { hash => 'chash2', bucket => 'spam' },
+        ]})
+        ->status_is(200)
+        ->json_is('/queued', 2);
+    my $moves = $mock_imap->{move_requests};
+    is(scalar $moves->@*, 2, 'two moves queued');
+    is($moves->[0]{hash}, 'chash1', 'first move hash correct');
+    is($moves->[0]{target_bucket}, 'ham', 'first move target correct');
+    is($moves->[1]{hash}, 'chash2', 'second move hash correct');
+    is($moves->[1]{target_bucket}, 'spam', 'second move target correct');
+    my $cached = $mock_imap->{cached_mids};
+    ok(defined $cached->{chash1}, 'MID cached when provided');
+    ok(!defined $cached->{chash2}, 'no MID cached when not provided');
+};
+
+subtest 'move_messages returns 503 when IMAP not available' => sub {
+    my $ui_no_imap = POPFile::API->new();
+    $ui_no_imap->set_configuration($config);
+    $ui_no_imap->set_mq($mq);
+    $ui_no_imap->initialize();
+    $ui_no_imap->set_classifier_service($mock_svc);
+    my $app2 = $ui_no_imap->build_app($mock_svc, 'test-session');
+    $app2->log->level('fatal');
+    my $t2 = Test::Mojo->new($app2);
+    $t2->post_ok('/api/v1/imap/move-messages', json => { moves => [{ hash => 'x', bucket => 'ham' }] })
         ->status_is(503);
 };
 

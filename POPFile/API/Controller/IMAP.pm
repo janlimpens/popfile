@@ -265,4 +265,71 @@ sub _imap_sep ($self) {
     return '-->'
 }
 
+sub verify_folder_mismatches ($self) {
+    my $imap = $self->popfile_imap;
+    return $self->render(status => 503, json => { error => 'IMAP not available' })
+        unless defined $imap;
+    my $folder_name = $self->param('folder_name');
+    return $self->render(status => 400, json => { error => 'folder_name required' })
+        unless defined $folder_name && $folder_name ne '';
+    my $svc = $self->popfile_svc;
+    my $hist = $svc->history_obj();
+    my $qid = $hist->queries()->start();
+    $hist->set_query($qid, 'unclassified', '', '-inserted', 1);
+    my $total = $hist->queries()->session_count($qid);
+    return $self->render(json => { folder => $folder_name, messages => [], total => 0 })
+        unless $total;
+    my @rows = $hist->queries()->rows($qid, 1, $total);
+    $hist->queries()->stop($qid);
+    my @messages;
+    for my $row (@rows) {
+        next
+            unless defined $row;
+        my $bucket = $row->[8];
+        next
+            unless defined $bucket && $bucket ne '';
+        my $target_folder = $imap->folder_for_bucket($bucket);
+        next
+            unless defined $target_folder;
+        next
+            if $target_folder eq $folder_name;
+        push @messages, {
+            slot => $row->[0] + 0,
+            hash => $row->[6],
+            mid => $row->[13],
+            bucket => $bucket,
+            target_folder => $target_folder,
+            subject => $row->[4],
+            from => $row->[1],
+            date => $row->[5],
+        };
+    }
+    $self->render(json => { folder => $folder_name, messages => \@messages, total => scalar @messages });
+}
+
+sub move_messages ($self) {
+    my $imap = $self->popfile_imap;
+    return $self->render(status => 503, json => { error => 'IMAP not available' })
+        unless defined $imap;
+    my $body = $self->req->json // {};
+    my $moves = $body->{moves} // [];
+    return $self->render(status => 400, json => { error => 'moves required' })
+        unless ref $moves eq 'ARRAY' && $moves->@*;
+    my $hist = $self->popfile_svc->history_obj();
+    my $queued = 0;
+    for my $move ($moves->@*) {
+        my $hash = $move->{hash};
+        my $bucket = $move->{bucket};
+        my $mid = $move->{mid};
+        next
+            unless defined $hash && defined $bucket;
+        if (defined $mid && $mid ne '') {
+            $imap->cache_message_id($hash, $mid);
+        }
+        $imap->request_folder_move($hash, $bucket);
+        $queued++;
+    }
+    $self->render(json => { queued => $queued + 0 });
+}
+
 1;

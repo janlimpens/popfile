@@ -316,6 +316,8 @@ method build_app ($svc, $session = undef, $base_path = '') {
     $api->get('/imap/train')->to('IMAP#training_status');
     $api->post('/imap/rescan')->to('IMAP#rescan_folder');
     $api->post('/imap/verify-folders')->to('IMAP#verify_folder_placement');
+    $api->get('/imap/verify-folders/*folder_name')->to('IMAP#verify_folder_mismatches');
+    $api->post('/imap/move-messages')->to('IMAP#move_messages');
 
     $api->get('/activity')->to('activity#recent');
     $api->get('/activity/stream')->to('activity#stream');
