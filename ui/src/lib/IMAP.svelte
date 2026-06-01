@@ -36,6 +36,10 @@
   let wizardSelected = $state(new Set());
   let wizardStep = $state(1);
   let wizardDone = $state([]);  // [{folder, bucket}]
+  let verifyBusy = $state(false);
+  let verifyResult = $state(null);  // { folder, messages, total }
+  let verifySelected = $state(new Set());
+  let verifyMoving = $state(false);
 
   function folderToBucket(f) {
     // Decode IMAP modified UTF-7 patterns
@@ -277,6 +281,53 @@
     wizardOpen = false;
   }
 
+  async function verifyFolderMismatches(folder) {
+    verifyBusy = true;
+    verifyResult = null;
+    const res = await fetch(`api/v1/imap/verify-folders/${encodeURIComponent(folder)}`);
+    verifyBusy = false;
+    if (res.ok) {
+      verifyResult = await res.json();
+      verifySelected = new Set();
+    }
+  }
+
+  async function verifyAllFolders() {
+    verifyBusy = true;
+    const res = await fetch('api/v1/imap/verify-folders', { method: 'POST' });
+    verifyBusy = false;
+    if (res.ok) {
+      const data = await res.json();
+      verifyResult = { folder: 'all', messages: [], total: data.processed, note: `Queued ${data.processed} messages for folder verification. The IMAP worker will move them on the next poll.` };
+    }
+  }
+
+  function toggleVerifyMsg(hash) {
+    const s = new Set(verifySelected);
+    s.has(hash) ? s.delete(hash) : s.add(hash);
+    verifySelected = s;
+  }
+
+  function toggleAllVerify() {
+    verifySelected = verifySelected.size === verifyResult.messages.length
+      ? new Set() : new Set(verifyResult.messages.map(m => m.hash));
+  }
+
+  async function moveSelectedMessages() {
+    if (verifySelected.size === 0) return;
+    verifyMoving = true;
+    const moves = verifyResult.messages
+      .filter(m => verifySelected.has(m.hash))
+      .map(m => ({ hash: m.hash, bucket: m.bucket, mid: m.mid }));
+    await fetch('api/v1/imap/move-messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ moves }),
+    });
+    verifyMoving = false;
+    verifyResult = null;
+  }
+
   onMount(load);
 </script>
 
@@ -412,15 +463,21 @@
   <section class="card">
     <div class="section-header">
       <h3>{t('Imap_BucketFolderMappings')}</h3>
-      <button class="btn btn-sm" onclick={fetchServerFolders}
-        disabled={!connectionReady || fetchingFolders}>
-        {fetchingFolders ? t('Imap_Fetching') : t('Imap_FetchFolders')}
-      </button>
-      <button class="btn btn-sm" onclick={runWizard}
-        disabled={!connectionReady}
-        title={t('Imap_Wizard')}>
-        <span class="icon">auto_fix_high</span>
-      </button>
+      <div style="display:flex;gap:0.4rem">
+        <button class="btn btn-sm" onclick={verifyAllFolders}
+          disabled={!connectionReady || verifyBusy} title="Verify all classified messages">
+          <span class="icon">checklist</span>
+        </button>
+        <button class="btn btn-sm" onclick={fetchServerFolders}
+          disabled={!connectionReady || fetchingFolders}>
+          {fetchingFolders ? t('Imap_Fetching') : t('Imap_FetchFolders')}
+        </button>
+        <button class="btn btn-sm" onclick={runWizard}
+          disabled={!connectionReady}
+          title={t('Imap_Wizard')}>
+          <span class="icon">auto_fix_high</span>
+        </button>
+      </div>
     </div>
     <p class="hint">{t('Imap_MappingsHint')}</p>
     {#if fetchError}<p class="msg-err">{fetchError}</p>{/if}
@@ -449,6 +506,7 @@
               </td>
               <td class="row-actions">
                 <button class="btn-train" onclick={() => triggerTrain([m.bucket])}>{t('Imap_Train')}</button>
+                <button class="btn-verify" onclick={() => verifyFolderMismatches(m.folder)} title="Check placement" disabled={verifyBusy}><span class="icon">refresh</span></button>
                 <button class="btn-remove" onclick={() => removeMapping(m.bucket)} title={t('Remove')}><span class="icon">close</span></button>
               </td>
             </tr>
@@ -575,6 +633,52 @@
         <footer class="card-footer">
           <button class="btn btn-secondary" onclick={() => wizardOpen = false}>{t('Imap_WizardClose')}</button>
           <button class="btn" onclick={trainWizardFolders}>{t('Imap_WizardTrain')}</button>
+        </footer>
+      {/if}
+    </div>
+  {/if}
+
+  <!-- ── Verify folder mismatches modal ─────────────────────────── -->
+  {#if verifyResult}
+    <div class="modal-overlay" role="dialog" tabindex="-1" onclick={() => verifyResult = null} onkeydown={(e) => e.key === 'Escape' && (verifyResult = null)}></div>
+    <div class="modal" style="min-width:520px;max-width:640px">
+      <h3><span class="icon">find_in_page</span> {verifyResult.folder}</h3>
+      {#if verifyResult.note}
+        <p>{verifyResult.note}</p>
+        <footer class="card-footer">
+          <button class="btn" onclick={() => verifyResult = null}>Close</button>
+        </footer>
+      {:else if verifyResult.messages.length === 0}
+        <p style="color:var(--success)">All messages are in the correct folder.</p>
+        <footer class="card-footer">
+          <button class="btn" onclick={() => verifyResult = null}>Close</button>
+        </footer>
+      {:else}
+        <p style="margin-bottom:0.5rem">{verifyResult.total} message(s) should be moved elsewhere:</p>
+        <div style="max-height:340px;overflow-y:auto;margin-bottom:0.75rem">
+          <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;padding:0.25rem 0;cursor:pointer">
+            <input type="checkbox" checked={verifySelected.size === verifyResult.messages.length}
+              onchange={toggleAllVerify} />
+            Select all
+          </label>
+          {#each verifyResult.messages as m (m.hash)}
+            <label class="verify-row">
+              <input type="checkbox" checked={verifySelected.has(m.hash)}
+                onchange={() => toggleVerifyMsg(m.hash)} />
+              <span class="verify-from">{m.from}</span>
+              <span class="verify-subject">{m.subject}</span>
+              <span class="tag">{m.bucket}</span>
+              <span class="arrow">→</span>
+              <span class="tag bucket-tag">{m.target_folder}</span>
+            </label>
+          {/each}
+        </div>
+        <footer class="card-footer">
+          <button class="btn btn-secondary" onclick={() => verifyResult = null}>Cancel</button>
+          <button class="btn" onclick={moveSelectedMessages}
+            disabled={verifySelected.size === 0 || verifyMoving}>
+            {verifyMoving ? 'Moving...' : `Move ${verifySelected.size} selected`}
+          </button>
         </footer>
       {/if}
     </div>
@@ -855,6 +959,31 @@
   .bucket-tag { background: var(--accent-subtle); color: var(--accent); }
   .card-footer { display: flex; gap: 0.75rem; justify-content: flex-end; flex-wrap: wrap; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
   .msg-restart { font-size: 0.8rem; color: var(--warning, #e6a817); font-weight: 500; }
+  .btn-verify {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0 0.2rem;
+    line-height: 1;
+    border-radius: 3px;
+    transition: color .15s;
+  }
+  .btn-verify:hover { color: var(--accent); }
+  .btn-verify:disabled { opacity: .4; cursor: default; }
+  .verify-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.25rem;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .verify-row:hover { background: var(--surface); }
+  .verify-from { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); }
+  .verify-subject { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .btn-restart { padding: 0.3rem 0.8rem; background: var(--warning, #e6a817); color: #fff; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; }
   .btn-restart:hover { opacity: 0.85; }
 </style>
