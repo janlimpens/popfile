@@ -1426,11 +1426,11 @@ method preview_reclassification ($target_folder, $limit = 200) {
     $self->log_msg(INFO => sprintf('Reclassify preview: %d messages to check', scalar(@uids)));
     my $file = $self->get_user_path('imap.tmp');
     for my $uid (@uids) {
-        my ($ok, @header_lines) = $imap->fetch_message_part($uid, 'HEADER');
+        my ($ok, @lines) = $imap->fetch_message_part($uid, '');
         next()
             unless $ok;
         my (%header, $last);
-        for (@header_lines) {
+        for (@lines) {
             s/[\r\n]//g;
             last()
                 if /^$/;
@@ -1451,7 +1451,7 @@ method preview_reclassification ($target_folder, $limit = 200) {
         }
         binmode $fh;
         syswrite $fh, $_
-            for @header_lines;
+            for @lines;
         sysseek $fh, 0, 0;
         my $classified = $self->classifier()->classify($self->classifier(), $self->api_session(), $fh);
         close $fh;
