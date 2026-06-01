@@ -1453,8 +1453,8 @@ method preview_reclassification ($target_folder, $limit = 200) {
         syswrite $fh, $_
             for @lines;
         sysseek $fh, 0, 0;
-        my $classified = $self->classifier()->classify($self->classifier(), $self->api_session(), $fh);
         close $fh;
+        my $classified = $self->classifier()->classify($self->classifier(), $self->api_session(), $file);
         unlink $file;
         next()
             unless $classified && $mapped_bucket;
