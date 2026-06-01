@@ -57,7 +57,7 @@ my sub _extract_body($email) {
     my @parts = $email->subparts;
     return _part_text($email) unless @parts;
     my ($plain) = grep { ($_->content_type // '') =~ m{^text/plain}i } @parts;
-    my ($html)  = grep { ($_->content_type // '') =~ m{^text/html}i  } @parts;
+    my ($html) = grep { ($_->content_type // '') =~ m{^text/html}i } @parts;
     if ($plain) {
         my $text = _part_text($plain);
         return $text unless $html;
@@ -97,11 +97,11 @@ sub list_history ($self) {
         sort => 'date DESC' );
     my @items =
         map {
-            $_->{color}   = $svc->get_bucket_color($_->{'bucket'} // '') // '#666666';
-            $_->{from}    = decode_header($_->{from});
+            $_->{color} = $svc->get_bucket_color($_->{'bucket'} // '') // '#666666';
+            $_->{from} = decode_header($_->{from});
             $_->{subject} = decode_header($_->{subject});
-            $_->{to}      = decode_header($_->{to});
-            if ($_->{usedtobe} && $_->{usedtobe} != 0) {
+            $_->{to} = decode_header($_->{to});
+            if ($_->{usedtobe}) {
                 $_->{reclassified_from} = $svc->get_bucket_name($_->{usedtobe});
             }
             $_
@@ -134,7 +134,8 @@ sub reclassify_unclassified ($self) {
                 unless defined $hash;
             my $imap = $self->popfile_imap;
             return
-                unless defined $imap;
+            return
+                unless $imap;
             my $mid = $self->_extract_message_id($file);
             if (defined $mid) {
                 $hist->set_message_id($slot, $mid);
@@ -205,9 +206,11 @@ sub get_history_item ($self) {
     my $body = _extract_body($email);
     my %orig_for;
     for my $word (split /\W+/, $body) {
-        next if $word eq '';
+        next()
+            if $word eq '';
         my $mangled = $svc->mangle_word($word);
-        next if $mangled eq '' || exists $orig_for{$mangled};
+        next()
+            if $mangled eq '' || exists $orig_for{$mangled};
         $orig_for{$mangled} = lc $word;
     }
     my %mangled_colors = $svc->get_word_colors(keys %orig_for);
@@ -232,14 +235,14 @@ sub _do_reclassify ($self, $slot, $bucket) {
     my $hash = $fields[6];
     $hist->change_slot_classification($slot, $bucket, $session, 0);
     return {}
-        unless defined $old_bucket && $old_bucket ne $bucket;
+        unless $old_bucket && $old_bucket ne $bucket;
     my $file = $hist->get_slot_file($slot);
     return {}
         unless defined $file;
     $svc->remove_message_from_bucket($old_bucket, $file);
     $svc->add_message_to_bucket($bucket, $file);
     my $imap = $self->popfile_imap;
-    if (defined $imap && defined $hash) {
+    if ($imap && $hash) {
         my $mid = $self->_extract_message_id($file);
         if (defined $mid) {
             $hist->set_message_id($slot, $mid);
@@ -251,12 +254,13 @@ sub _do_reclassify ($self, $slot, $bucket) {
 }
 
 sub _extract_message_id ($self, $file) {
-    return undef
+    return
         unless defined $file && -f $file;
     open my $fh, '<:raw', $file
-        or return undef;
+        or return;
     while (my $line = <$fh>) {
-        last if $line =~ /^\r?\n$/;
+        last()
+            if $line =~ /^\r?\n$/;
         if ($line =~ /^message-id:\s*(.+)/is) {
             (my $mid = $1) =~ s/\r?\n//;
             $mid =~ s/^<|>$//g;
@@ -286,15 +290,15 @@ sub _process_in_batches ($self, %args) {
         while ($count < $RECLASSIFY_BATCH_SIZE && $rows->@*) {
             my $row = shift $rows->@*;
             $count++;
-            next
+            next()
                 unless defined $row;
             my $slot = $get_slot->($row);
             my $file = $get_file->($slot);
-            next
-                unless defined $file;
+            next()
+                unless $file;
             my $new_bucket = $classify->($file);
-            next
-                unless defined $new_bucket && $new_bucket ne 'unclassified';
+            next()
+                unless $new_bucket && $new_bucket ne 'unclassified';
             $update->($slot, $new_bucket);
             $after_update->($slot, $new_bucket, $file)
                 if $after_update;

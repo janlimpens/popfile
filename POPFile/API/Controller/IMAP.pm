@@ -70,8 +70,8 @@ sub update_folders ($self) {
     }
     if (defined $body->{mappings}) {
         for my $m ($body->{mappings}->@*) {
-            next unless defined $m->{bucket} && $m->{bucket} ne ''
-                        && defined $m->{folder} && $m->{folder} ne '';
+            next()
+                unless $m->{bucket} && $m->{folder};
             $imap->folder_for_bucket($m->{bucket}, $m->{folder});
         }
     }
@@ -151,7 +151,8 @@ sub trigger_training ($self) {
     } else {
         for my $bucket (grep { /^[a-z0-9_-]+$/ } @buckets) {
             my $flag = $api->get_user_path("popfile.train.$bucket");
-            next unless defined $flag && _touch($flag);
+            next()
+                unless defined $flag && _touch($flag);
             push @queued, $bucket;
         }
     }
@@ -183,7 +184,7 @@ sub rescan_folder ($self) {
 sub verify_folder_placement ($self) {
     my $imap = $self->popfile_imap;
     return $self->render(status => 503, json => { error => 'IMAP not available' })
-        unless defined $imap;
+        unless $imap;
     my $svc = $self->popfile_svc;
     my $hist = $svc->history_obj();
     my $qid = $hist->queries()->start();
@@ -214,16 +215,16 @@ sub _verify_batched ($self, %args) {
         while ($count < $VERIFY_BATCH_SIZE && $rows->@*) {
             my $row = shift $rows->@*;
             $count++;
-            next
+            next()
                 unless defined $row;
             my $slot = $row->[0];
             my $hash = $row->[6];
             my $bucket = $row->[8];
-            next
-                unless defined $hash && defined $bucket && $bucket ne '';
+            next()
+                unless $hash && $bucket;
             my $file = $hist->get_slot_file($slot);
-            next
-                unless defined $file;
+            next()
+                unless $file;
             my $mid = $self->_extract_mid($file);
             unless (defined $mid) {
                 $processed++;
@@ -244,12 +245,13 @@ sub _verify_batched ($self, %args) {
 }
 
 sub _extract_mid ($self, $file) {
-    return undef
-        unless defined $file && -f $file;
+    return
+        unless $file && -f $file;
     open my $fh, '<:raw', $file
-        or return undef;
+        or return;
     while (my $line = <$fh>) {
-        last if $line =~ /^\r?\n$/;
+        last()
+            if $line =~ /^\r?\n$/;
         if ($line =~ /^message-id:\s*(.+)/is) {
             (my $mid = $1) =~ s/\r?\n//;
             $mid =~ s/^<|>$//g;
@@ -268,10 +270,10 @@ sub _imap_sep ($self) {
 sub verify_folder_mismatches ($self) {
     my $imap = $self->popfile_imap;
     return $self->render(status => 503, json => { error => 'IMAP not available' })
-        unless defined $imap;
+        unless $imap;
     my $folder_name = $self->param('folder_name');
     return $self->render(status => 400, json => { error => 'folder_name required' })
-        unless defined $folder_name && $folder_name ne '';
+        unless $folder_name;
     my $svc = $self->popfile_svc;
     my $hist = $svc->history_obj();
     my $qid = $hist->queries()->start();
@@ -283,15 +285,15 @@ sub verify_folder_mismatches ($self) {
     $hist->queries()->stop($qid);
     my @messages;
     for my $row (@rows) {
-        next
+        next()
             unless defined $row;
         my $bucket = $row->[8];
-        next
-            unless defined $bucket && $bucket ne '';
+        next()
+            unless $bucket;
         my $target_folder = $imap->folder_for_bucket($bucket);
-        next
+        next()
             unless defined $target_folder;
-        next
+        next()
             if $target_folder eq $folder_name;
         push @messages, {
             slot => $row->[0] + 0,
@@ -310,7 +312,7 @@ sub verify_folder_mismatches ($self) {
 sub move_messages ($self) {
     my $imap = $self->popfile_imap;
     return $self->render(status => 503, json => { error => 'IMAP not available' })
-        unless defined $imap;
+        unless $imap;
     my $body = $self->req->json // {};
     my $moves = $body->{moves} // [];
     return $self->render(status => 400, json => { error => 'moves required' })
@@ -321,9 +323,9 @@ sub move_messages ($self) {
         my $hash = $move->{hash};
         my $bucket = $move->{bucket};
         my $mid = $move->{mid};
-        next
-            unless defined $hash && defined $bucket;
-        if (defined $mid && $mid ne '') {
+        next()
+            unless $hash && $bucket;
+        if ($mid) {
             $imap->cache_message_id($hash, $mid);
         }
         $imap->request_folder_move($hash, $bucket);
