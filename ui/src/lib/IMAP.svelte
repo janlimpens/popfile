@@ -78,6 +78,9 @@
         const data = await folRes.json();
         watched  = data.watched  ?? [];
         mappings = data.mappings ?? [];
+        if (!mappings.some(m => m.bucket === 'unclassified')) {
+          mappings = [...mappings, { bucket: 'unclassified', folder: 'unclassified' }];
+        }
         loadedBuckets = await bucketRes.json();
         break;
       }
@@ -150,7 +153,7 @@
 
   // ── Bucket mapping helpers ─────────────────────────────────────────────
   function addMapping() {
-    if (!newMapBucket || !newMapFolder.trim()) return;
+    if (!newMapBucket || !newMapFolder.trim() || newMapBucket === 'unclassified') return;
     mappings = mappings.filter(m => m.bucket !== newMapBucket);
     mappings = [...mappings, { bucket: newMapBucket, folder: newMapFolder.trim() }];
     newMapBucket = '';
@@ -159,6 +162,7 @@
     ondirty();
   }
   function removeMapping(bucket) {
+    if (bucket === 'unclassified') return;
     mappings = mappings.filter(m => m.bucket !== bucket);
     foldersDirty = true;
     ondirty();
@@ -499,15 +503,30 @@
                 {m.bucket}
               </td>
               <td class="folder-cell">
-                {m.folder}
-                {#if serverFolders.length > 0 && !serverFolders.includes(m.folder)}
-                  <span class="warn icon" title="Folder not found on server">warning</span>
+                {#if m.bucket === 'unclassified'}
+                  <select
+                    value={m.folder}
+                    onchange={e => { m.folder = /** @type {HTMLSelectElement} */ (e.target).value; foldersDirty = true; ondirty(); }}
+                  >
+                    {#each serverFolders as f}
+                      <option value={f}>{f}</option>
+                    {/each}
+                  </select>
+                {:else}
+                  {m.folder}
+                  {#if serverFolders.length > 0 && !serverFolders.includes(m.folder)}
+                    <span class="warn icon" title="Folder not found on server">warning</span>
+                  {/if}
                 {/if}
               </td>
               <td class="row-actions">
-                <button class="btn-train" onclick={() => triggerTrain([m.bucket])}>{t('Imap_Train')}</button>
+                {#if m.bucket !== 'unclassified'}
+                  <button class="btn-train" onclick={() => triggerTrain([m.bucket])}>{t('Imap_Train')}</button>
+                {/if}
                 <button class="btn-verify" onclick={() => verifyFolderMismatches(m.folder)} title="Check placement" disabled={verifyBusy}><span class="icon">refresh</span></button>
-                <button class="btn-remove" onclick={() => removeMapping(m.bucket)} title={t('Remove')}><span class="icon">close</span></button>
+                {#if m.bucket !== 'unclassified'}
+                  <button class="btn-remove" onclick={() => removeMapping(m.bucket)} title={t('Remove')}><span class="icon">close</span></button>
+                {/if}
               </td>
             </tr>
           {/each}
@@ -517,7 +536,7 @@
 
     {#if mappings.length > 0}
       <div class="train-row">
-        <button onclick={() => triggerTrain([])}>{t('Imap_TrainAll')}</button>
+        <button onclick={() => triggerTrain(mappings.filter(m => m.bucket !== 'unclassified').map(m => m.bucket))}>{t('Imap_TrainAll')}</button>
         {#if trainStatus}<span class="train-status">{trainStatus}</span>{/if}
       </div>
     {/if}

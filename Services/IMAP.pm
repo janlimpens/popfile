@@ -712,6 +712,11 @@ method build_folder_list() {
             $folders{$folder}{_folder}->set_output_bucket($bucket);
         }
     }
+    my $unclassified_folder = $self->folder_for_bucket('unclassified');
+    if ($unclassified_folder) {
+        $folders{$unclassified_folder}{unclassified} = 1;
+        $folders{$unclassified_folder}{_folder} //= Services::IMAP::Folder->new(name => $unclassified_folder);
+    }
     $folder_change_flag = 0;
 }
 
