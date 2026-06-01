@@ -293,11 +293,11 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ folder, limit: 200 }),
     });
-    verifyBusy = false;
     if (res.ok) {
       verifyResult = await res.json();
       verifySelected = new Set();
     }
+    verifyBusy = false;
   }
 
   async function verifyAllFolders() {
@@ -661,6 +661,16 @@
     </div>
   {/if}
 
+  <!-- ── Verify folder mismatches: loading overlay ────────────────── -->
+  {#if verifyBusy && !verifyResult}
+    <div class="modal-overlay"></div>
+    <div class="modal" style="min-width:280px;max-width:320px;text-align:center">
+      <h3>Checking folder...</h3>
+      <p style="color:var(--text-muted);margin:1rem 0">Fetching and classifying messages from IMAP.</p>
+      <span class="spinner"></span>
+    </div>
+  {/if}
+
   <!-- ── Verify folder mismatches modal ─────────────────────────── -->
   {#if verifyResult}
     <div class="modal-overlay" role="dialog" tabindex="-1" onclick={() => verifyResult = null} onkeydown={(e) => e.key === 'Escape' && (verifyResult = null)}></div>
@@ -1013,4 +1023,16 @@
   .verify-subject { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .btn-restart { padding: 0.3rem 0.8rem; background: var(--warning, #e6a817); color: #fff; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; }
   .btn-restart:hover { opacity: 0.85; }
+  .spinner {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 </style>
