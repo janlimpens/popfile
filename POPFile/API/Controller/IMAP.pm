@@ -334,4 +334,17 @@ sub move_messages ($self) {
     $self->render(json => { queued => $queued + 0 });
 }
 
+sub reclassify_preview ($self) {
+    my $imap = $self->popfile_imap();
+    return $self->render(status => 503, json => { error => 'IMAP not available' })
+        unless defined $imap;
+    my $body = $self->req->json // {};
+    my $folder = $body->{folder} // '';
+    return $self->render(status => 400, json => { error => 'folder required' })
+        unless $folder;
+    my $limit = $body->{limit} // 200;
+    my $result = $imap->preview_reclassification($folder, $limit);
+    $self->render(json => $result);
+}
+
 1;

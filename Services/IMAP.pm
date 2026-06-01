@@ -1400,4 +1400,80 @@ method train_on_archive() {
     return $total_msgs
 }
 
+=head2 preview_reclassification($folder, $limit)
+
+Fetches the most recent messages (up to C<$limit>, default 200) from an IMAP
+folder, classifies each one without modifying the database, and returns
+messages where the classifier's prediction differs from the bucket currently
+mapped to that folder.  Messages are processed newest-first.
+
+Returns a hashref: C<< { folder => $name, messages => [ { hash, mid, from,
+subject, classified_bucket, mapped_bucket, target_folder } ] } >>
+
+=cut
+
+method preview_reclassification ($target_folder, $limit = 200) {
+    my %result = (folder => $target_folder, messages => []);
+    unless (exists $folders{$target_folder} && exists $folders{$target_folder}{imap}) {
+        $self->connect_server();
+    }
+    return \%result
+        unless exists $folders{$target_folder}{imap};
+    my $imap = $folders{$target_folder}{imap};
+    my $mapped_bucket = $folders{$target_folder}{output} // '';
+    $self->log_msg(INFO => "Reclassify preview on $target_folder, mapped bucket: $mapped_bucket");
+    my @uids = $imap->get_all_message_uids($target_folder, $limit);
+    $self->log_msg(INFO => sprintf('Reclassify preview: %d messages to check', scalar(@uids)));
+    my $file = $self->get_user_path('imap.tmp');
+    for my $uid (@uids) {
+        my ($ok, @header_lines) = $imap->fetch_message_part($uid, 'HEADER');
+        next()
+            unless $ok;
+        my (%header, $last);
+        for (@header_lines) {
+            s/[\r\n]//g;
+            last()
+                if /^$/;
+            if (/^([^ \t]+):[ \t]*(.*)$/) {
+                $last = lc $1;
+                push $header{$last}->@*, $2;
+            }
+            elsif ($last) {
+                $header{$last}[-1] .= $_;
+            }
+        }
+        my $mid = $header{'message-id'}[0];
+        my $from = $header{'from'}[0];
+        my $subject = $header{'subject'}[0];
+        my $fh;
+        unless (sysopen($fh, $file, Fcntl::O_RDWR() | Fcntl::O_CREAT() | Fcntl::O_TRUNC())) {
+            next();
+        }
+        binmode $fh;
+        syswrite $fh, $_
+            for @header_lines;
+        sysseek $fh, 0, 0;
+        my $classified = $self->classifier()->classify($self->classifier(), $self->api_session(), $fh);
+        close $fh;
+        unlink $file;
+        next()
+            unless $classified && $mapped_bucket;
+        next()
+            if $classified eq $mapped_bucket;
+        my $target = $self->folder_for_bucket($classified);
+        my $hash = $history->get_message_hash($mid, undef, $subject, undef);
+        push $result{messages}->@*, {
+            hash => $hash,
+            mid => $mid,
+            from => $from // '',
+            subject => $subject // '',
+            classified_bucket => $classified,
+            mapped_bucket => $mapped_bucket,
+            target_folder => $target // $classified,
+        };
+    }
+    $self->log_msg(INFO => sprintf('Reclassify preview done: %d mismatches', scalar($result{messages}->@*)));
+    return \%result
+}
+
 1;

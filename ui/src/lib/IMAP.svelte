@@ -288,7 +288,11 @@
   async function verifyFolderMismatches(folder) {
     verifyBusy = true;
     verifyResult = null;
-    const res = await fetch(`api/v1/imap/verify-folders/${encodeURIComponent(folder)}`);
+    const res = await fetch('api/v1/imap/reclassify-preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder, limit: 200 }),
+    });
     verifyBusy = false;
     if (res.ok) {
       verifyResult = await res.json();
@@ -322,7 +326,7 @@
     verifyMoving = true;
     const moves = verifyResult.messages
       .filter(m => verifySelected.has(m.hash))
-      .map(m => ({ hash: m.hash, bucket: m.bucket, mid: m.mid }));
+      .map(m => ({ hash: m.hash, bucket: m.classified_bucket, mid: m.mid }));
     await fetch('api/v1/imap/move-messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -673,7 +677,7 @@
           <button class="btn" onclick={() => verifyResult = null}>Close</button>
         </footer>
       {:else}
-        <p style="margin-bottom:0.5rem">{verifyResult.total} message(s) should be moved elsewhere:</p>
+        <p style="margin-bottom:0.5rem">{verifyResult.messages.length} message(s) should be moved elsewhere:</p>
         <div style="max-height:340px;overflow-y:auto;margin-bottom:0.75rem">
           <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;padding:0.25rem 0;cursor:pointer">
             <input type="checkbox" checked={verifySelected.size === verifyResult.messages.length}
@@ -686,9 +690,13 @@
                 onchange={() => toggleVerifyMsg(m.hash)} />
               <span class="verify-from">{m.from}</span>
               <span class="verify-subject">{m.subject}</span>
-              <span class="tag">{m.bucket}</span>
+              <span class="tag">{m.mapped_bucket}</span>
               <span class="arrow">→</span>
-              <span class="tag bucket-tag">{m.target_folder}</span>
+              <span class="tag bucket-tag">{m.classified_bucket}</span>
+              {#if m.target_folder !== m.classified_bucket}
+                <span class="arrow">→</span>
+                <span style="font-size:0.75rem;color:var(--text-muted)">{m.target_folder}</span>
+              {/if}
             </label>
           {/each}
         </div>

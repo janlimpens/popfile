@@ -424,6 +424,29 @@ method get_new_message_list_unselected ($folder_name) {
     return
 }
 
+=head2 get_all_message_uids($folder_name, $limit)
+
+Selects C<$folder_name> and retrieves all message UIDs via C<UID SEARCH ALL>.
+Returns UIDs sorted newest-first, limited to C<$limit> if given.
+
+=cut
+
+method get_all_message_uids ($folder_name, $limit = undef) {
+    $self->select($folder_name);
+    $self->say('UID SEARCH ALL');
+    my $result = $self->get_response();
+    unless ($result == 1) {
+        $self->log_msg(WARN => "SEARCH ALL failed in $folder_name");
+        return ()
+    }
+    my @uids;
+    @uids = split / /, $1 if $last_response =~ /\* SEARCH (.+)$eol/;
+    @uids = sort { $b <=> $a } @uids;
+    @uids = @uids[0 .. $limit - 1]
+        if defined $limit && @uids > $limit;
+    return @uids
+}
+
 =head2 search_header_in_folder($folder_name, $field, $value)
 
 Selects C<$folder_name> and searches for messages whose header field C<$field>
