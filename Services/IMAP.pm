@@ -921,10 +921,10 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
         my $subject_str = $subject ? " ($subject)" : '';
         my $found_id = $emit_batch->('info', 'Found', "UID $msg in $folder$subject_str");
         $hash_to_mid{$hash} = $mid if $hash && $mid;
-        $imap->uid_next($folder, $msg + 1);
         unless ($hash) {
             $self->log_msg(WARN => "Skipping message $msg.");
             $emit_batch->('warn', 'Skipped', "UID $msg — could not hash");
+            $imap->uid_next($folder, $msg + 1);
             next();
         }
         if (exists $pending_folder_moves{$hash}) {
@@ -936,7 +936,9 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
                 $moved_message++;
                 $emit_batch->('info', 'Reclassified', "UID $msg → $destination (UI)");
             }
-            next();        }
+            $imap->uid_next($folder, $msg + 1);
+            next();
+        }
         if (exists $hash_values{$hash}) {
             my $destination = $hash_values{$hash};
             if ($destination ne $folder) {
@@ -947,17 +949,22 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
             else {
                 $self->log_msg(WARN => "Found duplicate hash value: $hash. Ignoring duplicate in folder $folder.");
             }
-            next();        }
+            $imap->uid_next($folder, $msg + 1);
+            next();
+        }
         if ($is_watched && $self->can_classify($hash)) {
             my $result = $self->classify_message($msg, $hash, $folder, $mid);
             unless (defined $result) {
                 $self->log_msg(WARN => "classify_message failed for UID $msg in $folder — message left in place.");
                 $emit_batch->('error', 'Classify failed', "UID $msg in $folder");
-                next();            }
+                next();
+            }
             $moved_message++ if $result ne '';
             $hash_values{$hash} = $result ne '' ? $result : $folder;
             $emit_batch->('info', 'Classified', "UID $msg → " . ($result || $folder));
-            next();        }
+            $imap->uid_next($folder, $msg + 1);
+            next();
+        }
         if ($is_watched && ref $history && $history->can('get_slot_from_hash')) {
             my $slot = $history->get_slot_from_hash($hash);
             if ($slot ne '') {
@@ -979,7 +986,9 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
                     $emit_batch->('info', 'Reappeared', "UID $msg was previously $old_bucket$subject_str", $found_id);
                 }
             }
-            next();        }
+            $imap->uid_next($folder, $msg + 1);
+            next();
+        }
         if (my $bucket = $is_output) {
             if (my $old_bucket = $self->can_reclassify($hash, $bucket)) {
                 $self->reclassify_message($folder, $msg, $old_bucket, $hash);
@@ -996,8 +1005,11 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
                 $self->log_msg(INFO => "Skipping message $msg in output folder $folder (not in history, training mode off).");
                 $emit_batch->('info', 'Skipped', "UID $msg — output folder, not in history, training off");
             }
-            next();        }
+            $imap->uid_next($folder, $msg + 1);
+            next();
+        }
         $self->log_msg(DEBUG => "Ignoring message $msg");
+        $imap->uid_next($folder, $msg + 1);
     }
     $imap->expunge()
         if $moved_message && $self->config->get('expunge');
@@ -1068,7 +1080,11 @@ method classify_message ($msg, $hash, $folder, $mid = undef) {
             my $destination = $self->folder_for_bucket($class);
             if ($destination) {
                 if ($folder ne $destination) {
-                    $imap->move_message($msg, $destination);
+                    my $moved = $imap->move_message($msg, $destination);
+                    unless ($moved) {
+                        $self->log_msg(WARN => "Failed to move message $msg to $destination.");
+                        return
+                    }
                     $moved_a_msg = $destination;
                 }
             }
