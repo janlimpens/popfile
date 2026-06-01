@@ -40,6 +40,7 @@
   let verifyResult = $state(null);  // { folder, messages, total }
   let verifySelected = $state(new Set());
   let verifyMoving = $state(false);
+  let verifyLoadingFolder = $state('');
 
   function folderToBucket(f) {
     // Decode IMAP modified UTF-7 patterns
@@ -288,6 +289,7 @@
   async function verifyFolderMismatches(folder) {
     verifyBusy = true;
     verifyResult = null;
+    verifyLoadingFolder = folder;
     const res = await fetch('api/v1/imap/reclassify-preview', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -665,7 +667,7 @@
   {#if verifyBusy && !verifyResult}
     <div class="modal-overlay"></div>
     <div class="modal" style="min-width:280px;max-width:320px;text-align:center">
-      <h3>Checking folder...</h3>
+      <h3>Checking {verifyLoadingFolder}...</h3>
       <p style="color:var(--text-muted);margin:1rem 0">Fetching and classifying messages from IMAP.</p>
       <span class="spinner"></span>
     </div>
