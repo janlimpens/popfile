@@ -292,14 +292,22 @@
     verifyBusy = true;
     verifyResult = null;
     verifyLoadingFolder = folder;
-    const res = await fetch('api/v1/imap/reclassify-preview', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ folder, limit: 200 }),
-    });
-    if (res.ok) {
-      verifyResult = await res.json();
-      verifySelected = new Set();
+    try {
+      const res = await fetch('api/v1/imap/reclassify-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder, limit: 200 }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        const msg = text.length < 200 ? text : res.status + ' ' + res.statusText;
+        verifyResult = { folder, messages: [], note: 'Error: ' + msg };
+      } else {
+        verifyResult = await res.json();
+        verifySelected = new Set();
+      }
+    } catch (e) {
+      verifyResult = { folder, messages: [], note: 'Connection error: ' + e.message };
     }
     verifyBusy = false;
   }
