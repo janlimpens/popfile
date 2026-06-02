@@ -6,6 +6,7 @@ no warnings 'experimental::try';
 use Fcntl ();
 use Mojo::IOLoop;
 use Encode ();
+use MIME::Base64 qw(decode_base64);
 use Services::IMAP::Client;
 use Services::IMAP::Folder;
 use POPFile::Role::DBConnect;
@@ -1455,6 +1456,8 @@ method preview_reclassification ($target_folder, $limit = 200) {
         my $mid = $header{'message-id'}[0];
         my $from = $header{'from'}[0];
         my $subject = $header{'subject'}[0];
+        $subject = $self->_decode_mime_header($subject)
+            if $subject;
         my $fh;
         unless (sysopen($fh, $file, Fcntl::O_RDWR() | Fcntl::O_CREAT() | Fcntl::O_TRUNC())) {
             next();
@@ -1483,8 +1486,30 @@ method preview_reclassification ($target_folder, $limit = 200) {
         };
     }
     $self->log_msg(INFO => sprintf('Reclassify preview done: %d mismatches', scalar($result{messages}->@*)));
-    $imap->logout();
     return \%result
+}
+
+method _decode_mime_header ($str) {
+    my $decoded = '';
+    while ($str =~ /=\?([^?]+)\?(.)\?([^?]*)\?=/g) {
+        my ($charset, $encoding, $text) = ($1, uc($2), $3);
+        if ($encoding eq 'Q') {
+            $text =~ s/_/ /g;
+            $text =~ s/=([0-9A-Fa-f]{2})/chr(hex($1))/ge;
+        }
+        elsif ($encoding eq 'B') {
+            $text = decode_base64($text);
+        }
+        try {
+            $text = Encode::decode($charset, $text);
+        }
+        catch ($e) {
+            $text = Encode::decode_utf8($text, Encode::FB_DEFAULT())
+                unless Encode::is_utf8($text);
+        }
+        $decoded .= $text;
+    }
+    return $decoded ne '' ? $decoded : $str
 }
 
 1;
