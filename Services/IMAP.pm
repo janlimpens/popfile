@@ -6,7 +6,6 @@ no warnings 'experimental::try';
 use Fcntl ();
 use Mojo::IOLoop;
 use Encode ();
-use MIME::Base64 qw(decode_base64);
 use Services::IMAP::Client;
 use Services::IMAP::Folder;
 use POPFile::Role::DBConnect;
@@ -17,6 +16,7 @@ class Services::IMAP
     :does(POPFile::Role::DBConnect)
     :does(POPFile::Role::Config);
 
+use MIME::Base64 qw(decode_base64);
 
 =head1 NAME
 

@@ -298,10 +298,12 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ folder, limit: 200 }),
       });
-      if (!res.ok) {
-        const text = await res.text();
-        const msg = text.length < 200 ? text : res.status + ' ' + res.statusText;
-        verifyResult = { folder, messages: [], note: 'Error: ' + msg };
+      const ct = res.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) {
+        verifyResult = { folder, messages: [], note: 'Server error: ' + res.status + ' ' + res.statusText };
+      } else if (!res.ok) {
+        const body = await res.json();
+        verifyResult = { folder, messages: [], note: (body.error || body.message || 'Error ' + res.status) };
       } else {
         verifyResult = await res.json();
         verifySelected = new Set();
