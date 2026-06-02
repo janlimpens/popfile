@@ -292,11 +292,12 @@
     verifyBusy = true;
     verifyResult = null;
     verifyLoadingFolder = folder;
+    const limit = parseInt(/** @type {HTMLInputElement} */ (document.getElementById('reclassify-limit'))?.value || 100);
     try {
       const res = await fetch('api/v1/imap/reclassify-preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ folder, limit: 200 }),
+        body: JSON.stringify({ folder, limit }),
       });
       const ct = res.headers.get('content-type') || '';
       if (!ct.includes('application/json')) {
@@ -704,7 +705,7 @@
     <div class="modal-overlay"></div>
     <div class="modal" style="min-width:280px;max-width:320px;text-align:center">
       <h3>Checking {verifyLoadingFolder}...</h3>
-      <p style="color:var(--text-muted);margin:1rem 0">Fetching and classifying messages from IMAP.</p>
+      <p style="color:var(--text-muted);margin:1rem 0">Scanning {verifyLoadingFolder}. This may take a while.</p>
       <span class="spinner"></span>
     </div>
   {/if}

@@ -1517,7 +1517,7 @@ subject, classified_bucket, mapped_bucket, target_folder } ] } >>
 
 =cut
 
-method preview_reclassification ($target_folder, $limit = 200) {
+method preview_reclassification ($target_folder, $limit = 100) {
     my %result = (folder => $target_folder, messages => []);
     my $imap = $self->new_imap_client();
     return \%result
