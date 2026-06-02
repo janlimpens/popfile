@@ -41,8 +41,6 @@
   let verifySelected = $state(new Set());
   let verifyMoving = $state(false);
   let verifyLoadingFolder = $state('');
-  let moveQueueCount = $state(0);
-  let moveQueueDialog = $state(false);
 
   function folderToBucket(f) {
     // Decode IMAP modified UTF-7 patterns
@@ -351,30 +349,8 @@
     verifyResult = null;
   }
 
-  async function moveQueueProcess() {
-    moveQueueDialog = false;
-    await fetch('api/v1/imap/move-queue/process', { method: 'POST' });
-  }
-
-  async function moveQueueClear() {
-    moveQueueDialog = false;
-    await fetch('api/v1/imap/move-queue/clear', { method: 'POST' });
-  }
-
   onMount(async () => {
     await load();
-    if (cfg.imap_enabled == 1) {
-      try {
-        const res = await fetch('api/v1/imap/move-queue/count');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.count > 0) {
-            moveQueueCount = data.count;
-            moveQueueDialog = true;
-          }
-        }
-      } catch (e) {}
-    }
   });
 </script>
 
@@ -756,19 +732,6 @@
           </button>
         </footer>
       {/if}
-    </div>
-  {/if}
-
-  <!-- ── Startup move queue dialog ─────────────────────────────── -->
-  {#if moveQueueDialog}
-    <div class="modal-overlay"></div>
-    <div class="modal" style="min-width:360px;max-width:440px">
-      <h3><span class="icon">inbox</span> Pending moves</h3>
-      <p>{moveQueueCount} message(s) queued for reclassification from a previous session.</p>
-      <footer class="card-footer">
-        <button class="btn btn-secondary" onclick={moveQueueClear}>Clear queue</button>
-        <button class="btn" onclick={moveQueueProcess}>Keep (process on next poll)</button>
-      </footer>
     </div>
   {/if}
 

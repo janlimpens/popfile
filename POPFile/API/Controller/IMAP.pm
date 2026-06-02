@@ -348,44 +348,4 @@ sub reclassify_preview ($self) {
     $self->render(json => $result);
 }
 
-sub move_queue ($self) {
-    my $imap = $self->popfile_imap();
-    return $self->render(status => 503, json => { error => 'IMAP not available' })
-        unless defined $imap;
-    my $direct = $imap->pending_direct_moves();
-    my $passive = $imap->pending_folder_moves();
-    my @direct_list;
-    push @direct_list, { hash => $_, target_bucket => $direct->{$_}{target_bucket}, mid => $direct->{$_}{mid} }
-        for keys %$direct;
-    my @passive_list = map { { hash => $_, target_bucket => $passive->{$_} } } keys %$passive;
-    $self->render(json => {
-        direct_moves => \@direct_list,
-        passive_moves => \@passive_list,
-    });
-}
-
-sub move_queue_count ($self) {
-    my $imap = $self->popfile_imap();
-    return $self->render(status => 200, json => { count => 0 })
-        unless defined $imap;
-    my $count = $imap->move_queue_count();
-    $self->render(json => { count => $count + 0 });
-}
-
-sub move_queue_clear ($self) {
-    my $imap = $self->popfile_imap();
-    return $self->render(status => 503, json => { error => 'IMAP not available' })
-        unless defined $imap;
-    $imap->clear_move_queue();
-    $self->render(json => { ok => \1 });
-}
-
-sub move_queue_process ($self) {
-    my $imap = $self->popfile_imap();
-    return $self->render(status => 503, json => { error => 'IMAP not available' })
-        unless defined $imap;
-    my $processed = $imap->process_move_queue();
-    $self->render(json => { ok => \1, processed => $processed ? \1 : \0 });
-}
-
 1;
