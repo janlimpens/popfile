@@ -1551,7 +1551,8 @@ method preview_reclassification ($target_folder, $limit = 200) {
         }
         my $mid = $header{'message-id'}[0];
         my $from = $header{'from'}[0];
-        my $subject = $header{'subject'}[0];
+        my $subject_raw = $header{'subject'}[0];
+        my $subject = $subject_raw;
         $subject = $self->_decode_mime_header($subject)
             if $subject;
         my $fh;
@@ -1570,7 +1571,7 @@ method preview_reclassification ($target_folder, $limit = 200) {
         next()
             if $classified eq $mapped_bucket;
         my $target = $self->folder_for_bucket($classified);
-        my $hash = $history->get_message_hash($mid, undef, $subject, undef);
+        my $hash = $history->get_message_hash($mid, undef, $subject_raw, undef);
         push $result{messages}->@*, {
             hash => $hash,
             mid => $mid,
