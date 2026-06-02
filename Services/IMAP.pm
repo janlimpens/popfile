@@ -117,6 +117,14 @@ Returns the current C<%pending_folder_moves> as a hashref (hash → target bucke
 
 method pending_folder_moves() { \%pending_folder_moves }
 
+=head2 pending_direct_moves()
+
+Returns the current C<%pending_direct_moves> as a hashref (hash -> { mid, target_bucket }).
+
+=cut
+
+method pending_direct_moves() { \%pending_direct_moves }
+
 =head2 start()
 
 Registers a recurring C<Mojo::IOLoop> timer that calls C<poll()> every

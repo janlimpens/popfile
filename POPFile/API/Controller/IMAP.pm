@@ -348,4 +348,20 @@ sub reclassify_preview ($self) {
     $self->render(json => $result);
 }
 
+sub move_queue ($self) {
+    my $imap = $self->popfile_imap();
+    return $self->render(status => 503, json => { error => 'IMAP not available' })
+        unless defined $imap;
+    my $direct = $imap->pending_direct_moves();
+    my $passive = $imap->pending_folder_moves();
+    my @direct_list;
+    push @direct_list, { hash => $_, target_bucket => $direct->{$_}{target_bucket}, mid => $direct->{$_}{mid} }
+        for keys %$direct;
+    my @passive_list = map { { hash => $_, target_bucket => $passive->{$_} } } keys %$passive;
+    $self->render(json => {
+        direct_moves => \@direct_list,
+        passive_moves => \@passive_list,
+    });
+}
+
 1;
