@@ -430,7 +430,6 @@ method reclassify_preview_sync ($folder, $limit = 200, $timeout = 120) {
     }
     return $reclassify_received ? $reclassify_response : { folder => $folder, messages => [] }
 }
-}
 
 method _run_poll_work($subprocess = undef) {
     my $result = {};
