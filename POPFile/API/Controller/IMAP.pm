@@ -364,4 +364,20 @@ sub move_queue ($self) {
     });
 }
 
+sub move_queue_count ($self) {
+    my $imap = $self->popfile_imap();
+    return $self->render(status => 200, json => { count => 0 })
+        unless defined $imap;
+    my $count = $imap->move_queue_count();
+    $self->render(json => { count => $count + 0 });
+}
+
+sub move_queue_clear ($self) {
+    my $imap = $self->popfile_imap();
+    return $self->render(status => 503, json => { error => 'IMAP not available' })
+        unless defined $imap;
+    $imap->clear_move_queue();
+    $self->render(json => { ok => \1 });
+}
+
 1;

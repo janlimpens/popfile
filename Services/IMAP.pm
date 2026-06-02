@@ -136,6 +136,7 @@ method start() {
     try {
         $self->_ensure_folder_tables();
         $self->_migrate_folder_config();
+        $self->_load_move_queue();
     }
     catch ($e) {
         $self->log_msg(WARN => "IMAP folder table setup skipped: $e")
@@ -283,6 +284,8 @@ method _handle_poll_result($result) {
         $training_mode = 0;
     }
     delete $pending_direct_moves{$_}
+        for $result->{direct_moved_hashes}->@*;
+    $self->_delete_move_from_queue($_)
         for $result->{direct_moved_hashes}->@*;
     delete $pending_folder_moves{$_}
         for $result->{moved_hashes}->@*;
@@ -579,6 +582,11 @@ method _ensure_folder_tables() {
         bucket_name varchar(255) not null,
         folder_name varchar(255) not null,
         unique(userid, bucket_name))');
+    $dbh->do('CREATE TABLE IF NOT EXISTS imap_move_queue (
+        hash varchar(32) primary key,
+        target_bucket varchar(255) not null,
+        mid varchar(500),
+        created_at integer not null default (unixepoch()))');
 }
 
 =head2 _migrate_folder_config()
@@ -884,6 +892,7 @@ method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
     if (exists $hash_to_mid{$hash}) {
         $self->log_msg(INFO => "Direct move queued for hash $hash to $target_bucket.");
         $pending_direct_moves{$hash} = { mid => $hash_to_mid{$hash}, target_bucket => $target_bucket };
+        $self->_save_move_to_queue($hash, $target_bucket, $hash_to_mid{$hash});
         return
     }
     $self->log_msg(INFO => "No Message-ID cached for hash $hash; queuing folder move with uid_next reset.");
@@ -913,7 +922,9 @@ contains a C<Message-ID> header.
 
 method cache_message_id ($hash, $mid) {
     $self->log_msg(INFO => "Message-ID cached for hash $hash.");
-    $hash_to_mid{$hash} = $mid
+    $hash_to_mid{$hash} = $mid;
+    $self->_save_move_to_queue($hash, $pending_direct_moves{$hash}{target_bucket}, $mid)
+        if exists $pending_direct_moves{$hash};
 }
 
 =head2 request_folder_rescan($folder)
@@ -1331,6 +1342,43 @@ method bucket_for_folder ($folder) {
         'SELECT bucket_name FROM imap_folder_mappings WHERE userid = 1 AND folder_name = ?',
         undef, $folder);
     return $result
+}
+
+method _save_move_to_queue ($hash, $target_bucket, $mid = undef) {
+    my $dbh = POPFile::Database->instance()->get_handle();
+    $dbh->do(
+        'INSERT OR REPLACE INTO imap_move_queue (hash, target_bucket, mid, created_at) VALUES (?,?,?,unixepoch())',
+        undef, $hash, $target_bucket, $mid);
+}
+
+method _delete_move_from_queue ($hash) {
+    my $dbh = POPFile::Database->instance()->get_handle();
+    $dbh->do('DELETE FROM imap_move_queue WHERE hash = ?', undef, $hash);
+}
+
+method _load_move_queue() {
+    my $dbh = POPFile::Database->instance()->get_handle();
+    my $rows = $dbh->selectall_arrayref(
+        'SELECT hash, target_bucket, mid FROM imap_move_queue',
+        { Slice => {} });
+    for my $row ($rows->@*) {
+        $pending_direct_moves{$row->{hash}} = {
+            target_bucket => $row->{target_bucket},
+            mid => $row->{mid},
+        };
+    }
+}
+
+method move_queue_count() {
+    my $dbh = POPFile::Database->instance()->get_handle();
+    my ($count) = $dbh->selectrow_array('SELECT count(*) FROM imap_move_queue');
+    return $count // 0
+}
+
+method clear_move_queue() {
+    my $dbh = POPFile::Database->instance()->get_handle();
+    $dbh->do('DELETE FROM imap_move_queue');
+    %pending_direct_moves = ();
 }
 
 method folder_for_bucket ($bucket, $folder = undef) {
