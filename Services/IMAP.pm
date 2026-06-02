@@ -65,6 +65,8 @@ field $training_mode :reader = 0;
 field $training_error :reader = '';
 field $poll_result_received = 0;
 field $poll_running = 0;
+field $reclassify_response = undef;
+field $reclassify_received = 0;
 
 use Cpanel::JSON::XS ();
 
@@ -149,6 +151,9 @@ method start() {
         return
             if $raw{type} && $raw{type} eq 'poll_result'
             && $self->_handle_poll_result(\%raw);
+        return
+            if $raw{type} && $raw{type} eq 'reclassify_result'
+            && $self->_handle_reclassify_result(\%raw);
         $self->_handle_activity_progress(\%raw);
     });
     $poll_trigger = $parent_writer;
@@ -288,6 +293,12 @@ method _handle_poll_result($result) {
     return 1
 }
 
+method _handle_reclassify_result($raw) {
+    $reclassify_response = $raw->{result};
+    $reclassify_received = 1;
+    return 1
+}
+
 method _handle_activity_progress($raw) {
     my $activity = $self->activity();
     return
@@ -323,25 +334,33 @@ method _imap_worker_loop($subprocess, $reader) {
             $self->log_msg(WARN => "IMAP worker: bad message: $e");
             next();        }
         next
-            unless $msg->{cmd} && $msg->{cmd} eq 'poll';
-        $training_mode = $msg->{training_mode};
-        @pending_train_buckets = $msg->{train_buckets}->@*
-            if ref $msg->{train_buckets} eq 'ARRAY';
-        %pending_folder_moves = $msg->{pending_folder_moves}->%*
-            if ref $msg->{pending_folder_moves} eq 'HASH';
-        %pending_direct_moves = $msg->{pending_direct_moves}->%*
-            if ref $msg->{pending_direct_moves} eq 'HASH';
-        %_uid_next_override = $msg->{uid_next_overrides}->%*
-            if ref $msg->{uid_next_overrides} eq 'HASH';
-        %hash_to_mid = ();
-        $folder_change_flag = $msg->{folder_change_flag} // 0;
-        @mailboxes = ()
-            if $folder_change_flag;
-        if ($classifier && $classifier->can('db_update_cache')) {
-            $classifier->db_update_cache($self->api_session());
+            unless $msg->{cmd};
+        if ($msg->{cmd} eq 'poll') {
+            $training_mode = $msg->{training_mode};
+            @pending_train_buckets = $msg->{train_buckets}->@*
+                if ref $msg->{train_buckets} eq 'ARRAY';
+            %pending_folder_moves = $msg->{pending_folder_moves}->%*
+                if ref $msg->{pending_folder_moves} eq 'HASH';
+            %pending_direct_moves = $msg->{pending_direct_moves}->%*
+                if ref $msg->{pending_direct_moves} eq 'HASH';
+            %_uid_next_override = $msg->{uid_next_overrides}->%*
+                if ref $msg->{uid_next_overrides} eq 'HASH';
+            %hash_to_mid = ();
+            $folder_change_flag = $msg->{folder_change_flag} // 0;
+            @mailboxes = ()
+                if $folder_change_flag;
+            if ($classifier && $classifier->can('db_update_cache')) {
+                $classifier->db_update_cache($self->api_session());
+            }
+            my $result = $self->_run_poll_work($subprocess);
+            $subprocess->progress(type => 'poll_result', $result->%*);
         }
-        my $result = $self->_run_poll_work($subprocess);
-        $subprocess->progress(type => 'poll_result', $result->%*);
+        elsif ($msg->{cmd} eq 'reclassify_preview') {
+            my $folder = $msg->{folder};
+            my $limit = $msg->{limit} // 200;
+            my $result = $self->_run_reclassify_preview($subprocess, $folder, $limit);
+            $subprocess->progress(type => 'reclassify_result', result => $result);
+        }
     }
 }
 
@@ -375,6 +394,54 @@ method poll_sync ($timeout = 30) {
     Mojo::IOLoop->remove($sync_timer)
         if defined $sync_timer;
     return $poll_result_received ? 1 : 0
+}
+
+=head2 reclassify_preview_sync($folder, $limit, $timeout)
+
+Sends a reclassify preview request to the IMAP worker subprocess and blocks
+until the result is available or C<$timeout> seconds elapse (default 120).
+Returns the result hashref on success, C<undef> on timeout or error.
+
+=cut
+
+method reclassify_preview_sync ($folder, $limit = 200, $timeout = 120) {
+    return { folder => $folder, messages => [] }
+        unless defined $poll_trigger;
+    $reclassify_received = 0;
+    $reclassify_response = undef;
+    my $msg = Cpanel::JSON::XS->new->encode({
+        cmd => 'reclassify_preview',
+        folder => $folder,
+        limit => $limit,
+    });
+    my $data = $msg . "\n";
+    my $written = 0;
+    while ($written < length($data)) {
+        my $n = syswrite($poll_trigger, $data, length($data) - $written, $written);
+        unless (defined $n) {
+            $self->log_msg(WARN => "reclassify pipe write failed: $!");
+            return { folder => $folder, messages => [] }
+        }
+        $written += $n;
+    }
+    if (Mojo::IOLoop->is_running()) {
+        my $deadline = time() + $timeout;
+        while (!$reclassify_received && time() < $deadline) {
+            Mojo::IOLoop->one_tick();
+        }
+    }
+    else {
+        my $deadline = time() + $timeout;
+        my $timer = Mojo::IOLoop->recurring(0.1 => sub {
+            return
+                if !$reclassify_received && time() < $deadline;
+            Mojo::IOLoop->stop();
+        });
+        Mojo::IOLoop->start();
+        Mojo::IOLoop->remove($timer)
+            if defined $timer;
+    }
+    return $reclassify_received ? $reclassify_response : { folder => $folder, messages => [] }
 }
 
 method _run_poll_work($subprocess = undef) {
@@ -1412,7 +1479,7 @@ subject, classified_bucket, mapped_bucket, target_folder } ] } >>
 
 =cut
 
-method preview_reclassification ($target_folder, $limit = 200) {
+method _run_reclassify_preview ($subprocess, $target_folder, $limit = 200) {
     my %result = (folder => $target_folder, messages => []);
     if (!%folders || !exists $folders{$target_folder}) {
         $self->build_folder_list();

@@ -343,7 +343,7 @@ sub reclassify_preview ($self) {
     return $self->render(status => 400, json => { error => 'folder required' })
         unless $folder;
     my $limit = $body->{limit} // 200;
-    my $result = $imap->preview_reclassification($folder, $limit);
+    my $result = $imap->reclassify_preview_sync($folder, $limit);
     $self->render(json => $result);
 }
 
