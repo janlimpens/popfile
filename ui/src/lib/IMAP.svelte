@@ -737,7 +737,6 @@
             <label class="verify-row">
               <input type="checkbox" checked={verifySelected.has(m.hash)}
                 onchange={() => toggleVerifyMsg(m.hash)} />
-              <span class="verify-from">{m.from}</span>
               <span class="verify-subject">{m.subject}</span>
               <span class="tag">{m.mapped_bucket}</span>
               <span class="arrow">→</span>
@@ -1071,8 +1070,7 @@
     border-radius: 4px;
   }
   .verify-row:hover { background: var(--surface); }
-  .verify-from { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); }
-  .verify-subject { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .verify-subject { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .btn-restart { padding: 0.3rem 0.8rem; background: var(--warning, #e6a817); color: #fff; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; }
   .btn-restart:hover { opacity: 0.85; }
   .spinner {
