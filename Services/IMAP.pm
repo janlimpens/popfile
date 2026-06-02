@@ -1414,13 +1414,17 @@ subject, classified_bucket, mapped_bucket, target_folder } ] } >>
 
 method preview_reclassification ($target_folder, $limit = 200) {
     my %result = (folder => $target_folder, messages => []);
+    if (!%folders || !exists $folders{$target_folder}) {
+        $self->build_folder_list();
+    }
     unless (exists $folders{$target_folder} && exists $folders{$target_folder}{imap}) {
         $self->connect_server();
     }
     return \%result
         unless exists $folders{$target_folder}{imap};
     my $imap = $folders{$target_folder}{imap};
-    my $mapped_bucket = $folders{$target_folder}{output} // '';
+    my $mapped_bucket = $folders{$target_folder}{output}
+        // ($folders{$target_folder}{unclassified} ? 'unclassified' : '');
     $self->log_msg(INFO => "Reclassify preview on $target_folder, mapped bucket: $mapped_bucket");
     my @uids = $imap->get_all_message_uids($target_folder, $limit);
     $self->log_msg(INFO => sprintf('Reclassify preview: %d messages to check', scalar(@uids)));
