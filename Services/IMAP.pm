@@ -324,7 +324,19 @@ method _imap_worker_loop($subprocess, $reader) {
             $self->log_msg(WARN => "IMAP worker: bad message: $e");
             next();        }
         next
-            unless $msg->{cmd} && $msg->{cmd} eq 'poll';
+            unless $msg->{cmd};
+        if ($msg->{cmd} eq 'flush_moves') {
+            my $moves = $msg->{moves};
+            %pending_direct_moves = $moves->%*
+                if ref $moves eq 'HASH';
+            my $result = {};
+            $result->{direct_moved_hashes} = [];
+            $self->_drain_direct_moves($result);
+            $subprocess->progress(type => 'poll_result', $result->%*);
+            next();
+        }
+        next
+            unless $msg->{cmd} eq 'poll';
         $training_mode = $msg->{training_mode};
         @pending_train_buckets = $msg->{train_buckets}->@*
             if ref $msg->{train_buckets} eq 'ARRAY';
@@ -376,6 +388,34 @@ method poll_sync ($timeout = 30) {
     Mojo::IOLoop->remove($sync_timer)
         if defined $sync_timer;
     return $poll_result_received ? 1 : 0
+}
+
+=head2 flush_moves()
+
+Sends the current C<%pending_direct_moves> to the IMAP worker immediately,
+bypassing the C<$poll_running> lock.  Used by the API after a user submits
+reclassification moves so the worker processes them without waiting for the
+next poll cycle.
+
+=cut
+
+method flush_moves() {
+    return
+        unless %pending_direct_moves;
+    return
+        unless defined $poll_trigger;
+    my $msg = Cpanel::JSON::XS->new->encode({
+        cmd => 'flush_moves',
+        moves => \%pending_direct_moves,
+    });
+    my $data = $msg . "\n";
+    my $written = 0;
+    while ($written < length($data)) {
+        my $n = syswrite($poll_trigger, $data, length($data) - $written, $written);
+        last()
+            unless defined $n;
+        $written += $n;
+    }
 }
 
 method _run_poll_work($subprocess = undef) {
