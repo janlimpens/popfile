@@ -328,7 +328,7 @@ method _imap_worker_loop($subprocess, $reader) {
                     $self->build_folder_list();
                 }
                 $self->connect_server();
-                $self->_drain_direct_moves($result);
+                $self->_drain_direct_moves($result, $subprocess);
                 $subprocess->progress(type => 'poll_result', $result->%*);
                 next();
             }
@@ -404,8 +404,11 @@ next poll cycle.
 method flush_moves() {
     return
         unless %pending_direct_moves;
-    return
-        unless defined $poll_trigger;
+    unless (defined $poll_trigger) {
+        $self->log_msg(WARN => 'flush_moves: poll trigger not defined, cannot send moves to worker.');
+        return
+    }
+    $self->log_msg(INFO => sprintf('flush_moves: sending %d move(s) to worker.', scalar keys %pending_direct_moves));
     my $msg = Cpanel::JSON::XS->new->encode({
         cmd => 'flush_moves',
         moves => \%pending_direct_moves,
@@ -492,7 +495,7 @@ method _run_poll_work($subprocess = undef) {
                 $emit->('info', 'IMAP Connect', "Connected $count folder(s)", $connect_local_id);
             }
             %hash_values = ();
-            $self->_drain_direct_moves($result);
+            $self->_drain_direct_moves($result, $subprocess);
             my %pending_before = %pending_folder_moves;
             my $poll_local_id;
             if ($subprocess) {
@@ -654,7 +657,7 @@ method _save_uid_state($dbh, $imap) {
     %_uid_next_override = ();
 }
 
-=head2 _drain_direct_moves($result)
+=head2 _drain_direct_moves($result, $subprocess, $emit_parent_id)
 
 For each entry in C<%pending_direct_moves> (queued by C<request_folder_move>
 when the C<Message-Id> is cached), searches all connected IMAP folders via
@@ -665,30 +668,74 @@ connected folder are left in C<%pending_direct_moves> for the next poll.
 
 =cut
 
-method _drain_direct_moves ($result) {
+method _drain_direct_moves ($result, $subprocess = undef, $emit_parent_id = undef) {
     return
         unless %pending_direct_moves;
+    my $local_seq = 0;
+    my $emit = defined $subprocess
+        ? sub ($level, $task, $msg, $override_parent = undef) {
+            $local_seq++;
+            $subprocess->progress(
+                type => 'activity',
+                level => $level,
+                module => 'imap',
+                task => $task,
+                message => $msg,
+                local_id => $local_seq,
+                defined($override_parent || $emit_parent_id)
+                    ? (parent_local_id => $override_parent // $emit_parent_id)
+                    : ());
+        }
+        : sub {};
+    my $moved = 0;
+    my $not_found = 0;
+    my $no_dest = 0;
     for my $hash (keys %pending_direct_moves) {
         my $entry = $pending_direct_moves{$hash};
         my $destination = $self->folder_for_bucket($entry->{target_bucket});
-        next()
-            unless defined $destination;
+        unless (defined $destination) {
+            $self->log_msg(WARN => "Move queue: no folder mapped for bucket $entry->{target_bucket} — hash $hash.");
+            $emit->('warn', 'Move skipped', "No folder for $entry->{target_bucket}");
+            $no_dest++;
+            next();
+        }
+        $emit->('info', 'Move search', "$entry->{mid} → $destination");
+        my $found = 0;
         for my $folder (keys %folders) {
             next()
                 unless exists $folders{$folder}{imap};
             my $imap = $folders{$folder}{imap};
             my @uids = $imap->search_header_in_folder($folder, 'Message-ID', $entry->{mid});
-            next()
-                unless @uids;
+            unless (@uids) {
+                next();
+            }
+            $found = 1;
             if ($destination ne $folder) {
                 $self->log_msg(WARN => "Direct move: UID $uids[0] from $folder to $destination.");
                 $imap->move_message($uids[0], $destination);
                 $imap->expunge() if $self->config->get('expunge');
+                $moved++;
+                $emit->('info', 'Moved', "$folder → $destination");
+            }
+            else {
+                $self->log_msg(INFO => "Move queue: message $hash already in $folder, nothing to move.");
+                $emit->('info', 'Already there', $folder);
             }
             push $result->{direct_moved_hashes}->@*, $hash;
             last();
         }
+        unless ($found) {
+            $self->log_msg(WARN => "Move queue: could not find mid=$entry->{mid} in any connected folder — keeping for next poll.");
+            $emit->('warn', 'Not found', "$entry->{mid} — retry next poll");
+            $not_found++;
+        }
     }
+    my @parts;
+    push @parts, "$moved moved" if $moved;
+    push @parts, "$not_found not found" if $not_found;
+    push @parts, "$no_dest no destination" if $no_dest;
+    $emit->('info', 'Move queue done', join(', ', @parts))
+        if @parts;
 }
 
 =head2 _reset_uid_next($folder)
@@ -877,7 +924,7 @@ IMAP move guarantee).
 
 method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
     if (exists $hash_to_mid{$hash}) {
-        $self->log_msg(INFO => "Direct move queued for hash $hash to $target_bucket.");
+        $self->log_msg(INFO => "Move queued for hash $hash to $target_bucket (mid: $hash_to_mid{$hash}).");
         $pending_direct_moves{$hash} = { mid => $hash_to_mid{$hash}, target_bucket => $target_bucket };
         return
     }

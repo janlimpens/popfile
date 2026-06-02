@@ -142,7 +142,7 @@ subtest 'request_folder_move uses direct-move queue when mid is cached' => sub {
 
     my @reset_msgs = grep { /Scheduling uid_next reset/ } map { $_->{message} } @{ $log->msgs() };
     ok(!@reset_msgs, 'no uid_next reset when mid is cached');
-    my @direct_msgs = grep { /Direct move queued/ } map { $_->{message} } @{ $log->msgs() };
+    my @direct_msgs = grep { /Move queued/ } map { $_->{message} } @{ $log->msgs() };
     ok(scalar @direct_msgs >= 1, 'direct move queued when mid is cached');
 };
 
