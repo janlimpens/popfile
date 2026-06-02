@@ -175,6 +175,8 @@ method start() {
             message => "Service started, polling $host:$port$ssl every ${interval}s",
         });
     }
+    Mojo::IOLoop->next_tick(sub { $self->poll() })
+        if %pending_direct_moves;
     return 1
 }
 
@@ -342,6 +344,10 @@ method _imap_worker_loop($subprocess, $reader) {
                 if ref $moves eq 'HASH';
             my $result = {};
             $result->{direct_moved_hashes} = [];
+            if (!%folders) {
+                $self->build_folder_list();
+            }
+            $self->connect_server();
             $self->_drain_direct_moves($result);
             $subprocess->progress(type => 'poll_result', $result->%*);
             next();
