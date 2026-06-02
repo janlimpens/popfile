@@ -139,8 +139,7 @@ method start() {
         $self->_load_move_queue();
     }
     catch ($e) {
-        $self->log_msg(WARN => "IMAP folder table setup skipped: $e")
-            unless $e =~ /unable to open/i;
+        $self->log_msg(WARN => "IMAP folder table setup failed: $e");
     }
     pipe(my $child_reader, my $parent_writer);
     $parent_writer->autoflush(1);
@@ -1392,6 +1391,14 @@ method clear_move_queue() {
     my $dbh = POPFile::Database->instance()->get_handle();
     $dbh->do('DELETE FROM imap_move_queue');
     %pending_direct_moves = ();
+}
+
+method process_move_queue() {
+    $self->_load_move_queue();
+    return 0
+        unless %pending_direct_moves;
+    $self->flush_moves();
+    return 1
 }
 
 method folder_for_bucket ($bucket, $folder = undef) {

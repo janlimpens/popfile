@@ -353,7 +353,7 @@
 
   async function moveQueueProcess() {
     moveQueueDialog = false;
-    await fetch('api/v1/imap/move-queue/clear', { method: 'POST' });
+    await fetch('api/v1/imap/move-queue/process', { method: 'POST' });
   }
 
   async function moveQueueClear() {

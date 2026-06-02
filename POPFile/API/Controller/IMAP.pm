@@ -380,4 +380,12 @@ sub move_queue_clear ($self) {
     $self->render(json => { ok => \1 });
 }
 
+sub move_queue_process ($self) {
+    my $imap = $self->popfile_imap();
+    return $self->render(status => 503, json => { error => 'IMAP not available' })
+        unless defined $imap;
+    my $processed = $imap->process_move_queue();
+    $self->render(json => { ok => \1, processed => $processed ? \1 : \0 });
+}
+
 1;

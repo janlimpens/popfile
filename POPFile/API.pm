@@ -323,6 +323,7 @@ method build_app ($svc, $session = undef, $base_path = '') {
     $api->get('/imap/move-queue')->to('IMAP#move_queue');
     $api->get('/imap/move-queue/count')->to('IMAP#move_queue_count');
     $api->post('/imap/move-queue/clear')->to('IMAP#move_queue_clear');
+    $api->post('/imap/move-queue/process')->to('IMAP#move_queue_process');
 
     $api->get('/activity')->to('activity#recent');
     $api->get('/activity/stream')->to('activity#stream');
