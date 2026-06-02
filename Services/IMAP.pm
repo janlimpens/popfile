@@ -424,24 +424,12 @@ method reclassify_preview_sync ($folder, $limit = 200, $timeout = 120) {
         }
         $written += $n;
     }
-    if (Mojo::IOLoop->is_running()) {
-        my $deadline = time() + $timeout;
-        while (!$reclassify_received && time() < $deadline) {
-            Mojo::IOLoop->one_tick();
-        }
-    }
-    else {
-        my $deadline = time() + $timeout;
-        my $timer = Mojo::IOLoop->recurring(0.1 => sub {
-            return
-                if !$reclassify_received && time() < $deadline;
-            Mojo::IOLoop->stop();
-        });
-        Mojo::IOLoop->start();
-        Mojo::IOLoop->remove($timer)
-            if defined $timer;
+    my $deadline = time() + $timeout;
+    while (!$reclassify_received && time() < $deadline) {
+        Mojo::IOLoop->one_tick();
     }
     return $reclassify_received ? $reclassify_response : { folder => $folder, messages => [] }
+}
 }
 
 method _run_poll_work($subprocess = undef) {
