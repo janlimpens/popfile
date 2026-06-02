@@ -91,6 +91,7 @@ method start() {
         app => $app,
         listen => ["http://$host:$resolved"] );
     $daemon->silent(1);
+    $daemon->inactivity_timeout(300);
     $daemon->start();
     $daemon_ref = $daemon;
     $self->log_msg(WARN => "POPFile::API: listening on port $resolved");
