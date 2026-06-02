@@ -335,32 +335,34 @@ method _imap_worker_loop($subprocess, $reader) {
         }
         catch ($e) {
             $self->log_msg(WARN => "IMAP worker: bad message: $e");
-            next();        }
-        next
-            unless $msg->{cmd};
-        if ($msg->{cmd} eq 'flush_moves') {
-            my $moves = $msg->{moves};
-            %pending_direct_moves = $moves->%*
-                if ref $moves eq 'HASH';
-            my $result = {};
-            $result->{direct_moved_hashes} = [];
-            if (!%folders) {
-                $self->build_folder_list();
-            }
-            $self->connect_server();
-            $self->_drain_direct_moves($result);
-            $subprocess->progress(type => 'poll_result', $result->%*);
             next();
         }
         next
-            unless $msg->{cmd} eq 'poll';
-        $training_mode = $msg->{training_mode};
-        @pending_train_buckets = $msg->{train_buckets}->@*
-            if ref $msg->{train_buckets} eq 'ARRAY';
-        %pending_folder_moves = $msg->{pending_folder_moves}->%*
-            if ref $msg->{pending_folder_moves} eq 'HASH';
-        %pending_direct_moves = $msg->{pending_direct_moves}->%*
-            if ref $msg->{pending_direct_moves} eq 'HASH';
+            unless $msg->{cmd};
+        try {
+            if ($msg->{cmd} eq 'flush_moves') {
+                my $moves = $msg->{moves};
+                %pending_direct_moves = $moves->%*
+                    if ref $moves eq 'HASH';
+                my $result = {};
+                $result->{direct_moved_hashes} = [];
+                if (!%folders) {
+                    $self->build_folder_list();
+                }
+                $self->connect_server();
+                $self->_drain_direct_moves($result);
+                $subprocess->progress(type => 'poll_result', $result->%*);
+                next();
+            }
+            next
+                unless $msg->{cmd} eq 'poll';
+            $training_mode = $msg->{training_mode};
+            @pending_train_buckets = $msg->{train_buckets}->@*
+                if ref $msg->{train_buckets} eq 'ARRAY';
+            %pending_folder_moves = $msg->{pending_folder_moves}->%*
+                if ref $msg->{pending_folder_moves} eq 'HASH';
+            %pending_direct_moves = $msg->{pending_direct_moves}->%*
+                if ref $msg->{pending_direct_moves} eq 'HASH';
         %_uid_next_override = $msg->{uid_next_overrides}->%*
             if ref $msg->{uid_next_overrides} eq 'HASH';
         %hash_to_mid = ();
@@ -372,6 +374,11 @@ method _imap_worker_loop($subprocess, $reader) {
         }
         my $result = $self->_run_poll_work($subprocess);
         $subprocess->progress(type => 'poll_result', $result->%*);
+        }
+        catch ($e) {
+            $self->log_msg(WARN => "Worker loop error: $e");
+            $subprocess->progress(type => 'poll_result', error => "$e");
+        }
     }
 }
 
