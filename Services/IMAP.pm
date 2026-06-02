@@ -1276,6 +1276,14 @@ mapping in the C<imap_folder_mappings> database table.
 
 =cut
 
+method bucket_for_folder ($folder) {
+    my $dbh = POPFile::Database->instance()->get_handle();
+    my ($result) = $dbh->selectrow_array(
+        'SELECT bucket_name FROM imap_folder_mappings WHERE userid = 1 AND folder_name = ?',
+        undef, $folder);
+    return $result
+}
+
 method folder_for_bucket ($bucket, $folder = undef) {
     my $dbh = POPFile::Database->instance()->get_handle();
     my $userid = 1;
@@ -1414,17 +1422,15 @@ subject, classified_bucket, mapped_bucket, target_folder } ] } >>
 
 method preview_reclassification ($target_folder, $limit = 200) {
     my %result = (folder => $target_folder, messages => []);
-    if (!%folders || !exists $folders{$target_folder}) {
-        $self->build_folder_list();
-    }
-    unless (exists $folders{$target_folder} && exists $folders{$target_folder}{imap}) {
-        $self->connect_server();
-    }
+    my $imap = $self->new_imap_client();
     return \%result
-        unless exists $folders{$target_folder}{imap};
-    my $imap = $folders{$target_folder}{imap};
-    my $mapped_bucket = $folders{$target_folder}{output}
-        // ($folders{$target_folder}{unclassified} ? 'unclassified' : '');
+        unless $imap;
+    my $info = $imap->status($target_folder);
+    unless (defined $info->{UIDNEXT}) {
+        $imap->logout();
+        return \%result
+    }
+    my $mapped_bucket = $self->bucket_for_folder($target_folder) // '';
     $self->log_msg(INFO => "Reclassify preview on $target_folder, mapped bucket: $mapped_bucket");
     my @uids = $imap->get_all_message_uids($target_folder, $limit);
     $self->log_msg(INFO => sprintf('Reclassify preview: %d messages to check', scalar(@uids)));
@@ -1477,6 +1483,7 @@ method preview_reclassification ($target_folder, $limit = 200) {
         };
     }
     $self->log_msg(INFO => sprintf('Reclassify preview done: %d mismatches', scalar($result{messages}->@*)));
+    $imap->logout();
     return \%result
 }
 
