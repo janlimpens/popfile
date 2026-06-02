@@ -525,6 +525,60 @@ method fetch_message_part ($msg, $part) {
     return 1, @lines
 }
 
+=head2 fetch_messages_batch(\@uids, $part)
+
+Fetches multiple messages in a single IMAP command and returns a hash
+mapping uid → \@lines.  Much faster than individual fetches.
+
+=cut
+
+method fetch_messages_batch ($uid_array, $part = '') {
+    return ()
+        unless $uid_array->@*;
+    my $uid_list = join(',', $uid_array->@*);
+    if ($part eq 'TEXT' || $part eq '') {
+        my $limit = $self->config('GLOBAL')->get('message_cutoff') || 0;
+        $self->say("UID FETCH $uid_list (FLAGS BODY.PEEK[$part]<0.$limit>)");
+    }
+    else {
+        $self->say("UID FETCH $uid_list (FLAGS BODY.PEEK[$part])");
+    }
+    my $result = $self->get_response();
+    unless ($result == 1) {
+        $self->log_msg(WARN => "Batch FETCH failed");
+        return ()
+    }
+    $self->log_msg(DEBUG => sprintf('Batch-fetched %d messages', scalar($uid_array->@*)));
+    my %results;
+    my @chunks = split /\* \d+ FETCH/, $last_response;
+    shift @chunks;
+    for my $chunk (@chunks) {
+        my ($uid) = $chunk =~ /^\s*(\d+)\s+FETCH/;
+        next()
+            unless $uid;
+        my @lines;
+        if ($chunk =~ /\{(\d+)\}$eol/) {
+            my $num_octets = $1;
+            my $pos = index $chunk, "{$num_octets}$eol";
+            $pos += length "{$num_octets}$eol";
+            my $message = substr $chunk, $pos, $num_octets;
+            while ($message =~ /(.*?(?:$eol|\012|\015))/g) {
+                push @lines, $1;
+            }
+        }
+        else {
+            while ($chunk =~ /(.*?(?:$eol|\012|\015))/g) {
+                push @lines, $1;
+            }
+            shift @lines;
+            pop @lines;
+            pop @lines;
+        }
+        $results{$uid} = \@lines;
+    }
+    return %results
+}
+
 =head2 load_uid_state(%nexts, %validities)
 
 Pre-loads in-memory UID state from the caller (typically after reading from

@@ -1545,10 +1545,12 @@ method preview_reclassification ($target_folder, $limit = 100) {
     my @uids = $imap->get_all_message_uids($target_folder, $limit);
     $self->log_msg(INFO => sprintf('Reclassify preview: %d messages to check', scalar(@uids)));
     my $file = $self->get_user_path('imap.tmp');
+    my %batch = $imap->fetch_messages_batch(\@uids, '');
     for my $uid (@uids) {
-        my ($ok, @lines) = $imap->fetch_message_part($uid, '');
+        my $lines_ref = $batch{$uid};
         next()
-            unless $ok;
+            unless $lines_ref;
+        my @lines = $lines_ref->@*;
         my (%header, $last);
         for (@lines) {
             s/[\r\n]//g;
