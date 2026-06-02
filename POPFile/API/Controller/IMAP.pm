@@ -331,7 +331,7 @@ sub move_messages ($self) {
         $imap->request_folder_move($hash, $bucket);
         $queued++;
     }
-    $imap->poll();
+    try { $imap->poll() } catch($e) {};
     $self->render(json => { queued => $queued + 0 });
 }
 
