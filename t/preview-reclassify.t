@@ -17,9 +17,10 @@ require Services::IMAP;
     sub get_session_key  { 'test-session-key' }
     sub get_all_buckets  { ('newsletter', 'unclassified') }
     sub is_pseudo_bucket { 0 }
-    our ($called_session, $called_file);
+    our ($called_ctx, $called_session, $called_file);
     sub classify {
-        my ($self, $session, $file) = @_;
+        my ($self, $ctx, $session, $file, @rest) = @_;
+        $called_ctx = $ctx;
         $called_session = $session;
         $called_file = $file;
         return 'newsletter';

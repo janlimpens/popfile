@@ -1562,7 +1562,7 @@ method preview_reclassification ($target_folder, $limit = 100) {
             for @lines;
         sysseek $fh, 0, 0;
         close $fh;
-        my $classified = $self->classifier()->classify($self->api_session(), $file);
+        my $classified = $self->classifier()->classify($self->classifier(), $self->api_session(), $file);
         unlink $file;
         unless ($classified) {
             $self->log_msg(WARN => "Reclassify preview: classify returned undef for UID $uid");
