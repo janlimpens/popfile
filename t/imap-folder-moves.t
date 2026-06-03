@@ -229,4 +229,34 @@ subtest '_drain_direct_moves searches all folders when no source_folder' => sub 
         'both watched and output folders searched');
 };
 
+subtest '_drain_direct_moves sources from unclassified (pseudo-bucket) folder' => sub {
+    my ($imap) = make_imap();
+    $imap->folder_for_bucket('unclassified', 'unclassified');
+    my $stub = StubIMAPClient->new();
+    $stub->{search_results} = [42];
+    $stub->{uids} = [42];
+    my @searched_folders;
+    no warnings 'redefine', 'once';
+    local *StubIMAPClient::search_header_in_folder = sub {
+        my ($s, $folder) = @_;
+        push @searched_folders, $folder;
+        return $s->{search_results}->@*;
+    };
+    local *Services::IMAP::new_imap_client = sub { $stub };
+    local *Services::IMAP::get_hash = sub { ('deadbeef', '<msg@example.com>') };
+    local *Services::IMAP::can_classify = sub { 0 };
+
+    $imap->build_folder_list();
+    $imap->connect_server();
+    $imap->scan_folder('INBOX');
+
+    $imap->request_folder_move('deadbeef', 'work', 'unclassified');
+    my $result = { direct_moved_hashes => [] };
+    $imap->_drain_direct_moves($result);
+
+    is(scalar @searched_folders, 1, 'only unclassified searched');
+    is($searched_folders[0], 'unclassified', 'searched unclassified folder');
+    ok(scalar @{ $result->{direct_moved_hashes} } == 1, 'message found via unclassified folder');
+};
+
 done_testing;
