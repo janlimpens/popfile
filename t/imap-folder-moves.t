@@ -18,6 +18,9 @@ require Services::IMAP;
     sub get_session_key  { 'session' }
     sub get_all_buckets  { ('work') }
     sub is_pseudo_bucket { 0 }
+    sub remove_message_from_bucket {}
+    sub add_message_to_bucket {}
+    sub reclassified {}
 }
 
 {
@@ -27,6 +30,7 @@ require Services::IMAP;
     sub get_history_item   { { bucket => 'work' } }
     sub touch_slot         {}
     sub get_slot_fields    { (undef) x 8, 'work' }
+    sub change_slot_classification {}
     sub get_message_hash   { 'deadbeef' }
     sub commit_history     {}
 }
@@ -48,6 +52,7 @@ require Services::IMAP;
     sub logout                          {}
     sub expunge                         {}
     sub move_message                    { my ($s,$uid,$dest) = @_; push $s->{moves}->@*, [$uid, $dest] }
+    sub fetch_message_part              { return (1, "From: test\@test.com\r\n\r\nBody") }
     sub get_new_message_list_unselected { $_[0]->{uids}->@* }
     sub search_header_in_folder         { $_[0]->{search_results}->@* }
 }

@@ -719,6 +719,7 @@ method _drain_direct_moves ($result, $subprocess = undef, $emit_parent_id = unde
                 $imap->expunge() if $self->config->get('expunge');
                 $moved++;
                 $emit->('info', 'Moved', "$folder → $destination");
+                $self->_train_direct_move($hash, $entry->{target_bucket}, $folder, $imap, $uids[0]);
             }
             else {
                 $self->log_msg(INFO => "Move queue: message $hash already in $folder, nothing to move.");
@@ -739,6 +740,47 @@ method _drain_direct_moves ($result, $subprocess = undef, $emit_parent_id = unde
     push @parts, "$no_dest no destination" if $no_dest;
     $emit->('info', 'Move queue done', join(', ', @parts))
         if @parts;
+}
+
+method _train_direct_move ($hash, $new_bucket, $source_folder, $imap, $uid) {
+    return
+        unless ref $classifier && ref $history;
+    my $session = $self->api_session();
+    my $slot = $history->get_slot_from_hash($hash);
+    my $old_bucket;
+    if ($slot ne '') {
+        my ($id, undef, undef, undef, undef, undef, undef, undef, $bucket) =
+            $history->get_slot_fields($slot);
+        $old_bucket = $bucket;
+    }
+    my ($ok, @lines) = $imap->fetch_message_part($uid, '');
+    unless ($ok) {
+        $self->log_msg(WARN => "Move train: could not fetch UID $uid for training.");
+        return
+    }
+    my $file = $self->get_user_path('imap.tmp');
+    open my $TMP, '>', $file
+        or do {
+            $self->log_msg(WARN => "Move train: cannot open temp file $file");
+            return;
+        };
+    print $TMP $_ for @lines;
+    close $TMP;
+    if ($old_bucket && $old_bucket ne $new_bucket) {
+        unless ($classifier->is_pseudo_bucket($session, $old_bucket)) {
+            $classifier->remove_message_from_bucket($session, $old_bucket, $file);
+        }
+        $classifier->add_message_to_bucket($session, $new_bucket, $file);
+        $classifier->reclassified($session, $old_bucket, $new_bucket, 0);
+        $history->change_slot_classification($slot, $new_bucket, $session, 0)
+            if $slot ne '';
+        $self->log_msg(WARN => "Move train: UID $uid $old_bucket → $new_bucket.");
+    }
+    else {
+        $classifier->add_message_to_bucket($session, $new_bucket, $file);
+        $self->log_msg(WARN => "Move train: UID $uid trained into $new_bucket (no prior bucket).");
+    }
+    unlink $file;
 }
 
 =head2 _reset_uid_next($folder)
@@ -927,8 +969,9 @@ method request_folder_move ($hash, $target_bucket, $source_folder = undef) {
         $pending_direct_moves{$hash} = {
             mid => $hash_to_mid{$hash},
             target_bucket => $target_bucket,
-            defined $source_folder ? (source_folder => $source_folder) : (),
         };
+        $pending_direct_moves{$hash}{source_folder} = $source_folder
+            if $source_folder;
         return
     }
     $self->log_msg(INFO => "No Message-ID cached for hash $hash; queuing folder move with uid_next reset.");
