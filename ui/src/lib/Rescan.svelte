@@ -13,6 +13,7 @@
   let verifySelected = $state(new Set());
   let verifyMoving = $state(false);
   let verifyLoadingFolder = $state('');
+  let moveEnabled = $state(true);
 
   let folderInfo = $derived(
     folders.map(f => {
@@ -174,7 +175,7 @@
         <button class="btn" onclick={() => verifyResult = null}>Close</button>
       </footer>
     {:else}
-      <p style="margin-bottom:0.5rem">{verifyResult.messages.length} message(s) should be moved elsewhere:</p>
+      <p style="margin-bottom:0.5rem">{verifyResult.messages.length} message(s) classified differently:</p>
       <div class="verify-grid">
         <div class="verify-header">
           <label>
@@ -196,9 +197,13 @@
         {/each}
       </div>
       <footer class="card-footer">
+        <label class="move-toggle">
+          <input type="checkbox" bind:checked={moveEnabled} />
+          Move to mapped folders
+        </label>
         <button class="btn btn-secondary" onclick={() => verifyResult = null}>Cancel</button>
         <button class="btn" onclick={moveSelectedMessages}
-          disabled={verifySelected.size === 0 || verifyMoving}>
+          disabled={verifySelected.size === 0 || verifyMoving || !moveEnabled}>
           {verifyMoving ? 'Moving...' : `Move ${verifySelected.size} selected`}
         </button>
       </footer>
@@ -282,6 +287,16 @@
     background: var(--bg);
     color: var(--text);
     border: 1px solid var(--border);
+  }
+
+  .move-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-right: auto;
   }
 
   .card-footer {

@@ -1731,10 +1731,10 @@ method preview_reclassification ($target_folder, $limit = 100) {
             next();
         }
         $self->log_msg(INFO => "Reclassify preview: UID $uid classified as '$classified', mapped='$mapped_bucket'");
-        next()
-            unless $mapped_bucket;
-        next()
-            if $classified eq $mapped_bucket;
+        if ($mapped_bucket) {
+            next()
+                if $classified eq $mapped_bucket;
+        }
         my $target = $self->folder_for_bucket($classified);
         my $hash = $history->get_message_hash($mid, undef, $subject_raw, undef);
         push $result{messages}->@*, {

@@ -40,6 +40,7 @@
   let verifyResult = $state(null);  // { folder, messages, total }
   let verifySelected = $state(new Set());
   let verifyMoving = $state(false);
+  let moveEnabled = $state(true);
   let verifyLoadingFolder = $state('');
 
   function folderToBucket(f) {
@@ -290,7 +291,7 @@
     verifyBusy = true;
     verifyResult = null;
     verifyLoadingFolder = folder;
-    const limit = parseInt(/** @type {HTMLInputElement} */ (document.getElementById('reclassify-limit'))?.value || 100);
+    const limit = `${parseInt(/** @type {HTMLInputElement} */ (document.getElementById('reclassify-limit'))?.value || '100')}`;
     try {
       const res = await fetch('api/v1/imap/reclassify-preview', {
         method: 'POST',
@@ -724,9 +725,13 @@
           {/each}
         </div>
         <footer class="card-footer">
+          <label class="move-toggle">
+            <input type="checkbox" bind:checked={moveEnabled} />
+            Move to mapped folders
+          </label>
           <button class="btn btn-secondary" onclick={() => verifyResult = null}>Cancel</button>
           <button class="btn" onclick={moveSelectedMessages}
-            disabled={verifySelected.size === 0 || verifyMoving}>
+            disabled={verifySelected.size === 0 || verifyMoving || !moveEnabled}>
             {verifyMoving ? 'Moving...' : `Move ${verifySelected.size} selected`}
           </button>
         </footer>
@@ -982,6 +987,15 @@
     border: 1px solid var(--border);
   }
   .btn-secondary:not(:disabled):hover { opacity: .75; }
+  .move-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-right: auto;
+  }
   .save-anyway {
     display: flex;
     align-items: center;
