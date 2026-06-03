@@ -588,6 +588,49 @@ method fetch_messages_batch ($uid_array, $part = '') {
     return %results
 }
 
+=head2 fetch_headers_batch(\@uids)
+
+Fetches C<BODY.PEEK[HEADER.FIELDS (Message-id Date Subject Received)]>
+for multiple UIDs in a single IMAP command. Returns a hash mapping
+uid → \@lines (the raw header lines), or an empty list on failure.
+
+=cut
+
+method fetch_headers_batch ($uid_array) {
+    return ()
+        unless $uid_array->@*;
+    my $uid_list = join(',', $uid_array->@*);
+    $self->say("UID FETCH $uid_list (FLAGS BODY.PEEK[HEADER.FIELDS (Message-id Date Subject Received)])");
+    my $result = $self->get_response();
+    $self->log_msg(DEBUG => sprintf('Batch header FETCH result=%d for %d UIDs', $result, scalar($uid_array->@*)));
+    unless ($result == 1) {
+        $self->log_msg(WARN => 'Batch header FETCH failed');
+        return ()
+    }
+    my %results;
+    my @chunks = split /(\* \d+ FETCH)/, $last_response;
+    shift @chunks;
+    while (@chunks >= 2) {
+        my $fetch_header = shift @chunks;
+        my $fetch_body   = shift @chunks;
+        my ($uid) = $fetch_body =~ /UID (\d+)/;
+        next()
+            unless $uid;
+        my @lines;
+        if ($fetch_body =~ /\{(\d+)\}$eol/) {
+            my $num_octets = $1;
+            my $pos = index $fetch_body, "{$num_octets}$eol";
+            $pos += length "{$num_octets}$eol";
+            my $header_data = substr $fetch_body, $pos, $num_octets;
+            while ($header_data =~ /(.*?(?:$eol|\012|\015))/g) {
+                push @lines, $1;
+            }
+        }
+        $results{$uid} = \@lines;
+    }
+    return %results
+}
+
 =head2 load_uid_state(%nexts, %validities)
 
 Pre-loads in-memory UID state from the caller (typically after reading from

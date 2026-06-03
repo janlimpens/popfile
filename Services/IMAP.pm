@@ -1049,9 +1049,29 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
     my $reclassified = 0;
     my $trained = 0;
     my @uids = $imap->get_new_message_list_unselected($folder);
+    my %msg_info;
+    if (@uids && $imap->can('fetch_headers_batch')) {
+        my %header_batch = $imap->fetch_headers_batch(\@uids);
+        if (%header_batch) {
+            for my $msg (@uids) {
+                my $lines = $header_batch{$msg};
+                if ($lines && $lines->@*) {
+                    my ($mid, $date, $subject, $received) = $self->_parse_headers_from_lines($lines->@*);
+                    my $hash = $history->get_message_hash($mid, $date, $subject, $received);
+                    $msg_info{$msg} = { hash => $hash, mid => $mid, subject => $subject };
+                }
+            }
+        }
+    }
     for my $msg (@uids) {
         $self->log_msg(INFO => "Found new message in folder $folder (UID: $msg)");
-        my ($hash, $mid, $subject) = $self->get_hash($folder, $msg);
+        my $info = $msg_info{$msg};
+        my $hash = $info ? $info->{hash} : undef;
+        my $mid = $info ? $info->{mid} : undef;
+        my $subject = $info ? $info->{subject} : undef;
+        unless ($hash) {
+            ($hash, $mid, $subject) = $self->get_hash($folder, $msg);
+        }
         my $subject_str = $subject ? " ($subject)" : '';
         my $found_id = $emit_batch->('info', 'Found', "UID $msg in $folder$subject_str");
         $hash_to_mid{$hash} = $mid if $hash && $mid;
@@ -1306,6 +1326,27 @@ method reclassify_message ($folder, $msg, $old_bucket, $hash) {
     $self->log_msg(WARN => "Reclassified the message with UID $msg from bucket $old_bucket to bucket $new_bucket.");
     unlink $file;
     return 1
+}
+
+method _parse_headers_from_lines (@lines) {
+    my (%header, $last);
+    for (@lines) {
+        s/[\r\n]//g;
+        last()
+            if /^$/;
+        if (/^([^ \t]+):[ \t]*(.*)$/) {
+            $last = lc $1;
+            push $header{$last}->@*, $2;
+        }
+        elsif ($last) {
+            $header{$last}[-1] .= $_;
+        }
+    }
+    my $mid = $header{'message-id'}[0];
+    my $date = $header{'date'}[0];
+    my $subject = $header{'subject'}[0];
+    my $received = $header{'received'}[0];
+    return ($mid, $date, $subject, $received)
 }
 
 =head2 get_hash($folder, $msg)
