@@ -1050,15 +1050,15 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
     my $trained = 0;
     my @uids = $imap->get_new_message_list_unselected($folder);
     my %msg_info;
-    if (@uids && $imap->can('fetch_headers_batch')) {
-        my %header_batch = $imap->fetch_headers_batch(\@uids);
-        if (%header_batch) {
+    if (@uids && $imap->can('fetch_messages_batch')) {
+        my %batch = $imap->fetch_messages_batch(\@uids, '');
+        if (%batch) {
             for my $msg (@uids) {
-                my $lines = $header_batch{$msg};
+                my $lines = $batch{$msg};
                 if ($lines && $lines->@*) {
                     my ($mid, $date, $subject, $received) = $self->_parse_headers_from_lines($lines->@*);
                     my $hash = $history->get_message_hash($mid, $date, $subject, $received);
-                    $msg_info{$msg} = { hash => $hash, mid => $mid, subject => $subject };
+                    $msg_info{$msg} = { hash => $hash, mid => $mid, subject => $subject, lines => $lines };
                 }
             }
         }
@@ -1107,7 +1107,13 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
             next();
         }
         if ($is_watched && $self->can_classify($hash)) {
-            my $result = $self->classify_message($msg, $hash, $folder, $mid);
+            my $result;
+            if ($info && $info->{lines}) {
+                $result = $self->_classify_from_lines($msg, $hash, $folder, $mid, $info->{lines});
+            }
+            else {
+                $result = $self->classify_message($msg, $hash, $folder, $mid);
+            }
             unless (defined $result) {
                 $self->log_msg(WARN => "classify_message failed for UID $msg in $folder — message left in place.");
                 $emit_batch->('error', 'Classify failed', "UID $msg in $folder");
@@ -1145,13 +1151,23 @@ method scan_folder ($folder, $emit_parent = undef, $parent_local_id = undef) {
         }
         if (my $bucket = $is_output) {
             if (my $old_bucket = $self->can_reclassify($hash, $bucket)) {
-                $self->reclassify_message($folder, $msg, $old_bucket, $hash);
+                if ($info && $info->{lines}) {
+                    $self->_reclassify_from_lines($folder, $msg, $old_bucket, $hash, $info->{lines});
+                }
+                else {
+                    $self->reclassify_message($folder, $msg, $old_bucket, $hash);
+                }
                 $reclassified++;
                 $emit_batch->('info', 'Reclassified', "UID $msg: $old_bucket → $bucket");
             }
             elsif ($self->training_mode
                 && (!ref $history || $history->get_slot_from_hash($hash) eq '')) {
-                $self->insert_message_into_bucket($folder, $msg, $bucket);
+                if ($info && $info->{lines}) {
+                    $self->_insert_from_lines($folder, $msg, $bucket, $info->{lines});
+                }
+                else {
+                    $self->insert_message_into_bucket($folder, $msg, $bucket);
+                }
                 $trained++;
                 $emit_batch->('info', 'Trained', "UID $msg → $bucket");
             }
@@ -1252,6 +1268,61 @@ method classify_message ($msg, $hash, $folder, $mid = undef) {
     return $moved_a_msg
 }
 
+method _classify_from_lines ($msg, $hash, $folder, $mid, $lines_ref) {
+    my @lines = $lines_ref->@*;
+    my $blank_idx = -1;
+    for my $i (0..$#lines) {
+        my $line = $lines[$i];
+        $line =~ s/[\r\n]//g;
+        if ($line eq '') {
+            $blank_idx = $i;
+            last();
+        }
+    }
+    $blank_idx = $#lines
+        if $blank_idx < 0;
+    my $file = $self->get_user_path('imap.tmp');
+    my $pseudo_mailer;
+    unless (sysopen($pseudo_mailer, $file, Fcntl::O_RDWR() | Fcntl::O_CREAT() | Fcntl::O_TRUNC())) {
+        $self->log_msg(WARN => "Unable to open temporary file $file. Nothing done to message $msg. ($!)");
+        return
+    }
+    binmode $pseudo_mailer;
+    my $imap = $folders{$folder}{imap};
+    my $moved_a_msg = '';
+    syswrite $pseudo_mailer, $lines[$_] for 0..$blank_idx;
+    sysseek $pseudo_mailer, 0, 0;
+    my ($class, $slot, $magnet_used) = $classifier->classify_and_modify(
+        $self->api_session(), $pseudo_mailer, undef, 1, '', undef, 0, undef);
+    unless ($magnet_used) {
+        syswrite $pseudo_mailer, $lines[$_] for ($blank_idx + 1)..$#lines;
+        sysseek $pseudo_mailer, 0, 0;
+        ($class, $slot, $magnet_used) = $classifier->classify_and_modify(
+            $self->api_session(), $pseudo_mailer, undef, 0, '', undef, 0, undef);
+    }
+    $self->_flush_history();
+    $history->set_message_id($slot, $mid)
+        if $mid && $slot;
+    close $pseudo_mailer;
+    unlink $file;
+    my $destination = $self->folder_for_bucket($class);
+    if ($destination) {
+        if ($folder ne $destination) {
+            my $moved = $imap->move_message($msg, $destination);
+            unless ($moved) {
+                $self->log_msg(WARN => "Failed to move message $msg to $destination.");
+                return
+            }
+            $moved_a_msg = $destination;
+        }
+    }
+    else {
+        $self->log_msg(WARN => "Message cannot be moved because output folder for bucket $class is not defined.");
+    }
+    $self->log_msg(WARN => "Message was classified as $class.");
+    return $moved_a_msg
+}
+
 =head2 insert_message_into_bucket($folder, $msg, $bucket)
 
 Fetches the full message C<$msg> from C<$folder> and trains the classifier
@@ -1268,15 +1339,18 @@ method insert_message_into_bucket ($folder, $msg, $bucket) {
         $self->log_msg(WARN => "Could not fetch message $msg!");
         return
     }
+    return $self->_insert_from_lines($folder, $msg, $bucket, \@lines)
+}
+
+method _insert_from_lines ($folder, $msg, $bucket, $lines_ref) {
     my $file = $self->get_user_path('imap.tmp');
-    unless (open my $TMP, '>', $file) {
+    my $TMP;
+    unless (open $TMP, '>', $file) {
         $self->log_msg(WARN => "Cannot open temp file $file");
         return
     }
-    else {
-        print $TMP $_ for @lines;
-        close $TMP;
-    }
+    print $TMP $_ for $lines_ref->@*;
+    close $TMP;
     $classifier->add_message_to_bucket($self->api_session(), $bucket, $file);
     $self->log_msg(WARN => "Trained message with UID $msg into bucket $bucket.");
     unlink $file;
@@ -1302,22 +1376,25 @@ the history record.  Returns 1 on success, C<undef> on error.
 =cut
 
 method reclassify_message ($folder, $msg, $old_bucket, $hash) {
-    my $new_bucket = $folders{$folder}{output};
     my $imap = $folders{$folder}{imap};
     my ($ok, @lines) = $imap->fetch_message_part($msg, '');
     unless ($ok) {
         $self->log_msg(WARN => "Could not fetch message $msg!");
         return
     }
+    return $self->_reclassify_from_lines($folder, $msg, $old_bucket, $hash, \@lines)
+}
+
+method _reclassify_from_lines ($folder, $msg, $old_bucket, $hash, $lines_ref) {
+    my $new_bucket = $folders{$folder}{output};
     my $file = $self->get_user_path('imap.tmp');
-    unless (open my $TMP, '>', $file) {
+    my $TMP;
+    unless (open $TMP, '>', $file) {
         $self->log_msg(WARN => "Cannot open temp file $file");
         return
     }
-    else {
-        print $TMP $_ for @lines;
-        close $TMP;
-    }
+    print $TMP $_ for $lines_ref->@*;
+    close $TMP;
     my $slot = $history->get_slot_from_hash($hash);
     $classifier->remove_message_from_bucket($self->api_session(), $old_bucket, $file);
     $classifier->add_message_to_bucket($self->api_session(), $new_bucket, $file);
@@ -1331,15 +1408,16 @@ method reclassify_message ($folder, $msg, $old_bucket, $hash) {
 method _parse_headers_from_lines (@lines) {
     my (%header, $last);
     for (@lines) {
-        s/[\r\n]//g;
+        my $line = $_;
+        $line =~ s/[\r\n]//g;
         last()
-            if /^$/;
-        if (/^([^ \t]+):[ \t]*(.*)$/) {
+            if $line eq '';
+        if ($line =~ /^([^ \t]+):[ \t]*(.*)$/) {
             $last = lc $1;
             push $header{$last}->@*, $2;
         }
         elsif ($last) {
-            $header{$last}[-1] .= $_;
+            $header{$last}[-1] .= $line;
         }
     }
     my $mid = $header{'message-id'}[0];
