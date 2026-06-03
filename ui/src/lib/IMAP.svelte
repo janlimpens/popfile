@@ -689,7 +689,7 @@
   <!-- ── Verify folder mismatches modal ─────────────────────────── -->
   {#if verifyResult}
     <div class="modal-overlay" role="dialog" tabindex="-1" onclick={() => verifyResult = null} onkeydown={(e) => e.key === 'Escape' && (verifyResult = null)}></div>
-    <div class="modal" style="min-width:520px;max-width:640px">
+    <div class="modal" style="min-width:620px;max-width:90vw;resize:both;overflow:auto">
       <h3><span class="icon">find_in_page</span> {verifyResult.folder}</h3>
       {#if verifyResult.note}
         <p>{verifyResult.note}</p>
@@ -703,24 +703,23 @@
         </footer>
       {:else}
         <p style="margin-bottom:0.5rem">{verifyResult.messages.length} message(s) should be moved elsewhere:</p>
-        <div style="max-height:340px;overflow-y:auto;margin-bottom:0.75rem">
-          <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;padding:0.25rem 0;cursor:pointer">
-            <input type="checkbox" checked={verifySelected.size === verifyResult.messages.length}
-              onchange={toggleAllVerify} />
-            Select all
-          </label>
+        <div class="verify-grid">
+          <div class="verify-header">
+            <label>
+              <input type="checkbox" checked={verifySelected.size === verifyResult.messages.length}
+                onchange={toggleAllVerify} />
+            </label>
+            <span>Subject</span>
+            <span>From</span>
+            <span>Classified</span>
+          </div>
           {#each verifyResult.messages as m (m.hash)}
             <label class="verify-row">
               <input type="checkbox" checked={verifySelected.has(m.hash)}
                 onchange={() => toggleVerifyMsg(m.hash)} />
-              <span class="verify-subject">{m.subject}</span>
-              <span class="tag">{m.mapped_bucket}</span>
-              <span class="arrow">→</span>
+              <span class="verify-subject" title={m.subject}>{m.subject}</span>
+              <span class="verify-from">{m.from}</span>
               <span class="tag bucket-tag">{m.classified_bucket}</span>
-              {#if m.target_folder !== m.classified_bucket}
-                <span class="arrow">→</span>
-                <span style="font-size:0.75rem;color:var(--text-muted)">{m.target_folder}</span>
-              {/if}
             </label>
           {/each}
         </div>
@@ -1024,16 +1023,32 @@
   .btn-verify:hover { color: var(--accent); }
   .btn-verify:disabled { opacity: .4; cursor: default; }
   .verify-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 24px 1fr 200px 140px;
+    gap: 0.5rem;
     align-items: center;
-    gap: 0.4rem;
     font-size: 0.8rem;
-    padding: 0.3rem 0.25rem;
+    padding: 0.35rem 0.25rem;
     cursor: pointer;
     border-radius: 4px;
   }
   .verify-row:hover { background: var(--surface); }
-  .verify-subject { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .verify-header {
+    display: grid;
+    grid-template-columns: 24px 1fr 200px 140px;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 0.25rem 0.25rem 0.4rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.25rem;
+  }
+  .verify-header span { text-transform: uppercase; letter-spacing: 0.03em; }
+  .verify-subject { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .verify-from { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); }
+  .verify-grid { max-height: 50vh; overflow-y: auto; margin-bottom: 0.75rem; }
   .btn-restart { padding: 0.3rem 0.8rem; background: var(--warning, #e6a817); color: #fff; border: none; border-radius: 4px; font-size: 0.85rem; cursor: pointer; }
   .btn-restart:hover { opacity: 0.85; }
   .spinner {
