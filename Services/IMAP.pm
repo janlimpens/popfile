@@ -1563,9 +1563,10 @@ method preview_reclassification ($target_folder, $limit = 100) {
         my $classified = $self->classifier()->classify($self->api_session(), $file);
         unlink $file;
         unless ($classified) {
-            $self->log_msg(WARN => "Reclassify preview: classify returned undef for UID $uid — session key invalid?");
+            $self->log_msg(WARN => "Reclassify preview: classify returned undef for UID $uid");
             next();
         }
+        $self->log_msg(INFO => "Reclassify preview: UID $uid classified as '$classified', mapped='$mapped_bucket'");
         next()
             unless $mapped_bucket;
         next()
