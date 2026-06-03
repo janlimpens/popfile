@@ -89,12 +89,16 @@ NavCorpus Korpus
 NavHistory Verlauf
 NavIMAP IMAP
 NavMagnets Magnete
+NavRescan Rescan
 NavStatus Status
 NavWordSearch Words & Stopwords
 Next Weiter
 Previous Zurück
 Reclassify Neu einstufen
 Reconnect_Connecting Verbinde...
+Rescan_Description IMAP-Ordner scannen und Nachrichten neu klassifizieren
+Rescan_Scan Scannen
+Rescan_Title Rescan
 Reconnect_Message Das Backend ist nicht erreichbar. Versuche, die Verbindung wiederherzustellen...
 Reconnect_Now Jetzt verbinden
 Reconnect_RetryIn Erneuter Versuch in

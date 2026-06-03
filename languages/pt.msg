@@ -93,12 +93,16 @@ NavCorpus Corpus
 NavHistory Histórico
 NavIMAP IMAP
 NavMagnets Ímanes
+NavRescan Rescan
 NavStatus Estado
 NavWordSearch Words & Stopwords
 Next Seguinte
 Previous Anterior
 Reclassify Reclassificar
 Reconnect_Connecting A ligar...
+Rescan_Description Scan IMAP folders and reclassify messages
+Rescan_Scan Scan
+Rescan_Title Rescan
 Reconnect_Message O backend não está acessível. A tentar reconectar...
 Reconnect_Now Reconectar agora
 Reconnect_RetryIn A tentar novamente em

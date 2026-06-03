@@ -88,12 +88,16 @@ NavCorpus Corpus
 NavHistory History
 NavIMAP IMAP
 NavMagnets Magnets
+NavRescan Rescan
 NavStatus Status
 NavWordSearch Words & Stopwords
 Next Next
 Previous Previous
 Reclassify Reclassify
 Reconnect_Connecting Connecting...
+Rescan_Description Scan IMAP folders and reclassify messages
+Rescan_Scan Scan
+Rescan_Title Rescan
 Reconnect_Message The backend is not reachable. Trying to reconnect...
 Reconnect_Now Reconnect now
 Reconnect_RetryIn Retrying in

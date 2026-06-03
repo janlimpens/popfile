@@ -6,6 +6,7 @@
   import Settings from './lib/Settings.svelte';
   import Status   from './lib/Status.svelte';
   import Activity from './lib/Activity.svelte';
+  import Rescan   from './lib/Rescan.svelte';
   import { t, initLocale } from './lib/locale.svelte.js';
   import { installFetchInterceptor } from './lib/connectivity.svelte.js';
   import ReconnectModal from './lib/ReconnectModal.svelte';
@@ -53,6 +54,7 @@
     ['corpus',   'NavCorpus',   'Corpus',    'dataset'],
     ['magnets',  'NavMagnets',  'Magnets',   'bookmark'],
     ['activity', 'Activity',    'Activity',  'cardiology'],
+    ['rescan',   'NavRescan',   'Rescan',    'manage_search'],
     ['status',   'NavStatus',   'Status',    'monitoring'],
     ['settings', 'NavSettings', 'Settings',  'settings'],
     ['wizard',   'Wizard',     'Wizard',    'auto_fix_high'],
@@ -94,6 +96,8 @@
     <Corpus bind:buckets initialBucket={pageSub} wordSearchBucket={page === 'corpus' && pageSub.startsWith('words/') ? pageSub.slice(6) : ''} />
   {:else if page === 'magnets'}
     <Magnets {buckets} />
+  {:else if page === 'rescan'}
+    <Rescan />
   {:else if page === 'activity'}
     <Activity />
   {:else if page === 'status'}
