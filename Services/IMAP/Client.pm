@@ -544,30 +544,39 @@ method fetch_messages_batch ($uid_array, $part = '') {
         $self->say("UID FETCH $uid_list (FLAGS BODY.PEEK[$part])");
     }
     my $result = $self->get_response();
+    $self->log_msg(INFO => sprintf('Batch FETCH result=%d, response_len=%d',
+        $result, length($last_response)));
+    my $preview = substr($last_response, 0, 400);
+    $preview =~ s/[\r\n]/|/g;
+    $self->log_msg(INFO => "Batch FETCH preview: $preview");
     unless ($result == 1) {
         $self->log_msg(WARN => "Batch FETCH failed");
         return ()
     }
     $self->log_msg(DEBUG => sprintf('Batch-fetched %d messages', scalar($uid_array->@*)));
     my %results;
-    my @chunks = split /\* \d+ FETCH/, $last_response;
+    my @chunks = split /(\* \d+ FETCH)/, $last_response;
     shift @chunks;
-    for my $chunk (@chunks) {
-        my ($uid) = $chunk =~ /^\s*(\d+)\s+FETCH/;
+    while (@chunks >= 2) {
+        my $header = shift @chunks;
+        my $body   = shift @chunks;
+        my ($uid) = $body =~ /UID (\d+)/;
+        $self->log_msg(INFO => sprintf('Batch parse: header=%s, uid=%s',
+            substr($header, 0, 50), $uid // 'undef'));
         next()
             unless $uid;
         my @lines;
-        if ($chunk =~ /\{(\d+)\}$eol/) {
+        if ($body =~ /\{(\d+)\}$eol/) {
             my $num_octets = $1;
-            my $pos = index $chunk, "{$num_octets}$eol";
+            my $pos = index $body, "{$num_octets}$eol";
             $pos += length "{$num_octets}$eol";
-            my $message = substr $chunk, $pos, $num_octets;
+            my $message = substr $body, $pos, $num_octets;
             while ($message =~ /(.*?(?:$eol|\012|\015))/g) {
                 push @lines, $1;
             }
         }
         else {
-            while ($chunk =~ /(.*?(?:$eol|\012|\015))/g) {
+            while ($body =~ /(.*?(?:$eol|\012|\015))/g) {
                 push @lines, $1;
             }
             shift @lines;

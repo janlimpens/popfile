@@ -1529,8 +1529,10 @@ method preview_reclassification ($target_folder, $limit = 100) {
     my %batch = $imap->fetch_messages_batch(\@uids, '');
     for my $uid (@uids) {
         my $lines_ref = $batch{$uid};
-        next()
-            unless $lines_ref;
+        unless ($lines_ref) {
+            $self->log_msg(WARN => "Reclassify preview: UID $uid not found in batch");
+            next();
+        }
         my @lines = $lines_ref->@*;
         my (%header, $last);
         for (@lines) {
