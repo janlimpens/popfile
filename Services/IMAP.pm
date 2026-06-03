@@ -701,7 +701,10 @@ method _drain_direct_moves ($result, $subprocess = undef, $emit_parent_id = unde
         }
         $emit->('info', 'Move search', "$entry->{mid} → $destination");
         my $found = 0;
-        for my $folder (keys %folders) {
+        my @search_folders = defined $entry->{source_folder}
+            ? ($entry->{source_folder})
+            : keys %folders;
+        for my $folder (@search_folders) {
             next()
                 unless exists $folders{$folder}{imap};
             my $imap = $folders{$folder}{imap};
@@ -922,22 +925,23 @@ IMAP move guarantee).
 
 =cut
 
-method request_folder_move ($hash, $target_bucket, $source_bucket = undef) {
+method request_folder_move ($hash, $target_bucket, $source_folder = undef) {
     if (exists $hash_to_mid{$hash}) {
         $self->log_msg(INFO => "Move queued for hash $hash to $target_bucket (mid: $hash_to_mid{$hash}).");
-        $pending_direct_moves{$hash} = { mid => $hash_to_mid{$hash}, target_bucket => $target_bucket };
+        $pending_direct_moves{$hash} = {
+            mid => $hash_to_mid{$hash},
+            target_bucket => $target_bucket,
+            defined $source_folder ? (source_folder => $source_folder) : (),
+        };
         return
     }
     $self->log_msg(INFO => "No Message-ID cached for hash $hash; queuing folder move with uid_next reset.");
     $pending_folder_moves{$hash} = $target_bucket;
-    my $source_folder = defined $source_bucket
-        ? $self->folder_for_bucket($source_bucket)
-        : undef;
     if ($source_folder) {
         $self->_reset_uid_next($source_folder);
     }
     else {
-        $self->log_msg(WARN => "No IMAP folder mapping for source bucket; resetting uid_next on all watched folders.");
+        $self->log_msg(WARN => "No source folder for hash $hash; resetting uid_next on all watched folders.");
         $self->_reset_uid_next($_)
             for $self->watched_folders();
     }
@@ -1590,9 +1594,12 @@ method preview_reclassification ($target_folder, $limit = 100) {
 }
 
 method _decode_mime_header ($str) {
-    my $decoded = '';
+    my $result = '';
+    my $pos = 0;
     while ($str =~ /=\?([^?]+)\?(.)\?([^?]*)\?=/g) {
         my ($charset, $encoding, $text) = ($1, uc($2), $3);
+        $result .= $self->_ensure_utf8(substr($str, $pos, $-[0] - $pos));
+        $pos = $+[0];
         if ($encoding eq 'Q') {
             $text =~ s/_/ /g;
             $text =~ s/=([0-9A-Fa-f]{2})/chr(hex($1))/ge;
@@ -1607,9 +1614,23 @@ method _decode_mime_header ($str) {
             $text = Encode::decode_utf8($text, Encode::FB_DEFAULT())
                 unless Encode::is_utf8($text);
         }
-        $decoded .= $text;
+        $result .= $text;
     }
-    return $decoded ne '' ? $decoded : $str
+    $result .= $self->_ensure_utf8(substr($str, $pos));
+    return $result
+}
+
+method _ensure_utf8 ($str) {
+    return $str
+        if utf8::is_utf8($str);
+    my $decoded;
+    try {
+        $decoded = Encode::decode('UTF-8', $str, Encode::FB_CROAK());
+    }
+    catch ($e) {
+        return $str
+    }
+    return defined $decoded ? $decoded : $str
 }
 
 1;

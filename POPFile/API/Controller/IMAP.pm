@@ -328,7 +328,7 @@ sub move_messages ($self) {
         if ($mid) {
             $imap->cache_message_id($hash, $mid);
         }
-        $imap->request_folder_move($hash, $bucket);
+        $imap->request_folder_move($hash, $bucket, $move->{source_folder});
         $queued++;
     }
     try { $imap->flush_moves() } catch($e) {};

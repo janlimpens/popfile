@@ -89,4 +89,39 @@ subtest 'preview_reclassification passes correct args to classifier->classify' =
     is($preview->{messages}[0]{classified_bucket}, 'newsletter', 'classified as newsletter');
 };
 
+subtest '_ensure_utf8 decodes raw UTF-8 bytes' => sub {
+    my ($config, $mq) = TestHelper::setup();
+    TestHelper::configure_db($config);
+    my $imap = Services::IMAP->new();
+    TestHelper::wire($imap, $config, $mq);
+    $imap->initialize();
+    $imap->start();
+    TestHelper::load_singleton($config);
+
+    my $ascii = $imap->_ensure_utf8('Hello World');
+    is($ascii, 'Hello World', 'ASCII passes through unchanged');
+
+    my $umlaut = $imap->_ensure_utf8("f\xc3\xbcr");
+    is($umlaut, "f\x{fc}r", 'UTF-8 umlaut decoded');
+
+    my $already = $imap->_ensure_utf8("f\x{fc}r");
+    is($already, "f\x{fc}r", 'already-decoded UTF-8 passes through');
+};
+
+subtest '_decode_mime_header handles raw UTF-8 fallback' => sub {
+    my ($config, $mq) = TestHelper::setup();
+    TestHelper::configure_db($config);
+    my $imap = Services::IMAP->new();
+    TestHelper::wire($imap, $config, $mq);
+    $imap->initialize();
+    $imap->start();
+    TestHelper::load_singleton($config);
+
+    my $mime = $imap->_decode_mime_header('=?UTF-8?Q?f=C3=BCr?= ' . "f\xc3\xbcr");
+    like($mime, qr/f\x{fc}r f\x{fc}r/, 'MIME + raw UTF-8 both decoded');
+
+    my $raw_only = $imap->_decode_mime_header("Voc\xc3\xaa");
+    like($raw_only, qr/Voc\x{ea}/, 'raw UTF-8 decoded without MIME encoding');
+};
+
 done_testing;

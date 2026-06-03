@@ -339,7 +339,7 @@
     verifyMoving = true;
     const moves = verifyResult.messages
       .filter(m => verifySelected.has(m.hash))
-      .map(m => ({ hash: m.hash, bucket: m.classified_bucket, mid: m.mid }));
+      .map(m => ({ hash: m.hash, bucket: m.classified_bucket, mid: m.mid, source_folder: verifyResult.folder }));
     await fetch('api/v1/imap/move-messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
