@@ -13,7 +13,8 @@
   let verifySelected = $state(new Set());
   let verifyMoving = $state(false);
   let verifyLoadingFolder = $state('');
-  let moveEnabled = $state(true);
+  let moveEnabled = $state(localStorage.getItem('pf-move-enabled') !== 'false');
+  let showMoveConfirm = $state(false);
 
   let folderInfo = $derived(
     folders.map(f => {
@@ -79,8 +80,17 @@
       ? new Set() : new Set(verifyResult.messages.map(m => m.hash));
   }
 
-  async function moveSelectedMessages() {
+  function requestMove() {
     if (verifySelected.size === 0) return;
+    showMoveConfirm = true;
+  }
+
+  function toggleMoveEnabled() {
+    moveEnabled = !moveEnabled;
+    localStorage.setItem('pf-move-enabled', moveEnabled ? 'true' : 'false');
+  }
+
+  async function moveSelectedMessages() {
     verifyMoving = true;
     let moves = verifyResult.messages
       .filter(m => verifySelected.has(m.hash))
@@ -197,17 +207,35 @@
         {/each}
       </div>
       <footer class="card-footer">
-        <label class="move-toggle">
-          <input type="checkbox" bind:checked={moveEnabled} />
-          Move to mapped folders
-        </label>
         <button class="btn btn-secondary" onclick={() => verifyResult = null}>Cancel</button>
-        <button class="btn" onclick={moveSelectedMessages}
-          disabled={verifySelected.size === 0 || verifyMoving || !moveEnabled}>
+        <button class="btn" onclick={requestMove}
+          disabled={verifySelected.size === 0 || verifyMoving}>
           {verifyMoving ? 'Moving...' : `Move ${verifySelected.size} selected`}
         </button>
       </footer>
     {/if}
+  </div>
+{/if}
+
+<!-- ── Move confirmation modal ── -->
+{#if showMoveConfirm}
+  <div class="modal-overlay" onclick={() => showMoveConfirm = false}></div>
+  <div class="modal" style="min-width:340px;max-width:400px;text-align:center">
+    <h3>Move {verifySelected.size} message(s)?</h3>
+    <p style="color:var(--text-muted);margin:0.75rem 0">
+      Messages will be moved to their classified bucket's folder.
+    </p>
+    <label class="move-toggle" style="justify-content:center;margin:0.75rem 0">
+      <input type="checkbox" checked={moveEnabled} onchange={toggleMoveEnabled} />
+      Move to mapped folders
+    </label>
+    <footer class="card-footer" style="justify-content:center">
+      <button class="btn btn-secondary" onclick={() => showMoveConfirm = false}>Cancel</button>
+      <button class="btn" onclick={() => { showMoveConfirm = false; moveSelectedMessages(); }}
+        disabled={!moveEnabled}>
+        Confirm move
+      </button>
+    </footer>
   </div>
 {/if}
 
@@ -289,16 +317,6 @@
     border: 1px solid var(--border);
   }
 
-  .move-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    margin-right: auto;
-  }
-
   .card-footer {
     display: flex;
     gap: 0.75rem;
@@ -308,6 +326,15 @@
     margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid var(--border);
+  }
+
+  .move-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text);
+    cursor: pointer;
   }
 
   /* ── Modal ── */
