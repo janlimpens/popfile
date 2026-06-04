@@ -139,13 +139,15 @@
         {#each folderInfo as f (f.name)}
           <tr>
             <td class="folder-name">{f.name}</td>
-            <td class="status-cell">
-              {#each f.status as s}
-                <span class="tag {s.cls}">{s.label}</span>
-              {/each}
-              {#if f.status.length === 0}
-                <span class="tag tag-muted">unmapped</span>
-              {/if}
+            <td>
+              <div class="status-cell">
+                {#each f.status as s}
+                  <span class="tag {s.cls}">{s.label}</span>
+                {/each}
+                {#if f.status.length === 0}
+                  <span class="tag tag-muted">unmapped</span>
+                {/if}
+              </div>
             </td>
             <td class="row-actions">
               <button class="btn-scan" onclick={() => scanFolder(f.name)} disabled={verifyBusy} title={t('Rescan_Scan') === 'Rescan_Scan' ? 'Scan' : t('Rescan_Scan')}>
