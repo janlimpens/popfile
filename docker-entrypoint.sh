@@ -44,5 +44,8 @@ fi
 export POPFILE_USER POPFILE_ROOT
 echo "POPFile data directory: $POPFILE_USER (mount a volume here to persist)"
 echo "POPFile UI: http://<host>:7070/"
+# Remove stale PID file from previous run — Docker restarts reuse the same
+# PID namespace so PID 1 may match our own process
+rm -f "$POPFILE_USER/popfile.pid" "$POPFILE_USER/popfile.port"
 cd "$POPFILE_ROOT"
 exec carton exec perl script/popfile start
